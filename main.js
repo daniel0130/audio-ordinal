@@ -1,28 +1,3 @@
-var inscribeButton = document.getElementById("inscribeButton");
-var audionalJson;
-const BASE_URL = "https://api-ordinals.gamma.io/inscription/v1";
-let apiKey;
-let feeRates = {};
-let calculatedFee = {};
-let inscriptionPreviewData = {};
-let audionalJsonString;
-
-// Fetch API key initially
-getApiKey();
-
-// Assume audionalJson exists and convert it to a string
-if (window.audionalJson) {
-  audionalJsonString = JSON.stringify(window.audionalJson, null, 2);
-}
-
-window.onload = function () {
-  // Call API functions immediately on page load
-  if (audionalJsonString) {
-    calculateInscriptionRequestFee(audionalJsonString);
-    getInscriptionPreview(audionalJsonString, "audional.json"); // replace "audional.json" with actual filename if necessary
-  }
-};
-
 // Disable typing in the audio type input
 var audioTypeInput = document.getElementById("audio_type");
 audioTypeInput.addEventListener("keydown", function (e) {
@@ -51,6 +26,22 @@ const fileInput = document.getElementById("file");
 const processButton = document.getElementById("process");
 const convertButton = document.getElementById("convert");
 const reminder = document.getElementById("reminder");
+const audionalJsonTextarea = document.getElementById("audional-json");
+const startInscriptionProcessButton = document.getElementById(
+  "startInscriptionProcess"
+);
+const inscriptionPreviewContainer = document.getElementById(
+  "inscriptionPreviewContainer"
+);
+const doInscribe = document.getElementById("doInscribe");
+const estimatedFeesSpan = document.getElementById("estimatedFees");
+const networkFeeRateSpan = document.getElementById("networkFeeRate");
+const recipientAddress = document.getElementById("ordinalRecipientAddress");
+const invoiceAddress = document.getElementById("invoiceAddress");
+const invoiceAmount = document.getElementById("invoiceAmount");
+const inscriptionInvoiceContainer = document.getElementById(
+  "inscriptionInvoiceContainer"
+);
 
 // Error container for user-friendly error messages
 const errorContainer = document.createElement("div");
@@ -87,7 +78,7 @@ fileInput.addEventListener("change", function () {
   audioTypeInput.value = "";
 
   // Disable the convert button
-  convertButton.innerText = "Generate Audional json File";
+  convertButton.innerText = "Generate Audional JSON";
   convertButton.disabled = true;
   convertButton.classList.remove("flashing");
   convertButton.style.backgroundColor = "grey";
@@ -351,38 +342,150 @@ convertButton.addEventListener("click", function () {
 
     convertButton.classList.remove("flashing");
     convertButton.style.backgroundColor = "green";
-    convertButton.innerText = "Audional JSON File Downloaded";
+    convertButton.innerText = "Audional JSON Created";
     document.getElementById("reminder").style.color = "grey";
 
     var dataStr =
       "data:text/json;charset=utf-8," + encodeURIComponent(audionalJsonString);
-    var downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute(
-      "download",
-      file.name.replace(/\.[^/.]+$/, "") + "_audional.json"
-    );
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    // set audionalJsonTextarea to dataStr
+    audionalJsonTextarea.value = audionalJsonString;
+    // show audionalJsonTextarea
+    audionalJsonTextarea.style.display = "block";
+
+    // show startInscriptionProcessButton
+    startInscriptionProcessButton.style.display = "inline";
+    // enable startInscriptionProcessButton
+    startInscriptionProcessButton.disabled = false;
+
+    // var downloadAnchorNode = document.createElement("a");
+    // downloadAnchorNode.setAttribute("href", dataStr);
+    // downloadAnchorNode.setAttribute(
+    //   "download",
+    //   file.name.replace(/\.[^/.]+$/, "") + "_audional.json"
+    // );
+    // document.body.appendChild(downloadAnchorNode);
+    // downloadAnchorNode.click();
+    // downloadAnchorNode.remove();
 
     // After downloading the file, redirect the user to audionals.com
-    window.location.href = "https://www.audionals.com";
-
-    // Enable the inscribe button when audionalJson is ready
-    audionalJson = 52; // Set audionalJson to your actual JSON data
-    inscribeButton.disabled = false;
-
-    // Open new window and set audionalJson in its context when button is clicked
-    inscribeButton.addEventListener("click", function () {
-      var newWindow = window.open("api_call.html");
-      newWindow.audionalJson = audionalJson;
-    });
-
-    reader.onerror = function () {
-      alert("Error reading file");
-    };
-
-    reader.readAsDataURL(file);
+    //   window.location.href = "https://www.audionals.com";
   };
+
+  reader.onerror = function () {
+    alert("Error reading file");
+  };
+
+  reader.readAsDataURL(file);
 });
+
+// Start Inscription Process
+startInscriptionProcessButton.addEventListener("click", async function () {
+  //   console.log("startInscriptionProcessButton clicked");
+
+  // get reccomended fee
+  //   var feeRate = await getRecommendedNetworkFeeRates();
+
+  //   console.log("feeRates", feeRate.high_fee_rate);
+
+  var audionalJsonObject = JSON.parse(audionalJsonTextarea.value);
+
+  var inscriptionPreview = await getInscriptionPreview(audionalJsonObject);
+  //   console.log(inscriptionPreview);
+
+  var totalFees = inscriptionPreview.calculated_fee_summary.high.total_fee_sats;
+
+  // hide audionalJsonTextarea
+  audionalJsonTextarea.style.display = "none";
+
+  // show inscriptionPreviewArea
+  inscriptionPreviewContainer.style.display = "block";
+
+  // update span with id estimatedFees to totalFees
+
+  estimatedFeesSpan.value = totalFees;
+  networkFeeRateSpan.value =
+    inscriptionPreview.calculated_fee_summary.high.network_fee_rate;
+});
+
+doInscribe.addEventListener("click", async function () {
+  // get recipientAddress and verify it starts with bc1
+  const recipientAddressValue = recipientAddress.value;
+  if (!validateTaprootAddress(recipientAddressValue)) {
+    alert("Recipient Address must be a taproot address.");
+    return;
+  }
+
+  var audionalJsonObject = JSON.parse(audionalJsonTextarea.value);
+
+  const inscriptionRequest = {
+    btc_ordinal_recipient_address: recipientAddressValue,
+    btc_refund_recipient_address: "",
+    expected_total_fee_sats: estimatedFeesSpan.value,
+    file: audionalJsonObject,
+    keep_high_res: true,
+    network_fee_rate: networkFeeRateSpan.value,
+    submitter_email_address: "",
+  };
+  const inscriptionRequestResults = await requestInscription(
+    inscriptionRequest
+  );
+  console.log(inscriptionRequestResults);
+
+  // show inscriptionInvoiceContainer
+  inscriptionInvoiceContainer.style.display = "block";
+
+  generateBitcoinPaymentQRCode(
+    inscriptionRequestResults.btc_deposit_address,
+    inscriptionRequestResults.total_request_fee_sats
+  );
+  // update the input invoiceAmount with inscriptionRequestResults.total_request_fee_sats
+  invoiceAddress.value = inscriptionRequestResults.btc_deposit_address;
+  // update the input invoiceAddress with inscriptionRequestResults.btc_deposit_address
+  invoiceAmount.value = inscriptionRequestResults.total_request_fee_sats;
+});
+
+// TODO: Add validation for recipient address
+const validateTaprootAddress = (address) => {
+  const prefix = "bc1";
+  return address.startsWith(prefix);
+  //   const length = address.length;
+  //   if (address.substring(0, prefix.length) !== prefix) {
+  //     return false;
+  //   }
+  //   if (length !== 66) {
+  //     return false;
+  //   }
+  //   const checksum = address.substring(length - 6);
+  //   const hash = sha256(address.substring(prefix.length, length - 6));
+  //   const expectedChecksum = ripemd160(hash).slice(0, 4);
+  //   if (checksum !== expectedChecksum) {
+  //     return false;
+  //   }
+  //   return true;
+};
+
+function generateBitcoinPaymentQRCode(
+  btc_deposit_address,
+  total_request_fee_sats
+) {
+  // Convert Satoshi to Bitcoin
+  const satToBtc = total_request_fee_sats / 1e8;
+
+  // Construct Bitcoin URI
+  const paymentURI = `bitcoin:${btc_deposit_address}?amount=${satToBtc}&label=${encodeURIComponent(
+    "Audionals.com"
+  )}`;
+
+  // Clear previous QR Code
+  document.getElementById("qrcode").innerHTML = "";
+
+  // Generate new QR Code
+  new QRCode(document.getElementById("qrcode"), {
+    text: paymentURI,
+    width: 128,
+    height: 128,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+}

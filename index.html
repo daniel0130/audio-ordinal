@@ -401,11 +401,41 @@
         yes, go ahead and:
       </p>
 
-      <button id="convert" disabled>Generate Audional JSON File</button>
-      <button id="inscribeButton" disabled>Check Inscription Price</button>
+      <button id="convert" disabled>Generate Audional JSON</button>
+      <button id="startInscriptionProcess" style="display: none" disabled>
+        Start Inscription
+      </button>
       <output id="json-output"></output>
+      <!-- create a read only textarea called audional-json -->
+      <textarea id="audional-json" readonly style="display: none"></textarea>
+      <div id="inscriptionPreviewContainer" style="display: none">
+        <h2>Inscription Preview</h2>
+        <div id="inscriptionPreview">
+          Estimated Fees: <input id="estimatedFees" readonly /> SATS Ordinal
+          <br />
+          Recipient Address: <input id="ordinalRecipientAddress" />
+          <br />
+          Network Fee Rate: <input id="networkFeeRate" readonly /> SATS/byte
+          <br />
+          <button id="doInscribe">INSCRIBE</button>
+        </div>
+      </div>
+      <div id="inscriptionInvoiceContainer" style="display: none">
+        <h2>Invoice/QR Code</h2>
+        Inscription Request ID:
+        <input id="inscriptionRequestId" readonly /> <br />
+        Invoice Address:
+        <input id="invoiceAddress" readonly /> <br />
+        Invoice Amount:
+        <input id="invoiceAmount" readonly /> SATS
+        <div id="qrcode"></div>
+      </div>
     </main>
+
+    <!-- include main.js -->
+    <script src="main.js"></script>
+    <script src="gammaApi.js"></script>
+
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   </body>
-  <!-- include main.js -->
-  <script src="main.js"></script>
 </html>
