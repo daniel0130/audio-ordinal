@@ -1,0 +1,118 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: #202020;
+  color: white;
+  font-family: "ShareTechMono-Regular", Arial, sans-serif;
+  width: 100vw;
+  overflow-x: hidden;
+}
+.header {
+  align-items: center;
+  background-color: black;
+  display: flex;
+  height: 100px;
+  justify-content: space-between;
+  width: 100vw;
+}
+.header img {
+  height: 100%;
+}
+.header h1 {
+  color: white;
+  flex-grow: 2;
+  font-size: 6em;
+  text-align: center;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -5px;
+}
+.column {
+  flex: 33.33%;
+  padding: 5px 5px;
+}
+.form-group {
+  margin-bottom: 10px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+input[type="text"],
+textarea,
+datalist,
+input[type="checkbox"],
+input[type="file"],
+input[type="number"] {
+  box-sizing: border-box;
+  height: 25px;
+  padding: 0;
+  width: 100%;
+}
+.input-wrapper {
+  padding: 10px;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group datalist,
+.form-group input[type="file"],
+.form-group input[type="number"] {
+  width: 100%;
+}
+button {
+  background-color: #0066ff;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 10px 20px;
+}
+button:disabled {
+  background-color: #555;
+}
+.flashing {
+  animation: flash 2s linear infinite;
+  background-color: red;
+}
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+#json-output {
+  margin-top: 20px;
+  word-wrap: break-word;
+}
+.info-button {
+  /* Center the button horizontally */
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+
+  /* Set the button color to green */
+  background-color: red;
+
+  /* Additional button styles */
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 10px 20px;
+}
+.info-content {
+  display: none;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #333333;
+  color: white;
+}
