@@ -1,782 +1,655 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <title>Bitcoin Audional Generator</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        background-color: #202020;
-        color: white;
-        font-family: "ShareTechMono-Regular", Arial, sans-serif;
-        width: 100vw;
-        overflow-x: hidden;
-      }
-      .header {
-        align-items: center;
-        background-color: black;
-        display: flex;
-        height: 100px;
-        justify-content: space-between;
-        width: 100vw;
-      }
-      .header img {
-        height: 100%;
-      }
-      .header h1 {
-        color: white;
-        flex-grow: 2;
-        font-size: 6em;
-        text-align: center;
-      }
-      .row {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0 -5px;
-      }
-      .column {
-        flex: 33.33%;
-        padding: 5px 5px;
-      }
-      .form-group {
-        margin-bottom: 10px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-      }
-      input[type="text"],
-      textarea,
-      datalist,
-      input[type="checkbox"],
-      input[type="file"],
-      input[type="number"] {
-        box-sizing: border-box;
-        height: 25px;
-        padding: 0;
-        width: 100%;
-      }
-      .input-wrapper {
-        padding: 10px;
-      }
-
-      .form-group input[type="text"],
-      .form-group textarea,
-      .form-group datalist,
-      .form-group input[type="file"],
-      .form-group input[type="number"] {
-        width: 100%;
-      }
-      .button-container {
-        display: flex;
-        justify-content: center;
-      }
-
-      button {
-        background-color: #0066ff;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 10px 20px;
-      }
-      button:disabled {
-        background-color: #555;
-      }
-      .flashing {
-        animation: flash 2s linear infinite;
-        background-color: red;
-      }
-      @keyframes flash {
-        0% {
-          opacity: 1;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        50% {
-          opacity: 0.1;
+        body {
+            background-color: #202020;
+            color: white;
+            font-family: 'ShareTechMono-Regular', Arial, sans-serif;
+            width: 100vw;
+            overflow-x: hidden;
         }
-        100% {
-          opacity: 1;
+        .header {
+            align-items: center;
+            background-color: black;
+            display: flex;
+            height: 100px;
+            justify-content: space-between;
+            width: 100vw;
         }
-      }
-      #json-output {
-        margin-top: 20px;
-        word-wrap: break-word;
-      }
-      .info-button {
-        /* Set the button color to green */
-        background-color: red;
-      }
+        .header img {
+            height: 100%;
+        }
+        .header h1 {
+            color: white;
+            flex-grow: 2;
+            font-size: 6em;
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -5px;
+        }
+        .column {
+            flex: 33.33%;
+            padding: 5px 5px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        textarea,
+        datalist,
+        input[type="checkbox"],
+        input[type="file"],
+        input[type="number"] {
+            box-sizing: border-box;
+            height: 25px;
+            padding: 0;
+            width: 100%;
+        }
+        .input-wrapper {
+            padding: 10px;
+        }
+        
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group datalist,
+        .form-group input[type="file"],
+        .form-group input[type="number"] {
+            width: 100%;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
 
-      .more-info-button {
-        /* Set the button color to blue */
-        background-color: blue;
-      }
-      .info-button,
-      .more-info-button {
-        /* Center the button horizontally */
-        display: block;
-        margin: 0 10px;
-        text-align: center;
+        button {
+            background-color: #0066ff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+        button:disabled {
+            background-color: #555;
+        }
+        .flashing {
+            animation: flash 2s linear infinite;
+            background-color: red;
+        }
+        @keyframes flash {
+            0% {opacity: 1;}
+            50% {opacity: .1;}
+            100% {opacity: 1;}
+        }
+        #json-output {
+            margin-top: 20px;
+            word-wrap: break-word;
+        }
+        .info-button {
+            /* Set the button color to green */
+            background-color: red;
+        }
 
-        /* Additional button styles */
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 10px 20px;
-      }
-      .info-content {
-        display: none;
-        margin-top: 20px;
-        padding: 20px;
-        background-color: #333333;
-        color: white;
-      }
+        .more-info-button {
+            /* Set the button color to blue */
+            background-color: blue;
+        }
+        .info-button,
+        .more-info-button {
+            /* Center the button horizontally */
+            display: block;
+            margin: 0 10px;
+            text-align: center;
+
+           
+
+            /* Additional button styles */
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+        .info-content {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333333;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            animation-name: modal-animation;
+            animation-duration: 0.5s;
+        }
+
+        @keyframes modal-animation {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
     </style>
     <script>
-      function toggleInfo(buttonId) {
-        var audionalsButton = document.getElementById("audionals-button");
-        var jsonButton = document.getElementById("json-button");
+        function toggleInfo(buttonId) {
+            var audionalsButton = document.getElementById("audionals-button");
+            var jsonButton = document.getElementById("json-button");
 
-        var audionalsContent = document.getElementById(
-          "info-content-audionals"
-        );
-        var jsonContent = document.getElementById("info-content-json");
+            var audionalsContent = document.getElementById("info-content-audionals");
+            var jsonContent = document.getElementById("info-content-json");
 
-        if (buttonId === "audionals") {
-          var isAudionalsActive = audionalsButton.classList.contains("active");
-          if (isAudionalsActive) {
-            audionalsButton.classList.remove("active");
-            audionalsContent.style.display = "none";
-          } else {
-            audionalsButton.classList.add("active");
-            jsonButton.classList.remove("active");
-            audionalsContent.style.display = "block";
-            jsonContent.style.display = "none";
-          }
-        } else {
-          var isJsonActive = jsonButton.classList.contains("active");
-          if (isJsonActive) {
-            jsonButton.classList.remove("active");
-            jsonContent.style.display = "none";
-          } else {
-            jsonButton.classList.add("active");
-            audionalsButton.classList.remove("active");
-            audionalsContent.style.display = "none";
-            jsonContent.style.display = "block";
-          }
+            if (buttonId === "audionals") {
+                var isAudionalsActive = audionalsButton.classList.contains("active");
+                if (isAudionalsActive) {
+                    audionalsButton.classList.remove("active");
+                    audionalsContent.style.display = "none";
+                } else {
+                    audionalsButton.classList.add("active");
+                    jsonButton.classList.remove("active");
+                    audionalsContent.style.display = "block";
+                    jsonContent.style.display = "none";
+                }
+            } else {
+                var isJsonActive = jsonButton.classList.contains("active");
+                if (isJsonActive) {
+                    jsonButton.classList.remove("active");
+                    jsonContent.style.display = "none";
+                } else {
+                    jsonButton.classList.add("active");
+                    audionalsButton.classList.remove("active");
+                    audionalsContent.style.display = "none";
+                    jsonContent.style.display = "block";
+                }
+            }
         }
-      }
     </script>
-  </head>
-  <body>
-    <div class="header">
-      <img src="AudionalsLogo.png" alt="Audionals Logo" />
-      <h1>Audionals.com</h1>
-      <img src="AudionalsLogo.png" alt="Audionals Logo" />
-    </div>
+
+</head>
+<body>
+  <div class="header">
+    <img src="AudionalsLogo.png" alt="Audionals Logo">
+    <h1>Audionals.com</h1>
+    <button id="sequencer-button" class="more-info-button" onclick="tryAudionalSequencer()">Try the Audional Sequencer</button>
+    <img src="AudionalsLogo.png" alt="Audionals Logo">
+</div>
+
+<!-- This is where the sequencer will appear -->
+<div id="sequencer-container">
+    <!-- We'll create the iframe here with JavaScript -->
+</div>
+
     <div class="button-container">
-      <button
-        id="audionals-button"
-        class="info-button active"
-        onclick="toggleInfo('audionals')"
-      >
-        What are Audionals?
-      </button>
-      <button
-        id="json-button"
-        class="more-info-button"
-        onclick="toggleInfo('json')"
-      >
-        New JSON standard?
-      </button>
+        <button id="audionals-button" class="info-button active" onclick="toggleInfo('audionals')">What are Audionals?</button>
+        <button id="json-button" class="more-info-button" onclick="toggleInfo('json')">New JSON standard?</button>
     </div>
+
 
     <div class="info-content" id="info-content-audionals">
-      <p>
-        Audionals are a groundbreaking new standard for inscribing audio files
-        on the Bitcoin blockchain, providing a unique tool for musicians, sound
-        designers, music enthusiasts and audiophile collectors alike. The
-        platform takes advantage of the transparent, immutable nature of the
-        blockchain, offering a unique method of inscribing audio directly onto
-        the blockchain. The innovative approach taken by Audionals.com might
-        very well disrupt the traditional music industry and usher in a new era
-        of audio content creation, distribution, and ownership.
-      </p>
-      <br />
-      <p>
-        The fundamental technology that drives Audionals.com is the inscription
-        of audio data to the blockchain in the form of Base64 embedded JSON
-        files. Audio files uploaded to the platform are encoded into a format
-        known as Base64, which transforms the binary data into a string of ASCII
-        characters. This audio data is then embedded within a JSON (JavaScript
-        Object Notation) file, a lightweight data-interchange format that is
-        easy for humans to read and write and easy for machines to parse and
-        generate.
-      </p>
-      <br />
-      <p>
-        The strength of this approach is two-fold. First, the use of JSON format
-        makes the audio data easily indexable and sortable. Metadata such as the
-        audio type, the instrument used, genre, key, BPM, and user-defined
-        parameters can be added to the JSON file, which facilitates searching,
-        categorisation, and manipulation of the audio files on the platform. It
-        essentially creates a database of audio files that are easily searchable
-        and sortable, making it user-friendly and efficient.
-      </p>
-      <br />
-      <p>
-        Second, the inscribing of audio data directly onto the blockchain has
-        profound implications for ownership, copyright, and authenticity. Once a
-        piece of audio is inscribed onto the blockchain, it is permanent and
-        immutable. It cannot be altered or deleted, and the ownership is
-        transparent. This technology could revolutionise the way music
-        copyrights are handled, providing an indisputable record of original
-        content.
-      </p>
-      <br />
-      <p>
-        Furthermore, all audionals can be subjected to recursive techniques,
-        pulling together these Base64 encoded samples to form new sequences,
-        enabling users to compose and save music directly on-chain. This
-        provides musicians with a new way of creating and storing their work,
-        eliminating the need for external storage devices or services. By
-        leveraging audional technology and the immutable nature of the
-        blockchain, musicians can establish verifiable ownership and track their
-        samples and compositions with ease. The transparency and traceability
-        offered by audional technology enable accurate royalty distribution and
-        tracking, revolutionising the way musicians receive recognition and
-        income for their work.
-      </p>
-      <br />
-      <p>
-        In essence, Audionals.com represents a novel application of blockchain
-        technology in the realm of audio and music. Its unique approach to audio
-        inscription, coupled with the innovative on-chain composition feature,
-        is poised to disrupt the traditional music industry and empower artists
-        in unprecedented ways. In a world where digital technology continues to
-        reshape the way we create, distribute, and consume music, Audionals.com
-        offers a glimpse into a future where music and blockchain become
-        inextricably linked.
-      </p>
+        <p>Audionals are a groundbreaking new standard for inscribing audio files on the Bitcoin blockchain, providing a unique tool for musicians, sound designers, music enthusiasts and audiophile collectors alike. The platform takes advantage of the transparent, immutable nature of the blockchain, offering a unique method of inscribing audio directly onto the blockchain. The innovative approach taken by Audionals.com might very well disrupt the traditional music industry and usher in a new era of audio content creation, distribution, and ownership.</p><br>
+        <p>The fundamental technology that drives Audionals.com is the inscription of audio data to the blockchain in the form of Base64 embedded JSON files. Audio files uploaded to the platform are encoded into a format known as Base64, which transforms the binary data into a string of ASCII characters. This audio data is then embedded within a JSON (JavaScript Object Notation) file, a lightweight data-interchange format that is easy for humans to read and write and easy for machines to parse and generate.</p><br>
+        <p>The strength of this approach is two-fold. First, the use of JSON format makes the audio data easily indexable and sortable. Metadata such as the audio type, the instrument used, genre, key, BPM, and user-defined parameters can be added to the JSON file, which facilitates searching, categorisation, and manipulation of the audio files on the platform. It essentially creates a database of audio files that are easily searchable and sortable, making it user-friendly and efficient.</p><br>
+        <p>Second, the inscribing of audio data directly onto the blockchain has profound implications for ownership, copyright, and authenticity. Once a piece of audio is inscribed onto the blockchain, it is permanent and immutable. It cannot be altered or deleted, and the ownership is transparent. This technology could revolutionise the way music copyrights are handled, providing an indisputable record of original content.</p><br>
+        <p>Furthermore, all audionals can be subjected to recursive techniques, pulling together these Base64 encoded samples to form new sequences, enabling users to compose and save music directly on-chain. This provides musicians with a new way of creating and storing their work, eliminating the need for external storage devices or services. By leveraging audional technology and the immutable nature of the blockchain, musicians can establish verifiable ownership and track their samples and compositions with ease. The transparency and traceability offered by audional technology enable accurate royalty distribution and tracking, revolutionising the way musicians receive recognition and income for their work.</p><br>
+        <p>In essence, Audionals.com represents a novel application of blockchain technology in the realm of audio and music. Its unique approach to audio inscription, coupled with the innovative on-chain composition feature, is poised to disrupt the traditional music industry and empower artists in unprecedented ways. In a world where digital technology continues to reshape the way we create, distribute, and consume music, Audionals.com offers a glimpse into a future where music and blockchain become inextricably linked.</p>
     </div>
+    
+    <div class="info-content" id="info-content-json" style="display: none;">
+        <p>The Audionals protocol is a groundbreaking base64 audio-embedded JSON standard that is poised to revolutionise the indexing and standardisation of audio files inscribed as text strings on the Bitcoin blockchain. This cutting-edge standard brings forth a multitude of benefits and both current and future users will benefit from these capabilities.</p><br>
+        <p>The Audionals protocol introduces a comprehensive JSON structure that captures every essential detail of an audio file. From metadata and technical information to contextual insights, preservation history, administrative data, and even user-defined fields, this format provides a unified solution for organising and accessing on-chain audio assets.</p><br>
+        <p>What truly sets this format apart is the integration of base64 audio encoding within the JSON object itself. This eliminates the need for separate audio files, streamlining the management and sharing process. The simplicity and efficiency brought by this consolidation are remarkable, saving valuable time and effort in handling audio data that is presented in human readble form.</p><br>
+        <p>Let's consider some of the other remarkable benefits that this format offers. Firstly, Audionals establishes a new benchmark for audio file indexing. Gone are the days of arduous searches and confusion amidst mountains of data. With this protocol, organising, categorising, and retrieving audio files becomes an effortless endeavour. It empowers users with an intuitive system that ensures seamless, perpetual access to immutable audio resources.</p><br>
+        <p>However, the advantages extend even further. By embracing UTF-8 encoding, Audionals creates a global resource library that transcends language barriers and opens up extraordinary possibilities for preserving our linguistic heritage. This immutable audio record acts as a valuable seed bank, safeguarding endangered languages, phonetics, and dialects for all of humanity and future generations. It becomes an inclusive repository of audio wonders, allowing individuals from every corner of the globe to access and learn from these rich linguistic treasures. This extraordinary resource not only fosters collaboration, inspiration, and cultural exchange but also serves as a catalyst for preserving and revitalizing nearly extinct languages. With Audionals, the world is empowered to celebrate and protect our diverse linguistic tapestry, enabling a future where creativity, understanding, and appreciation for linguistic heritage flourish.</p><br>
+        <p>Additionally, the Audionals protocol enhances compatibility across diverse platforms, software, and devices. Regardless of the location or tools used, this format guarantees a consistent, hassle-free experience. It ensures that inscribed audio files can seamlessly integrate into various inscribed applications, allowing users to harness their audio resources effortlessly, working entirely on-chain.</p><br>
+        <p>The base64 audio-embedded JSON format for Audionals represents a significant leap towards the future of audio organisation. By simplifying file management, providing easy access to audio resources, and fostering a global community of creativity and collaboration, this format ushers in a new era in audio standardisation. Embrace the possibilities offered by Audionals and embark on a journey where the potential for audio expression knows no bounds.</p>
 
-    <div class="info-content" id="info-content-json" style="display: none">
-      <p>
-        The Audionals protocol is a groundbreaking base64 audio-embedded JSON
-        standard that is poised to revolutionise the indexing and
-        standardisation of audio files inscribed as text strings on the Bitcoin
-        blockchain. This cutting-edge standard brings forth a multitude of
-        benefits and both current and future users will benefit from these
-        capabilities.
-      </p>
-      <br />
-      <p>
-        The Audionals protocol introduces a comprehensive JSON structure that
-        captures every essential detail of an audio file. From metadata and
-        technical information to contextual insights, preservation history,
-        administrative data, and even user-defined fields, this format provides
-        a unified solution for organising and accessing on-chain audio assets.
-      </p>
-      <br />
-      <p>
-        What truly sets this format apart is the integration of base64 audio
-        encoding within the JSON object itself. This eliminates the need for
-        separate audio files, streamlining the management and sharing process.
-        The simplicity and efficiency brought by this consolidation are
-        remarkable, saving valuable time and effort in handling audio data that
-        is presented in human readble form.
-      </p>
-      <br />
-      <p>
-        Let's consider some of the other remarkable benefits that this format
-        offers. Firstly, Audionals establishes a new benchmark for audio file
-        indexing. Gone are the days of arduous searches and confusion amidst
-        mountains of data. With this protocol, organising, categorising, and
-        retrieving audio files becomes an effortless endeavour. It empowers
-        users with an intuitive system that ensures seamless, perpetual access
-        to immutable audio resources.
-      </p>
-      <br />
-      <p>
-        However, the advantages extend even further. By embracing UTF-8
-        encoding, Audionals creates a global resource library that transcends
-        language barriers and opens up extraordinary possibilities for
-        preserving our linguistic heritage. This immutable audio record acts as
-        a valuable seed bank, safeguarding endangered languages, phonetics, and
-        dialects for all of humanity and future generations. It becomes an
-        inclusive repository of audio wonders, allowing individuals from every
-        corner of the globe to access and learn from these rich linguistic
-        treasures. This extraordinary resource not only fosters collaboration,
-        inspiration, and cultural exchange but also serves as a catalyst for
-        preserving and revitalizing nearly extinct languages. With Audionals,
-        the world is empowered to celebrate and protect our diverse linguistic
-        tapestry, enabling a future where creativity, understanding, and
-        appreciation for linguistic heritage flourish.
-      </p>
-      <br />
-      <p>
-        Additionally, the Audionals protocol enhances compatibility across
-        diverse platforms, software, and devices. Regardless of the location or
-        tools used, this format guarantees a consistent, hassle-free experience.
-        It ensures that inscribed audio files can seamlessly integrate into
-        various inscribed applications, allowing users to harness their audio
-        resources effortlessly, working entirely on-chain.
-      </p>
-      <br />
-      <p>
-        The base64 audio-embedded JSON format for Audionals represents a
-        significant leap towards the future of audio organisation. By
-        simplifying file management, providing easy access to audio resources,
-        and fostering a global community of creativity and collaboration, this
-        format ushers in a new era in audio standardisation. Embrace the
-        possibilities offered by Audionals and embark on a journey where the
-        potential for audio expression knows no bounds.
-      </p>
     </div>
     <h1>Bitcoin Audional Generator (coming soon)</h1>
     <main id="app" role="main">
-      <fieldset class="form-group">
-        <legend>Select an MP3 or WAV file:</legend>
-        <div class="input-wrapper">
-          <input
-            id="file"
-            type="file"
-            class="input-width flashing"
-            accept=".mp3, .wav"
-          />
-        </div>
-      </fieldset>
 
-      <button id="process" disabled>Process Audio File</button>
-
-      <section class="row">
-        <article class="column">
-          <fieldset class="form-group">
-            <legend>File Details:</legend>
-
+        <fieldset class="form-group">
+            <legend>Select an MP3 or WAV file:</legend>
             <div class="input-wrapper">
-              <label for="fileName">File Name:</label>
-              <input
-                type="text"
-                id="fileName"
-                readonly
-                placeholder="E.G. Snare1.wav"
-              />
+                <input id="file" type="file" class="input-width flashing" accept=".mp3, .wav">
             </div>
+        </fieldset>
 
+        <button id="process" disabled>Process Audio File</button>
+
+        <section class="row">
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>File Details:</legend>
+
+                    <div class="input-wrapper">
+                        <label for="fileName">File Name:</label>
+                        <input type="text" id="fileName" readonly placeholder="E.G. Snare1.wav">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="audio_type">Audio Type:</label>
+                        <input id="audio_type" type="text" list="audio_types" placeholder="E.G. music">
+                        <datalist id="audio_types">
+                            <option value="music">
+                            <option value="speech">
+                            <option value="nature">
+                            <option value="sfx">
+                            <option value="other">
+                        </datalist>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="duration">Duration (seconds):</label>
+                        <input type="text" id="duration" readonly placeholder="E.G. 0.300">
+                    </div>
+                </fieldset>
+            </article>
+
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>Music Sample Metadata:</legend>
+
+                    <div class="input-wrapper">
+                        <label for="instrument">Instrument Group:</label>
+                        <input type="text" id="instrument" placeholder="E.G. Drums">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="instrument_specifics">Instrument Specifics:</label>
+                        <input type="text" id="instrument_specifics" placeholder="E.G Snare">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="note">Note (select from list):</label>
+                        <input type="text" id="note" list="note_options" placeholder="E.G. G1">
+                        <datalist id="note_options">
+                        <option value="C0">
+                        <option value="C#0">
+                        <option value="D0">
+                        <option value="D#0">
+                        <option value="E0">
+                        <option value="F0">
+                        <option value="F#0">
+                        <option value="G0">
+                        <option value="G#0">
+                        <option value="A0">
+                        <option value="A#0">
+                        <option value="B0">
+                    
+                        <option value="C1">
+                        <option value="C#1">
+                        <option value="D1">
+                        <option value="D#1">
+                        <option value="E1">
+                        <option value="F1">
+                        <option value="F#1">
+                        <option value="G1">
+                        <option value="G#1">
+                        <option value="A1">
+                        <option value="A#1">
+                        <option value="B1">
+                    
+                        <option value="C2">
+                        <option value="C#2">
+                        <option value="D2">
+                        <option value="D#2">
+                        <option value="E2">
+                        <option value="F2">
+                        <option value="F#2">
+                        <option value="G2">
+                        <option value="G#2">
+                        <option value="A2">
+                        <option value="A#2">
+                        <option value="B2">
+                    
+                        <option value="C3">
+                        <option value="C#3">
+                        <option value="D3">
+                        <option value="D#3">
+                        <option value="E3">
+                        <option value="F3">
+                        <option value="F#3">
+                        <option value="G3">
+                        <option value="G#3">
+                        <option value="A3">
+                        <option value="A#3">
+                        <option value="B3">
+                    
+                        <option value="C4">
+                        <option value="C#4">
+                        <option value="D4">
+                        <option value="D#4">
+                        <option value="E4">
+                        <option value="F4">
+                        <option value="F#4">
+                        <option value="G4">
+                        <option value="G#4">
+                        <option value="A4">
+                        <option value="A#4">
+                        <option value="B4">
+                    
+                        <option value="C5">
+                        <option value="C#5">
+                        <option value="D5">
+                        <option value="D#5">
+                        <option value="E5">
+                        <option value="F5">
+                        <option value="F#5">
+                        <option value="G5">
+                        <option value="G#5">
+                        <option value="A5">
+                        <option value="A#5">
+                        <option value="B5">
+                    
+                        <option value="C6">
+                        <option value="C#6">
+                        <option value="D6">
+                        <option value="D#6">
+                        <option value="E6">
+                        <option value="F6">
+                        <option value="F#6">
+                        <option value="G6">
+                        <option value="G#6">
+                        <option value="A6">
+                        <option value="A#6">
+                        <option value="B6">
+                    
+                        <option value="C7">
+                        <option value="C#7">
+                        <option value="D7">
+                        <option value="D#7">
+                        <option value="E7">
+                        <option value="F7">
+                        <option value="F#7">
+                        <option value="G7">
+                        <option value="G#7">
+                        <option value="A7">
+                        <option value="A#7">
+                        <option value="B7">
+                    
+                        <option value="C8">
+                        <option value="C#8">
+                        <option value="D8">
+                        <option value="D#8">
+                        <option value="E8">
+                        <option value="F8">
+                        <option value="F#8">
+                        <option value="G8">
+                        <option value="G#8">
+                        <option value="A8">
+                        <option value="A#8">
+                        <option value="B8">
+                    </datalist>
+                </div>
+                                
+                    <div class="input-wrapper">
+                        <label for="key">Key (select from list):</label>
+                        <input type="text" id="key" list="key_options" placeholder="E.G. G Major">
+                        <datalist id="key_options">
+                        <option value="C Major">
+                        <option value="C# Major">
+                        <option value="D Major">
+                        <option value="D# Major">
+                        <option value="E Major">
+                        <option value="F Major">
+                        <option value="F# Major">
+                        <option value="G Major">
+                        <option value="G# Major">
+                        <option value="A Major">
+                        <option value="A# Major">
+                        <option value="B Major">
+                        <option value="C Minor">
+                        <option value="C# Minor">
+                        <option value="D Minor">
+                        <option value="D# Minor">
+                        <option value="E Minor">
+                        <option value="F Minor">
+                        <option value="F# Minor">
+                        <option value="G Minor">
+                        <option value="G# Minor">
+                        <option value="A Minor">
+                        <option value="A# Minor">
+                        <option value="B Minor">
+                    </datalist>
+                    </div>
+                </fieldset>
+            </article>
+
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>Additional Details:</legend>
+
+                    <div class="input-wrapper">
+                        <label for="genre">Genre:</label>
+                        <input type="text" id="genre" placeholder="E.G. Jazz">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="isLoop">Is this sample a loop?</label>
+                        <input id="isLoop" type="text" list="loop_options" placeholder="Yes or No" class="form-control last-input">
+                        <datalist id="loop_options">
+                            <option value="Yes">
+                            <option value="No">
+                        </datalist>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="bpm" style="height: 25px;">BPM (e.g. 125):</label>
+                        <input type="number" id="bpm" min="0" max="999" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="E.G. 120" class="form-control last-input">
+                    </div>
+                </fieldset>
+            </article>
+        </section>
+
+        <fieldset class="form-group">
+            <legend>User Defined (e.g. additional details not included any of the fields above)</legend>
             <div class="input-wrapper">
-              <label for="audio_type">Audio Type:</label>
-              <input
-                id="audio_type"
-                type="text"
-                list="audio_types"
-                placeholder="E.G. music"
-              />
-              <datalist id="audio_types">
-                <option value="music"></option>
-                <option value="speech"></option>
-                <option value="nature"></option>
-                <option value="sfx"></option>
-                <option value="other"></option>
-              </datalist>
+                <textarea id="user-defined" class="input-width" placeholder="E.G. Synth loop from Entertainment by Melophonic"></textarea>
             </div>
+        </fieldset>
 
-            <div class="input-wrapper">
-              <label for="duration">Duration (seconds):</label>
-              <input
-                type="text"
-                id="duration"
-                readonly
-                placeholder="E.G. 0.300"
-              />
-            </div>
-          </fieldset>
-        </article>
-
-        <article class="column">
-          <fieldset class="form-group">
-            <legend>Music Sample Metadata:</legend>
-
-            <div class="input-wrapper">
-              <label for="instrument">Instrument Group:</label>
-              <input type="text" id="instrument" placeholder="E.G. Drums" />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="instrument_specifics">Instrument Specifics:</label>
-              <input
-                type="text"
-                id="instrument_specifics"
-                placeholder="E.G Snare"
-              />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="note">Note (select from list):</label>
-              <input
-                type="text"
-                id="note"
-                list="note_options"
-                placeholder="E.G. G1"
-              />
-              <datalist id="note_options">
-                <option value="C0"></option>
-                <option value="C#0"></option>
-                <option value="D0"></option>
-                <option value="D#0"></option>
-                <option value="E0"></option>
-                <option value="F0"></option>
-                <option value="F#0"></option>
-                <option value="G0"></option>
-                <option value="G#0"></option>
-                <option value="A0"></option>
-                <option value="A#0"></option>
-                <option value="B0"></option>
-
-                <option value="C1"></option>
-                <option value="C#1"></option>
-                <option value="D1"></option>
-                <option value="D#1"></option>
-                <option value="E1"></option>
-                <option value="F1"></option>
-                <option value="F#1"></option>
-                <option value="G1"></option>
-                <option value="G#1"></option>
-                <option value="A1"></option>
-                <option value="A#1"></option>
-                <option value="B1"></option>
-
-                <option value="C2"></option>
-                <option value="C#2"></option>
-                <option value="D2"></option>
-                <option value="D#2"></option>
-                <option value="E2"></option>
-                <option value="F2"></option>
-                <option value="F#2"></option>
-                <option value="G2"></option>
-                <option value="G#2"></option>
-                <option value="A2"></option>
-                <option value="A#2"></option>
-                <option value="B2"></option>
-
-                <option value="C3"></option>
-                <option value="C#3"></option>
-                <option value="D3"></option>
-                <option value="D#3"></option>
-                <option value="E3"></option>
-                <option value="F3"></option>
-                <option value="F#3"></option>
-                <option value="G3"></option>
-                <option value="G#3"></option>
-                <option value="A3"></option>
-                <option value="A#3"></option>
-                <option value="B3"></option>
-
-                <option value="C4"></option>
-                <option value="C#4"></option>
-                <option value="D4"></option>
-                <option value="D#4"></option>
-                <option value="E4"></option>
-                <option value="F4"></option>
-                <option value="F#4"></option>
-                <option value="G4"></option>
-                <option value="G#4"></option>
-                <option value="A4"></option>
-                <option value="A#4"></option>
-                <option value="B4"></option>
-
-                <option value="C5"></option>
-                <option value="C#5"></option>
-                <option value="D5"></option>
-                <option value="D#5"></option>
-                <option value="E5"></option>
-                <option value="F5"></option>
-                <option value="F#5"></option>
-                <option value="G5"></option>
-                <option value="G#5"></option>
-                <option value="A5"></option>
-                <option value="A#5"></option>
-                <option value="B5"></option>
-
-                <option value="C6"></option>
-                <option value="C#6"></option>
-                <option value="D6"></option>
-                <option value="D#6"></option>
-                <option value="E6"></option>
-                <option value="F6"></option>
-                <option value="F#6"></option>
-                <option value="G6"></option>
-                <option value="G#6"></option>
-                <option value="A6"></option>
-                <option value="A#6"></option>
-                <option value="B6"></option>
-
-                <option value="C7"></option>
-                <option value="C#7"></option>
-                <option value="D7"></option>
-                <option value="D#7"></option>
-                <option value="E7"></option>
-                <option value="F7"></option>
-                <option value="F#7"></option>
-                <option value="G7"></option>
-                <option value="G#7"></option>
-                <option value="A7"></option>
-                <option value="A#7"></option>
-                <option value="B7"></option>
-
-                <option value="C8"></option>
-                <option value="C#8"></option>
-                <option value="D8"></option>
-                <option value="D#8"></option>
-                <option value="E8"></option>
-                <option value="F8"></option>
-                <option value="F#8"></option>
-                <option value="G8"></option>
-                <option value="G#8"></option>
-                <option value="A8"></option>
-                <option value="A#8"></option>
-                <option value="B8"></option>
-              </datalist>
-            </div>
-
-            <div class="input-wrapper">
-              <label for="key">Key (select from list):</label>
-              <input
-                type="text"
-                id="key"
-                list="key_options"
-                placeholder="E.G. G Major"
-              />
-              <datalist id="key_options">
-                <option value="C Major"></option>
-                <option value="C# Major"></option>
-                <option value="D Major"></option>
-                <option value="D# Major"></option>
-                <option value="E Major"></option>
-                <option value="F Major"></option>
-                <option value="F# Major"></option>
-                <option value="G Major"></option>
-                <option value="G# Major"></option>
-                <option value="A Major"></option>
-                <option value="A# Major"></option>
-                <option value="B Major"></option>
-                <option value="C Minor"></option>
-                <option value="C# Minor"></option>
-                <option value="D Minor"></option>
-                <option value="D# Minor"></option>
-                <option value="E Minor"></option>
-                <option value="F Minor"></option>
-                <option value="F# Minor"></option>
-                <option value="G Minor"></option>
-                <option value="G# Minor"></option>
-                <option value="A Minor"></option>
-                <option value="A# Minor"></option>
-                <option value="B Minor"></option>
-              </datalist>
-            </div>
-          </fieldset>
-        </article>
-
-        <article class="column">
-          <fieldset class="form-group">
-            <legend>Additional Details:</legend>
-
-            <div class="input-wrapper">
-              <label for="genre">Genre:</label>
-              <input type="text" id="genre" placeholder="E.G. Jazz" />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="isLoop">Is this sample a loop?</label>
-              <input
-                id="isLoop"
-                type="text"
-                list="loop_options"
-                placeholder="Yes or No"
-                class="form-control last-input"
-              />
-              <datalist id="loop_options">
-                <option value="Yes"></option>
-                <option value="No"></option>
-              </datalist>
-            </div>
-
-            <div class="input-wrapper">
-              <label for="bpm" style="height: 25px">BPM (e.g. 125):</label>
-              <input
-                type="number"
-                id="bpm"
-                min="0"
-                max="999"
-                inputmode="numeric"
-                pattern="[0-9]{1,3}"
-                placeholder="E.G. 120"
-                class="form-control last-input"
-              />
-            </div>
-          </fieldset>
-        </article>
-      </section>
-
-      <fieldset class="form-group">
-        <legend>
-          User Defined (e.g. additional details not included any of the fields
-          above)
-        </legend>
-        <div class="input-wrapper">
-          <textarea
-            id="user-defined"
-            class="input-width"
-            placeholder="E.G. Synth loop from Entertainment by Melophonic"
-          ></textarea>
-        </div>
-      </fieldset>
-
-      <p id="reminder" style="color: grey; font-weight: bold">
-        Have you filled as many of the fields above as you can? More detail
-        equals better indexing which equals more users finding your samples!
-      </p>
-      <br />
-      <div>
+        <p id="reminder" style="color: grey; font-weight: bold;">Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!</p>
+        <br>
+        <div>
         <button id="convert" disabled>Generate Audional JSON File</button>
         <button id="inscribeButton" disabled>Inscribe Audional</button>
         <output id="json-output"></output>
-      </div>
+        </div>
+
     </main>
 
     <script>
-      var inscribeButton = document.getElementById("inscribeButton");
-      var audionalJson;
-      const BASE_URL = "";
-      let apiKey;
-      let feeRates = {};
-      let calculatedFee = {};
-      let inscriptionPreviewData = {};
-      let audionalJsonString;
+        var inscribeButton = document.getElementById('inscribeButton');
+        var audionalJson;
+         const BASE_URL = "";
+            let apiKey;
+            let feeRates = {};
+            let calculatedFee = {};
+            let inscriptionPreviewData = {};
+            let audionalJsonString;
 
-      // Fetch API key initially
-      getApiKey();
+            // Fetch API key initially
+            getApiKey();
 
-      // Assume audionalJson exists and convert it to a string
-      if (window.audionalJson) {
-        audionalJsonString = JSON.stringify(window.audionalJson, null, 2);
+            // Assume audionalJson exists and convert it to a string
+            if (window.audionalJson) {
+            audionalJsonString = JSON.stringify(window.audionalJson, null, 2);
+            }
+
+            window.onload = function() {
+            // Call API functions immediately on page load
+            if (audionalJsonString) {
+                calculateInscriptionRequestFee(audionalJsonString);
+                getInscriptionPreview(audionalJsonString, "audional.json");  // replace "audional.json" with actual filename if necessary
+            }
+            };
+        
+        // Disable typing in the audio type input
+        var audioTypeInput = document.getElementById('audio_type');
+        audioTypeInput.addEventListener('keydown', function(e) {
+            e.preventDefault();
+        });
+
+        function tryAudionalSequencer() {
+          var sequencerContainer = document.getElementById('sequencer-container');
+          
+          // Check if the iframe already exists
+          var existingIframe = document.getElementById('sequencer-iframe');
+          if (existingIframe) {
+              // If it exists, simply toggle its visibility
+              if (existingIframe.style.display === 'none') {
+                  existingIframe.style.display = 'block';
+              } else {
+                  existingIframe.style.display = 'none';
+              }
+          } else {
+              // If it doesn't exist, create it
+              var sequencerIframe = document.createElement('iframe');
+              sequencerIframe.id = 'sequencer-iframe';
+              sequencerIframe.src = 'audional-sequencer.html';
+              sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+              
+              // Set the height of the iframe as desired (e.g., 600px)
+              sequencerIframe.style.height = '700px';
+              
+              // Add the iframe to the container
+              sequencerContainer.appendChild(sequencerIframe);
+          }
       }
 
-      window.onload = function () {
-        // Call API functions immediately on page load
-        if (audionalJsonString) {
-          calculateInscriptionRequestFee(audionalJsonString);
-          getInscriptionPreview(audionalJsonString, "audional.json"); // replace "audional.json" with actual filename if necessary
-        }
-      };
 
-      // Disable typing in the audio type input
-      var audioTypeInput = document.getElementById("audio_type");
-      audioTypeInput.addEventListener("keydown", function (e) {
-        e.preventDefault();
-      });
+       
 
-      // Store elements to avoid repeated DOM queries
-      const fileInput = document.getElementById("file");
-      const processButton = document.getElementById("process");
-      const convertButton = document.getElementById("convert");
-      const reminder = document.getElementById("reminder");
+        // Store elements to avoid repeated DOM queries
+        const fileInput = document.getElementById('file');
+        const processButton = document.getElementById('process');
+        const convertButton = document.getElementById('convert');
+        const reminder = document.getElementById('reminder');
 
-      // Error container for user-friendly error messages
-      const errorContainer = document.createElement("div");
-      errorContainer.id = "error-container";
-      document.body.appendChild(errorContainer);
+        // Error container for user-friendly error messages
+        const errorContainer = document.createElement('div');
+        errorContainer.id = 'error-container';
+        document.body.appendChild(errorContainer);
 
-      // Main code
-      var audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)();
+        // Main code
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-      // Make the fileInput button flash when the page loads
-      fileInput.classList.add("flashing");
+        // Make the fileInput button flash when the page loads
+        fileInput.classList.add('flashing');
 
-      fileInput.addEventListener("change", function () {
-        var file = fileInput.files[0];
-        if (file) {
-          var fileType = file.name.split(".").pop();
-          if (fileType !== "mp3" && fileType !== "wav") {
-            errorContainer.innerHTML =
-              "Invalid file type. Please select a .mp3 or .wav file.";
-            fileInput.value = ""; // Clear the input.
-            return;
-          }
-        }
-        // Remove the flashing class from the file input field
-        fileInput.classList.remove("flashing");
-        fileInput.style.backgroundColor = "green";
-      });
+        fileInput.addEventListener('change', function() {
+            var file = fileInput.files[0];
+            if (file) {
+                var fileType = file.name.split('.').pop();
+                if (fileType !== 'mp3' && fileType !== 'wav') {
+                    errorContainer.innerHTML = 'Invalid file type. Please select a .mp3 or .wav file.';
+                    fileInput.value = '';  // Clear the input.
+                    return;
+                }
+            }
+    // Remove the flashing class from the file input field
+    fileInput.classList.remove('flashing');
+    fileInput.style.backgroundColor = 'green';
 
-      processButton.addEventListener("click", function () {
-        document.getElementById("reminder").style.color = "red";
+  
+});
 
-        if (!audioTypeInput.value) {
-          document.getElementById("reminder").innerText =
-            "Please select the Audio Type and fill any other relevant fields before creating your Audional file!";
-          convertButton.disabled = true;
-        } else {
-          document.getElementById("reminder").innerText =
-            "Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!";
-          convertButton.disabled = false;
-          convertButton.classList.add("flashing");
-        }
+processButton.addEventListener('click', function() {
+    document.getElementById('reminder').style.color = 'red';
 
-        // Handle button flashing
-        convertButton.addEventListener("animationiteration", function () {
-          convertButton.style.backgroundColor =
-            convertButton.style.backgroundColor === "red" ? "" : "red";
-        });
+    if (!audioTypeInput.value) {
+        document.getElementById('reminder').innerText = 'Please select the Audio Type and fill any other relevant fields before creating your Audional file!';
+        convertButton.disabled = true;
+    } else {
+        document.getElementById('reminder').innerText = 'Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!';
+        convertButton.disabled = false;
+        convertButton.classList.add('flashing');
+    }
 
-        audioTypeInput.addEventListener("input", function () {
-          if (audioTypeInput.value) {
-            document.getElementById("reminder").innerText =
-              "Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!";
-            convertButton.disabled = false;
-            convertButton.classList.add("flashing");
-          }
-        });
+    // Handle button flashing
+    convertButton.addEventListener('animationiteration', function() {
+        convertButton.style.backgroundColor = convertButton.style.backgroundColor === 'red' ? '' : 'red';
+    });
 
-        var file = fileInput.files[0];
-        if (!file) {
-          alert("Please select a file.");
-          return;
-        }
+audioTypeInput.addEventListener('input', function() {
+    if (audioTypeInput.value) {
+        document.getElementById('reminder').innerText = 'Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!';
+        convertButton.disabled = false;
+        convertButton.classList.add('flashing');
+    }
+});
 
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          var audioData = e.target.result;
+    var file = fileInput.files[0];
+    if (!file) {
+        alert('Please select a file.');
+        return;
+    }
 
-          audioContext.decodeAudioData(audioData, function (buffer) {
-            var duration = buffer.duration;
+  
+    var reader = new FileReader();
+reader.onload = function(e) {
+    var audioData = e.target.result;
 
-            fileInput.sampleRate = buffer.sampleRate;
-            fileInput.numberOfChannels = buffer.numberOfChannels;
+    audioContext.decodeAudioData(audioData, function(buffer) {
+        var duration = buffer.duration;
 
-            document.getElementById("duration").value = duration.toFixed(3);
-            document.getElementById("fileName").value = file.name;
+        fileInput.sampleRate = buffer.sampleRate;
+        fileInput.numberOfChannels = buffer.numberOfChannels;
 
-            processButton.classList.remove("flashing");
-            processButton.style.backgroundColor = "green";
-            processButton.innerText = "File Processed";
-            convertButton.disabled = false;
-            convertButton.classList.add("flashing");
+        document.getElementById('duration').value = duration.toFixed(3);
+        document.getElementById('fileName').value = file.name;
 
-            document.getElementById("fileName").readOnly = true;
-            document.getElementById("duration").readOnly = true;
+        processButton.classList.remove('flashing');
+        processButton.style.backgroundColor = 'green';
+        processButton.innerText = 'File Processed';
+        convertButton.disabled = false;
+        convertButton.classList.add('flashing');
 
-            document.getElementById("reminder").style.color = "red";
-          });
-        };
-        reader.onerror = function () {
-          alert("Error reading file");
-        };
-        reader.readAsArrayBuffer(file);
-      });
+        document.getElementById('fileName').readOnly = true;
+        document.getElementById('duration').readOnly = true;
+
+        document.getElementById('reminder').style.color = 'red'; 
+    });
+};
+reader.onerror = function() {
+    alert('Error reading file');
+};
+reader.readAsArrayBuffer(file);
+});
+
+
+
     </script>
   </body>
 </html>
