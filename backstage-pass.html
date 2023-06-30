@@ -2,170 +2,18 @@
 <html lang="en">
   <head>
     <title>Bitcoin Audional Generator</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        background-color: #202020;
-        color: white;
-        font-family: "ShareTechMono-Regular", Arial, sans-serif;
-        width: 100vw;
-        overflow-x: hidden;
-      }
-      .header {
-        align-items: center;
-        background-color: black;
-        display: flex;
-        height: 100px;
-        justify-content: space-between;
-        width: 100vw;
-      }
-      .header img {
-        height: 100%;
-      }
-      .header h1 {
-        color: white;
-        flex-grow: 2;
-        font-size: 6em;
-        text-align: center;
-      }
-      .row {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0 -5px;
-      }
-      .column {
-        flex: 33.33%;
-        padding: 5px 5px;
-      }
-      .form-group {
-        margin-bottom: 10px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-      }
-      input[type="text"],
-      textarea,
-      datalist,
-      input[type="checkbox"],
-      input[type="file"],
-      input[type="number"] {
-        box-sizing: border-box;
-        height: 25px;
-        padding: 0;
-        width: 100%;
-      }
-      .input-wrapper {
-        padding: 10px;
-      }
-
-      .form-group input[type="text"],
-      .form-group textarea,
-      .form-group datalist,
-      .form-group input[type="file"],
-      .form-group input[type="number"] {
-        width: 100%;
-      }
-      .button-container {
-        display: flex;
-        justify-content: center;
-      }
-
-      button {
-        background-color: #0066ff;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 10px 20px;
-      }
-      button:disabled {
-        background-color: #555;
-      }
-      .flashing {
-        animation: flash 2s linear infinite;
-        background-color: red;
-      }
-      @keyframes flash {
-        0% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.1;
-        }
-        100% {
-          opacity: 1;
-        }
-      }
-      #json-output {
-        margin-top: 20px;
-        word-wrap: break-word;
-      }
-      .info-button {
-        /* Set the button color to green */
-        background-color: red;
-      }
-
-      .more-info-button {
-        /* Set the button color to blue */
-        background-color: blue;
-      }
-      .info-button,
-      .more-info-button {
-        /* Center the button horizontally */
-        display: block;
-        margin: 0 10px;
-        text-align: center;
-
-        /* Additional button styles */
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 10px 20px;
-      }
-      .info-content {
-        display: none;
-        margin-top: 20px;
-        padding: 20px;
-        background-color: #333333;
-        color: white;
-      }
-    </style>
+    <!-- include styles.css -->
+    <link rel="stylesheet" href="styles.css" />
     <script>
-      function toggleInfo(buttonId) {
-        var audionalsButton = document.getElementById("audionals-button");
-        var jsonButton = document.getElementById("json-button");
-
-        var audionalsContent = document.getElementById(
-          "info-content-audionals"
-        );
-        var jsonContent = document.getElementById("info-content-json");
-
-        if (buttonId === "audionals") {
-          var isAudionalsActive = audionalsButton.classList.contains("active");
-          if (isAudionalsActive) {
-            audionalsButton.classList.remove("active");
-            audionalsContent.style.display = "none";
-          } else {
-            audionalsButton.classList.add("active");
-            jsonButton.classList.remove("active");
-            audionalsContent.style.display = "block";
-            jsonContent.style.display = "none";
-          }
+      function toggleInfo() {
+        var infoContent = document.getElementById("info-content");
+        if (
+          infoContent.style.display === "none" ||
+          infoContent.style.display === ""
+        ) {
+          infoContent.style.display = "block";
         } else {
-          var isJsonActive = jsonButton.classList.contains("active");
-          if (isJsonActive) {
-            jsonButton.classList.remove("active");
-            jsonContent.style.display = "none";
-          } else {
-            jsonButton.classList.add("active");
-            audionalsButton.classList.remove("active");
-            audionalsContent.style.display = "none";
-            jsonContent.style.display = "block";
-          }
+          infoContent.style.display = "none";
         }
       }
     </script>
@@ -176,24 +24,11 @@
       <h1>Audionals.com</h1>
       <img src="AudionalsLogo.png" alt="Audionals Logo" />
     </div>
-    <div class="button-container">
-      <button
-        id="audionals-button"
-        class="info-button active"
-        onclick="toggleInfo('audionals')"
-      >
-        What are Audionals?
-      </button>
-      <button
-        id="json-button"
-        class="more-info-button"
-        onclick="toggleInfo('json')"
-      >
-        New JSON standard?
-      </button>
-    </div>
+    <button class="info-button" onclick="toggleInfo()">
+      What are Audionals?
+    </button>
 
-    <div class="info-content" id="info-content-audionals">
+    <div class="info-content" id="info-content">
       <p>
         Audionals are a groundbreaking new standard for inscribing audio files
         on the Bitcoin blockchain, providing a unique tool for musicians, sound
@@ -261,81 +96,7 @@
         inextricably linked.
       </p>
     </div>
-
-    <div class="info-content" id="info-content-json" style="display: none">
-      <p>
-        The Audionals protocol is a groundbreaking base64 audio-embedded JSON
-        standard that is poised to revolutionise the indexing and
-        standardisation of audio files inscribed as text strings on the Bitcoin
-        blockchain. This cutting-edge standard brings forth a multitude of
-        benefits and both current and future users will benefit from these
-        capabilities.
-      </p>
-      <br />
-      <p>
-        The Audionals protocol introduces a comprehensive JSON structure that
-        captures every essential detail of an audio file. From metadata and
-        technical information to contextual insights, preservation history,
-        administrative data, and even user-defined fields, this format provides
-        a unified solution for organising and accessing on-chain audio assets.
-      </p>
-      <br />
-      <p>
-        What truly sets this format apart is the integration of base64 audio
-        encoding within the JSON object itself. This eliminates the need for
-        separate audio files, streamlining the management and sharing process.
-        The simplicity and efficiency brought by this consolidation are
-        remarkable, saving valuable time and effort in handling audio data that
-        is presented in human readble form.
-      </p>
-      <br />
-      <p>
-        Let's consider some of the other remarkable benefits that this format
-        offers. Firstly, Audionals establishes a new benchmark for audio file
-        indexing. Gone are the days of arduous searches and confusion amidst
-        mountains of data. With this protocol, organising, categorising, and
-        retrieving audio files becomes an effortless endeavour. It empowers
-        users with an intuitive system that ensures seamless, perpetual access
-        to immutable audio resources.
-      </p>
-      <br />
-      <p>
-        However, the advantages extend even further. By embracing UTF-8
-        encoding, Audionals creates a global resource library that transcends
-        language barriers and opens up extraordinary possibilities for
-        preserving our linguistic heritage. This immutable audio record acts as
-        a valuable seed bank, safeguarding endangered languages, phonetics, and
-        dialects for all of humanity and future generations. It becomes an
-        inclusive repository of audio wonders, allowing individuals from every
-        corner of the globe to access and learn from these rich linguistic
-        treasures. This extraordinary resource not only fosters collaboration,
-        inspiration, and cultural exchange but also serves as a catalyst for
-        preserving and revitalizing nearly extinct languages. With Audionals,
-        the world is empowered to celebrate and protect our diverse linguistic
-        tapestry, enabling a future where creativity, understanding, and
-        appreciation for linguistic heritage flourish.
-      </p>
-      <br />
-      <p>
-        Additionally, the Audionals protocol enhances compatibility across
-        diverse platforms, software, and devices. Regardless of the location or
-        tools used, this format guarantees a consistent, hassle-free experience.
-        It ensures that inscribed audio files can seamlessly integrate into
-        various inscribed applications, allowing users to harness their audio
-        resources effortlessly, working entirely on-chain.
-      </p>
-      <br />
-      <p>
-        The base64 audio-embedded JSON format for Audionals represents a
-        significant leap towards the future of audio organisation. By
-        simplifying file management, providing easy access to audio resources,
-        and fostering a global community of creativity and collaboration, this
-        format ushers in a new era in audio standardisation. Embrace the
-        possibilities offered by Audionals and embark on a journey where the
-        potential for audio expression knows no bounds.
-      </p>
-    </div>
-    <h1>Bitcoin Audional Generator (coming soon)</h1>
+    <h1>Bitcoin Audional Generator</h1>
     <main id="app" role="main">
       <fieldset class="form-group">
         <legend>Select an MP3 or WAV file:</legend>
@@ -635,148 +396,92 @@
       </fieldset>
 
       <p id="reminder" style="color: grey; font-weight: bold">
-        Have you filled as many of the fields above as you can? More detail
-        equals better indexing which equals more users finding your samples!
+        Have you filled as many of the fields above as you can?<br />More detail
+        means better indexing which means more users can find your samples!<br />If
+        yes, go ahead and:
       </p>
-      <br />
-      <div>
-        <button id="convert" disabled>Generate Audional JSON File</button>
-        <button id="inscribeButton" disabled>Inscribe Audional</button>
-        <output id="json-output"></output>
+
+      <button id="convert" disabled>Generate Audional JSON</button>
+      <button id="startInscriptionProcess" style="display: none" disabled>
+        Start Inscription
+      </button>
+
+      <div class="button-wrapper">
+        <button id="doInscribe">INSCRIBE</button>
+      </div>
+
+      <output id="json-output"></output>
+      <!-- create a read only textarea called audional-json -->
+      <textarea id="audional-json" readonly style="display: none"></textarea>
+      <div id="inscriptionPreviewContainer" style="display: none">
+        <article class="column">
+          <fieldset class="form-group">
+            <legend>
+              Check the Inscription Price and Enter your Ordinals Receiving
+              Address below.
+            </legend>
+
+            <div class="input-wrapper">
+              <label for="estimatedFees">Estimated Inscription Price:</label>
+              <input
+                id="estimatedFees"
+                readonly
+                style="background-color: red"
+              />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="ordinalRecipientAddress">Recipient Address:</label>
+              <input
+                id="ordinalRecipientAddress"
+                style="background-color: green"
+              />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="networkFeeRate">Network Fee Rate:</label>
+              <input
+                id="networkFeeRate"
+                readonly
+                style="background-color: red"
+              />
+            </div>
+          </fieldset>
+        </article>
+
+        <article class="column">
+          <fieldset
+            class="form-group"
+            id="inscriptionInvoiceContainer"
+            style="display: none"
+          >
+            <legend>Invoice/QR Code</legend>
+
+            <div class="input-wrapper">
+              <label for="inscriptionRequestId">Inscription Request ID:</label>
+              <input id="inscriptionRequestId" readonly />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="invoiceAddress">Invoice Address:</label>
+              <input id="invoiceAddress" readonly />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="invoiceAmount">Invoice Amount:</label>
+              <input id="invoiceAmount" readonly />
+            </div>
+
+            <div id="qrcode"></div>
+          </fieldset>
+        </article>
       </div>
     </main>
 
-    <script>
-      var inscribeButton = document.getElementById("inscribeButton");
-      var audionalJson;
-      const BASE_URL = "";
-      let apiKey;
-      let feeRates = {};
-      let calculatedFee = {};
-      let inscriptionPreviewData = {};
-      let audionalJsonString;
+    <!-- include main.js -->
+    <script src="main.js"></script>
+    <script src="gammaApi.js"></script>
 
-      // Fetch API key initially
-      getApiKey();
-
-      // Assume audionalJson exists and convert it to a string
-      if (window.audionalJson) {
-        audionalJsonString = JSON.stringify(window.audionalJson, null, 2);
-      }
-
-      window.onload = function () {
-        // Call API functions immediately on page load
-        if (audionalJsonString) {
-          calculateInscriptionRequestFee(audionalJsonString);
-          getInscriptionPreview(audionalJsonString, "audional.json"); // replace "audional.json" with actual filename if necessary
-        }
-      };
-
-      // Disable typing in the audio type input
-      var audioTypeInput = document.getElementById("audio_type");
-      audioTypeInput.addEventListener("keydown", function (e) {
-        e.preventDefault();
-      });
-
-      // Store elements to avoid repeated DOM queries
-      const fileInput = document.getElementById("file");
-      const processButton = document.getElementById("process");
-      const convertButton = document.getElementById("convert");
-      const reminder = document.getElementById("reminder");
-
-      // Error container for user-friendly error messages
-      const errorContainer = document.createElement("div");
-      errorContainer.id = "error-container";
-      document.body.appendChild(errorContainer);
-
-      // Main code
-      var audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)();
-
-      // Make the fileInput button flash when the page loads
-      fileInput.classList.add("flashing");
-
-      fileInput.addEventListener("change", function () {
-        var file = fileInput.files[0];
-        if (file) {
-          var fileType = file.name.split(".").pop();
-          if (fileType !== "mp3" && fileType !== "wav") {
-            errorContainer.innerHTML =
-              "Invalid file type. Please select a .mp3 or .wav file.";
-            fileInput.value = ""; // Clear the input.
-            return;
-          }
-        }
-        // Remove the flashing class from the file input field
-        fileInput.classList.remove("flashing");
-        fileInput.style.backgroundColor = "green";
-      });
-
-      processButton.addEventListener("click", function () {
-        document.getElementById("reminder").style.color = "red";
-
-        if (!audioTypeInput.value) {
-          document.getElementById("reminder").innerText =
-            "Please select the Audio Type and fill any other relevant fields before creating your Audional file!";
-          convertButton.disabled = true;
-        } else {
-          document.getElementById("reminder").innerText =
-            "Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!";
-          convertButton.disabled = false;
-          convertButton.classList.add("flashing");
-        }
-
-        // Handle button flashing
-        convertButton.addEventListener("animationiteration", function () {
-          convertButton.style.backgroundColor =
-            convertButton.style.backgroundColor === "red" ? "" : "red";
-        });
-
-        audioTypeInput.addEventListener("input", function () {
-          if (audioTypeInput.value) {
-            document.getElementById("reminder").innerText =
-              "Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!";
-            convertButton.disabled = false;
-            convertButton.classList.add("flashing");
-          }
-        });
-
-        var file = fileInput.files[0];
-        if (!file) {
-          alert("Please select a file.");
-          return;
-        }
-
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          var audioData = e.target.result;
-
-          audioContext.decodeAudioData(audioData, function (buffer) {
-            var duration = buffer.duration;
-
-            fileInput.sampleRate = buffer.sampleRate;
-            fileInput.numberOfChannels = buffer.numberOfChannels;
-
-            document.getElementById("duration").value = duration.toFixed(3);
-            document.getElementById("fileName").value = file.name;
-
-            processButton.classList.remove("flashing");
-            processButton.style.backgroundColor = "green";
-            processButton.innerText = "File Processed";
-            convertButton.disabled = false;
-            convertButton.classList.add("flashing");
-
-            document.getElementById("fileName").readOnly = true;
-            document.getElementById("duration").readOnly = true;
-
-            document.getElementById("reminder").style.color = "red";
-          });
-        };
-        reader.onerror = function () {
-          alert("Error reading file");
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    </script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   </body>
 </html>
