@@ -405,30 +405,76 @@
       <button id="startInscriptionProcess" style="display: none" disabled>
         Start Inscription
       </button>
+
+      <div class="button-wrapper">
+        <button id="doInscribe">INSCRIBE</button>
+      </div>
+
       <output id="json-output"></output>
       <!-- create a read only textarea called audional-json -->
       <textarea id="audional-json" readonly style="display: none"></textarea>
       <div id="inscriptionPreviewContainer" style="display: none">
-        <h2>Inscription Preview</h2>
-        <div id="inscriptionPreview">
-          Estimated Fees: <input id="estimatedFees" readonly /> SATS Ordinal
-          <br />
-          Recipient Address: <input id="ordinalRecipientAddress" />
-          <br />
-          Network Fee Rate: <input id="networkFeeRate" readonly /> SATS/byte
-          <br />
-          <button id="doInscribe">INSCRIBE</button>
-        </div>
-      </div>
-      <div id="inscriptionInvoiceContainer" style="display: none">
-        <h2>Invoice/QR Code</h2>
-        Inscription Request ID:
-        <input id="inscriptionRequestId" readonly /> <br />
-        Invoice Address:
-        <input id="invoiceAddress" readonly /> <br />
-        Invoice Amount:
-        <input id="invoiceAmount" readonly /> SATS
-        <div id="qrcode"></div>
+        <article class="column">
+          <fieldset class="form-group">
+            <legend>
+              Check the Inscription Price and Enter your Ordinals Receiving
+              Address below.
+            </legend>
+
+            <div class="input-wrapper">
+              <label for="estimatedFees">Estimated Inscription Price:</label>
+              <input
+                id="estimatedFees"
+                readonly
+                style="background-color: red"
+              />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="ordinalRecipientAddress">Recipient Address:</label>
+              <input
+                id="ordinalRecipientAddress"
+                style="background-color: green"
+              />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="networkFeeRate">Network Fee Rate:</label>
+              <input
+                id="networkFeeRate"
+                readonly
+                style="background-color: red"
+              />
+            </div>
+          </fieldset>
+        </article>
+
+        <article class="column">
+          <fieldset
+            class="form-group"
+            id="inscriptionInvoiceContainer"
+            style="display: none"
+          >
+            <legend>Invoice/QR Code</legend>
+
+            <div class="input-wrapper">
+              <label for="inscriptionRequestId">Inscription Request ID:</label>
+              <input id="inscriptionRequestId" readonly />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="invoiceAddress">Invoice Address:</label>
+              <input id="invoiceAddress" readonly />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="invoiceAmount">Invoice Amount:</label>
+              <input id="invoiceAmount" readonly />
+            </div>
+
+            <div id="qrcode"></div>
+          </fieldset>
+        </article>
       </div>
     </main>
 

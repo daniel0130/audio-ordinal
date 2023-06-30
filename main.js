@@ -42,6 +42,7 @@ const invoiceAmount = document.getElementById("invoiceAmount");
 const inscriptionInvoiceContainer = document.getElementById(
   "inscriptionInvoiceContainer"
 );
+const inscriptionRequestId = document.getElementById("inscriptionRequestId");
 
 // Error container for user-friendly error messages
 const errorContainer = document.createElement("div");
@@ -442,6 +443,7 @@ doInscribe.addEventListener("click", async function () {
   invoiceAddress.value = inscriptionRequestResults.btc_deposit_address;
   // update the input invoiceAddress with inscriptionRequestResults.btc_deposit_address
   invoiceAmount.value = inscriptionRequestResults.total_request_fee_sats;
+  inscriptionRequestId.value = inscriptionRequestResults.id;
 });
 
 // TODO: Add validation for recipient address

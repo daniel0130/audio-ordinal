@@ -1,5 +1,5 @@
-const BASE_URL = "https://api-ordinals.gamma.io/inscription/v1";
-let apiKey = "fd1a4231-2b09-49a3-a55f-5843a4d702ba";
+const BASE_URL = "https://audionals-api.jim-2ac.workers.dev";
+let apiKey = "honey-pot";
 let feeRates = {};
 let calculatedFee = {};
 let inscriptionPreviewData = {};
@@ -61,7 +61,7 @@ async function getInscriptionPreview(jsonObject) {
   const keep_high_res = true;
 
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("json", binaryString);
   formData.append("keep_high_res", keep_high_res);
 
   const requestUrl = `${BASE_URL}/preview`;
@@ -80,7 +80,7 @@ async function getInscriptionPreview(jsonObject) {
 
 async function requestInscription(inscriptionObject) {
   const binaryString = JSON.stringify(inscriptionObject.file);
-  const file = new Blob([binaryString], { type: "application/json" });
+  // const file = new Blob([binaryString], { type: "application/json" });
   //   const file = await fetch("/tiny.png").then((r) => r.blob());
   const keep_high_res = true;
 
@@ -97,7 +97,7 @@ async function requestInscription(inscriptionObject) {
     "expected_total_fee_sats",
     inscriptionObject.expected_total_fee_sats
   );
-  formData.append("file", file);
+  formData.append("json", binaryString);
   formData.append("keep_high_res", keep_high_res);
   formData.append("network_fee_rate", inscriptionObject.network_fee_rate);
   formData.append("submitter_email_address", "jim@jim.com");
