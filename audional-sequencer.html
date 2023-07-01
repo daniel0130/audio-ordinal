@@ -9,7 +9,7 @@
     --accent-color: #f00;
     --play-button-dimension: 50px; /* New variable for play button size */
     --stop-button-dimension: 50px; /* New variable for stop button size */
-    --step-button-dimension: 8px; 
+    --step-button-dimension: 25px; 
     --control-button-dimension: 25px;
     --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
     --margin-style: 10px;
@@ -54,18 +54,13 @@ h1 .button {
 
 
 .step-button {
-    margin-top: 22px;
-    width: calc(100% / 16 - 2px);
-    height: 30px;
+    margin-top: 10px;
+/* width: calc(100% / 16 - 2px); Remove this */    
+    height: 10px;
     background-color: #555;
     color: #fff;
 }
 
-.step-button,
-.control-button {
-    width: var(--step-button-dimension);
-    height: var(--step-button-dimension);
-}
 
 .control-button {
     width: var(--control-button-dimension);
@@ -118,8 +113,8 @@ h1 .button {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 2px;
-    margin: 10px 0;
+    gap: 0px;
+    margin: 0px 0;
 }
 
 .controls-container {
