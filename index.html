@@ -161,6 +161,47 @@
                 transform: scale(1);
             }
         }
+        .magic-button {
+            background: #FFD700;
+            border: none;
+            color: black;
+            cursor: pointer;
+            padding: 10px 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .magic-button:before {
+            content: "";
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            transform: rotate(0deg);
+            pointer-events: none;
+            animation: shimmer 5s ease-in-out infinite;
+        }
+
+        .magic-button:active {
+            color: #FFD700;
+            background: black;
+        }
+
+        @keyframes shimmer {
+            0% {left: -100%;}
+            50% {left: 100%;}
+            100% {left: -100%;}
+        }
+
+        .magic-button > * {
+            position: relative;
+            z-index: 10;
+        }
+
     </style>
     <script>
         function toggleInfo(buttonId) {
@@ -201,9 +242,13 @@
   <div class="header">
     <img src="AudionalsLogo.png" alt="Audionals Logo">
     <h1>Audionals.com</h1>
-    <button id="sequencer-button" class="more-info-button" onclick="tryAudionalSequencer()">Try the Audional Sequencer</button>
+    <div>
+      <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Try the Audional Sequencer</button>
+      <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
+    </div>
     <img src="AudionalsLogo.png" alt="Audionals Logo">
-</div>
+  </div>
+
 
 <!-- This is where the sequencer will appear -->
 <div id="sequencer-container">
