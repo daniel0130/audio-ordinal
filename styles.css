@@ -33,7 +33,7 @@ body {
   margin: 0 -5px;
 }
 .column {
-  flex: 33.33%;
+  flex: 30%;
   padding: 5px 5px;
 }
 .form-group {
@@ -127,4 +127,11 @@ button:disabled {
   font-size: 16px;
   resize: none;
   margin-top: 20px;
+}
+.radio-group {
+  display: flex;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 10px;
 }

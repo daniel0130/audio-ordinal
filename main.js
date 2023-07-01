@@ -163,8 +163,8 @@ convertButton.addEventListener("click", function () {
   var bpmInput = document.getElementById("bpm");
   var userDefinedInput = document.getElementById("user-defined");
   var noteInput = document.getElementById("note");
-  var isLoopInput = document.getElementById("isLoop");
-  var isLoop = isLoopInput.value.toLowerCase() === "yes" ? true : false;
+  var isLoopRadio = document.querySelector('input[name="isLoop"]:checked');
+  var isLoop = isLoopRadio ? isLoopRadio.value.toLowerCase() === "yes" : false;
 
   var reader = new FileReader();
   reader.onload = function (e) {
@@ -201,16 +201,28 @@ convertButton.addEventListener("click", function () {
   var audioTypeInput = document.getElementById("audio_type");
   var fileInput = document.getElementById("file");
   var instrumentInput = document.getElementById("instrument");
-  var instrumentSpecificsInput = document.getElementById(
-    "instrument_specifics"
-  );
+  var instrumentSpecificsInput = document.getElementById("instrument_specifics");
   var genreInput = document.getElementById("genre");
   var keyInput = document.getElementById("key");
   var bpmInput = document.getElementById("bpm");
   var userDefinedInput = document.getElementById("user-defined");
   var noteInput = document.getElementById("note");
-  var isLoopInput = document.getElementById("isLoop");
-  var isLoop = isLoopInput.value.toLowerCase() === "yes" ? true : false;
+  var creatorInput = document.getElementById("creator"); // Make sure this input exists in your HTML
+
+  var audioType = audioTypeInput.value ? audioTypeInput.value : "None given";
+  var file = fileInput.files.length > 0 ? fileInput.files[0] : "None given";
+  var instrument = instrumentInput.value ? instrumentInput.value : "None given";
+  var instrumentSpecifics = instrumentSpecificsInput.value ? instrumentSpecificsInput.value : "None given";
+  var genre = genreInput.value ? genreInput.value : "None given";
+  var key = keyInput.value ? keyInput.value : "None given";
+  var bpm = bpmInput.value ? bpmInput.value : "None given";
+  var userDefined = userDefinedInput.value ? userDefinedInput.value : "None given";
+  var note = noteInput.value ? noteInput.value : "None given";
+  var creator = creatorInput.value ? creatorInput.value : "None given";
+
+  var isLoopRadio = document.querySelector('input[name="isLoop"]:checked');
+  var isLoop = isLoopRadio ? isLoopRadio.value.toLowerCase() === "yes" : false;
+
 
   var file = fileInput.files[0];
   if (!file) {
@@ -255,15 +267,21 @@ convertButton.addEventListener("click", function () {
       audioData: base64Audio,
       metadata: {
         descriptive: {
-          title: "Title of the Audio",
-          creator: "Name of Creator",
-          inscribersAddress: "Bitcoin Address",
+          title: filenameWithoutExtension,
+          creator: creator,
           description: "Brief description about the audio",
-          audioType: audioTypeInput.value,
-          instrument: instrumentInput.value,
-          instrumentSpecifics: instrumentSpecificsInput.value,
-          genre: genreInput.value,
-          key: keyInput.value,
+          audioType: audioType,
+          technical: {
+            encodingFormat: "Base64",
+            sampleRate: fileInput.sampleRate,
+            numberOfChannels: fileInput.numberOfChannels,
+            bitDepth: "Bit Depth of the Audio",
+            duration: document.getElementById("duration").value,
+          },
+          instrument: instrument,
+          instrumentSpecifics: instrumentSpecifics,
+          genre: genre,
+          key: key,
           speechSpecific: {
             language: "Language of Speech",
             speaker: "Speaker Name",
@@ -292,13 +310,6 @@ convertButton.addEventListener("click", function () {
             customField2: "Custom Field Value",
           },
         },
-        technical: {
-          encodingFormat: "Base64",
-          sampleRate: fileInput.sampleRate,
-          numberOfChannels: fileInput.numberOfChannels,
-          bitDepth: "Bit Depth of the Audio",
-          duration: document.getElementById("duration").value,
-        },
         structural: {
           sequenceInfo:
             "Information about the sequence of audio if it's a part of larger work",
@@ -320,19 +331,19 @@ convertButton.addEventListener("click", function () {
           preservationSteps: "Steps taken for preserving the audio",
           futurePreservationPlan: "Any future plans for preserving the audio",
         },
-        userDefined: userDefinedInput.value,
-      },
-      playbackControls: {
-        note: noteInput.value,
-        name: filenameWithoutExtension,
-        velocity: 1.0,
-        duration: document.getElementById("duration").value,
-        isLoop: isLoop,
-        loopGap: loopGap,
-        loopBPM: loopBPM,
-        playSpeed: 1.0,
-        keyShift: 0,
-      },
+        userDefined: userDefined,
+    },
+    playbackControls: {
+      note: note,
+      name: filenameWithoutExtension,
+      velocity: 1.0,
+      duration: document.getElementById("duration").value,
+      isLoop: isLoop,
+      loopGap: loopGap,
+      loopBPM: loopBPM,
+      playSpeed: 1.0,
+      keyShift: 0,
+    },
     };
 
     var audionalJsonString = JSON.stringify(audionalJson, null, 2);
