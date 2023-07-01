@@ -270,10 +270,8 @@
 
     <script>
 
-let isPlaying = false;
-
-
-    
+  let isPlaying = false;
+  let beatCount = 0;  // new bar count variable 
   let timeoutId;
   let stopClickCount = 0;
   let channels;
@@ -387,13 +385,16 @@ let isPlaying = false;
     });
 
     stopButton.addEventListener('click', () => {
-      if (isPlaying) {
-        stopScheduler();
-        stopButton.classList.add('selected');
-        playButton.classList.remove('selected');
-        isPlaying = false;
-      }
-    });
+        if (isPlaying) {
+            stopScheduler();
+            stopButton.classList.add('selected');
+            playButton.classList.remove('selected');
+            isPlaying = false;
+            beatCount = 0;  // reset the bar count
+            currentStep = 0;  // reset the step count
+            resetStepLights();  // reset the step lights
+        }
+        });
   } else {
     console.error("Play or Stop button is not defined");
   }
@@ -408,20 +409,23 @@ let isPlaying = false;
 
   const presets = {
     preset1: {
-      urls: [
+        urls: [
         'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0',
         'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
         'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
         'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
-      ],
-      triggers: [
+        ],
+        triggers: [
         ['1', '5', '9', '13', '17', '21', '25', '29', '33', '37', '41', '45', '49', '53', '57', '61'],
         ['1', '7', '33', '39'],
         ['62'],
-        ['5', '13', '21', '29', '37', '45', '53', '61', '64'],
-      ]
+        ['5', '13', '21', '29', '37', '45', '53', '61', '64']
+        ],
+        muted: [ false, false, true, true ],
+        unmuteBars: [ null, null, 52, 32 ]  // Use beat counts to unmute (1 beat is 4 steps)
     },
-  };
+    };
+
 
   // Load a preset when the page loads
     const presetToLoadOnPageLoad = 'preset1'; // replace with the name of your preset
@@ -432,19 +436,38 @@ let isPlaying = false;
             }
     
           // Function to load a preset
-          function loadPreset(preset) {
-            const { urls, triggers } = presets[preset];
-            urls.forEach((url, index) => {
-              const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
-              fetchAudio(url, index, loadSampleButton);
-            });
-            triggers.forEach((trigger, index) => {
-              trigger.forEach(pos => {
-                const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
-                if (btn) btn.classList.add('selected');
-              });
-            });
-          }
+    function loadPreset(preset) {
+    const { urls, triggers, muted } = presets[preset];
+    
+    // Load urls
+    urls.forEach((url, index) => {
+        const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
+        fetchAudio(url, index, loadSampleButton);
+    });
+
+    // Set triggers
+    triggers.forEach((trigger, index) => {
+        trigger.forEach(pos => {
+        const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
+        if (btn) btn.classList.add('selected');
+        });
+    });
+
+    // Set mute state
+    muted.forEach((isMuted, index) => {
+        const channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+        const muteButton = channel.querySelector('.mute-button');
+        channel.dataset.muted = isMuted ? 'true' : '';
+        if (muteButton) {
+        if (isMuted) {
+            muteButton.classList.add('selected');
+        } else {
+            muteButton.classList.remove('selected');
+        }
+        }
+    });
+    }
+
     
   function setChannelVolume(channelIndex, volume) {
     const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
@@ -486,29 +509,39 @@ let isPlaying = false;
   }
 
   function playStep() {
-    channels.forEach(channel => {
-      const buttons = channel.querySelectorAll('.step-button');
-      const isMuted = channel.dataset.muted === 'true';
+    const currentBar = Math.floor(beatCount / 4) + 1; // Calculate the current bar
 
-      if (buttons[currentStep]) {
-        buttons.forEach(button => button.classList.remove('playing'));
-        buttons[currentStep].classList.add('playing');
-      }
+    channels.forEach((channel, index) => {
+        const buttons = channel.querySelectorAll('.step-button');
+        let isMuted = channel.dataset.muted === 'true';
 
-      if (buttons[currentStep].classList.contains('selected') && !isMuted) {
-        const audioData = channel.dataset.audioData;
-        if (audioData) {
-          const audio = new Audio(audioData);
-          const source = audioContext.createMediaElementSource(audio);
-          source.connect(audioContext.destination);
-          audio.play();
+        // Unmute the channel at the designated bar if it's currently muted
+        if (isMuted && presets.preset1.unmuteBars[index] === currentBar) {
+            channel.dataset.muted = 'false';
+            isMuted = false;
+            channel.querySelector('.mute-button').classList.remove('selected'); // Reflect the state change in the UI
         }
-      }
+
+        if (buttons[currentStep]) {
+            buttons.forEach(button => button.classList.remove('playing'));
+            buttons[currentStep].classList.add('playing');
+        }
+
+        if (buttons[currentStep].classList.contains('selected') && !isMuted) {
+            const audioData = channel.dataset.audioData;
+            if (audioData) {
+                const audio = new Audio(audioData);
+                const source = audioContext.createMediaElementSource(audio);
+                source.connect(audioContext.destination);
+                audio.play();
+            }
+        }
     });
 
     currentStep = (currentStep + 1) % 64;
+    beatCount++;  // increase the bar count
     nextStepTime += stepDuration;
-  }
+}
 
   function stopScheduler() {
     if (audioContext) {
@@ -520,9 +553,9 @@ let isPlaying = false;
   function resetStepLights() {
     const buttons = document.querySelectorAll('.step-button');
     buttons.forEach(button => {
-      button.classList.remove('playing');
+        button.classList.remove('playing');
     });
-  }
+    }
 
   function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
     if (!isPlaying) {
