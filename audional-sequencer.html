@@ -359,7 +359,7 @@
 
     const loadSampleButton = channel.querySelector('.load-sample-button');
     loadSampleButton.addEventListener('click', () => {
-      const audionalId = prompt('Enter the ordinal ID for the Audional:');
+      const audionalId = prompt('Enter the ordinal ID for the Audional you want to load:');
       const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalId);
       fetchAudio(audionalUrl, index, loadSampleButton);
     });
