@@ -3,270 +3,401 @@
 <head>
     <style>
         :root {
-            --main-bg-color: #000;
-            --secondary-bg-color: #333;
-            --primary-color: #fff;
-            --accent-color: #f00;
-            --step-button-dimension: 10px;  /* smaller size for 64 buttons */
-            --control-button-dimension: 25px;  /* existing size for control buttons */
-            --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
-            --margin-style: 10px;
-            --default-font: Arial, sans-serif;
-        }
-    
-        body {
-            background-color: var(--main-bg-color);
-            color: var(--primary-color);
-            font: normal normal normal 100%/1 var(--default-font);
-        }
-    
-        #drum-machine {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: var(--secondary-bg-color);
-            border: 5px solid var(--main-bg-color);
-        }
-    
-        h1 {
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-    
-        h1 button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: var(--primary-color);
-            color: var(--main-bg-color);
-            font-size: 1em;
-            cursor: pointer;
-            box-shadow: var(--box-shadow-style);
-        }
-        .title {
-            font-size: 40px; /* Adjust the font size as needed */
-        }
+    --main-bg-color: #000;
+    --secondary-bg-color: #333;
+    --primary-color: #fff;
+    --accent-color: #f00;
+    --play-button-dimension: 50px; /* New variable for play button size */
+    --stop-button-dimension: 50px; /* New variable for stop button size */
+    --step-button-dimension: 10px; 
+    --control-button-dimension: 25px;
+    --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
+    --margin-style: 10px;
+    --default-font: Arial, sans-serif;
+}
 
-        #play {
-        animation: flash 2s infinite ease-in-out;
-        }
+body {
+    background-color: var(--main-bg-color);
+    color: var(--primary-color);
+    font: normal normal normal 100%/1 var(--default-font);
+}
 
-        #play.selected {
-        background-color: #00ff00;
-        animation: none; /* Stop the animation when the button is selected */
-        }
+#drum-machine {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--secondary-bg-color);
+    border: 5px solid var(--main-bg-color);
+}
 
-        #stop.selected ~ #play {
-        background-color: var(--primary-color);
-        animation: none; /* Stop the animation when the stop button is selected */
-        }
-    
-        .steps-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 2px;
-            margin: 10px 0;
-        }
-    
-        .step-button {
-            width: calc(100% / 16 - 2px);
-            height: 30px;
-            background-color: #555;
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            cursor: pointer;
-        }
-    
-    
-        .controls-container {
-            width: 15%;
-            gap: 5px;
-        }
-    
-        .channel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-    
-        .step-button,
-        .control-button {
-            border-radius: 50%;
-            border: none;
-            background-color: var(--primary-color);
-            box-shadow: var(--box-shadow-style);
-        }
-    
-        .step-button {
-            width: var(--step-button-dimension);
-            height: var(--step-button-dimension);
-        }
-    
-        .control-button {
-            width: var(--control-button-dimension);
-            height: var(--control-button-dimension);
-        }
-    
-        .step-button:active,
-        .step-button.selected,
-        .mute-button.selected {
-            background-color: var(--accent-color);
-        }
-    
-        .volume-slider {
-            margin-top: var(--margin-style);
-            width: 100px;
-        }
-    
-        .step-button.playing {
-            background-color: rgb(255, 255, 255);
-            box-shadow: 0 0 10px rgb(150, 150, 150) inset;
-        }
-    
-        .step-button.playing.selected {
-            background-color: var(--accent-color);
-            box-shadow: 0 0 10px rgb(150, 1, 1) inset;
-        }
-    
-        .channel-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-    
-        .clear-button {
-            background-color: #ff0;
-        }
-    
-        .mute-button {
-            background-color: #800;
-        }
-    
-        .load-sample-button {
-            background-color: #666;
-            border: none;
-            padding: 5px calc(var(--margin-style) * 1.25);
-            border-radius: 5px;
-            color: var(--primary-color);
-            cursor: pointer;
-            transition: width 0.2s;
-        }
-        #load-preset {
-            font-size: 0.5em; /* Reduce the font size */
-            padding: 5px 10px; /* Adjust the padding */
-        }
-    
-        .load-sample-button.loaded {
-            width: calc(100% * 1.25);
-        }
-        #play.selected {
-            background-color: #00ff00;
-        }
+h1 {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
 
-        #stop.selected {
-            background-color: var(--accent-color);
-        }
+.button {
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: var(--box-shadow-style);
+}
 
-        .step-button {
-            background-color: #555;
-        }
-        .step-button:nth-child(16n+1) {
-            background-color: #ffff00; /* yellow */
-        }
-        .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
-            background-color: #add8e6; /* light blue */
-        }
-        .channel-container .step-button.selected {
-            background-color: #ff0000; /* red */
-        }
-        .step-button.playing {
-            background-color: #ffffff;
-        }
-        .step-button.playing.selected {
-            background-color: #ff0000;
-        }
-        
-        #play.selected {
-            background-color: #00ff00; /* Green background for the selected state */
-        }
+h1 .button {
+    padding: 10px;
+    color: var(--main-bg-color);
+    font-size: 1em;
+}
 
-        @keyframes flash {
-            0% {background-color: var(--primary-color);}
-            50% {background-color: #00ff00;}
-            100% {background-color: var(--primary-color);}
-        }
+
+.step-button {
+    margin-top: 22px;
+    width: calc(100% / 16 - 2px);
+    height: 30px;
+    background-color: #555;
+    color: #fff;
+}
+
+.step-button,
+.control-button {
+    width: var(--step-button-dimension);
+    height: var(--step-button-dimension);
+}
+
+.control-button {
+    width: var(--control-button-dimension);
+    height: var(--control-button-dimension);
+}
+.play-button {
+    position: relative;
+    top: 0px; /* Adjust the value as needed */
+    width: var(--play-button-dimension);
+    height: var(--play-button-dimension);
+}
+#play.selected {
+    background-color: #00ff00;
+}
+.button-label {
+    color: #00ff00; /* Green */
+}
+
+
+
+.stop-button {
+    position: relative;
+    top: 0px; /* Adjust the value as needed */
+    width: var(--stop-button-dimension);
+    height: var(--stop-button-dimension);
+}
+.button-label.stop {
+    color: #ff0000; /* Red */
+}
+
+
+#stop.selected ~ #play {
+    background-color: var(--primary-color);
+}
+
+.stop-button:active,
+.stop-button.selected {
+    background-color: var(--accent-color);
+}
+
+
+.channel {
+    position: relative; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin: 10px 0;
+}
+
+.controls-container {
+    width: 15%;
+    gap: 5px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+}
+.title {
+    font-size: 40px; /* Adjust the font size as needed */
+}
+
+#play {
+    animation: flash 2s infinite ease-in-out;
+}
+
+#play.selected, 
+#stop.selected ~ #play {
+    animation: none; /* Stop the animation when the button is selected */
+}
+
+#stop.selected ~ #play {
+    background-color: var(--primary-color);
+}
+
+.step-button:active,
+.step-button.selected,
+.mute-button.selected {
+    background-color: var(--accent-color);
+}
+
+.step-button.playing {
+    box-shadow: 0 0 10px rgb(150, 150, 150) inset;
+}
+
+.step-button.playing.selected {
+    box-shadow: 0 0 10px rgb(150, 1, 1) inset;
+}
+
+.channel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px; /* Adjusts spacing between buttons */
+}
+
+.clear-button {
+    background-color: #ff0;
+}
+
+.mute-button {
+    background-color: #800;
+}
+
+.load-sample-button,
+.clear-button,
+.mute-button {
+    flex: 1; /* Ensures all buttons take equal width */
+    overflow: hidden; /* Prevents text from overflowing */
+    white-space: nowrap; /* Prevents text from breaking to the next line */
+    text-overflow: ellipsis; /* Represents clipped text with ... */
+    font-size: 0.8em; /* Adjusts font size */
+}
+.load-sample-button:hover::after {
+    content: attr(title);  /* Use the title attribute as content */
+    position: absolute;  /* Position it absolutely */
+    background: var(--primary-color);  /* Style it as you see fit */
+    color: var(--main-bg-color);
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1;  /* To ensure it's on top */
+}
+
+#load-preset {
+    font-size: 0.5em; /* Reduce the font size */
+    padding: 5px 10px; /* Adjust the padding */
+}
+
+.load-sample-button.loaded {
+    width: calc(100% * 1.25);
+}
+
+.step-button:nth-child(16n+1) {
+    background-color: #ffff00; /* yellow */
+}
+
+.step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
+    background-color: #add8e6; /* light blue */
+}
+
+.channel-container .step-button.selected {
+    background-color: #ff0000; /* red */
+}
+
+@keyframes flash {
+    0% {background-color: var(--primary-color);}
+    50% {background-color: #00ff00;}
+    100% {background-color: var(--primary-color);}
+}
+
+.controls-container {
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.channel-controls {
+    margin-top: 20px; /* Add a top margin if needed */
+}
+.button-label {
+    position: relative;
+    z-index: 2;
+}
     </style>
     
 </head>
 <body>
     <div id="drum-machine">
         <h1>
-            <button id="play">Play</button>
+            <span class="button-label">Play</span>
+            <div class="button button-round">
+                
+                <div class="button play-button" id="play"></div> <!-- Update the class and ID for play button -->
+            </div>
             <span class="title">Audional JSON Sequencer (beta)</span>
-            <button id="stop">Stop</button>
+            <span class="button-label stop">Stop</span>           
+             <div class="button button-round">
+                
+                <div class="button stop-button" id="stop"></div> <!-- Update the class and ID for stop button -->
+            </div>
             <div class="bpm-container">
                 BPM: <input type="range" min="60" max="180" value="125" step="1" id="bpm-slider">
                 <div class="bpm-display" id="bpm-display">125</div>
             </div>
         </h1>
         <div class="channel" id="bass-drum">
-            <button class="load-sample-button">Load Audional</button>
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
                     <div class="channel-controls">
-                        <button class="control-button clear-button">C</button>
-                        <button class="control-button mute-button">M</button>
+                        <div class="button-container">
+                           
+                        </div>
                     </div>
-                    <input type="range" min="0" max="1" step="0.01" class="volume-slider">
                 </div>
+
             </div>
         </div>
         <div class="channel" id="snare">
-            <button class="load-sample-button">Load Audional</button>
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
-                    <div class="channel-controls">
-                        <button class="control-button clear-button">C</button>
-                        <button class="control-button mute-button">M</button>
+                 <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
                     </div>
-                    <input type="range" min="0" max="1" step="0.01" class="volume-slider">
                 </div>
+
             </div>
         </div>
         <div class="channel" id="hi-hat">
-            <button class="load-sample-button">Load Audional</button>
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
                     <div class="channel-controls">
-                        <button class="control-button clear-button">C</button>
-                        <button class="control-button mute-button">M</button>
+                        <div class="button-container">
+                            
+                        </div>
                     </div>
-                    <input type="range" min="0" max="1" step="0.01" class="volume-slider">
                 </div>
+
             </div>
         </div>
         <div class="channel" id="bass">
-            <button class="load-sample-button">Load Audional</button>
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
                     <div class="channel-controls">
-                        <button class="control-button clear-button">C</button>
-                        <button class="control-button mute-button">M</button>
+                        <div class="button-container">
+                        </div>
                     </div>
-                    <input type="range" min="0" max="1" step="0.01" class="volume-slider">
                 </div>
             </div>
         </div>
-    </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                                
 
     <script>
 
@@ -316,6 +447,9 @@
       if (loadSampleButton) {
         const filename = data.filename || data.fileName; // Check both properties
         loadSampleButton.textContent = filename;
+
+        // Here is the update, setting the title attribute for hover effect
+        loadSampleButton.title = filename;
       }
     })
     .catch(error => {
@@ -331,9 +465,15 @@
 
     const muteButton = channel.querySelector('.mute-button');
     muteButton.addEventListener('click', () => {
-      channel.dataset.muted = channel.dataset.muted ? '' : 'true';
-      muteButton.classList.toggle('selected');
-    });
+            if (channel.dataset.muted === 'true') {
+        // If the channel is currently muted, unmute it
+                channel.dataset.muted = '';
+            } else {
+                // If the channel is currently unmuted, mute it
+                channel.dataset.muted = 'true';
+            }
+            muteButton.classList.toggle('selected');
+        });
 
     const clearButton = channel.querySelector('.clear-button');
     clearButton.addEventListener('click', () => {
