@@ -4,22 +4,23 @@ audioTypeInput.addEventListener("keydown", function (e) {
   e.preventDefault();
 });
 
-// Utility functions
-function generateRandomBase64String(length) {
-  var chars =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
-  var result = "";
-  for (var i = length; i > 0; --i)
-    result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
+
+
+// Hash audioData function
+async function digestMessage(message) {
+  const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+  const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8); // hash the message
+  const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join(""); // convert bytes to hex string
+  return hashHex;
 }
 
-function generateId() {
-  var timestamp = Math.floor(Date.now() / 1000);
-  var timestampHex = timestamp.toString(16);
-  var uniqueRandomBase64 = generateRandomBase64String(7);
-  return timestampHex + uniqueRandomBase64;
-}
+
+
+
+
 
 // Store elements to avoid repeated DOM queries
 const fileInput = document.getElementById("file");
@@ -237,7 +238,7 @@ convertButton.addEventListener("click", function () {
   }
 
   var reader = new FileReader();
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
     var base64Audio = e.target.result;
 
     var filenameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
@@ -258,11 +259,13 @@ convertButton.addEventListener("click", function () {
     if (duration) {
       loopBPM = 60 / duration;
     }
-
+   
+    var hash = await digestMessage(base64Audio);
+  
     var audionalJson = {
       protocol: "audional",
       operation: "deploy",
-      audionalId: generateId(),
+      audionalId: hash,
       filename: file.name,
       audioData: base64Audio,
       metadata: {
