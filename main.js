@@ -4,22 +4,37 @@ audioTypeInput.addEventListener("keydown", function (e) {
   e.preventDefault();
 });
 
+
+
 // Utility functions
-function generateRandomBase64String(length) {
-  var chars =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
-  var result = "";
-  for (var i = length; i > 0; --i)
-    result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
+function generateRandomBase64String(input) { // change parameter to 'input'
+  return btoa(input); // btoa is a built-in JavaScript function that encodes a string in Base64
 }
+console.log(generateRandomBase64String("EoMadness"));
 
 function generateId() {
-  var timestamp = Math.floor(Date.now() / 1000);
-  var timestampHex = timestamp.toString(16);
-  var uniqueRandomBase64 = generateRandomBase64String(7);
-  return timestampHex + uniqueRandomBase64;
+  var fileName = document.getElementById("fileName").value;
+  
+  var timestamp = new Date();
+  var formattedTime = timestamp.toLocaleString('en-US', { hour12: false, hour: 'numeric', minute: 'numeric', second: 'numeric', day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/[/:, ]/g, "");
+  
+  return fileName + formattedTime;
 }
+
+async function digestMessage(message) {
+  const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+  const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8); // hash the message
+  const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join(""); // convert bytes to hex string
+  return hashHex;
+}
+
+
+
+
+
 
 // Store elements to avoid repeated DOM queries
 const fileInput = document.getElementById("file");
@@ -237,7 +252,7 @@ convertButton.addEventListener("click", function () {
   }
 
   var reader = new FileReader();
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
     var base64Audio = e.target.result;
 
     var filenameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
@@ -258,11 +273,13 @@ convertButton.addEventListener("click", function () {
     if (duration) {
       loopBPM = 60 / duration;
     }
-
+   
+    var hash = await digestMessage(base64Audio);
+  
     var audionalJson = {
       protocol: "audional",
       operation: "deploy",
-      audionalId: generateId(),
+      audionalId: hash,
       filename: file.name,
       audioData: base64Audio,
       metadata: {
