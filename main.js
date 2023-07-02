@@ -6,21 +6,7 @@ audioTypeInput.addEventListener("keydown", function (e) {
 
 
 
-// Utility functions
-function generateRandomBase64String(input) { // change parameter to 'input'
-  return btoa(input); // btoa is a built-in JavaScript function that encodes a string in Base64
-}
-console.log(generateRandomBase64String("EoMadness"));
-
-function generateId() {
-  var fileName = document.getElementById("fileName").value;
-  
-  var timestamp = new Date();
-  var formattedTime = timestamp.toLocaleString('en-US', { hour12: false, hour: 'numeric', minute: 'numeric', second: 'numeric', day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/[/:, ]/g, "");
-  
-  return fileName + formattedTime;
-}
-
+// Hash audioData function
 async function digestMessage(message) {
   const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
   const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8); // hash the message
