@@ -293,9 +293,7 @@
 <p>Some information about best practices when filling JSON fields for indexing</p>
 </div>
 
-<div class="info-content" id="info-content-json" style="display: none;">
-<p>Orders and Order IDs Should Load Here</p>
-</div>
+
 
 <h1>Audional Inscription Order</h1>
 <main id="app" role="main">
@@ -331,13 +329,16 @@
 
 <div class="right-column">
     <div class="button-container" style="display: flex; justify-content: center;">
-        <button id="check-order-button" class="more-info-button custom-button" onclick="toggleDescription('json')">Check Orders</button>
+        <button id="check-order-button" class="more-info-button custom-button" onclick="toggleDescription('json')">Check Existing Orders</button>
     </div>
+    <div class="info-content" id="info-content-json" style="display: none;">
+        <p>Orders and Order IDs Should Load Here</p>
+        </div>
     <h1>Audional Inscription Payment</h1>
     <main id="app" role="main">
         <button id="checkPrice" class="flashing" onclick="showPaymentDetails()">Get Inscription Price</button>
         <button id="inscribe" disabled>Inscribe Audional</button>
-
+        
         <fieldset class="form-group">
             <legend>Check Payment Details</legend>
             <div id="user-defined-right" class="input-wrapper">
