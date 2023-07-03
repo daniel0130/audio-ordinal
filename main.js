@@ -269,6 +269,11 @@ convertButton.addEventListener("click", function () {
       filename: file.name,
       audioData: base64Audio,
       metadata: {
+        recursiveURLs: {
+          audionalArt: "/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0",
+          coverArt: "Recursive URL for own cover art",
+          otherArt: "Additional link for recursive artwork/other functions",
+        },
         descriptive: {
           title: filenameWithoutExtension,
           creator: creator,
