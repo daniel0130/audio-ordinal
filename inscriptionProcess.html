@@ -83,7 +83,7 @@
         }
     
         button {
-            background-color: rgb(255, 0, 0);
+            background-color: green(255, 0, 0);
             border: none;
             color: #fff;
             cursor: pointer;
@@ -176,7 +176,7 @@
         }
     
         .magic-button {
-            background: gold;
+            
             border: none;
             color: #000;
             cursor: pointer;
@@ -186,7 +186,8 @@
             z-index: 0;
         }
     
-        .magic-button:before {
+        .magic-button:not(:disabled):before {
+            background: grey;
             content: "";
             background: linear-gradient(45deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .5), rgba(255, 255, 255, .1));
             position: absolute;
@@ -199,38 +200,35 @@
             pointer-events: none;
             animation: shimmer 5s ease-in-out infinite;
         }
+        
     
-        .magic-button:active {
-            color: gold;
+        .magic-button:active:not(#inscribe:disabled) {
+            color: grey;
             background: #000;
         }
-    
+
         @keyframes shimmer {
             0% {
                 left: -100%
             }
-    
+
             50% {
                 left: 100%
             }
-    
+
             100% {
                 left: -100%
             }
         }
-    
+
         .magic-button>* {
             position: relative;
             z-index: 10;
         }
     
-        button:disabled {
-            background-color: grey;
-        }
+       
     
-        button:enabled {
-            background-color: rgb(249, 27, 27);
-        }
+       
     
         /* Added CSS for left and right columns */
     
@@ -252,6 +250,7 @@
         .custom-gold-button {
             background-color: gold !important;
         }
+
         .payment-input {
             display: block;
             width: 100%;
@@ -261,9 +260,24 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
+
+        #inscribe:disabled.custom-gold-button {
+            background-color: grey !important;
+            color: #000;
+        }
+
+        #inscribe.enabled {
+            color: #000;
+        }
+
+        #metadata-button {
+            background-color: red!important;
+        }
+        
     </style>
    
-      
+   <script src="startInscriptionProcess.js"></script>
+
 </head>
 <body>
 <div class="header">
@@ -332,12 +346,12 @@
         <button id="check-order-button" class="more-info-button custom-button" onclick="toggleDescription('json')">Check Existing Orders</button>
     </div>
     <div class="info-content" id="info-content-json" style="display: none;">
-        <p>Orders and Order IDs Should Load Here</p>
-        </div>
+        <p>No existing orders found</p>
+    </div>
     <h1>Audional Inscription Payment</h1>
     <main id="app" role="main">
         <button id="checkPrice" class="flashing" onclick="showPaymentDetails()">Get Inscription Price</button>
-        <button id="inscribe" disabled>Inscribe Audional</button>
+        <button id="inscribe" class="magic-button custom-gold-button" disabled>Inscribe Audional</button>
         
         <fieldset class="form-group">
             <legend>Check Payment Details</legend>
@@ -352,25 +366,63 @@
 </div>
 
 <script>
-    function showPaymentDetails() {
-        // Retrieve the Audional Ordinal Recipient Address
-        const recipientAddress = document.getElementById("bitcoinAddress").value.trim();
 
-        // Check if the recipient address is valid
-        if (!isValidRecipientAddress(recipientAddress)) {
-            alert("Please enter a valid recipient's address.");
-            return;
-        }
+    // Define these values globally or within your class/component scope
+    let inscriptionCost = null;
+    let currentFeeRates = null;
 
-        // Retrieve the current fee rates, inscription cost, and Bitcoin payment address
-        const currentFeeRates = getCurrentFeeRates(); // Replace this with your own logic to get the fee rates
-        const inscriptionCost = getInscriptionCost(); // Replace this with your own logic to get the inscription cost
-        const paymentAddress = getPaymentAddress(); // Replace this with your own logic to get the payment address
+    export async function startInscriptionProcess(
+    audionalJsonTextarea,
+    inscriptionPreviewContainer,
+    estimatedFeesSpan,
+    networkFeeRateSpan
+    ) {
+    var audionalJsonObject = JSON.parse(audionalJsonTextarea.value);
 
-        // Create and populate the text nodes for displaying the information
-        const feeRatesTextNode = document.createTextNode("Current Fee Rates: " + currentFeeRates);
-        const inscriptionCostTextNode = document.createTextNode("Inscription Cost: " + inscriptionCost);
-        const paymentAddressTextNode = document.createTextNode("Payment Address: " + paymentAddress);
+    var inscriptionPreview = await getInscriptionPreview(audionalJsonObject);
+
+    var totalFees = inscriptionPreview.calculated_fee_summary.high.total_fee_sats;
+
+    // Save these values to use later
+    inscriptionCost = totalFees;
+    currentFeeRates = inscriptionPreview.calculated_fee_summary.high.network_fee_rate;
+
+    // hide audionalJsonTextarea
+    audionalJsonTextarea.style.display = "none";
+
+    // show inscriptionPreviewArea
+    inscriptionPreviewContainer.style.display = "block";
+
+    // update span with id estimatedFees to totalFees
+    estimatedFeesSpan.value = totalFees;
+    networkFeeRateSpan.value = currentFeeRates;
+    }
+   function showPaymentDetails() {
+    // Retrieve the Audional Ordinal Recipient Address
+    const recipientAddress = document.getElementById("bitcoinAddress").value.trim();
+
+    // Check if the recipient address is valid
+    if (!isValidRecipientAddress(recipientAddress)) {
+        alert("Please enter a valid recipient's address.");
+        return;
+    }
+
+    // Show loading state
+    const inscriptionButton = document.getElementById("inscribe");
+    inscriptionButton.disabled = true;
+    inscriptionButton.classList.remove("custom-gold-button");
+
+    // Simulate asynchronous data retrieval
+    setTimeout(function() {
+      // Retrieve the current fee rates, inscription cost, and Bitcoin payment address
+      // Now we use actual values from `startInscriptionProcess`
+      const paymentAddress = getPaymentAddress(); // Replace this with your own logic to get the payment address
+
+      // Create and populate the text nodes for displaying the information
+      const feeRatesTextNode = document.createTextNode("Current Fee Rates: " + currentFeeRates);
+      const inscriptionCostTextNode = document.createTextNode("Inscription Cost: " + inscriptionCost);
+      const paymentAddressTextNode = document.createTextNode("Payment Address: " + paymentAddress);
+
 
         // Clear the current content and append the text nodes
         const userDefinedRight = document.getElementById("user-defined-right");
@@ -390,7 +442,15 @@
         paymentAddressInput.className = "payment-input";
         paymentAddressInput.appendChild(paymentAddressTextNode);
         userDefinedRight.appendChild(paymentAddressInput);
-    }
+
+        // Enable and style the inscription button
+        inscriptionButton.disabled = false;
+
+        setTimeout(function() {
+            inscriptionButton.classList.add("custom-gold-button", "enabled");
+        }, 100); // Delay for button color change and shimmer effect
+    }, 2000); // Simulated delay, replace with your data retrieval logic
+}
 
     function isValidRecipientAddress(address) {
         // Replace this with your own validation logic for the recipient's address
@@ -398,16 +458,15 @@
         return address.startsWith("bc1");
     }
 
-
     // Example functions to retrieve the fee rates, inscription cost, and payment address
     function getCurrentFeeRates() {
         // Replace this with your own logic to retrieve the current fee rates
-        return "0.001 BTC per byte";
+        return "15 Sat/vB";
     }
 
     function getInscriptionCost() {
         // Replace this with your own logic to retrieve the inscription cost
-        return "0.01 BTC";
+        return "15 Sat/vB * filesize";
     }
 
     function getPaymentAddress() {
@@ -415,17 +474,17 @@
         return "1ABCxyz..."; // Example payment address
     }
 
+    window.addEventListener('DOMContentLoaded', (event) => {
+        fetch("Step-for-man_audional.json")
+            .then(response => response.json())
+            .then(data => {
+                const textarea = document.getElementById("user-defined");
+                textarea.placeholder = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+    });
 
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    fetch("Step-for-man_audional.json")
-        .then(response => response.json())
-        .then(data => {
-            const textarea = document.getElementById("user-defined");
-            textarea.placeholder = JSON.stringify(data, null, 2);
-        })
-        .catch(error => console.error('Error:', error));
-});
 
     function toggleInfo(buttonId) {
       var audionalsButton = document.getElementById("audionals-button");
@@ -511,8 +570,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
       taprootContent.style.display = "block";
       jsonContent.style.display = "block";
     };
+
+    
   </script>
 </main>
-    </script>
+
   </body>
 </html>
