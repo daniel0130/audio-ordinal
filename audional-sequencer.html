@@ -7,8 +7,8 @@
     --secondary-bg-color: #333;
     --primary-color: #fff;
     --accent-color: #f00;
-    --play-button-dimension: 50px; /* New variable for play button size */
-    --stop-button-dimension: 50px; /* New variable for stop button size */
+    --play-button-dimension: 50px;
+    --stop-button-dimension: 50px;
     --step-button-dimension: 25px; 
     --control-button-dimension: 25px;
     --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
@@ -51,7 +51,15 @@ h1 .button {
     color: var(--main-bg-color);
     font-size: 1em;
 }
+h3 .subtext {
+    font-size: 0.8em; /* Customize the font size for shrinking the subtext */
+    opacity: 0.7; /* Customize the opacity for shrinking the subtext */
+}
 
+h3:hover .subtext {
+    font-size: 0.6em; /* Customize the font size for the shrunk subtext on hover */
+    opacity: 0.5; /* Customize the opacity for the shrunk subtext on hover */
+}
 
 .step-button {
     margin-top: 10px;
@@ -169,36 +177,39 @@ h1 .button {
 }
 
 .mute-button {
-    background-color: #800;
+  background-color: #800;
+}
+.button-fixed-width {
+  width: 100px !important;
 }
 
-.load-sample-button,
-.clear-button,
-.mute-button {
-    flex: 1; /* Ensures all buttons take equal width */
-    overflow: hidden; /* Prevents text from overflowing */
-    white-space: nowrap; /* Prevents text from breaking to the next line */
-    text-overflow: ellipsis; /* Represents clipped text with ... */
-    font-size: 0.8em; /* Adjusts font size */
+.load-sample-button {
+  display: inline-block;
+  flex: 2.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1em;
+  position: relative;
 }
+
 .load-sample-button:hover::after {
-    content: attr(title);  /* Use the title attribute as content */
-    position: absolute;  /* Position it absolutely */
-    background: var(--primary-color);  /* Style it as you see fit */
-    color: var(--main-bg-color);
-    padding: 5px;
-    border-radius: 5px;
-    z-index: 1;  /* To ensure it's on top */
+  content: attr(data-filename); /* Use the 'data-filename' attribute as content */
+  position: absolute;
+  top: 100%; /* Position it below the load-sample-button */
+  left: 0;
+  background: var(--primary-color);
+  color: var(--main-bg-color);
+  padding: 5px;
+  border-radius: 10px;
+  z-index: 1;
 }
 
 #load-preset {
-    font-size: 0.5em; /* Reduce the font size */
-    padding: 5px 10px; /* Adjust the padding */
+  font-size: 1em;
+  padding: 5px 10px;
 }
 
-.load-sample-button.loaded {
-    width: calc(100% * 1.25);
-}
 
 .step-button:nth-child(16n+1) {
     background-color: #ffff00; /* yellow */
@@ -232,20 +243,48 @@ h1 .button {
     position: relative;
     z-index: 2;
 }
-    </style>
-    
+.centered {
+    display: block;
+    text-align: center;
+}
+.larger-text {
+    font-size: 1.5em;
+}
+
+.smaller-text {
+    font-size: 1em;
+}
+.bright-orange {
+    color: #f7931a;
+}
+.subtext-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 400px;
+}
+
+.centered-text {
+    text-align: right;
+}
+
+</style>    
 </head>
 <body>
     <div id="drum-machine">
         <h1>
+            
             <span class="button-label">Play</span>
             <div class="button button-round">
                 
+                
                 <div class="button play-button" id="play"></div> <!-- Update the class and ID for play button -->
             </div>
-            <span class="title">Audional JSON Sequencer (beta)</span>
+            <span class="title">Audional Sequencer <span class="">&#x20bf;</span>eta<span class="bright-orange">&#x20bf;</span>itcoin<span class="">&#x20bf;</span>eats</span>
+          
             <span class="button-label stop">Stop</span>           
              <div class="button button-round">
+                
+
                 
                 <div class="button stop-button" id="stop"></div> <!-- Update the class and ID for stop button -->
             </div>
@@ -254,8 +293,17 @@ h1 .button {
                 <div class="bpm-display" id="bpm-display">125</div>
             </div>
         </h1>
+       
+        <div class="subtext-container">
+            <p class="subtext centered-text">
+                Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+            </p>
+            </div>
+            </span>
+          
+            <main id="app" role="main">
         <div class="channel" id="bass-drum">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -273,7 +321,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="snare">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -291,7 +339,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="hi-hat">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -309,7 +357,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="bass">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -325,7 +373,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -342,7 +390,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -359,7 +407,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -376,7 +424,7 @@ h1 .button {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Full name of loaded file">Load New Audional</button>            
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
             <button class="control-button mute-button">M</button>
@@ -392,7 +440,13 @@ h1 .button {
                 </div>
             </div>
         </div>
-                                
+        <span class="button-label"></span>
+        <button id="save-button">Save</button>
+        <input type="file" id="save-file-input" style="display: none">
+
+        <button id="load-button">Load</button>
+        <input type="file" id="load-file-input" style="display: none" accept=".json">
+
 
     <script>
 
@@ -403,6 +457,8 @@ h1 .button {
   let channels;
   let playButton = document.getElementById('play');
   let stopButton = document.getElementById('stop');
+  let saveButton = document.getElementById('save-button');
+  let loadButton = document.getElementById('load-button');
   let bpm = 125;
   let currentStep = 0;
   let audioContext;
@@ -428,23 +484,31 @@ h1 .button {
   }
   
 
-  const fetchAudio = (url, channelIndex, loadSampleButton) => {
+  const fetchAudio = (url, channelIndex, loadSampleButtonElement) => {
   fetch(url)
     .then(response => response.json())
     .then(data => {
       const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
       const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const audioBlobUrl = URL.createObjectURL(audioBlob);
 
       const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
-      channel.dataset.audioData = audioUrl;
+      channel.dataset.audioData = audioBlobUrl;
+      channel.dataset.originalUrl = url; // Store the original URL
       channel.dataset.audioDataLoaded = 'true';
-      if (loadSampleButton) {
-        const filename = data.filename || data.fileName; // Check both properties
-        loadSampleButton.textContent = filename;
 
-        // Here is the update, setting the title attribute for hover effect
-        loadSampleButton.title = filename;
+      // Ensure loadSampleButtonElement is not null and then proceed
+      if (loadSampleButtonElement) {
+        const filename = data.filename || data.fileName; // Check both properties
+        loadSampleButtonElement.classList.add('button-fixed-width');
+        loadSampleButtonElement.style.width = '200px'; // or whatever width you want
+        loadSampleButtonElement.textContent = filename ? filename.substring(0,20) : 'Load New Audional';
+        loadSampleButtonElement.title = filename ? filename : 'Load New Audional';
+        
+
+        console.log(data);
+      } else {
+        console.log("Button element not found.");
       }
     })
     .catch(error => {
@@ -452,6 +516,92 @@ h1 .button {
     });
 };
 
+
+
+
+  function exportSettings() {
+    let settings = { channels: [], bpm: bpm };
+    channels.forEach((channel, index) => {
+        let triggers = [];
+        let stepButtons = channel.querySelectorAll('.step-button');
+        stepButtons.forEach((button, i) => {
+        if (button.classList.contains('selected')) {
+            triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
+        }
+        });
+
+        let mute = channel.dataset.muted === 'true';
+        let url = channel.dataset.originalUrl; // Use the original URL
+        settings.channels.push({ triggers: triggers, mute: mute, url: url });
+    });
+
+    return JSON.stringify(settings, null, 2); // to make the output more readable
+    }
+
+    function importSettings(json) {
+        let settings = JSON.parse(json);
+        bpm = settings.bpm;
+
+        settings.channels.forEach((chSettings, index) => {
+            let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+            let loadSampleButton = channel.querySelector('.load-sample-button');
+
+            // Fetch and set audio sample URL only if url is defined
+            if(chSettings.url) {
+            fetchAudio(chSettings.url, index, loadSampleButton);
+            }
+
+            // Set mute settings
+            channel.dataset.muted = chSettings.mute ? 'true' : '';
+            let muteButton = channel.querySelector('.mute-button');
+            muteButton.classList.toggle('selected', chSettings.mute);
+
+            // Set trigger buttons
+            let stepButtons = channel.querySelectorAll('.step-button');
+            stepButtons.forEach(button => button.classList.remove('selected')); // clear existing triggers
+            chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+        });
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let saveFileInput = document.getElementById('save-file-input');
+            let loadFileInput = document.getElementById('load-file-input');
+
+            saveButton.addEventListener('click', () => {
+                let settings = exportSettings();
+
+                // Create a Blob with the settings
+                let blob = new Blob([settings], { type: 'application/json' });
+
+                // Create a download link for the Blob
+                let url = URL.createObjectURL(blob);
+                let downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'settings.json';
+
+                // Trigger a click on the download link
+                downloadLink.click();
+            });
+
+            loadButton.addEventListener('click', () => {
+                // Trigger a click on the load file input
+                loadFileInput.click();
+            });
+
+            loadFileInput.addEventListener('change', () => {
+                let file = loadFileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let settings = e.target.result;
+                    importSettings(settings);
+                };
+                reader.readAsText(file);
+            });
+        });
+
+
+                
 
   channels = document.querySelectorAll('.channel');
 
@@ -477,6 +627,7 @@ h1 .button {
         button.classList.remove('selected');
       });
     });
+
 
     const stepsContainer = channel.querySelector('.steps-container');
     stepsContainer.innerHTML = '';
