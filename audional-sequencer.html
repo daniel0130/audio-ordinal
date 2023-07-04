@@ -238,14 +238,18 @@ h1 .button {
 <body>
     <div id="drum-machine">
         <h1>
+            
             <span class="button-label">Play</span>
             <div class="button button-round">
+                
                 
                 <div class="button play-button" id="play"></div> <!-- Update the class and ID for play button -->
             </div>
             <span class="title">Audional JSON Sequencer (beta)</span>
             <span class="button-label stop">Stop</span>           
              <div class="button button-round">
+                
+
                 
                 <div class="button stop-button" id="stop"></div> <!-- Update the class and ID for stop button -->
             </div>
@@ -392,7 +396,13 @@ h1 .button {
                 </div>
             </div>
         </div>
-                                
+        <span class="button-label"></span>
+        <button id="save-button">Save</button>
+        <input type="file" id="save-file-input" style="display: none">
+
+        <button id="load-button">Load</button>
+        <input type="file" id="load-file-input" style="display: none" accept=".json">
+
 
     <script>
 
@@ -403,6 +413,8 @@ h1 .button {
   let channels;
   let playButton = document.getElementById('play');
   let stopButton = document.getElementById('stop');
+  let saveButton = document.getElementById('save-button');
+  let loadButton = document.getElementById('load-button');
   let bpm = 125;
   let currentStep = 0;
   let audioContext;
@@ -434,10 +446,11 @@ h1 .button {
     .then(data => {
       const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
       const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const audioBlobUrl = URL.createObjectURL(audioBlob);
 
       const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
-      channel.dataset.audioData = audioUrl;
+      channel.dataset.audioData = audioBlobUrl;
+      channel.dataset.originalUrl = url; // Store the original URL
       channel.dataset.audioDataLoaded = 'true';
       if (loadSampleButton) {
         const filename = data.filename || data.fileName; // Check both properties
@@ -452,6 +465,89 @@ h1 .button {
     });
 };
 
+  function exportSettings() {
+    let settings = { channels: [], bpm: bpm };
+    channels.forEach((channel, index) => {
+        let triggers = [];
+        let stepButtons = channel.querySelectorAll('.step-button');
+        stepButtons.forEach((button, i) => {
+        if (button.classList.contains('selected')) {
+            triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
+        }
+        });
+
+        let mute = channel.dataset.muted === 'true';
+        let url = channel.dataset.originalUrl; // Use the original URL
+        settings.channels.push({ triggers: triggers, mute: mute, url: url });
+    });
+
+    return JSON.stringify(settings, null, 2); // to make the output more readable
+    }
+
+    function importSettings(json) {
+        let settings = JSON.parse(json);
+        bpm = settings.bpm;
+
+        settings.channels.forEach((chSettings, index) => {
+            let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+            let loadSampleButton = channel.querySelector('.load-sample-button');
+
+            // Fetch and set audio sample URL only if url is defined
+            if(chSettings.url) {
+            fetchAudio(chSettings.url, index, loadSampleButton);
+            }
+
+            // Set mute settings
+            channel.dataset.muted = chSettings.mute ? 'true' : '';
+            let muteButton = channel.querySelector('.mute-button');
+            muteButton.classList.toggle('selected', chSettings.mute);
+
+            // Set trigger buttons
+            let stepButtons = channel.querySelectorAll('.step-button');
+            stepButtons.forEach(button => button.classList.remove('selected')); // clear existing triggers
+            chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+        });
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let saveFileInput = document.getElementById('save-file-input');
+            let loadFileInput = document.getElementById('load-file-input');
+
+            saveButton.addEventListener('click', () => {
+                let settings = exportSettings();
+
+                // Create a Blob with the settings
+                let blob = new Blob([settings], { type: 'application/json' });
+
+                // Create a download link for the Blob
+                let url = URL.createObjectURL(blob);
+                let downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'settings.json';
+
+                // Trigger a click on the download link
+                downloadLink.click();
+            });
+
+            loadButton.addEventListener('click', () => {
+                // Trigger a click on the load file input
+                loadFileInput.click();
+            });
+
+            loadFileInput.addEventListener('change', () => {
+                let file = loadFileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let settings = e.target.result;
+                    importSettings(settings);
+                };
+                reader.readAsText(file);
+            });
+        });
+
+
+                
 
   channels = document.querySelectorAll('.channel');
 
@@ -477,6 +573,7 @@ h1 .button {
         button.classList.remove('selected');
       });
     });
+
 
     const stepsContainer = channel.querySelector('.steps-container');
     stepsContainer.innerHTML = '';
