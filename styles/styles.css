@@ -157,3 +157,14 @@ button:disabled {
   font-style: italic;
   animation: shimmer 2s linear infinite;
 }
+.form-and-qrcode-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+#qrcode-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

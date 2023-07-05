@@ -358,6 +358,7 @@ doInscribe.addEventListener("click", async function () {
   inscriptionRequestId.value = inscriptionRequestResults.id;
 });
 
+
 function generateBitcoinPaymentQRCode(
   btc_deposit_address,
   total_request_fee_sats
@@ -376,10 +377,11 @@ function generateBitcoinPaymentQRCode(
   // Generate new QR Code
   new QRCode(document.getElementById("qrcode"), {
     text: paymentURI,
-    width: 128,
-    height: 128,
+    width: 256,  // increase the size
+    height: 256, // increase the size
     colorDark: "#000000",
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.H,
   });
+  
 }

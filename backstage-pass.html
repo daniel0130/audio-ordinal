@@ -420,7 +420,7 @@
       <div style="display: flex;">
         <pre id="audional-json" readonly style="display: none; width: 50%; height: 150px; font-size: 16px; color: blue; user-select: none;"></pre>
     
-        <div id="inscriptionPreviewContainer" style="display: none; width: 50%;">
+        <div id="inscriptionPreviewContainer" style="display: none; width: 60%;">
             <article class="column">
                 <fieldset class="form-group">
                     <legend>
@@ -462,34 +462,53 @@
     
 
         <article class="column">
-          <fieldset
-            class="form-group"
-            id="inscriptionInvoiceContainer"
-            style="display: none"
-          >
-            <legend>Invoice/QR Code</legend>
+          <div class="form-and-qrcode-container"> <!-- Parent div to contain form and QR code -->
+            <fieldset class="form-group" id="inscriptionInvoiceContainer" style="display: none; width: 60%">
 
-            <div class="input-wrapper">
-              <label for="inscriptionRequestId">Inscription Request ID:</label>
-              <input id="inscriptionRequestId" readonly />
+          <div class="column-left">
+          <legend>Invoice/QR Code</legend>
+
+          <div class="input-wrapper">
+            <label for="inscriptionRequestId">Inscription Request ID:</label>
+            <div class="copy-icon-wrapper">
+              <input id="inscriptionRequestId" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('inscriptionRequestId')"></i>
             </div>
-
-            <div class="input-wrapper">
-              <label for="invoiceAddress">Invoice Address:</label>
-              <input id="invoiceAddress" readonly />
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAddress">Invoice Address:</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAddress" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAddress')"></i>
             </div>
-
-            <div class="input-wrapper">
-              <label for="invoiceAmount">Invoice Amount:</label>
-              <input id="invoiceAmount" readonly />
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAmount">Invoice Amount:</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAmount" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAmount')"></i>
             </div>
+          </div>
+         
+        </fieldset>
 
-            <div id="qrcode"></div>
-          </fieldset>
-        </article>
+          <!-- This new div will hold the QR code -->
+          <div id="qrcode-container" style="width: 34%"> <!-- Adjust width as per your needs -->
+              <div id="qrcode"></div>
+          </div>
+      </div>
+  </article>
       </div>
     </main>
-
+  
     <!-- include main.js with support for modules -->
     <script type="module" src="/js/main.js"></script>
     <script src="/js/gammaApi.js"></script>
