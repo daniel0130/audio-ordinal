@@ -25,9 +25,6 @@ if (requestId.startsWith("bc1")) {
         // append htmlText to inscriptionId
         inscriptionId.innerHTML += htmlText;
       }
-      //   console.log(data);
-      //   const textarea = document.getElementById("user-defined");
-      //   textarea.placeholder = JSON.stringify(data, null, 2);
     })
     .catch((error) => console.error("Error:", error));
 }
