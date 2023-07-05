@@ -284,11 +284,13 @@ convertButton.addEventListener("click", function () {
     convertButton.innerText = "Audional JSON Created";
     document.getElementById("reminder").style.color = "grey";
 
-    // set audionalJsonTextarea to dataStr
-    audionalJsonTextarea.value = audionalJsonString;
-    // show audionalJsonTextarea
-    audionalJsonTextarea.style.display = "block";
-
+     // set audionalJsonText to audionalJsonString
+     var audionalJsonText = document.getElementById("audional-json");
+     audionalJsonText.innerText = audionalJsonString;
+     
+     // show audionalJsonText
+     audionalJsonText.style.display = "block";
+     
     // show startInscriptionProcessButton
     startInscriptionProcessButton.style.display = "inline";
     // enable startInscriptionProcessButton
@@ -304,23 +306,37 @@ convertButton.addEventListener("click", function () {
 
 // Start Inscription Process
 startInscriptionProcessButton.addEventListener("click", async function () {
+  var audionalJsonText = document.getElementById("audional-json");
+
   startInscriptionProcess(
-    audionalJsonTextarea,
+    audionalJsonText,
     inscriptionPreviewContainer,
     estimatedFeesSpan,
     networkFeeRateSpan
   );
+  // Reveal the INSCRIBE button and make it gold
+  doInscribe.style.display = "block";
+  doInscribe.classList.add("button-gold");
+
+  // Show inscriptionPreviewContainer and hide inscriptionInvoiceContainer when starting the process
+  inscriptionPreviewContainer.style.display = "block";
+  inscriptionInvoiceContainer.style.display = "none";
 });
 
 doInscribe.addEventListener("click", async function () {
+  const audionalJsonText = document.getElementById("audional-json");
+  // Hide the audionalJsonText
+  audionalJsonText.style.display = 'none';
+
+
   // get recipientAddress and verify it starts with bc1
   const recipientAddressValue = recipientAddress.value;
   if (!validateTaprootAddress(recipientAddressValue)) {
-    alert("Recipient Address must be a taproot address.");
+    alert("Please enter a valid Bitcoin address (taproot addresses begin with bc1...) to receive the audional inscription.");
     return;
   }
 
-  var audionalJsonObject = JSON.parse(audionalJsonTextarea.value);
+  var audionalJsonObject = JSON.parse(audionalJsonText.innerText);
 
   const inscriptionRequest = {
     btc_ordinal_recipient_address: recipientAddressValue,
@@ -335,8 +351,10 @@ doInscribe.addEventListener("click", async function () {
     inscriptionRequest
   );
 
-  // show inscriptionInvoiceContainer
+// show inscriptionInvoiceContainer and hide inscriptionPreviewContainer when inscribing
   inscriptionInvoiceContainer.style.display = "block";
+  inscriptionPreviewContainer.style.display = "none";
+
 
   generateBitcoinPaymentQRCode(
     inscriptionRequestResults.btc_deposit_address,
@@ -349,7 +367,9 @@ doInscribe.addEventListener("click", async function () {
   inscriptionRequestId.value = inscriptionRequestResults.id;
 });
 
+
 function generateBitcoinPaymentQRCode(
+  
   btc_deposit_address,
   total_request_fee_sats
 ) {
@@ -367,10 +387,11 @@ function generateBitcoinPaymentQRCode(
   // Generate new QR Code
   new QRCode(document.getElementById("qrcode"), {
     text: paymentURI,
-    width: 128,
-    height: 128,
+    width: 256,  // increase the size
+    height: 256, // increase the size
     colorDark: "#000000",
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.H,
   });
+  
 }

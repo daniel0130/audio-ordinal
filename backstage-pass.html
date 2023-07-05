@@ -406,81 +406,118 @@
 
       <button id="convert" disabled>Generate Audional JSON</button>
       <button id="startInscriptionProcess" style="display: none" disabled>
-        Start Inscription
+        Start Inscription Process
       </button>
 
-      <div class="button-wrapper">
-        <button id="doInscribe">INSCRIBE</button>
+      <div class="button-wrapper" style="display: flex; justify-content: center; margin-left: -100px;">
+        <button id="doInscribe" style="display: none;">INSCRIBE</button>
       </div>
+      
+
 
       <output id="json-output"></output>
       <!-- create a read only textarea called audional-json -->
-      <textarea id="audional-json" readonly style="display: none"></textarea>
-      <div id="inscriptionPreviewContainer" style="display: none">
+      <div style="display: flex;">
+        <pre id="audional-json" readonly style="display: none; width: 50%; height: 300px; font-size: 16px; color: blue; user-select: none;"></pre>
+    
+        <div id="inscriptionPreviewContainer" style="display: none; width: 50%;">
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>
+                        Check the Inscription Price and Enter your Ordinals Receiving
+                        Address below.
+                    </legend>
+
+                    <div class="input-wrapper">
+                      <label for="ordinalRecipientAddress">Enter the Bitcoion address to receive the audional inscription:</label>
+                      <input
+                          id="ordinalRecipientAddress"
+                          style="background-color: rgb(255, 172, 172); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none;"
+                      />
+                  </div>
+                  <div class="input-wrapper">
+                    <div class="input-wrapper">
+                      <label for="networkFeeRate" style="color: rgb(255, 166, 0);">Network Fee Rate (sat/vbyte):</label>
+                      <div class="input-wrapper">
+                        <input
+                          id="networkFeeRate"
+                          readonly
+                          style="background-color: rgb(0, 0, 0); height: 30px; font-size: 16px; color: rgb(255, 166, 0); user-select: none; text-align: center; font-weight: bold;"
+                        />
+                        <span class="unit-label" style="color: rgb(255, 166, 0);">sat/vbyte</span>
+                      </div>
+                    </div>
+                    
+                    <div class="input-wrapper">
+                      <label for="estimatedFees" style="color: rgb(255, 166, 0);">Estimated Inscription Price (sats):</label>
+                      <div class="input-wrapper">
+                        <input
+                          id="estimatedFees"
+                          readonly
+                          style="background-color: rgb(0, 0, 0); height: 30px; font-size: 16px; color: rgb(255, 166, 0); user-select: none; text-align: center; font-weight: bold;"
+                        />
+                        <span class="unit-label" style="color: rgb(255, 166, 0);">sats</span>
+                      </div>
+                    </div>
+                    
+
+                  
+    
+                    
+                </fieldset>
+            </article>
+        </div>
+    </div>
+    
+
         <article class="column">
-          <fieldset class="form-group">
-            <legend>
-              Check the Inscription Price and Enter your Ordinals Receiving
-              Address below.
-            </legend>
+          <div class="form-and-qrcode-container"> <!-- Parent div to contain form and QR code -->
+            <fieldset class="form-group" id="inscriptionInvoiceContainer" style="display: none; width: 50%">
 
-            <div class="input-wrapper">
-              <label for="estimatedFees">Estimated Inscription Price:</label>
-              <input
-                id="estimatedFees"
-                readonly
-                style="background-color: red"
+          <div class="column-left">
+          <legend>Invoice/QR Code</legend>
+
+          <div class="input-wrapper">
+            <label for="inscriptionRequestId">Inscription Request ID:</label>
+            <div class="copy-icon-wrapper">
+              <input id="inscriptionRequestId" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
               />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('inscriptionRequestId')"></i>
             </div>
-
-            <div class="input-wrapper">
-              <label for="ordinalRecipientAddress">Recipient Address:</label>
-              <input
-                id="ordinalRecipientAddress"
-                style="background-color: green"
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAddress">Invoice Address:</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAddress" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
               />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAddress')"></i>
             </div>
-
-            <div class="input-wrapper">
-              <label for="networkFeeRate">Network Fee Rate:</label>
-              <input
-                id="networkFeeRate"
-                readonly
-                style="background-color: red"
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAmount">Invoice Amount:</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAmount" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
               />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAmount')"></i>
             </div>
-          </fieldset>
-        </article>
+          </div>
+         
+        </fieldset>
 
-        <article class="column">
-          <fieldset
-            class="form-group"
-            id="inscriptionInvoiceContainer"
-            style="display: none"
-          >
-            <legend>Invoice/QR Code</legend>
-
-            <div class="input-wrapper">
-              <label for="inscriptionRequestId">Inscription Request ID:</label>
-              <input id="inscriptionRequestId" readonly />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="invoiceAddress">Invoice Address:</label>
-              <input id="invoiceAddress" readonly />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="invoiceAmount">Invoice Amount:</label>
-              <input id="invoiceAmount" readonly />
-            </div>
-
-            <div id="qrcode"></div>
-          </fieldset>
-        </article>
+          <!-- This new div will hold the QR code -->
+          <div id="qrcode-container" style="width: 34%"> <!-- Adjust width as per your needs -->
+              <div id="qrcode"></div>
+          </div>
+      </div>
+  </article>
       </div>
     </main>
-
+  
     <!-- include main.js with support for modules -->
     <script type="module" src="/js/main.js"></script>
     <script src="/js/gammaApi.js"></script>
