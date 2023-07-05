@@ -11,10 +11,10 @@ export async function startInscriptionProcess(
   var totalFees = inscriptionPreview.calculated_fee_summary.high.total_fee_sats;
 
   // hide audionalJsonTextarea
-  audionalJsonText.style.display = "none";
+  audionalJsonText.style.display = "inline-block";
 
   // show inscriptionPreviewArea
-  inscriptionPreviewContainer.style.display = "block";
+  inscriptionPreviewContainer.style.display = "inline-block";
 
   // update span with id estimatedFees to totalFees
   estimatedFeesSpan.value = totalFees;

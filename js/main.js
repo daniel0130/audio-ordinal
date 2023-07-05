@@ -325,6 +325,9 @@ startInscriptionProcessButton.addEventListener("click", async function () {
 
 doInscribe.addEventListener("click", async function () {
   const audionalJsonText = document.getElementById("audional-json");
+  // Hide the audionalJsonText
+  audionalJsonText.style.display = 'none';
+
 
   // get recipientAddress and verify it starts with bc1
   const recipientAddressValue = recipientAddress.value;
