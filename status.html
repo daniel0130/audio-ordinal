@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bitcoin Audional Generator</title>
+    <!-- include styles.css -->
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  </head>
+  <body>
+    <div class="header">
+      <img src="/images/AudionalsLogo.png" alt="Audionals Logo" />
+      <h1>Audionals.com</h1>
+      <img src="/images/AudionalsLogo.png" alt="Audionals Logo" />
+    </div>
+    <button class="info-button" onclick="toggleInfo()">
+      What are Audionals?
+    </button>
+    <div id="main-content">
+      Inscription Request ID: <span id="inscriptionRequestId"></span>
+      <br />
+      Is Paid: <span id="isPaidFor"></span>
+      <br />
+      Inscription ID: <span id="inscriptionId"></span>
+      <br />
+    </div>
+  </body>
+  <script type="module" src="/js/main.js"></script>
+  <script src="/js/gammaApi.js"></script>
+  <script src="/js/status.js"></script>
+</html>
