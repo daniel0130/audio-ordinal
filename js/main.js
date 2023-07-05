@@ -317,6 +317,10 @@ startInscriptionProcessButton.addEventListener("click", async function () {
   // Reveal the INSCRIBE button and make it gold
   doInscribe.style.display = "block";
   doInscribe.classList.add("button-gold");
+
+  // Show inscriptionPreviewContainer and hide inscriptionInvoiceContainer when starting the process
+  inscriptionPreviewContainer.style.display = "block";
+  inscriptionInvoiceContainer.style.display = "none";
 });
 
 doInscribe.addEventListener("click", async function () {
@@ -344,8 +348,10 @@ doInscribe.addEventListener("click", async function () {
     inscriptionRequest
   );
 
-  // show inscriptionInvoiceContainer
+// show inscriptionInvoiceContainer and hide inscriptionPreviewContainer when inscribing
   inscriptionInvoiceContainer.style.display = "block";
+  inscriptionPreviewContainer.style.display = "none";
+
 
   generateBitcoinPaymentQRCode(
     inscriptionRequestResults.btc_deposit_address,
@@ -360,6 +366,7 @@ doInscribe.addEventListener("click", async function () {
 
 
 function generateBitcoinPaymentQRCode(
+  
   btc_deposit_address,
   total_request_fee_sats
 ) {
