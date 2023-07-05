@@ -117,7 +117,8 @@ button:disabled {
   color: white;
 }
 #audional-json {
-  width: 100%;
+  width: 50%;
+  max-width: 50%;
   height: 150px;
   padding: 12px 20px;
   box-sizing: border-box;
@@ -125,13 +126,34 @@ button:disabled {
   border-radius: 4px;
   background-color: #f8f8f8;
   font-size: 16px;
+  color: darkblue; /* change color of text for better visibility */
+  overflow-y: auto; /* Use auto instead of scroll to hide scrollbar when not necessary */
   resize: none;
   margin-top: 20px;
+  user-select: none; /* Prevent text selection */
+  white-space: pre-wrap; /* Ensures proper formatting of JSON string */
 }
+
 .radio-group {
   display: flex;
 }
 
 .radio-group input[type="radio"] {
   margin-right: 10px;
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.button-gold {
+  background: linear-gradient(45deg, gold, #ffd700, gold);
+  background-size: 200% 100%;
+  color: black;
+  font-style: italic;
+  animation: shimmer 2s linear infinite;
 }

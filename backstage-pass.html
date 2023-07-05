@@ -406,51 +406,60 @@
 
       <button id="convert" disabled>Generate Audional JSON</button>
       <button id="startInscriptionProcess" style="display: none" disabled>
-        Start Inscription
+        Start Inscription Process
       </button>
 
-      <div class="button-wrapper">
-        <button id="doInscribe">INSCRIBE</button>
+      <div class="button-wrapper" style="display: flex; justify-content: center; margin-left: -100px;">
+        <button id="doInscribe" style="display: none;">INSCRIBE</button>
       </div>
+      
+
 
       <output id="json-output"></output>
       <!-- create a read only textarea called audional-json -->
-      <textarea id="audional-json" readonly style="display: none"></textarea>
-      <div id="inscriptionPreviewContainer" style="display: none">
-        <article class="column">
-          <fieldset class="form-group">
-            <legend>
-              Check the Inscription Price and Enter your Ordinals Receiving
-              Address below.
-            </legend>
+      <div style="display: flex;">
+        <pre id="audional-json" readonly style="display: none; width: 50%; height: 150px; font-size: 16px; color: blue; user-select: none;"></pre>
+    
+        <div id="inscriptionPreviewContainer" style="display: none; width: 50%;">
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>
+                        Check the Inscription Price and Enter your Ordinals Receiving
+                        Address below.
+                    </legend>
 
-            <div class="input-wrapper">
-              <label for="estimatedFees">Estimated Inscription Price:</label>
-              <input
-                id="estimatedFees"
-                readonly
-                style="background-color: red"
-              />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="ordinalRecipientAddress">Recipient Address:</label>
-              <input
-                id="ordinalRecipientAddress"
-                style="background-color: green"
-              />
-            </div>
-
-            <div class="input-wrapper">
-              <label for="networkFeeRate">Network Fee Rate:</label>
-              <input
-                id="networkFeeRate"
-                readonly
-                style="background-color: red"
-              />
-            </div>
-          </fieldset>
-        </article>
+                    <div class="input-wrapper">
+                      <label for="ordinalRecipientAddress">Enter the Bitcoion address to receive the audional inscription:</label>
+                      <input
+                          id="ordinalRecipientAddress"
+                          style="background-color: rgb(255, 172, 172); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none;"
+                      />
+                  </div>
+                  <div class="input-wrapper">
+                    <label for="networkFeeRate">Network Fee Rate (sat/vbyte):</label>
+                    <input
+                      id="networkFeeRate"
+                      readonly
+                      style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+                    />
+                  </div>
+                  
+                  <div class="input-wrapper">
+                    <label for="estimatedFees">Estimated Inscription Price (sats):</label>
+                    <input
+                      id="estimatedFees"
+                      readonly
+                      style="background-color: rgb(181, 181, 181); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+                    />
+                  </div>
+                  
+    
+                    
+                </fieldset>
+            </article>
+        </div>
+    </div>
+    
 
         <article class="column">
           <fieldset
