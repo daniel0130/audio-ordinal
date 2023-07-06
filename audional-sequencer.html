@@ -450,23 +450,26 @@ h3:hover .subtext {
 
     <script>
 
-  let isPlaying = false;
-  let beatCount = 0;  // new bar count variable 
-  let timeoutId;
-  let stopClickCount = 0;
-  let channels;
-  let playButton = document.getElementById('play');
-  let stopButton = document.getElementById('stop');
-  let saveButton = document.getElementById('save-button');
-  let loadButton = document.getElementById('load-button');
-  let bpm = 125;
-  let currentStep = 0;
-  let audioContext;
-  let currentStepTime;
-  let startTime;
-  let nextStepTime;
-  let stepDuration;
-  let gainNodes = [];
+    let isPlaying = false;
+    let currentStep = 0;
+    let beatCount = 1; // individual steps
+    let barCount = 1; // bars
+    let sequenceCount = 0; // sequences
+    let timeoutId;
+    let stopClickCount = 0;
+    let channels;
+    let playButton = document.getElementById('play');
+    let stopButton = document.getElementById('stop');
+    let saveButton = document.getElementById('save-button');
+    let loadButton = document.getElementById('load-button');
+    let bpm = 125;
+    let audioContext;
+    let currentStepTime;
+    let startTime;
+    let nextStepTime;
+    let stepDuration;
+    let gainNodes = [];
+
 
   function getIDFromURL(url) {
     const parts = url.split('/');
@@ -676,11 +679,14 @@ h3:hover .subtext {
             stopButton.classList.add('selected');
             playButton.classList.remove('selected');
             isPlaying = false;
-            beatCount = 0;  // reset the bar count
+            beatCount = 0;  // reset the beat count
+            barCount = 0; // reset the bar count
+            sequenceCount = 0; // reset the sequence count
             currentStep = 0;  // reset the step count
             resetStepLights();  // reset the step lights
         }
-        });
+    });
+
   } else {
     console.error("Play or Stop button is not defined");
   }
@@ -708,9 +714,9 @@ h3:hover .subtext {
         ['5', '13', '21', '29', '37', '45', '53', '61', '64']
         ],
         muted: [ false, false, true, true ],
-        unmuteBars: [ null, null, 60, 32 ]  // Use beat counts to unmute (1 beat is 4 steps)
+        unmuteBeats: [ null, null, 28, 63 ]  // Use beat counts to unmute
     },
-    };
+};
 
 
   // Load a preset when the page loads
@@ -795,23 +801,34 @@ h3:hover .subtext {
   }
 
   function playStep() {
-    const currentBar = Math.floor(beatCount / 4) + 1; // Calculate the current bar
+    const currentBeat = ((currentStep / 4) | 0) % 16; // Calculate the current beat and ensure it wraps
 
     channels.forEach((channel, index) => {
         const buttons = channel.querySelectorAll('.step-button');
         let isMuted = channel.dataset.muted === 'true';
 
-        // Unmute the channel at the designated bar if it's currently muted
-        if (isMuted && presets.preset1.unmuteBars[index] === currentBar) {
+        // Unmute the channel at the designated beat if it's currently muted
+        const unmuteBeat = presets.preset1.unmuteBeats[index];
+        if (isMuted && unmuteBeat !== null && unmuteBeat === beatCount) {
             channel.dataset.muted = 'false';
             isMuted = false;
-            channel.querySelector('.mute-button').classList.remove('selected'); // Reflect the state change in the UI
+            channel.querySelector('.mute-button').classList.remove('selected'); 
         }
+        buttons.forEach((button, buttonIndex) => {
+            button.classList.remove('playing'); // Reset the playhead/step light for all buttons
+            button.classList.remove('triggered'); // Reset the triggered light for all buttons
 
-        if (buttons[currentStep]) {
-            buttons.forEach(button => button.classList.remove('playing'));
-            buttons[currentStep].classList.add('playing');
-        }
+            if (buttonIndex === currentStep && !isMuted) {
+                button.classList.add('playing'); // Highlight the current step with the playhead/step light
+            }
+
+            if (button.classList.contains('selected')) {
+                const triggerIndex = presets.preset1.triggers[index].indexOf(String(buttonIndex + 1));
+                if (triggerIndex !== -1) {
+                    button.classList.add('triggered'); // Highlight the live trigger with the triggered light
+                }
+            }
+        });
 
         if (buttons[currentStep].classList.contains('selected') && !isMuted) {
             const audioData = channel.dataset.audioData;
@@ -824,17 +841,44 @@ h3:hover .subtext {
         }
     });
 
+    // Log the beat, bar, and sequence counts
+    console.log('Beat:', beatCount);
+    console.log('Bar:', barCount);  // Use barCount instead of currentBar
+    console.log('Sequence:', sequenceCount);
+
     currentStep = (currentStep + 1) % 64;
-    beatCount++;  // increase the bar count
+
+    if (currentStep % 4 === 0) {
+        beatCount++;  // No wrap-around here
+    }
+
+    if (currentStep % 16 === 0) {
+        barCount = (barCount + 1);
+    }
+
+    if (currentStep % 64 === 0) {
+        sequenceCount++;
+    }
+
     nextStepTime += stepDuration;
 }
 
-  function stopScheduler() {
+
+
+
+
+function stopScheduler() {
     if (audioContext) {
       audioContext.close();
     }
     clearTimeout(timeoutId);
-  }
+
+    // Reset counters
+    currentStep = 0;
+    beatCount = 1;
+    barCount = 1; // Reset barCount to 1
+    sequenceCount = 0;
+}
 
   function resetStepLights() {
     const buttons = document.querySelectorAll('.step-button');
