@@ -14,7 +14,9 @@ export function audionalJsonTemplate(
   note,
   isLoop,
   loopGap,
-  loopBPM
+  loopBPM,
+  loopTrim_start,
+  loopTrim_end
 ) {
   var audionalJsonTemplate = {
     protocol: "audional",
@@ -106,6 +108,8 @@ export function audionalJsonTemplate(
       loopBPM: loopBPM,
       playSpeed: 1.0,
       keyShift: 0,
+      loopTrim_start: "loopTrim_start",
+      loopTrim_end: "loopTrim_end",
     },
   };
   return audionalJsonTemplate;
