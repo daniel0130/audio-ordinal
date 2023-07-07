@@ -714,7 +714,8 @@ h3:hover .subtext {
         ['5', '13', '21', '29', '37', '45', '53', '61', '64']
         ],
         muted: [ false, false, true, true ],
-        unmuteBeats: [ null, null, 28, 63 ]  // Use beat counts to unmute
+        unmuteBeats: [ null, null, 28, 63 ],  // Use beat counts to unmute
+        muteBeats: [ null, null, 63, null ]
     },
 };
 
@@ -810,10 +811,19 @@ h3:hover .subtext {
         // Unmute the channel at the designated beat if it's currently muted
         const unmuteBeat = presets.preset1.unmuteBeats[index];
         if (isMuted && unmuteBeat !== null && unmuteBeat === beatCount) {
-            channel.dataset.muted = 'false';
-            isMuted = false;
-            channel.querySelector('.mute-button').classList.remove('selected'); 
+        channel.dataset.muted = 'false';
+        isMuted = false;
+        channel.querySelector('.mute-button').classList.remove('selected');
         }
+
+        // Mute the channel at the designated beat if it's currently unmuted
+        const muteBeat = presets.preset1.muteBeats[index];
+        if (!isMuted && muteBeat !== null && muteBeat === beatCount) {
+        channel.dataset.muted = 'true';
+        isMuted = true;
+        channel.querySelector('.mute-button').classList.add('selected');
+        }
+        
         buttons.forEach((button, buttonIndex) => {
             button.classList.remove('playing'); // Reset the playhead/step light for all buttons
             button.classList.remove('triggered'); // Reset the triggered light for all buttons
