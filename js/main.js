@@ -216,6 +216,9 @@ convertButton.addEventListener("click", function () {
 
   var isLoopRadio = document.querySelector('input[name="isLoop"]:checked');
   var isLoop = isLoopRadio ? isLoopRadio.value.toLowerCase() === "yes" : false;
+  var loopTrim_start; 
+  var loopTrim_end; 
+
 
   var file = fileInput.files[0];
   if (!file) {
@@ -270,8 +273,11 @@ convertButton.addEventListener("click", function () {
       note,
       isLoop,
       loopGap,
-      loopBPM
+      loopBPM,
+      loopTrim_start, 
+      loopTrim_end 
     );
+    
 
     var audionalJsonString = JSON.stringify(audionalJson, null, 2);
     var audionalJsonBlob = new Blob([audionalJsonString], {
