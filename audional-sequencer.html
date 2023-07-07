@@ -131,8 +131,10 @@ h3:hover .subtext {
 }
 
 .button-container {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 }
 .title {
     font-size: 40px; /* Adjust the font size as needed */
@@ -265,6 +267,33 @@ h3:hover .subtext {
 
 .centered-text {
     text-align: right;
+}
+.new-button-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    text-align: right;
+}
+
+.new-button {
+    padding: 10px 20px;
+    color: black;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.75em;
+    font-weight: bold;
+    box-shadow: var(--box-shadow-style);
+    cursor: pointer;
+    margin-left: auto;
+
+}
+
+.new-button-subtext {
+    display: block;
+    font-size: 1em;
+    color: var(--primary-color);
+    opacity: 0.7;
 }
 
 </style>    
@@ -440,13 +469,16 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <span class="button-label"></span>
-        <button id="save-button">Save</button>
-        <input type="file" id="save-file-input" style="display: none">
-
-        <button id="load-button">Load</button>
-        <input type="file" id="load-file-input" style="display: none" accept=".json">
-
+        <div class="button-container">
+          <button id="save-button">Save</button>
+          <input type="file" id="save-file-input" style="display: none">
+        
+          <button id="load-button">Load</button>
+          <input type="file" id="load-file-input" style="display: none" accept=".json">
+        
+          <button class="new-button">Inscribe Audional Composition</button>
+          <span class="new-button-subtext">(Coming soon...)</span>
+        </div>
 
     <script>
 
