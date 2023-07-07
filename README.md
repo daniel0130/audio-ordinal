@@ -11,3 +11,10 @@
    b. (DONE) show estimated fee: calculated_fee_summary.high.total_fee_sats
 4. (DONE)Add 'Inscribe' button:
    a. Gamma will respond with where to send the bitcoin to
+
+
+#Audional Sequencer
+1. Add function to allow triggering automated sample imports during play.
+2. Add display for showing the Audionals logo image via the recursive URL field in the json files
+3. Create (Audial) inscription json format including inscription of unique audial logo
+4. 
