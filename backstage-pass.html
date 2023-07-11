@@ -379,10 +379,82 @@
                 placeholder="E.G. 120"
                 class="form-control last-input"
               />
-            </div>
-          </fieldset>
-        </article>
-      </section>
+              <div id="trimInputs" class="hidden">  <!-- Add this wrapper and initially hide it -->
+                <div class="input-wrapper">
+                  <label for="loopTrimStart" style="height: 25px">Trim start of sample for looping (in seconds) (e.g. -0.125):</label>
+                  <input
+                    type="text"
+                    id="loopTrimStart"
+                    maxlength="6"
+                    oninput="validateInput(this)"
+                    value="-0."
+                    class="form-control last-input"
+                  />
+                </div>
+          
+                <div class="input-wrapper">
+                  <label for="loopTrimEnd" style="height: 25px">Trim end of sample for looping (in seconds) (e.g. -0.125):</label>
+                  <input
+                    type="text"
+                    id="loopTrimEnd"
+                    maxlength="6"
+                    oninput="validateInput(this)"
+                    value="-0."
+                    class="form-control last-input"
+                  />
+                </div>
+                </div>
+              </fieldset>
+            </article>
+          </section>
+              
+          <script>
+            function validateInput(input) {
+              const userInput = input.value;
+              const decimalPart = userInput.substr(3).replace(/[^\d]/g, '');
+              if (decimalPart > 999) decimalPart = 999;
+              input.value = "-0." + decimalPart;
+          
+              updateLoopTrimValues(); // Update the loopTrimStart and loopTrimEnd values
+            }
+          
+            function updateLoopTrimValues() {
+              var loopTrimStartInput = document.getElementById("loopTrimStart");
+              var loopTrimEndInput = document.getElementById("loopTrimEnd");
+              var loopTrimStart = loopTrimStartInput.value ? parseFloat(loopTrimStartInput.value) : 0;
+              var loopTrimEnd = loopTrimEndInput.value ? parseFloat(loopTrimEndInput.value) : 0;
+          
+              // Debugging: Output values to the console
+              console.log("loopTrimStartInput:", loopTrimStartInput.value);
+              console.log("loopTrimEndInput:", loopTrimEndInput.value);
+              console.log("loopTrimStart:", loopTrimStart);
+              console.log("loopTrimEnd:", loopTrimEnd);
+          
+              // Use the updated loopTrimStart and loopTrimEnd values as needed
+              console.log("Loop Trim Start:", loopTrimStart);
+              console.log("Loop Trim End:", loopTrimEnd);
+            }
+          
+            document.getElementById("loopTrimStart").onfocus = function () {
+              this.selectionStart = this.selectionEnd = this.value.length;
+            };
+          
+            document.getElementById("loopTrimEnd").onfocus = function () {
+              this.selectionStart = this.selectionEnd = this.value.length;
+            };
+          
+            document.getElementById("isLoopYes").addEventListener("change", function () {
+              document.getElementById("trimInputs").classList.remove("hidden");
+            });
+          
+            document.getElementById("isLoopNo").addEventListener("change", function () {
+              document.getElementById("trimInputs").classList.add("hidden");
+            });
+          </script>
+              
+              
+     
+       
 
       <fieldset class="form-group">
         <legend>
