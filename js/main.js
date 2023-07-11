@@ -139,51 +139,6 @@ processButton.addEventListener("click", function () {
   reader.readAsArrayBuffer(file);
 });
 
-convertButton.addEventListener("click", function () {
-  var audioTypeInput = document.getElementById("audio_type");
-  var fileInput = document.getElementById("file");
-  var instrumentInput = document.getElementById("instrument");
-  var instrumentSpecificsInput = document.getElementById(
-    "instrument_specifics"
-  );
-  var genreInput = document.getElementById("genre");
-  var keyInput = document.getElementById("key");
-  var bpmInput = document.getElementById("bpm");
-  var userDefinedInput = document.getElementById("user-defined");
-  var noteInput = document.getElementById("note");
-  var isLoopRadio = document.querySelector('input[name="isLoop"]:checked');
-  var isLoop = isLoopRadio ? isLoopRadio.value.toLowerCase() === "yes" : false;
-
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    var audioData = e.target.result;
-
-    audioContext.decodeAudioData(audioData, function (buffer) {
-      var duration = buffer.duration;
-
-      fileInput.sampleRate = buffer.sampleRate;
-      fileInput.numberOfChannels = buffer.numberOfChannels;
-
-      document.getElementById("duration").value = duration.toFixed(3);
-      document.getElementById("fileName").value = file.name;
-
-      processButton.classList.remove("flashing");
-      processButton.style.backgroundColor = "green";
-      processButton.innerText = "File Processed";
-      convertButton.disabled = false;
-      convertButton.classList.add("flashing");
-
-      document.getElementById("fileName").readOnly = true;
-      document.getElementById("duration").readOnly = true;
-
-      document.getElementById("reminder").style.color = "red";
-    });
-  };
-  reader.onerror = function () {
-    alert("Error reading file");
-  };
-  // reader.readAsArrayBuffer(file);
-});
 
 convertButton.addEventListener("click", function () {
   var audioTypeInput = document.getElementById("audio_type");
@@ -216,8 +171,11 @@ convertButton.addEventListener("click", function () {
 
   var isLoopRadio = document.querySelector('input[name="isLoop"]:checked');
   var isLoop = isLoopRadio ? isLoopRadio.value.toLowerCase() === "yes" : false;
-  var loopTrim_start; 
-  var loopTrim_end; 
+  var loopTrimStartInput = document.getElementById("loopTrimStart");
+  var loopTrimEndInput = document.getElementById("loopTrimEnd");
+  var loopTrimStart = loopTrimStartInput.value ? parseFloat(loopTrimStartInput.value) : 0;
+  var loopTrimEnd = loopTrimEndInput.value ? parseFloat(loopTrimEndInput.value) : 0;
+
 
 
   var file = fileInput.files[0];
@@ -274,8 +232,8 @@ convertButton.addEventListener("click", function () {
       isLoop,
       loopGap,
       loopBPM,
-      loopTrim_start, 
-      loopTrim_end 
+      loopTrimStart, 
+      loopTrimEnd 
     );
     
 
