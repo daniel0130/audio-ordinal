@@ -561,7 +561,7 @@ let beatCount = 1; // individual steps
 let currentBeat = 1;
 let barCount = 1; // bars
 let currentBar = 1;
-let sequenceCount = 0; // sequences
+let sequenceCount = 1; // sequences
 let currentSequence = 1;
 let timeoutId;
 let stopClickCount = 0;
@@ -581,6 +581,9 @@ let sequences = Array(64).fill().map(() => Array(64).fill(false));
 let audioContext;
 let audioBuffers = {};
 let channels = Array(8).fill(null); // Added initialization for channels array
+let sequenceLights; // Declare it at the top level of your script, outside any function.
+
+
 
 
 
@@ -712,17 +715,16 @@ function importSettings(json) {
 
           modeToggle.addEventListener('change', () => {
             console.log("Mode toggle changed");
-            if (modeToggle.checked) {
-              // Continuous play mode is enabled
-              resetSequenceCounts();
-              resetStepLights();
+            isContinuous = modeToggle.checked;
+            if (isContinuous) {
+                // Continuous play mode is enabled
+                resetSequenceCounts();
+                resetStepLights();
             } else {
-              // 4-bar loop mode is enabled
-              resetBarAndSequenceCounts();
-              resetStepLights();
+                // 4-bar loop mode is enabled
+                resetStepLights();
             }
-          });
-
+        });
 
 
         // Create the sequence lights
@@ -813,7 +815,7 @@ function importSettings(json) {
 
         function resetSequenceCounts() {
           if (!isContinuous) {
-              sequenceCount = 0;
+              sequenceCount = 1;
               resetStepLights();
           }
       }
@@ -901,7 +903,7 @@ function importSettings(json) {
           if (!isContinuous) {  // Only reset the counts if we're not in continuous mode
               beatCount = 1;
               barCount = 1;
-              sequenceCount = 0;
+              sequenceCount = 1;
               currentStep = 0;
               resetStepLights();
           }
@@ -1142,8 +1144,34 @@ function importSettings(json) {
     }
 
     if (currentStep % 64 === 0) {
-        sequenceCount++;
+    sequenceCount++;
+
+    // Check if we're in continuous play mode
+    if (isContinuous) {
+        // If so, check if we've gone past the last sequence
+        if (sequenceCount > 65) {
+            // If so, loop back to the first sequence
+            sequenceCount = 1;
+        }
+        // Switch to the next sequence
+        currentSequence = sequenceCount;
+
+        // Update the sequence light
+        sequenceLights = document.querySelectorAll('.sequence-light');
+        sequenceLights.forEach((light, lightIndex) => {
+          console.log('Updating sequence light', lightIndex + 1);  // Added this line
+          if (lightIndex === currentSequence - 1) {
+              light.classList.add('on');
+              console.log('Turning on sequence light', lightIndex + 1);  // Added this line
+          } else {
+              light.classList.remove('on');
+          }
+      });
+
+        // Update the UI to reflect the new sequence
+        updateUI();
     }
+}
 
     nextStepTime += stepDuration;
 }
@@ -1162,7 +1190,7 @@ function stopScheduler() {
     currentStep = 0;
     beatCount = 1;
     barCount = 1; // Reset barCount to 1
-    sequenceCount = 0;
+    sequenceCount = 1;
 }
 
   function resetStepLights() {
