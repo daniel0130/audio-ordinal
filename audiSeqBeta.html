@@ -718,10 +718,12 @@ function importSettings(json) {
             isContinuous = modeToggle.checked;
             if (isContinuous) {
                 // Continuous play mode is enabled
-                resetSequenceCounts();
+                // No need to reset the sequenceCount
                 resetStepLights();
             } else {
                 // 4-bar loop mode is enabled
+                // Reset the sequenceCount only when switching to non-continuous mode
+                // Or set it to the value you want when switching to non-continuous mode
                 resetStepLights();
             }
         });
@@ -773,6 +775,16 @@ function importSettings(json) {
               });
           });
       });
+
+      function updateSequenceLights() {
+        sequenceLights.forEach((light, index) => {
+            if (index === sequenceCount - 1) {
+                light.classList.add('on');
+            } else {
+                light.classList.remove('on');
+            }
+        });
+    }
           saveButton.addEventListener('click', () => {
             console.log("Save button clicked");
             let settings = exportSettings();
@@ -958,29 +970,29 @@ function importSettings(json) {
         url: 'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0',
         triggers: [],
         muted: true,
-        unmuteBeats: [3, 6, 9, 12],
-        muteBeats: [1, 5, 7, 11]
+        unmuteBeats: [],
+        muteBeats: []
       },
       {
         url: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
         triggers: [],
         muted: true,
-        unmuteBeats: [1, 3, 5, 10],
-        muteBeats: [2, 4, 6, 20]
+        unmuteBeats: [],
+        muteBeats: []
       },
       {
         url: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
         triggers: [],
         muted: true,
-        unmuteBeats: [3, 6, 9, 12],
-        muteBeats: [1, 5, 7, 11]
+        unmuteBeats: [],
+        muteBeats: []
       },
       {
         url: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
         triggers: [],
         muted: true,
-        unmuteBeats: [2, 4, 6, 20],
-        muteBeats: [1, 3, 5, 10]
+        unmuteBeats: [],
+        muteBeats: []
       },
       // ...
     ],
@@ -1149,7 +1161,7 @@ function importSettings(json) {
     // Check if we're in continuous play mode
     if (isContinuous) {
         // If so, check if we've gone past the last sequence
-        if (sequenceCount > 65) {
+        if (sequenceCount > 64) {
             // If so, loop back to the first sequence
             sequenceCount = 1;
         }
