@@ -9,12 +9,11 @@
     --accent-color: #f00;
     --play-button-dimension: 50px;
     --stop-button-dimension: 50px;
+    --step-button-dimension: 25px; 
     --control-button-dimension: 25px;
     --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
     --margin-style: 10px;
     --default-font: Arial, sans-serif;
-    --step-button-dimension: 15px; /* added */
-    --sequence-light-dimension: 15px; /* added */
 }
 
 body {
@@ -41,6 +40,7 @@ h1 {
 
 .button {
     border: none;
+    border-radius: 5px;
     background-color: var(--primary-color);
     cursor: pointer;
     box-shadow: var(--box-shadow-style);
@@ -57,15 +57,14 @@ h3 .subtext {
 }
 
 h3:hover .subtext {
-    font-size: 1em; /* Customize the font size for the shrunk subtext on hover */
+    font-size: 0.6em; /* Customize the font size for the shrunk subtext on hover */
     opacity: 0.5; /* Customize the opacity for the shrunk subtext on hover */
 }
 
 .step-button {
-    margin-top: 0px;
-    width: 15px;
-    flex: 1 1 auto; /* added */
-    height: 15px;
+    margin-top: 10px;
+/* width: calc(100% / 16 - 2px); Remove this */    
+    height: 10px;
     background-color: #555;
     color: #fff;
 }
@@ -112,19 +111,30 @@ h3:hover .subtext {
 
 
 .channel {
+    position: relative; 
     display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .steps-container {
+    display: flex;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 0px;
     margin: 0px 0;
 }
 
+.controls-container {
+    width: 15%;
+    gap: 5px;
+}
 
 .button-container {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
+  gap: 10px;
 }
 .title {
     font-size: 40px; /* Adjust the font size as needed */
@@ -157,6 +167,12 @@ h3:hover .subtext {
     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
 }
 
+.channel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px; /* Adjusts spacing between buttons */
+}
 
 .clear-button {
     background-color: #ff0;
@@ -165,14 +181,18 @@ h3:hover .subtext {
 .mute-button {
   background-color: #800;
 }
-
+.button-fixed-width {
+  width: 100px !important;
+}
 
 .load-sample-button {
   display: inline-block;
-  flex: 1;
-  overflow: auto;
+  flex: 2.5;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.5em;
+  font-size: 1em;
+  position: relative;
 }
 
 .load-sample-button:hover::after {
@@ -182,7 +202,14 @@ h3:hover .subtext {
   left: 0;
   background: var(--primary-color);
   color: var(--main-bg-color);
+  padding: 5px;
+  border-radius: 10px;
   z-index: 1;
+}
+
+#load-preset {
+  font-size: 1em;
+  padding: 5px 10px;
 }
 
 
@@ -204,6 +231,12 @@ h3:hover .subtext {
     100% {background-color: var(--primary-color);}
 }
 
+.controls-container {
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
 
 .channel-controls {
     margin-top: 20px; /* Add a top margin if needed */
@@ -261,72 +294,6 @@ h3:hover .subtext {
     font-size: 1em;
     color: var(--primary-color);
     opacity: 0.7;
-}
-.mode-switcher {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 50px;
-}
-
-.mode-switcher label {
-  margin-right: 10px;
-}
-
-.mode-switcher input[type="checkbox"] {
-  appearance: none;
-  width: 40px;
-  height: 20px;
-  background-color: #ccc;
-  border-radius: 10px;
-  position: relative;
-  outline: none;
-  cursor: pointer;
-}
-
-.mode-switcher input[type="checkbox"]:checked {
-  background-color: #2196f3;
-}
-
-.mode-switcher input[type="checkbox"]::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 18px;
-  height: 18px;
-  background-color: #fff;
-  border-radius: 50%;
-  transition: transform 0.2s ease;
-}
-
-.mode-switcher input[type="checkbox"]:checked::before {
-  transform: translateX(20px);
-}
-
-#steps-container, #sequence-lights {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 90%;
-  margin-left: 10%; /* Add 20% indentation from the left margin */
-
-}
-.sequence-light, .step-button {
-  grid-column: span 1;
-  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
-
-}
-.sequence-light {
-  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
-  height: 15px;
-  background-color: grey; /* Add your off state styles here */
-  box-sizing: border-box;
-}
-
-.sequence-light.on {
-  background-color: greenyellow; /* Add your off state styles here */
- /* Add your on state styles here */
 }
 
 </style>    
@@ -451,7 +418,7 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-6">
+        <div class="channel" id="channel-5">
             <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
@@ -468,7 +435,7 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-7">
+        <div class="channel" id="channel-5">
             <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
             <div>
             <button class="control-button clear-button">C</button>
@@ -485,76 +452,55 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-8">
-          <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
-          <div>
-          <button class="control-button clear-button">C</button>
-          <button class="control-button mute-button">M</button>
-          </div>
-          <div class="channel-container">
-              <div class="steps-container"></div>
-              <div class="controls-container">
-                  <div class="channel-controls">
-                      <div class="button-container">
-                          
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <div class="steps-container"></div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="button-container">
+          <button id="save-button">Save</button>
+          <input type="file" id="save-file-input" style="display: none">
+        
+          <button id="load-button">Load</button>
+          <input type="file" id="load-file-input" style="display: none" accept=".json">
+        
+          <button class="new-button">Inscribe Audional Composition</button>
+          <span class="new-button-subtext">(Coming soon...)</span>
+        </div>
 
-      <div id="sequence-lights">
-        <!-- We'll generate the individual lights with JavaScript -->
-    </div>
-    <div class="button-container">
-      <button id="save-button">Save</button>
-      <input type="file" id="save-file-input" style="display: none">
-    
-      <button id="load-button">Load</button>
-      <input type="file" id="load-file-input" style="display: none" accept=".json">
-
-      <div class="mode-switcher">
-        <label for="mode-toggle">Continuous Mode</label>
-        <input type="checkbox" id="mode-toggle">
-      </div>
-    
-      <button class="new-button">Inscribe Audional Composition</button>
-      <span class="new-button-subtext">(Coming soon...)</span>
-    </div>
     <script>
 
-let isPlaying = false;
-let stepCount = 0;
-let currentStep = 0;
-let beatCount = 1; // individual steps
-let currentBeat = 1;
-let barCount = 1; // bars
-let currentBar = 1;
-let sequenceCount = 1; // sequences
-let currentSequence = 1;
-let timeoutId;
-let stopClickCount = 0;
-let playButton = document.getElementById('play');
-let stopButton = document.getElementById('stop');
-let saveButton = document.getElementById('save-button');
-let loadButton = document.getElementById('load-button');
-let bpm = 125;
-let currentStepTime;
-let startTime;
-let nextStepTime;
-let stepDuration;
-let gainNodes = [];
-let isContinuous = false;
-let modeToggle = document.getElementById('mode-toggle');
-let sequences = Array(64).fill().map(() => Array(64).fill(false));
-let audioContext;
-let audioBuffers = {};
-let channels = Array(8).fill(null); // Added initialization for channels array
-let sequenceLights; // Declare it at the top level of your script, outside any function.
-
-
-
+    let isPlaying = false;
+    let currentStep = 0;
+    let beatCount = 1; // individual steps
+    let barCount = 1; // bars
+    let sequenceCount = 0; // sequences
+    let timeoutId;
+    let stopClickCount = 0;
+    let channels;
+    let playButton = document.getElementById('play');
+    let stopButton = document.getElementById('stop');
+    let saveButton = document.getElementById('save-button');
+    let loadButton = document.getElementById('load-button');
+    let bpm = 125;
+    let audioContext;
+    let currentStepTime;
+    let startTime;
+    let nextStepTime;
+    let stepDuration;
+    let gainNodes = [];
 
 
   function getIDFromURL(url) {
@@ -605,257 +551,141 @@ let sequenceLights; // Declare it at the top level of your script, outside any f
     });
 };
 
-function updateUI() {
-    console.log('Updating UI for sequence:', currentSequence); // Logs the sequence number for which UI is being updated.
-    let buttons = document.querySelectorAll('.step-button');
-    buttons.forEach((button, index) => {
-        button.classList.remove('selected');
-        if (sequences[currentSequence - 1][index]) { // note the adjustment to the index
-            console.log(`Button ${index + 1} is selected in sequence ${currentSequence}`); // Logs the index of the button being selected.
-            button.classList.add('selected');
-        }
-    });
-}
 
 
-function exportSettings() {
-    let settings = { channels: [], bpm: bpm, currentSequence: currentSequence };
+
+  function exportSettings() {
+    let settings = { channels: [], bpm: bpm };
     channels.forEach((channel, index) => {
         let triggers = [];
-        let unmuteBeats = [];
-        let muteBeats = [];
-
         let stepButtons = channel.querySelectorAll('.step-button');
         stepButtons.forEach((button, i) => {
-            if (button.classList.contains('selected')) {
-                triggers.push(i + 1);
-            }
-            if (button.classList.contains('unmuted')) { // update this with your actual unmute class
-                unmuteBeats.push(i + 1);
-            }
-            if (button.classList.contains('muted')) { // update this with your actual mute class
-                muteBeats.push(i + 1);
-            }
+        if (button.classList.contains('selected')) {
+            triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
+        }
         });
 
         let mute = channel.dataset.muted === 'true';
-        let url = channel.dataset.originalUrl;
-        settings.channels.push({ triggers: triggers, unmuteBeats: unmuteBeats, muteBeats: muteBeats, mute: mute, url: url });
+        let url = channel.dataset.originalUrl; // Use the original URL
+        settings.channels.push({ triggers: triggers, mute: mute, url: url });
     });
 
-    return JSON.stringify(settings, null, 2);
-}
-
-
-function importSettings(json) {
-    let settings = JSON.parse(json);
-    bpm = settings.bpm;
-
-    if (settings.currentSequence !== undefined) {
-        currentSequence = settings.currentSequence; // Set current sequence from imported data
+    return JSON.stringify(settings, null, 2); // to make the output more readable
     }
 
-    settings.channels.forEach((chSettings, index) => {
-        let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
-        let loadSampleButton = channel.querySelector('.load-sample-button');
+    function importSettings(json) {
+        let settings = JSON.parse(json);
+        bpm = settings.bpm;
 
-        if(chSettings.url) {
+        settings.channels.forEach((chSettings, index) => {
+            let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+            let loadSampleButton = channel.querySelector('.load-sample-button');
+
+            // Fetch and set audio sample URL only if url is defined
+            if(chSettings.url) {
             fetchAudio(chSettings.url, index, loadSampleButton);
+            }
+
+            // Set mute settings
+            channel.dataset.muted = chSettings.mute ? 'true' : '';
+            let muteButton = channel.querySelector('.mute-button');
+            muteButton.classList.toggle('selected', chSettings.mute);
+
+            // Set trigger buttons
+            let stepButtons = channel.querySelectorAll('.step-button');
+            stepButtons.forEach(button => button.classList.remove('selected')); // clear existing triggers
+            chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+        });
         }
 
-        channel.dataset.muted = chSettings.mute ? 'true' : '';
-        let muteButton = channel.querySelector('.mute-button');
-        muteButton.classList.toggle('selected', chSettings.mute);
 
-        let stepButtons = channel.querySelectorAll('.step-button');
-        stepButtons.forEach(button => button.classList.remove('selected', 'muted', 'unmuted')); // clear existing settings
+        document.addEventListener("DOMContentLoaded", function() {
+            let saveFileInput = document.getElementById('save-file-input');
+            let loadFileInput = document.getElementById('load-file-input');
 
-        chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected'));
-        chSettings.unmuteBeats.forEach(i => stepButtons[i - 1].classList.add('unmuted')); // update this with your actual unmute class
-        chSettings.muteBeats.forEach(i => stepButtons[i - 1].classList.add('muted')); // update this with your actual mute class
-    });
-}
+            saveButton.addEventListener('click', () => {
+                let settings = exportSettings();
 
+                // Create a Blob with the settings
+                let blob = new Blob([settings], { type: 'application/json' });
 
+                // Create a download link for the Blob
+                let url = URL.createObjectURL(blob);
+                let downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'settings.json';
 
-        document.addEventListener('DOMContentLoaded', () => {
-          let saveFileInput = document.getElementById('save-file-input');
-          let loadFileInput = document.getElementById('load-file-input');
-          const modeToggle = document.getElementById('mode-toggle');
+                // Trigger a click on the download link
+                downloadLink.click();
+            });
 
-          modeToggle.addEventListener('change', () => {
-            console.log("Mode toggle changed");
-            isContinuous = modeToggle.checked;
-            if (isContinuous) {
-                // Continuous play mode is enabled
-                // No need to reset the sequenceCount
-                resetStepLights();
-            } else {
-                // 4-bar loop mode is enabled
-                // Reset the sequenceCount only when switching to non-continuous mode
-                // Or set it to the value you want when switching to non-continuous mode
-                resetStepLights();
-            }
+            loadButton.addEventListener('click', () => {
+                // Trigger a click on the load file input
+                loadFileInput.click();
+            });
+
+            loadFileInput.addEventListener('change', () => {
+                let file = loadFileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let settings = e.target.result;
+                    importSettings(settings);
+                };
+                reader.readAsText(file);
+            });
         });
 
 
-        // Create the sequence lights
-        const sequenceLightsContainer = document.getElementById('sequence-lights');
-          for (let i = 0; i < 64; i++) {
-              const light = document.createElement('div');
-              light.classList.add('sequence-light');
-              sequenceLightsContainer.appendChild(light);
-          }
-          console.log(sequenceLightsContainer.children.length);  // should print 64
+                
 
-          // Manually turn on the first light
-          if(sequenceLightsContainer.firstElementChild) {
-            sequenceLightsContainer.firstElementChild.classList.add('on');
-          } else {
-            console.error('No sequence light element was created.');
-          }
+  channels = document.querySelectorAll('.channel');
 
-        const sequenceLights = document.querySelectorAll('.sequence-light');
+  channels.forEach((channel, index) => {
+    channel.dataset.id = `Channel-${index + 1}`;
 
-        sequenceLights.forEach((light, index) => {
-          light.addEventListener('click', () => {
-              console.log(`Sequence light ${index + 1} clicked`);
+    const muteButton = channel.querySelector('.mute-button');
+    muteButton.addEventListener('click', () => {
+            if (channel.dataset.muted === 'true') {
+        // If the channel is currently muted, unmute it
+                channel.dataset.muted = '';
+            } else {
+                // If the channel is currently unmuted, mute it
+                channel.dataset.muted = 'true';
+            }
+            muteButton.classList.toggle('selected');
+        });
 
-              // Save the current state of buttons to the previous sequence
-              const buttons = document.querySelectorAll('.step-button');
-              buttons.forEach((button, buttonIndex) => {
-                  sequences[currentSequence - 1][buttonIndex] = button.classList.contains('selected');
-              });
-              console.log('Button States After Saving:', sequences[currentSequence - 1]); // Logs the button states after saving
-
-
-              // update the current sequence to the clicked index + 1 AFTER saving button states
-              currentSequence = index + 1; 
-
-              console.log('Current Sequence After Updating:', currentSequence); // Logs the current sequence after updating
-
-
-              updateUI(); // call the function to update the UI
-              sequenceLights.forEach((light, lightIndex) => {
-                  if (lightIndex === currentSequence - 1) {
-                      light.classList.add('on');
-                  } else {
-                      light.classList.remove('on');
-                  }
-              });
-          });
+    const clearButton = channel.querySelector('.clear-button');
+    clearButton.addEventListener('click', () => {
+      const stepButtons = channel.querySelectorAll('.step-button');
+      stepButtons.forEach(button => {
+        button.classList.remove('selected');
       });
+    });
 
-      function updateSequenceLights() {
-        sequenceLights.forEach((light, index) => {
-            if (index === sequenceCount - 1) {
-                light.classList.add('on');
-            } else {
-                light.classList.remove('on');
-            }
-        });
+
+    const stepsContainer = channel.querySelector('.steps-container');
+    stepsContainer.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 64; i++) {
+      const button = document.createElement('button');
+      button.classList.add('step-button');
+      button.addEventListener('click', () => {
+        button.classList.toggle('selected');
+      });
+      fragment.appendChild(button);
     }
-          saveButton.addEventListener('click', () => {
-            console.log("Save button clicked");
-            let settings = exportSettings();
+    stepsContainer.appendChild(fragment);
 
-            // Create a Blob with the settings
-            let blob = new Blob([settings], { type: 'application/json' });
+    const loadSampleButton = channel.querySelector('.load-sample-button');
+    loadSampleButton.addEventListener('click', () => {
+      const audionalId = prompt('Enter the ordinal ID for the Audional you want to load:');
+      const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalId);
+      fetchAudio(audionalUrl, index, loadSampleButton);
+    });
+  });
 
-            // Create a download link for the Blob
-            let url = URL.createObjectURL(blob);
-            let downloadLink = document.createElement('a');
-            downloadLink.href = url;
-            downloadLink.download = 'settings.json';
-
-            // Trigger a click on the download link
-            downloadLink.click();
-          });
-
-          loadButton.addEventListener('click', () => {
-            console.log("Load button clicked");
-
-            // Trigger a click on the load file input
-            loadFileInput.click();
-          });
-
-          loadFileInput.addEventListener('change', () => {
-            console.log("Load file input changed");
-
-            let file = loadFileInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function (e) {
-            console.log("File loaded, importing settings");
-
-              let settings = e.target.result;
-              importSettings(settings);
-            };
-            reader.readAsText(file);
-          });
-
-        });
-
-        function resetSequenceCounts() {
-          if (!isContinuous) {
-              sequenceCount = 1;
-              resetStepLights();
-          }
-      }
-   
-
-        channels = document.querySelectorAll('.channel');
-
-        channels.forEach((channel, index) => {
-          channel.dataset.id = `Channel-${index + 1}`;
-
-          const muteButton = channel.querySelector('.mute-button');
-          muteButton.addEventListener('click', () => {
-                  if (channel.dataset.muted === 'true') {
-              // If the channel is currently muted, unmute it
-                      channel.dataset.muted = '';
-                  } else {
-                      // If the channel is currently unmuted, mute it
-                      channel.dataset.muted = 'true';
-                  }
-                  muteButton.classList.toggle('selected');
-              });
-
-          const clearButton = channel.querySelector('.clear-button');
-          clearButton.addEventListener('click', () => {
-            const stepButtons = channel.querySelectorAll('.step-button');
-            stepButtons.forEach(button => {
-              button.classList.remove('selected');
-            });
-          });
-
-
-          const stepsContainer = channel.querySelector('.steps-container');
-          stepsContainer.innerHTML = '';
-
-          const fragment = document.createDocumentFragment();
-          for (let i = 0; i < 64; i++) {
-            const button = document.createElement('button');
-            button.classList.add('step-button');
-            button.addEventListener('click', () => {
-              let stepIndex = Array.from(stepsContainer.children).indexOf(button);
-              sequences[currentSequence][stepIndex] = !sequences[currentSequence][stepIndex];
-              button.classList.toggle('selected');
-            });
-
-            fragment.appendChild(button);
-          }
-          stepsContainer.appendChild(fragment);
-
-          const loadSampleButton = channel.querySelector('.load-sample-button');
-          loadSampleButton.addEventListener('click', () => {
-            const audionalId = prompt('Enter the ordinal ID for the Audional you want to load:');
-            const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalId);
-            fetchAudio(audionalUrl, index, loadSampleButton);
-          });
-
-        });
-
-          
   if (playButton && stopButton) {
     const channel1 = document.querySelector('#channel-0 .step-button:nth-child(4n+1)');
     if (channel1) channel1.classList.add('selected');
@@ -868,29 +698,26 @@ function importSettings(json) {
 
     playButton.addEventListener('click', () => {
       if (!isPlaying) {
-          startScheduler();
-          playButton.classList.add('selected');
-          stopButton.classList.remove('selected');
-          isPlaying = true;
+        startScheduler();
+        playButton.classList.add('selected');
+        stopButton.classList.remove('selected');
+        isPlaying = true;
       }
-  });
+    });
 
-  stopButton.addEventListener('click', () => {
-      if (isPlaying) {
-          stopScheduler();
-          stopButton.classList.add('selected');
-          playButton.classList.remove('selected');
-          isPlaying = false;
-
-          if (!isContinuous) {  // Only reset the counts if we're not in continuous mode
-              beatCount = 1;
-              barCount = 1;
-              sequenceCount = 1;
-              currentStep = 0;
-              resetStepLights();
-          }
-      }
-  });
+    stopButton.addEventListener('click', () => {
+        if (isPlaying) {
+            stopScheduler();
+            stopButton.classList.add('selected');
+            playButton.classList.remove('selected');
+            isPlaying = false;
+            beatCount = 0;  // reset the beat count
+            barCount = 0; // reset the bar count
+            sequenceCount = 0; // reset the sequence count
+            currentStep = 0;  // reset the step count
+            resetStepLights();  // reset the step lights
+        }
+    });
 
   } else {
     console.error("Play or Stop button is not defined");
@@ -912,57 +739,57 @@ function importSettings(json) {
         url: 'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0',
         triggers: ['1', '5', '9', '13', '17', '21', '25', '29', '33', '37', '41', '45', '49', '53', '57', '61'],
         muted: false,
-        unmuteBeats: [],
-        muteBeats: []
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
       },
       {
         url: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
         triggers: ['1', '7', '33', '39'],
         muted: true,
-        unmuteBeats: [48],
+        unmuteBeats: [15],
         muteBeats: []
       },
       {
         url: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
         triggers: ['5', '13', '21', '29', '37', '45', '53', '61', '63', '64'],
         muted: true,
-         unmuteBeats: [79],
+         unmuteBeats: [60],
         muteBeats: []
       },
       {
         url: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
-        triggers: ['30', '46', '62'],
+        triggers: ['62'],
         muted: true,
-        unmuteBeats: [14, 32, 42, 74],
-        muteBeats: [18, 36, 46, 78]
+        unmuteBeats: [2, 4, 6, 20],
+        muteBeats: [1, 3, 5, 10]
       },
       {
         url: 'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0',
-        triggers: ['63'],
+        triggers: [],
         muted: true,
-        unmuteBeats: [74],
-        muteBeats: []
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
       },
       {
         url: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
         triggers: [],
         muted: true,
-        unmuteBeats: [],
-        muteBeats: []
+        unmuteBeats: [1, 3, 5, 10],
+        muteBeats: [2, 4, 6, 20]
       },
       {
         url: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
         triggers: [],
         muted: true,
-        unmuteBeats: [],
-        muteBeats: []
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
       },
       {
         url: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
         triggers: [],
         muted: true,
-        unmuteBeats: [],
-        muteBeats: []
+        unmuteBeats: [2, 4, 6, 20],
+        muteBeats: [1, 3, 5, 10]
       },
       // ...
     ],
@@ -1126,34 +953,8 @@ function importSettings(json) {
     }
 
     if (currentStep % 64 === 0) {
-    sequenceCount++;
-
-    // Check if we're in continuous play mode
-    if (isContinuous) {
-        // If so, check if we've gone past the last sequence
-        if (sequenceCount > 64) {
-            // If so, loop back to the first sequence
-            sequenceCount = 1;
-        }
-        // Switch to the next sequence
-        currentSequence = sequenceCount;
-
-        // Update the sequence light
-        sequenceLights = document.querySelectorAll('.sequence-light');
-        sequenceLights.forEach((light, lightIndex) => {
-          console.log('Updating sequence light', lightIndex + 1);  // Added this line
-          if (lightIndex === currentSequence - 1) {
-              light.classList.add('on');
-              console.log('Turning on sequence light', lightIndex + 1);  // Added this line
-          } else {
-              light.classList.remove('on');
-          }
-      });
-
-        // Update the UI to reflect the new sequence
-        updateUI();
+        sequenceCount++;
     }
-}
 
     nextStepTime += stepDuration;
 }
@@ -1172,7 +973,7 @@ function stopScheduler() {
     currentStep = 0;
     beatCount = 1;
     barCount = 1; // Reset barCount to 1
-    sequenceCount = 1;
+    sequenceCount = 0;
 }
 
   function resetStepLights() {
