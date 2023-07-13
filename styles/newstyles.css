@@ -3,6 +3,7 @@
     margin: 0;
     padding: 0;
   }
+  
   body {
     background-color: #202020;
     color: white;
@@ -10,6 +11,7 @@
     width: 100vw;
     overflow-x: hidden;
   }
+  
   .header {
     align-items: center;
     background-color: black;
@@ -18,31 +20,38 @@
     justify-content: space-between;
     width: 100vw;
   }
+  
   .header img {
     height: 100%;
   }
+  
   .header h1 {
     color: white;
     flex-grow: 2;
     font-size: 6em;
     text-align: center;
   }
+  
   .row {
     display: flex;
     flex-wrap: wrap;
     margin: 0 -5px;
   }
+  
   .column {
     flex: 30%;
     padding: 5px 5px;
   }
+  
   .form-group {
     margin-bottom: 10px;
   }
+  
   label {
     display: block;
     margin-bottom: 5px;
   }
+  
   input[type="text"],
   textarea,
   datalist,
@@ -54,6 +63,7 @@
     padding: 0;
     width: 100%;
   }
+  
   .input-wrapper {
     padding: 10px;
   }
@@ -65,11 +75,12 @@
   .form-group input[type="number"] {
     width: 100%;
   }
+  
   .button-container {
     display: flex;
     justify-content: center;
-}
-
+  }
+  
   button {
     background-color: #0066ff;
     border: none;
@@ -77,54 +88,66 @@
     cursor: pointer;
     padding: 10px 20px;
   }
+  
   button:disabled {
     background-color: #555;
   }
+  
   .flashing {
     animation: flash 2s linear infinite;
     background-color: red;
   }
+  
   @keyframes flash {
-    0% {opacity: 1;}
-    50% {opacity: .1;}
-    100% {opacity: 1;}
-}
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
   #json-output {
     margin-top: 20px;
     word-wrap: break-word;
   }
+  
   .info-button {
     /* Set the button color to green */
     background-color: red;
-}
-
-.more-info-button {
+  }
+  
+  .more-info-button {
     /* Set the button color to blue */
     background-color: blue;
-}
-.info-button,
-.more-info-button {
+  }
+  
+  .info-button,
+  .more-info-button {
     /* Center the button horizontally */
     display: block;
     margin: 0 10px;
     text-align: center;
-
-   
-
+  
     /* Additional button styles */
     border: none;
     color: white;
     cursor: pointer;
     padding: 10px 20px;
-}
-.info-content {
+  }
+  
+  .info-content {
     display: none;
     margin-top: 20px;
     padding: 20px;
     background-color: #333333;
     color: white;
-}
-.modal {
+  }
+  
+  .modal {
     display: none;
     position: fixed;
     z-index: 9999;
@@ -134,9 +157,9 @@
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.8);
-}
-
-.modal-content {
+  }
+  
+  .modal-content {
     background-color: #fff;
     margin: 10% auto;
     padding: 20px;
@@ -146,56 +169,17 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     animation-name: modal-animation;
     animation-duration: 0.5s;
-}
-
-@keyframes modal-animation {
+  }
+  
+  @keyframes modal-animation {
     from {
-        transform: scale(0);
+      transform: scale(0);
     }
     to {
-        transform: scale(1);
+      transform: scale(1);
     }
-}
-.magic-button {
-    background: #FFD700;
-    border: none;
-    color: black;
-    cursor: pointer;
-    padding: 10px 20px;
-    position: relative;
-    overflow: hidden;
-    z-index: 0;
-}
-
-.magic-button:before {
-    content: "";
-    background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    transform: rotate(0deg);
-    pointer-events: none;
-    animation: shimmer 5s ease-in-out infinite;
-}
-
-.magic-button:active {
-    color: #FFD700;
-    background: black;
-}
-
-@keyframes shimmer {
-    0% {left: -100%;}
-    50% {left: 100%;}
-    100% {left: -100%;}
-}
-
-.magic-button > * {
-    position: relative;
-    z-index: 10;
-}
+  }
+  
   #audional-json {
     width: 50%;
     max-width: 50%;
@@ -206,12 +190,16 @@
     border-radius: 4px;
     background-color: #f8f8f8;
     font-size: 16px;
-    color: darkblue; /* change color of text for better visibility */
-    overflow-y: auto; /* Use auto instead of scroll to hide scrollbar when not necessary */
+    color: darkblue;
+    /* change color of text for better visibility */
+    overflow-y: auto;
+    /* Use auto instead of scroll to hide scrollbar when not necessary */
     resize: none;
     margin-top: 20px;
-    user-select: none; /* Prevent text selection */
-    white-space: pre-wrap; /* Ensures proper formatting of JSON string */
+    user-select: none;
+    /* Prevent text selection */
+    white-space: pre-wrap;
+    /* Ensures proper formatting of JSON string */
   }
   
   .radio-group {
@@ -221,11 +209,43 @@
   .radio-group input[type="radio"] {
     margin-right: 10px;
   }
+  
+  .magic-button {
+    background: linear-gradient(45deg, gold, #ffd700, gold);
+    background-size: 200% 100%;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px 20px;
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+  }
+  
+  .magic-button:before {
+    content: "";
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1));
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    transform: rotate(0deg);
+    pointer-events: none;
+    animation: shimmer 5s ease-in-out infinite;
+  }
+  
   @keyframes shimmer {
     0% {
+      left: -100%;
       background-position: -200% 0;
     }
+    50% {
+      left: 100%;
+    }
     100% {
+      left: -100%;
       background-position: 200% 0;
     }
   }
@@ -237,6 +257,7 @@
     font-style: italic;
     animation: shimmer 2s linear infinite;
   }
+  
   .form-and-qrcode-container {
     display: flex;
     justify-content: space-between;
@@ -249,13 +270,8 @@
     margin-bottom: 100px;
     margin-right: 100px;
   }
+  
   .hidden {
     display: none;
   }
-  
-  
-  
-  
-  
-  
   
