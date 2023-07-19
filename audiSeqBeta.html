@@ -646,33 +646,42 @@ function exportSettings() {
 
 
 function importSettings(json) {
-    let settings = JSON.parse(json);
-    bpm = settings.bpm;
+  let settings = JSON.parse(json);
+  bpm = settings.bpm;
 
-    if (settings.currentSequence !== undefined) {
-        currentSequence = settings.currentSequence; // Set current sequence from imported data
+  // Get the bpm slider and display elements
+  let bpmSlider = document.getElementById('bpm-slider');
+  let bpmDisplay = document.getElementById('bpm-display');
+
+  // Update the bpm slider and display
+  bpmSlider.value = bpm;
+  bpmDisplay.innerText = bpm;  // update the bpm text label
+
+  if (settings.currentSequence !== undefined) {
+    currentSequence = settings.currentSequence; // Set current sequence from imported data
+  }
+
+  settings.channels.forEach((chSettings, index) => {
+    let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+    let loadSampleButton = channel.querySelector('.load-sample-button');
+
+    if(chSettings.url) {
+      fetchAudio(chSettings.url, index, loadSampleButton);
     }
 
-    settings.channels.forEach((chSettings, index) => {
-        let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
-        let loadSampleButton = channel.querySelector('.load-sample-button');
+    channel.dataset.muted = chSettings.mute ? 'true' : '';
+    let muteButton = channel.querySelector('.mute-button');
+    muteButton.classList.toggle('selected', chSettings.mute);
 
-        if(chSettings.url) {
-            fetchAudio(chSettings.url, index, loadSampleButton);
-        }
+    let stepButtons = channel.querySelectorAll('.step-button');
+    stepButtons.forEach(button => button.classList.remove('selected', 'muted', 'unmuted')); // clear existing settings
 
-        channel.dataset.muted = chSettings.mute ? 'true' : '';
-        let muteButton = channel.querySelector('.mute-button');
-        muteButton.classList.toggle('selected', chSettings.mute);
-
-        let stepButtons = channel.querySelectorAll('.step-button');
-        stepButtons.forEach(button => button.classList.remove('selected', 'muted', 'unmuted')); // clear existing settings
-
-        chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected'));
-        chSettings.unmuteBeats.forEach(i => stepButtons[i - 1].classList.add('unmuted')); // update this with your actual unmute class
-        chSettings.muteBeats.forEach(i => stepButtons[i - 1].classList.add('muted')); // update this with your actual mute class
-    });
+    chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected'));
+    chSettings.unmuteBeats.forEach(i => stepButtons[i - 1].classList.add('unmuted')); // update this with your actual unmute class
+    chSettings.muteBeats.forEach(i => stepButtons[i - 1].classList.add('muted')); // update this with your actual mute class
+  });
 }
+
 
 
 
@@ -754,48 +763,51 @@ function importSettings(json) {
         });
     }
     saveButton.addEventListener('click', () => {
-      console.log("Save button clicked");
-      let settings = exportSettings();
+        console.log("Save button clicked");
+        let settings = exportSettings();
 
-      // Create a Blob with the settings
-      let blob = new Blob([settings], { type: 'application/json' });
+        // Create a Blob with the settings
+        let blob = new Blob([settings], { type: 'application/json' });
 
-      // Create a download link for the Blob
-      let url = URL.createObjectURL(blob);
-      let downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'audiSeq_' + currentSequence + '.json'; // Update the download filename
+        // Create a download link for the Blob
+        let url = URL.createObjectURL(blob);
+        let downloadLink = document.createElement('a');
+        downloadLink.href = url;
 
-      // Append the download link to the document body
-      document.body.appendChild(downloadLink);
+        // Include BPM in the filename
+        downloadLink.download = `audiSeq_${currentSequence}_BPM${bpm}.json`;
 
-      // Programmatically trigger the download
-      downloadLink.click();
+        // Append the download link to the document body
+        document.body.appendChild(downloadLink);
 
-      // Clean up the URL object
-      URL.revokeObjectURL(url);
-    });
+        // Programmatically trigger the download
+        downloadLink.click();
 
-    loadButton.addEventListener('click', () => {
-      console.log("Load button clicked");
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+        });
 
-      // Trigger a click on the load file input
-      loadFileInput.click();
-    });
+        loadButton.addEventListener('click', () => {
+        console.log("Load button clicked");
 
-    loadFileInput.addEventListener('change', () => {
-      console.log("Load file input changed");
+        // Trigger a click on the load file input
+        loadFileInput.click();
+        });
 
-      let file = loadFileInput.files[0];
-      let reader = new FileReader();
-      reader.onload = function (e) {
-        console.log("File loaded, importing settings");
+        loadFileInput.addEventListener('change', () => {
+        console.log("Load file input changed");
 
-        let settings = e.target.result;
-        importSettings(settings);
-      };
-      reader.readAsText(file);
-    });
+        let file = loadFileInput.files[0];
+        let reader = new FileReader();
+        reader.onload = function (e) {
+            console.log("File loaded, importing settings");
+
+            let settings = e.target.result;
+            importSettings(settings);
+        };
+        reader.readAsText(file);
+        });
+
 
 
         });
