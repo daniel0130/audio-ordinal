@@ -1,256 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <title>Bitcoin Audional Generator</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background-color: #202020;
-            color: white;
-            font-family: 'ShareTechMono-Regular', Arial, sans-serif;
-            width: 100vw;
-            overflow-x: hidden;
-        }
-        .header {
-            align-items: center;
-            background-color: black;
-            display: flex;
-            height: 100px;
-            justify-content: space-between;
-            width: 100vw;
-        }
-        .header img {
-            height: 100%;
-        }
-        .header h1 {
-            color: white;
-            flex-grow: 2;
-            font-size: 6em;
-            text-align: center;
-        }
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 0 -5px;
-        }
-        .column {
-            flex: 33.33%;
-            padding: 5px 5px;
-        }
-        .form-group {
-            margin-bottom: 10px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"],
-        textarea,
-        datalist,
-        input[type="checkbox"],
-        input[type="file"],
-        input[type="number"] {
-            box-sizing: border-box;
-            height: 25px;
-            padding: 0;
-            width: 100%;
-        }
-        .input-wrapper {
-            padding: 10px;
-        }
-        
-        .form-group input[type="text"],
-        .form-group textarea,
-        .form-group datalist,
-        .form-group input[type="file"],
-        .form-group input[type="number"] {
-            width: 100%;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-        }
-
-        button {
-            background-color: #0066ff;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 10px 20px;
-        }
-        button:disabled {
-            background-color: #555;
-        }
-        .flashing {
-            animation: flash 2s linear infinite;
-            background-color: red;
-        }
-        @keyframes flash {
-            0% {opacity: 1;}
-            50% {opacity: .1;}
-            100% {opacity: 1;}
-        }
-        #json-output {
-            margin-top: 20px;
-            word-wrap: break-word;
-        }
-        .info-button {
-            /* Set the button color to green */
-            background-color: red;
-        }
-
-        .more-info-button {
-            /* Set the button color to blue */
-            background-color: blue;
-        }
-        .info-button,
-        .more-info-button {
-            /* Center the button horizontally */
-            display: block;
-            margin: 0 10px;
-            text-align: center;
-
-           
-
-            /* Additional button styles */
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 10px 20px;
-        }
-        .info-content {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #333333;
-            color: white;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 900px;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-            animation-name: modal-animation;
-            animation-duration: 0.5s;
-        }
-
-        @keyframes modal-animation {
-            from {
-                transform: scale(0);
-            }
-            to {
-                transform: scale(1);
-            }
-        }
-        .magic-button {
-            background: #FFD700;
-            border: none;
-            color: black;
-            cursor: pointer;
-            padding: 10px 20px;
-            position: relative;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .magic-button:before {
-            content: "";
-            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            transform: rotate(0deg);
-            pointer-events: none;
-            animation: shimmer 5s ease-in-out infinite;
-        }
-
-        .magic-button:active {
-            color: #FFD700;
-            background: black;
-        }
-
-        @keyframes shimmer {
-            0% {left: -100%;}
-            50% {left: 100%;}
-            100% {left: -100%;}
-        }
-
-        .magic-button > * {
-            position: relative;
-            z-index: 10;
-        }
-
-    </style>
+    <!-- include styles.css -->
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <script>
-        function toggleInfo(buttonId) {
-            var audionalsButton = document.getElementById("audionals-button");
-            var jsonButton = document.getElementById("json-button");
+      function toggleInfo(buttonId) {
+          var audionalsButton = document.getElementById("audionals-button");
+          var jsonButton = document.getElementById("json-button");
 
-            var audionalsContent = document.getElementById("info-content-audionals");
-            var jsonContent = document.getElementById("info-content-json");
+          var audionalsContent = document.getElementById("info-content-audionals");
+          var jsonContent = document.getElementById("info-content-json");
 
-            if (buttonId === "audionals") {
-                var isAudionalsActive = audionalsButton.classList.contains("active");
-                if (isAudionalsActive) {
-                    audionalsButton.classList.remove("active");
-                    audionalsContent.style.display = "none";
-                } else {
-                    audionalsButton.classList.add("active");
-                    jsonButton.classList.remove("active");
-                    audionalsContent.style.display = "block";
-                    jsonContent.style.display = "none";
-                }
-            } else {
-                var isJsonActive = jsonButton.classList.contains("active");
-                if (isJsonActive) {
-                    jsonButton.classList.remove("active");
-                    jsonContent.style.display = "none";
-                } else {
-                    jsonButton.classList.add("active");
-                    audionalsButton.classList.remove("active");
-                    audionalsContent.style.display = "none";
-                    jsonContent.style.display = "block";
-                }
-            }
+          if (buttonId === "audionals") {
+              var isAudionalsActive = audionalsButton.classList.contains("active");
+              if (isAudionalsActive) {
+                  audionalsButton.classList.remove("active");
+                  audionalsContent.style.display = "none";
+              } else {
+                  audionalsButton.classList.add("active");
+                  jsonButton.classList.remove("active");
+                  audionalsContent.style.display = "block";
+                  jsonContent.style.display = "none";
+              }
+          } else {
+              var isJsonActive = jsonButton.classList.contains("active");
+              if (isJsonActive) {
+                  jsonButton.classList.remove("active");
+                  jsonContent.style.display = "none";
+              } else {
+                  jsonButton.classList.add("active");
+                  audionalsButton.classList.remove("active");
+                  audionalsContent.style.display = "none";
+                  jsonContent.style.display = "block";
+              }
+          }
+      }
+      function tryAudionalSequencer() {
+    var sequencerContainer = document.getElementById('sequencer-container');
+    
+    // Check if the iframe already exists
+    var existingIframe = document.getElementById('sequencer-iframe');
+    if (existingIframe) {
+        // If it exists, simply toggle its visibility
+        if (existingIframe.style.display === 'none') {
+            existingIframe.style.display = 'block';
+        } else {
+            existingIframe.style.display = 'none';
         }
-    </script>
-
-</head>
-<body>
-  <div class="header">
-    <img src="AudionalsLogo.png" alt="Audionals Logo">
-    <h1>Audionals.com</h1>
-    <div>
-      <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Try the Audional Sequencer</button>
-      <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
-    </div>
-    <img src="AudionalsLogo.png" alt="Audionals Logo">
-  </div>
-
-
-<!-- This is where the sequencer will appear -->
+    } else {
+        // If it doesn't exist, create it
+        var sequencerIframe = document.createElement('iframe');
+        sequencerIframe.id = 'sequencer-iframe';
+        sequencerIframe.src = 'audional-sequencer.html';
+        sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+        
+        // Set the height of the iframe as desired (e.g., 600px)
+        sequencerIframe.style.height = '700px';
+        
+        // Add the iframe to the container
+        sequencerContainer.appendChild(sequencerIframe);
+    }
+}
+  </script>
+  </head>
+  <body>
+    <div class="header">
+        <img src="AudionalsLogo.png" alt="Audionals Logo">
+        <h1>Audionals.com</h1>
+        <div>
+          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Try the Audional Sequencer</button>
+          <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
+        </div>
+        <img src="AudionalsLogo.png" alt="Audionals Logo">
+      </div>
+    <!-- This is where the sequencer will appear -->
 <div id="sequencer-container">
     <!-- We'll create the iframe here with JavaScript -->
 </div>
@@ -280,421 +108,501 @@
         <p>The base64 audio-embedded JSON format for Audionals represents a significant leap towards the future of audio organisation. By simplifying file management, providing easy access to audio resources, and fostering a global community of creativity and collaboration, this format ushers in a new era in audio standardisation. Embrace the possibilities offered by Audionals and embark on a journey where the potential for audio expression knows no bounds.</p>
 
     </div>
-    <h1>Bitcoin Audional Generator (coming soon)</h1>
+    <h1>Bitcoin Audional Generator</h1>
     <main id="app" role="main">
-
-        <fieldset class="form-group">
-            <legend>Select an MP3 or WAV file:</legend>
-            <div class="input-wrapper">
-                <input id="file" type="file" class="input-width flashing" accept=".mp3, .wav"disabled>
-            </div>
-        </fieldset>
-
-        <button id="process" disabled>Process Audio File</button>
-
-        <section class="row">
-            <article class="column">
-                <fieldset class="form-group">
-                    <legend>File Details:</legend>
-
-                    <div class="input-wrapper">
-                        <label for="fileName">File Name:</label>
-                        <input type="text" id="fileName" readonly placeholder="E.G. Snare1.wav">
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="audio_type">Audio Type:</label>
-                        <input id="audio_type" type="text" list="audio_types" placeholder="E.G. music">
-                        <datalist id="audio_types">
-                            <option value="music">
-                            <option value="speech">
-                            <option value="nature">
-                            <option value="sfx">
-                            <option value="other">
-                        </datalist>
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="duration">Duration (seconds):</label>
-                        <input type="text" id="duration" readonly placeholder="E.G. 0.300">
-                    </div>
-                </fieldset>
-            </article>
-
-            <article class="column">
-                <fieldset class="form-group">
-                    <legend>Music Sample Metadata:</legend>
-
-                    <div class="input-wrapper">
-                        <label for="instrument">Instrument Group:</label>
-                        <input type="text" id="instrument" placeholder="E.G. Drums">
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="instrument_specifics">Instrument Specifics:</label>
-                        <input type="text" id="instrument_specifics" placeholder="E.G Snare">
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="note">Note (select from list):</label>
-                        <input type="text" id="note" list="note_options" placeholder="E.G. G1">
-                        <datalist id="note_options">
-                        <option value="C0">
-                        <option value="C#0">
-                        <option value="D0">
-                        <option value="D#0">
-                        <option value="E0">
-                        <option value="F0">
-                        <option value="F#0">
-                        <option value="G0">
-                        <option value="G#0">
-                        <option value="A0">
-                        <option value="A#0">
-                        <option value="B0">
-                    
-                        <option value="C1">
-                        <option value="C#1">
-                        <option value="D1">
-                        <option value="D#1">
-                        <option value="E1">
-                        <option value="F1">
-                        <option value="F#1">
-                        <option value="G1">
-                        <option value="G#1">
-                        <option value="A1">
-                        <option value="A#1">
-                        <option value="B1">
-                    
-                        <option value="C2">
-                        <option value="C#2">
-                        <option value="D2">
-                        <option value="D#2">
-                        <option value="E2">
-                        <option value="F2">
-                        <option value="F#2">
-                        <option value="G2">
-                        <option value="G#2">
-                        <option value="A2">
-                        <option value="A#2">
-                        <option value="B2">
-                    
-                        <option value="C3">
-                        <option value="C#3">
-                        <option value="D3">
-                        <option value="D#3">
-                        <option value="E3">
-                        <option value="F3">
-                        <option value="F#3">
-                        <option value="G3">
-                        <option value="G#3">
-                        <option value="A3">
-                        <option value="A#3">
-                        <option value="B3">
-                    
-                        <option value="C4">
-                        <option value="C#4">
-                        <option value="D4">
-                        <option value="D#4">
-                        <option value="E4">
-                        <option value="F4">
-                        <option value="F#4">
-                        <option value="G4">
-                        <option value="G#4">
-                        <option value="A4">
-                        <option value="A#4">
-                        <option value="B4">
-                    
-                        <option value="C5">
-                        <option value="C#5">
-                        <option value="D5">
-                        <option value="D#5">
-                        <option value="E5">
-                        <option value="F5">
-                        <option value="F#5">
-                        <option value="G5">
-                        <option value="G#5">
-                        <option value="A5">
-                        <option value="A#5">
-                        <option value="B5">
-                    
-                        <option value="C6">
-                        <option value="C#6">
-                        <option value="D6">
-                        <option value="D#6">
-                        <option value="E6">
-                        <option value="F6">
-                        <option value="F#6">
-                        <option value="G6">
-                        <option value="G#6">
-                        <option value="A6">
-                        <option value="A#6">
-                        <option value="B6">
-                    
-                        <option value="C7">
-                        <option value="C#7">
-                        <option value="D7">
-                        <option value="D#7">
-                        <option value="E7">
-                        <option value="F7">
-                        <option value="F#7">
-                        <option value="G7">
-                        <option value="G#7">
-                        <option value="A7">
-                        <option value="A#7">
-                        <option value="B7">
-                    
-                        <option value="C8">
-                        <option value="C#8">
-                        <option value="D8">
-                        <option value="D#8">
-                        <option value="E8">
-                        <option value="F8">
-                        <option value="F#8">
-                        <option value="G8">
-                        <option value="G#8">
-                        <option value="A8">
-                        <option value="A#8">
-                        <option value="B8">
-                    </datalist>
-                </div>
-                                
-                    <div class="input-wrapper">
-                        <label for="key">Key (select from list):</label>
-                        <input type="text" id="key" list="key_options" placeholder="E.G. G Major">
-                        <datalist id="key_options">
-                        <option value="C Major">
-                        <option value="C# Major">
-                        <option value="D Major">
-                        <option value="D# Major">
-                        <option value="E Major">
-                        <option value="F Major">
-                        <option value="F# Major">
-                        <option value="G Major">
-                        <option value="G# Major">
-                        <option value="A Major">
-                        <option value="A# Major">
-                        <option value="B Major">
-                        <option value="C Minor">
-                        <option value="C# Minor">
-                        <option value="D Minor">
-                        <option value="D# Minor">
-                        <option value="E Minor">
-                        <option value="F Minor">
-                        <option value="F# Minor">
-                        <option value="G Minor">
-                        <option value="G# Minor">
-                        <option value="A Minor">
-                        <option value="A# Minor">
-                        <option value="B Minor">
-                    </datalist>
-                    </div>
-                </fieldset>
-            </article>
-
-            <article class="column">
-                <fieldset class="form-group">
-                    <legend>Additional Details:</legend>
-
-                    <div class="input-wrapper">
-                        <label for="genre">Genre:</label>
-                        <input type="text" id="genre" placeholder="E.G. Jazz">
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="isLoop">Is this sample a loop?</label>
-                        <input id="isLoop" type="text" list="loop_options" placeholder="Yes or No" class="form-control last-input">
-                        <datalist id="loop_options">
-                            <option value="Yes">
-                            <option value="No">
-                        </datalist>
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="bpm" style="height: 25px;">BPM (e.g. 125):</label>
-                        <input type="number" id="bpm" min="0" max="999" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="E.G. 120" class="form-control last-input">
-                    </div>
-                </fieldset>
-            </article>
-        </section>
-
-        <fieldset class="form-group">
-            <legend>User Defined (e.g. additional details not included any of the fields above)</legend>
-            <div class="input-wrapper">
-                <textarea id="user-defined" class="input-width" placeholder="E.G. Synth loop from Entertainment by Melophonic"></textarea>
-            </div>
-        </fieldset>
-
-        <p id="reminder" style="color: grey; font-weight: bold;">Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!</p>
-        <br>
-        <div>
-        <button id="convert" disabled>Generate Audional JSON File</button>
-        <button id="inscribeButton" disabled>Inscribe Audional</button>
-        <output id="json-output"></output>
+      <fieldset class="form-group">
+        <legend>Select an MP3 or WAV file:</legend>
+        <div class="input-wrapper">
+          <input
+            id="file"
+            type="file"
+            class="input-width flashing"
+            accept=".mp3, .wav"
+          />
         </div>
+      </fieldset>
 
-    </main>
+      <button id="process" disabled>Process Audio File</button>
 
-    <script>
-        var inscribeButton = document.getElementById('inscribeButton');
-        var audionalJson;
-         const BASE_URL = "";
-            let apiKey;
-            let feeRates = {};
-            let calculatedFee = {};
-            let inscriptionPreviewData = {};
-            let audionalJsonString;
+      <section class="row">
+        <article class="column">
+          <fieldset class="form-group">
+            <legend>File Details:</legend>
 
-            // Fetch API key initially
-            getApiKey();
+            <div class="input-wrapper">
+              <label for="audio_type">Audio Type:</label>
+              <select
+                id="audio_type"
+                name="audio_type"
+                placeholder="E.G. music"
+              >
+                <option value="music">Music</option>
+                <option value="speech">Speech</option>
+                <option value="nature">Nature</option>
+                <option value="sfx">Sound Effects (SFX)</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
 
-            // Assume audionalJson exists and convert it to a string
-            if (window.audionalJson) {
-            audionalJsonString = JSON.stringify(window.audionalJson, null, 2);
-            }
+            <div class="input-wrapper">
+              <label for="creator">Creator's Name:</label>
+              <input type="text" id="creator" placeholder="E.G. Jim.btc" />
+            </div>
 
-            window.onload = function() {
-            // Call API functions immediately on page load
-            if (audionalJsonString) {
-                calculateInscriptionRequestFee(audionalJsonString);
-                getInscriptionPreview(audionalJsonString, "audional.json");  // replace "audional.json" with actual filename if necessary
-            }
-            };
-        
-        // Disable typing in the audio type input
-        var audioTypeInput = document.getElementById('audio_type');
-        audioTypeInput.addEventListener('keydown', function(e) {
-            e.preventDefault();
-        });
+            <div class="input-wrapper">
+              <label for="fileName">File Name:</label>
+              <input
+                type="text"
+                id="fileName"
+                readonly
+                placeholder="E.G. Snare1.wav"
+              />
+            </div>
 
-        function tryAudionalSequencer() {
-          var sequencerContainer = document.getElementById('sequencer-container');
+            <div class="input-wrapper">
+              <label for="duration">Duration (seconds):</label>
+              <input
+                type="text"
+                id="duration"
+                readonly
+                placeholder="E.G. 0.300"
+              />
+            </div>
+          </fieldset>
+        </article>
+
+        <article class="column">
+          <fieldset class="form-group">
+            <legend>Music Sample Metadata:</legend>
+
+            <div class="input-wrapper">
+              <label for="instrument">Instrument Group:</label>
+              <input type="text" id="instrument" placeholder="E.G. Drums" />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="instrument_specifics">Instrument Specifics:</label>
+              <input
+                type="text"
+                id="instrument_specifics"
+                placeholder="E.G Snare"
+              />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="key">Key (select from list):</label>
+              <select id="key" name="key">
+                <option value="C Major">C Major</option>
+                <option value="C# Major">C# Major</option>
+                <option value="D Major">D Major</option>
+                <option value="D# Major">D# Major</option>
+                <option value="E Major">E Major</option>
+                <option value="F Major">F Major</option>
+                <option value="F# Major">F# Major</option>
+                <option value="G Major">G Major</option>
+                <option value="G# Major">G# Major</option>
+                <option value="A Major">A Major</option>
+                <option value="A# Major">A# Major</option>
+                <option value="B Major">B Major</option>
+                <option value="C Minor">C Minor</option>
+                <option value="C# Minor">C# Minor</option>
+                <option value="D Minor">D Minor</option>
+                <option value="D# Minor">D# Minor</option>
+                <option value="E Minor">E Minor</option>
+                <option value="F Minor">F Minor</option>
+                <option value="F# Minor">F# Minor</option>
+                <option value="G Minor">G Minor</option>
+                <option value="G# Minor">G# Minor</option>
+                <option value="A Minor">A Minor</option>
+                <option value="A# Minor">A# Minor</option>
+                <option value="B Minor">B Minor</option>
+              </select>
+            </div>
+
+            <div class="input-wrapper">
+              <label for="note">Note (select from list):</label>
+              <select id="note" name="note">
+                <option value="C0">C0</option>
+                <option value="C#0">C#0</option>
+                <option value="D0">D0</option>
+                <option value="D#0">D#0</option>
+                <option value="E0">E0</option>
+                <option value="F0">F0</option>
+                <option value="F#0">F#0</option>
+                <option value="G0">G0</option>
+                <option value="G#0">G#0</option>
+                <option value="A0">A0</option>
+                <option value="A#0">A#0</option>
+                <option value="B0">B0</option>
+
+                <option value="C1">C1</option>
+                <option value="C#1">C#1</option>
+                <option value="D1">D1</option>
+                <option value="D#1">D#1</option>
+                <option value="E1">E1</option>
+                <option value="F1">F1</option>
+                <option value="F#1">F#1</option>
+                <option value="G1">G1</option>
+                <option value="G#1">G#1</option>
+                <option value="A1">A1</option>
+                <option value="A#1">A#1</option>
+                <option value="B1">B1</option>
+
+                <option value="C2">C2</option>
+                <option value="C#2">C#2</option>
+                <option value="D2">D2</option>
+                <option value="D#2">D#2</option>
+                <option value="E2">E2</option>
+                <option value="F2">F2</option>
+                <option value="F#2">F#2</option>
+                <option value="G2">G2</option>
+                <option value="G#2">G#2</option>
+                <option value="A2">A2</option>
+                <option value="A#2">A#2</option>
+                <option value="B2">B2</option>
+
+                <option value="C3">C3</option>
+                <option value="C#3">C#3</option>
+                <option value="D3">D3</option>
+                <option value="D#3">D#3</option>
+                <option value="E3">E3</option>
+                <option value="F3">F3</option>
+                <option value="F#3">F#3</option>
+                <option value="G3">G3</option>
+                <option value="G#3">G#3</option>
+                <option value="A3">A3</option>
+                <option value="A#3">A#3</option>
+                <option value="B3">B3</option>
+
+                <option value="C4">C4</option>
+                <option value="C#4">C#4</option>
+                <option value="D4">D4</option>
+                <option value="D#4">D#4</option>
+                <option value="E4">E4</option>
+                <option value="F4">F4</option>
+                <option value="F#4">F#4</option>
+                <option value="G4">G4</option>
+                <option value="G#4">G#4</option>
+                <option value="A4">A4</option>
+                <option value="A#4">A#4</option>
+                <option value="B4">B4</option>
+
+                <option value="C5">C5</option>
+                <option value="C#5">C#5</option>
+                <option value="D5">D5</option>
+                <option value="D#5">D#5</option>
+                <option value="E5">E5</option>
+                <option value="F5">F5</option>
+                <option value="F#5">F#5</option>
+                <option value="G5">G5</option>
+                <option value="G#5">G#5</option>
+                <option value="A5">A5</option>
+                <option value="A#5">A#5</option>
+                <option value="B5">B5</option>
+
+                <option value="C6">C6</option>
+                <option value="C#6">C#6</option>
+                <option value="D6">D6</option>
+                <option value="D#6">D#6</option>
+                <option value="E6">E6</option>
+                <option value="F6">F6</option>
+                <option value="F#6">F#6</option>
+                <option value="G6">G6</option>
+                <option value="G#6">G#6</option>
+                <option value="A6">A6</option>
+                <option value="A#6">A#6</option>
+                <option value="B6">B6</option>
+
+                <option value="C7">C7</option>
+                <option value="C#7">C#7</option>
+                <option value="D7">D7</option>
+                <option value="D#7">D#7</option>
+                <option value="E7">E7</option>
+                <option value="F7">F7</option>
+                <option value="F#7">F#7</option>
+                <option value="G7">G7</option>
+                <option value="G#7">G#7</option>
+                <option value="A7">A7</option>
+                <option value="A#7">A#7</option>
+                <option value="B7">B7</option>
+
+                <option value="C8">C8</option>
+                <option value="C#8">C#8</option>
+                <option value="D8">D8</option>
+                <option value="D#8">D#8</option>
+                <option value="E8">E8</option>
+                <option value="F8">F8</option>
+                <option value="F#8">F#8</option>
+                <option value="G8">G8</option>
+                <option value="G#8">G#8</option>
+                <option value="A8">A8</option>
+                <option value="A#8">A#8</option>
+                <option value="B8">B8</option>
+              </select>
+            </div>
+          </fieldset>
+        </article>
+
+        <article class="column">
+          <fieldset class="form-group">
+            <legend>Additional Details:</legend>
+
+            <div class="input-wrapper">
+              <label for="genre">Genre:</label>
+              <input type="text" id="genre" placeholder="E.G. Jazz" />
+            </div>
+
+            <div class="input-wrapper">
+              <label for="isLoop">Is this sample a loop?</label>
+              <div class="radio-group">
+                <input
+                  id="isLoopYes"
+                  type="radio"
+                  name="isLoop"
+                  value="Yes"
+                  class="form-control last-input"
+                />
+                <label for="isLoopYes">Yes</label>
+
+                <input
+                  id="isLoopNo"
+                  type="radio"
+                  name="isLoop"
+                  value="No"
+                  class="form-control last-input"
+                />
+                <label for="isLoopNo">No</label>
+              </div>
+            </div>
+
+            <div class="input-wrapper">
+              <label for="bpm" style="height: 25px">BPM (e.g. 125):</label>
+              <input
+                type="number"
+                id="bpm"
+                min="0"
+                max="999"
+                inputmode="numeric"
+                pattern="[0-9]{1,3}"
+                placeholder="E.G. 120"
+                class="form-control last-input"
+              />
+              <div id="trimInputs" class="hidden">  <!-- Add this wrapper and initially hide it -->
+                <div class="input-wrapper">
+                  <label for="loopTrimStart" style="height: 25px">Trim start of sample for looping (in seconds) (e.g. -0.125):</label>
+                  <input
+                    type="text"
+                    id="loopTrimStart"
+                    maxlength="6"
+                    oninput="validateInput(this)"
+                    value="-0."
+                    class="form-control last-input"
+                  />
+                </div>
           
-          // Check if the iframe already exists
-          var existingIframe = document.getElementById('sequencer-iframe');
-          if (existingIframe) {
-              // If it exists, simply toggle its visibility
-              if (existingIframe.style.display === 'none') {
-                  existingIframe.style.display = 'block';
-              } else {
-                  existingIframe.style.display = 'none';
-              }
-          } else {
-              // If it doesn't exist, create it
-              var sequencerIframe = document.createElement('iframe');
-              sequencerIframe.id = 'sequencer-iframe';
-              sequencerIframe.src = 'audional-sequencer.html';
-              sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+                <div class="input-wrapper">
+                  <label for="loopTrimEnd" style="height: 25px">Trim end of sample for looping (in seconds) (e.g. -0.125):</label>
+                  <input
+                    type="text"
+                    id="loopTrimEnd"
+                    maxlength="6"
+                    oninput="validateInput(this)"
+                    value="-0."
+                    class="form-control last-input"
+                  />
+                </div>
+                </div>
+              </fieldset>
+            </article>
+          </section>
               
-              // Set the height of the iframe as desired (e.g., 600px)
-              sequencerIframe.style.height = '700px';
+          <script>
+            function validateInput(input) {
+              const userInput = input.value;
+              const decimalPart = userInput.substr(3).replace(/[^\d]/g, '');
+              if (decimalPart > 999) decimalPart = 999;
+              input.value = "-0." + decimalPart;
+          
+              updateLoopTrimValues(); // Update the loopTrimStart and loopTrimEnd values
+            }
+          
+            function updateLoopTrimValues() {
+              var loopTrimStartInput = document.getElementById("loopTrimStart");
+              var loopTrimEndInput = document.getElementById("loopTrimEnd");
+              var loopTrimStart = loopTrimStartInput.value ? parseFloat(loopTrimStartInput.value) : 0;
+              var loopTrimEnd = loopTrimEndInput.value ? parseFloat(loopTrimEndInput.value) : 0;
+          
+              // Debugging: Output values to the console
+              console.log("loopTrimStartInput:", loopTrimStartInput.value);
+              console.log("loopTrimEndInput:", loopTrimEndInput.value);
+              console.log("loopTrimStart:", loopTrimStart);
+              console.log("loopTrimEnd:", loopTrimEnd);
+          
+              // Use the updated loopTrimStart and loopTrimEnd values as needed
+              console.log("Loop Trim Start:", loopTrimStart);
+              console.log("Loop Trim End:", loopTrimEnd);
+            }
+          
+            document.getElementById("loopTrimStart").onfocus = function () {
+              this.selectionStart = this.selectionEnd = this.value.length;
+            };
+          
+            document.getElementById("loopTrimEnd").onfocus = function () {
+              this.selectionStart = this.selectionEnd = this.value.length;
+            };
+          
+            document.getElementById("isLoopYes").addEventListener("change", function () {
+              document.getElementById("trimInputs").classList.remove("hidden");
+            });
+          
+            document.getElementById("isLoopNo").addEventListener("change", function () {
+              document.getElementById("trimInputs").classList.add("hidden");
+            });
+          </script>
               
-              // Add the iframe to the container
-              sequencerContainer.appendChild(sequencerIframe);
-          }
-      }
-
-
+              
+     
        
 
-        // Store elements to avoid repeated DOM queries
-        const fileInput = document.getElementById('file');
-        const processButton = document.getElementById('process');
-        const convertButton = document.getElementById('convert');
-        const reminder = document.getElementById('reminder');
+      <fieldset class="form-group">
+        <legend>
+          User Defined (e.g. additional details not included any of the fields
+          above)
+        </legend>
+        <div class="input-wrapper">
+          <textarea
+            id="user-defined"
+            class="input-width"
+            placeholder="E.G. Synth loop from Entertainment by Melophonic"
+          ></textarea>
+        </div>
+      </fieldset>
 
-        // Error container for user-friendly error messages
-        const errorContainer = document.createElement('div');
-        errorContainer.id = 'error-container';
-        document.body.appendChild(errorContainer);
+      <p id="reminder" style="color: grey; font-weight: bold">
+        Have you filled as many of the fields above as you can?<br />More detail
+        means better indexing which means more users can find your samples!<br />If
+        yes, go ahead and:
+      </p>
 
-        // Main code
-        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      <button id="convert" disabled>Generate Audional JSON</button>
+      <button id="startInscriptionProcess" style="display: none" disabled>
+        Start Inscription Process
+      </button>
 
-        // Make the fileInput button flash when the page loads
-        fileInput.classList.add('flashing');
+      <div class="button-wrapper" style="display: flex; justify-content: center; margin-left: -100px;">
+        <button id="doInscribe" style="display: none;">INSCRIBE</button>
+      </div>
+      
 
-        fileInput.addEventListener('change', function() {
-            var file = fileInput.files[0];
-            if (file) {
-                var fileType = file.name.split('.').pop();
-                if (fileType !== 'mp3' && fileType !== 'wav') {
-                    errorContainer.innerHTML = 'Invalid file type. Please select a .mp3 or .wav file.';
-                    fileInput.value = '';  // Clear the input.
-                    return;
-                }
-            }
-    // Remove the flashing class from the file input field
-    fileInput.classList.remove('flashing');
-    fileInput.style.backgroundColor = 'green';
 
+      <output id="json-output"></output>
+      <!-- create a read only textarea called audional-json -->
+      <div style="display: flex;">
+        <pre id="audional-json" readonly style="display: none; width: 50%; height: 300px; font-size: 16px; color: blue; user-select: none;"></pre>
+    
+        <div id="inscriptionPreviewContainer" style="display: none; width: 50%;">
+            <article class="column">
+                <fieldset class="form-group">
+                    <legend>
+                        Check the Inscription Price and Enter your Ordinals Receiving
+                        Address below.
+                    </legend>
+
+                    <div class="input-wrapper">
+                      <label for="ordinalRecipientAddress" style="color: rgb(255, 153, 0);">Enter the Bitcoin address to receive the audional inscription:</label>
+                      <input
+                        id="ordinalRecipientAddress"
+                        style="background-color: rgb(255, 255, 255); width: 100%; height: 30px; font-size: 16px; color: green; user-select: none;"
+                      />
+                    </div>
+                    
+                  <div class="input-wrapper">
+                    <div class="input-wrapper">
+                      <label for="networkFeeRate" style="color: rgb(255, 166, 0);">Network Fee Rate (sat/vbyte):</label>
+                      <div class="input-wrapper">
+                        <input
+                          id="networkFeeRate"
+                          readonly
+                          style="background-color: rgb(0, 0, 0); height: 30px; font-size: 16px; color: rgb(255, 166, 0); user-select: none; text-align: center; font-weight: bold;"
+                        />
+                        <span class="unit-label" style="color: rgb(255, 166, 0);">sat/vbyte</span>
+                      </div>
+                    </div>
+                    
+                    <div class="input-wrapper">
+                      <label for="estimatedFees" style="color: rgb(255, 166, 0);">Estimated Inscription Price (sats):</label>
+                      <div class="input-wrapper">
+                        <input
+                          id="estimatedFees"
+                          readonly
+                          style="background-color: rgb(0, 0, 0); height: 30px; font-size: 16px; color: rgb(255, 166, 0); user-select: none; text-align: center; font-weight: bold;"
+                        />
+                        <span class="unit-label" style="color: rgb(255, 166, 0);">sats</span>
+                      </div>
+                    </div>
+                    
+
+                  
+    
+                    
+                </fieldset>
+            </article>
+        </div>
+    </div>
+    
+
+        <article class="column">
+          <div class="form-and-qrcode-container"> <!-- Parent div to contain form and QR code -->
+            <fieldset class="form-group" id="inscriptionInvoiceContainer" style="display: none; width: 50%">
+
+          <div class="column-left">
+          <legend>Invoice/QR Code</legend>
+
+          <div class="input-wrapper">
+            <label for="inscriptionRequestId">Inscription Request ID (Use this ID to check status):</label>
+            <div class="copy-icon-wrapper">
+              <input id="inscriptionRequestId" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('inscriptionRequestId')"></i>
+            </div>
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAddress">Invoice Address (Send payment to this address):</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAddress" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAddress')"></i>
+            </div>
+          </div>
+          
+          <div class="input-wrapper">
+            <label for="invoiceAmount">Invoice Amount (Sats):</label>
+            <div class="copy-icon-wrapper">
+              <input id="invoiceAmount" readonly 
+                style="background-color: rgb(160, 160, 160); width: 100%; height: 30px; font-size: 16px; color: blue; user-select: none; text-align: center; font-weight: bold;"
+              />
+              <i class="fas fa-copy copy-icon" onclick="copyToClipboard('invoiceAmount')"></i>
+            </div>
+          </div>
+         
+        </fieldset>
+
+          <!-- This new div will hold the QR code -->
+          <div id="qrcode-container" style="width: 34%"> <!-- Adjust width as per your needs -->
+              <div id="qrcode"></div>
+          </div>
+      </div>
+  </article>
+      </div>
+    </main>
   
-});
+    <!-- include main.js with support for modules -->
+    <script type="module" src="/js/main.js"></script>
+    <script src="/js/gammaApi.js"></script>
 
-processButton.addEventListener('click', function() {
-    document.getElementById('reminder').style.color = 'red';
-
-    if (!audioTypeInput.value) {
-        document.getElementById('reminder').innerText = 'Please select the Audio Type and fill any other relevant fields before creating your Audional file!';
-        convertButton.disabled = true;
-    } else {
-        document.getElementById('reminder').innerText = 'Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!';
-        convertButton.disabled = false;
-        convertButton.classList.add('flashing');
-    }
-
-    // Handle button flashing
-    convertButton.addEventListener('animationiteration', function() {
-        convertButton.style.backgroundColor = convertButton.style.backgroundColor === 'red' ? '' : 'red';
-    });
-
-audioTypeInput.addEventListener('input', function() {
-    if (audioTypeInput.value) {
-        document.getElementById('reminder').innerText = 'Have you filled as many of the fields above as you can? More detail equals better indexing which equals more users finding your samples!';
-        convertButton.disabled = false;
-        convertButton.classList.add('flashing');
-    }
-});
-
-    var file = fileInput.files[0];
-    if (!file) {
-        alert('Please select a file.');
-        return;
-    }
-
-  
-    var reader = new FileReader();
-reader.onload = function(e) {
-    var audioData = e.target.result;
-
-    audioContext.decodeAudioData(audioData, function(buffer) {
-        var duration = buffer.duration;
-
-        fileInput.sampleRate = buffer.sampleRate;
-        fileInput.numberOfChannels = buffer.numberOfChannels;
-
-        document.getElementById('duration').value = duration.toFixed(3);
-        document.getElementById('fileName').value = file.name;
-
-        processButton.classList.remove('flashing');
-        processButton.style.backgroundColor = 'green';
-        processButton.innerText = 'File Processed';
-        convertButton.disabled = false;
-        convertButton.classList.add('flashing');
-
-        document.getElementById('fileName').readOnly = true;
-        document.getElementById('duration').readOnly = true;
-
-        document.getElementById('reminder').style.color = 'red'; 
-    });
-};
-reader.onerror = function() {
-    alert('Error reading file');
-};
-reader.readAsArrayBuffer(file);
-});
-
-
-
-    </script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   </body>
 </html>
