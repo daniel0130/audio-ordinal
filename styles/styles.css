@@ -16,13 +16,13 @@
     align-items: center;
     background-color: black;
     display: flex;
-    height: 100px;
+    height: 80px;
     justify-content: space-between;
     width: 100vw;
   }
   
   .header img {
-    height: 100%;
+    height: 80%;
   }
   
   .header h1 {
