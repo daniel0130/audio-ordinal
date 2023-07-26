@@ -41,31 +41,31 @@
           }
       }
       function tryAudionalSequencer() {
-    var sequencerContainer = document.getElementById('sequencer-container');
-    
-    // Check if the iframe already exists
-    var existingIframe = document.getElementById('sequencer-iframe');
-    if (existingIframe) {
-        // If it exists, simply toggle its visibility
-        if (existingIframe.style.display === 'none') {
-            existingIframe.style.display = 'block';
+        var sequencerContainer = document.getElementById('sequencer-container');
+        
+        // Check if the iframe already exists
+        var existingIframe = document.getElementById('sequencer-iframe');
+        if (existingIframe) {
+            // If it exists, simply toggle its visibility
+            if (existingIframe.style.display === 'none') {
+                existingIframe.style.display = 'block';
+            } else {
+                existingIframe.style.display = 'none';
+            }
         } else {
-            existingIframe.style.display = 'none';
+            // If it doesn't exist, create it
+            var sequencerIframe = document.createElement('iframe');
+            sequencerIframe.id = 'sequencer-iframe';
+            sequencerIframe.src = 'audional-sequencer.html';
+            sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+            
+            // Set the height of the iframe as desired (e.g., 600px)
+            sequencerIframe.style.height = '700px';
+            
+            // Add the iframe to the container
+            sequencerContainer.appendChild(sequencerIframe);
         }
-    } else {
-        // If it doesn't exist, create it
-        var sequencerIframe = document.createElement('iframe');
-        sequencerIframe.id = 'sequencer-iframe';
-        sequencerIframe.src = 'audional-sequencer.html';
-        sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
-        
-        // Set the height of the iframe as desired (e.g., 600px)
-        sequencerIframe.style.height = '700px';
-        
-        // Add the iframe to the container
-        sequencerContainer.appendChild(sequencerIframe);
     }
-}
   </script>
   </head>
   <body>
