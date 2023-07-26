@@ -9,11 +9,12 @@
     --accent-color: #f00;
     --play-button-dimension: 50px;
     --stop-button-dimension: 50px;
-    --step-button-dimension: 25px; 
-    --control-button-dimension: 25px;
+    --control-button-dimension: 20px;
     --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
     --margin-style: 10px;
     --default-font: Arial, sans-serif;
+    --step-button-dimension: 20px; /* added */
+    --sequence-light-dimension: 20px; /* added */
 }
 
 body {
@@ -23,9 +24,9 @@ body {
 }
 
 #drum-machine {
-    width: 80%;
+    width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0px;
     background-color: var(--secondary-bg-color);
     border: 5px solid var(--main-bg-color);
 }
@@ -40,7 +41,6 @@ h1 {
 
 .button {
     border: none;
-    border-radius: 5px;
     background-color: var(--primary-color);
     cursor: pointer;
     box-shadow: var(--box-shadow-style);
@@ -57,14 +57,15 @@ h3 .subtext {
 }
 
 h3:hover .subtext {
-    font-size: 0.6em; /* Customize the font size for the shrunk subtext on hover */
+    font-size: 1em; /* Customize the font size for the shrunk subtext on hover */
     opacity: 0.5; /* Customize the opacity for the shrunk subtext on hover */
 }
 
 .step-button {
-    margin-top: 10px;
-/* width: calc(100% / 16 - 2px); Remove this */    
-    height: 10px;
+    margin-top: 0px;
+    width: 15px;
+    flex: 1 1 auto; /* added */
+    height: 20px;
     background-color: #555;
     color: #fff;
 }
@@ -111,30 +112,19 @@ h3:hover .subtext {
 
 
 .channel {
-    position: relative; 
     display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
 .steps-container {
-    display: flex;
-    justify-content: center;
     flex-wrap: wrap;
     gap: 0px;
     margin: 0px 0;
 }
 
-.controls-container {
-    width: 15%;
-    gap: 5px;
-}
 
 .button-container {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
 }
 .title {
     font-size: 40px; /* Adjust the font size as needed */
@@ -167,12 +157,6 @@ h3:hover .subtext {
     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
 }
 
-.channel-controls {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 5px; /* Adjusts spacing between buttons */
-}
 
 .clear-button {
     background-color: #ff0;
@@ -181,18 +165,16 @@ h3:hover .subtext {
 .mute-button {
   background-color: #800;
 }
-.button-fixed-width {
-  width: 100px !important;
-}
+
 
 .load-sample-button {
   display: inline-block;
-  flex: 2.5;
-  white-space: nowrap;
-  overflow: hidden;
+  flex: 1;
+  overflow: auto;
   text-overflow: ellipsis;
-  font-size: 1em;
-  position: relative;
+  font-size: 0.5em;
+  height: 20px;  /* set the height of the buttons */
+  padding: 5px;  /* adjust padding as necessary */
 }
 
 .load-sample-button:hover::after {
@@ -202,14 +184,7 @@ h3:hover .subtext {
   left: 0;
   background: var(--primary-color);
   color: var(--main-bg-color);
-  padding: 5px;
-  border-radius: 10px;
   z-index: 1;
-}
-
-#load-preset {
-  font-size: 1em;
-  padding: 5px 10px;
 }
 
 
@@ -231,18 +206,12 @@ h3:hover .subtext {
     100% {background-color: var(--primary-color);}
 }
 
-.controls-container {
-    width: 15%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
 
 .channel-controls {
-    margin-top: 20px; /* Add a top margin if needed */
+    margin-top: 10px; /* Add a top margin if needed */
 }
 .button-label {
-    position: relative;
+    position: center;
     z-index: 2;
 }
 .centered {
@@ -294,6 +263,72 @@ h3:hover .subtext {
     font-size: 1em;
     color: var(--primary-color);
     opacity: 0.7;
+}
+.mode-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 50px;
+}
+
+.mode-switcher label {
+  margin-right: 10px;
+}
+
+.mode-switcher input[type="checkbox"] {
+  appearance: none;
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 10px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+}
+
+.mode-switcher input[type="checkbox"]:checked {
+  background-color: #2196f3;
+}
+
+.mode-switcher input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.mode-switcher input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+#steps-container, #sequence-lights {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 90%;
+  margin-left: 10%; /* Add 20% indentation from the left margin */
+
+}
+.sequence-light, .step-button {
+  grid-column: span 1;
+  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
+
+}
+.sequence-light {
+  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
+  height: 15px;
+  background-color: grey; /* Add your off state styles here */
+  box-sizing: border-box;
+}
+
+.sequence-light.on {
+  background-color: greenyellow; /* Add your off state styles here */
+ /* Add your on state styles here */
 }
 
 </style>    
