@@ -63,11 +63,28 @@ h3:hover .subtext {
 
 .step-button {
     margin-top: 0px;
+    position: relative;
     width: 15px;
     flex: 1 1 auto; /* added */
     height: 20px;
     background-color: #555;
     color: #fff;
+}
+.step-button .tooltiptext {
+  position: absolute;
+  display: none;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 5px;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -5px);
+}
+
+.step-button:hover .tooltiptext {
+  display: block;
 }
 
 
@@ -168,7 +185,6 @@ h3:hover .subtext {
 
 
 .load-sample-button {
-  display: inline-block;
   flex: 1;
   overflow: auto;
   text-overflow: ellipsis;
@@ -178,7 +194,6 @@ h3:hover .subtext {
 }
 
 .load-sample-button:hover::after {
-  content: attr(data-filename); /* Use the 'data-filename' attribute as content */
   position: absolute;
   top: 100%; /* Position it below the load-sample-button */
   left: 0;
@@ -331,47 +346,79 @@ h3:hover .subtext {
  /* Add your on state styles here */
 }
 
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 200px; /* Adjust the width as needed */
+  background-color: #333; /* Set the background color */
+  color: #fff; /* Set the text color */
+  text-align: center;
+  border-radius: 8px; /* Adjust the border radius as needed */
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: -20%; /* Position the tooltip above the text */
+  left: 50%;
+  transform: translateX(20%); /* Center the tooltip horizontally */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+
 </style>    
 </head>
 <body>
     <div id="drum-machine">
         <h1>
-            
-            <span class="button-label">Play</span>
-            <div class="button button-round">
-                
-                
-                <div class="button play-button" id="play"></div> <!-- Update the class and ID for play button -->
-            </div>
-            <span class="title">Audional Sequencer <span class="">&#x20bf;</span>eta<span class="bright-orange">&#x20bf;</span>itcoin<span class="">&#x20bf;</span>eats</span>
-          
-            <span class="button-label stop">Stop</span>           
-             <div class="button button-round">
-                
-
-                
-                <div class="button stop-button" id="stop"></div> <!-- Update the class and ID for stop button -->
-            </div>
-            <div class="bpm-container">
-                BPM: <input type="range" min="60" max="180" value="125" step="1" id="bpm-slider">
-                <div class="bpm-display" id="bpm-display">125</div>
-            </div>
+          <span class="button-label">Play</span>
+          <div class="button button-round tooltip">
+            <div class="button play-button" id="play"></div>
+            <span class="tooltiptext">Start the sequence.</span>
+          </div>
+          <span class="title">Audional Sequencer <span class="">&#x20bf;</span>eta<span class="bright-orange">&#x20bf;</span>itcoin<span class="">&#x20bf;</span>eats</span>
+          <span class="button-label stop">Stop</span>
+          <div class="button button-round tooltip">
+            <div class="button stop-button" id="stop"></div>
+            <span class="tooltiptext">Stop the sequence.</span>
+          </div>
+          <div class="bpm-container">
+            BPM: <input type="range" min="60" max="180" value="125" step="1" id="bpm-slider">
+            <div class="bpm-display" id="bpm-display">125</div>
+          </div>
         </h1>
-       
         <div class="subtext-container">
-            <p class="subtext centered-text">
-                Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
-            </p>
-            </div>
-            </span>
-          
-            <main id="app" role="main">
+          <p class="subtext centered-text">
+            Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+          </p>
+        </div>
+        <main id="app" role="main">
+
         <div class="channel" id="bass-drum">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -385,11 +432,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="snare">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -403,11 +459,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="hi-hat">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -421,11 +486,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="bass">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -437,11 +511,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -454,11 +537,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -471,11 +563,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -488,11 +589,20 @@ h3:hover .subtext {
             </div>
         </div>
         <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
             <div>
-            <button class="control-button clear-button">C</button>
-            <button class="control-button mute-button">M</button>
-            </div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
             <div class="channel-container">
                 <div class="steps-container"></div>
                 <div class="controls-container">
@@ -504,16 +614,20 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="button-container">
-          <button id="save-button">Save</button>
-          <input type="file" id="save-file-input" style="display: none">
-        
-          <button id="load-button">Load</button>
-          <input type="file" id="load-file-input" style="display: none" accept=".json">
-        
-          <button class="new-button">Inscribe Audional Composition</button>
-          <span class="new-button-subtext">(Coming soon...)</span>
-        </div>
+    </main>
+    <div class="button-container">
+      <button id="save-button" class="tooltip">Save
+        <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
+      </button>
+      <input type="file" id="save-file-input" style="display: none">
+      <button id="load-button" class="tooltip">Load
+        <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
+      </button>
+      <input type="file" id="load-file-input" style="display: none" accept=".json">
+      <button class="new-button">Inscribe Audional Composition</button>
+      <span class="new-button-subtext">(Coming soon...)</span>
+    </div>
+  </div>
 
     <script>
 
@@ -702,16 +816,36 @@ h3:hover .subtext {
     const stepsContainer = channel.querySelector('.steps-container');
     stepsContainer.innerHTML = '';
 
+    // Check if the current channel is 'bass-drum'
+    let isBassDrumChannel = channel.id === 'bass-drum';
+
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < 64; i++) {
-      const button = document.createElement('button');
-      button.classList.add('step-button');
-      button.addEventListener('click', () => {
+    const button = document.createElement('button');
+    button.classList.add('step-button');
+    button.addEventListener('click', () => {
         button.classList.toggle('selected');
-      });
-      fragment.appendChild(button);
+    });
+
+    if (isBassDrumChannel) {
+        // create a span for the tooltip text
+        const tooltipSpan = document.createElement('span');
+
+        // add the tooltip class to the span
+        tooltipSpan.className = 'tooltiptext';
+
+        // set the tooltip text
+        tooltipSpan.textContent = 'Step button. Trigger sample at step ' + (i + 1);
+
+        // add the tooltip span to the button
+        button.appendChild(tooltipSpan);
     }
+
+    fragment.appendChild(button);
+    }
+
     stepsContainer.appendChild(fragment);
+
 
     const audionalIDs = [
             { id: '6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0', label: 'Audional Sample #1, 125BPM' },
@@ -784,7 +918,7 @@ h3:hover .subtext {
                     // Add input field
                     const audionalInput = document.createElement('input');
                     audionalInput.type = 'text';
-                    audionalInput.placeholder = 'Enter your ID here...';
+                    audionalInput.placeholder = 'Enter ID or choose below:';
                     audionalInput.style.marginBottom = '10px';
                     idModalContent.appendChild(audionalInput);
 
