@@ -9,11 +9,12 @@
     --accent-color: #f00;
     --play-button-dimension: 50px;
     --stop-button-dimension: 50px;
-    --step-button-dimension: 25px; 
-    --control-button-dimension: 25px;
+    --control-button-dimension: 20px;
     --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
     --margin-style: 10px;
     --default-font: Arial, sans-serif;
+    --step-button-dimension: 20px; /* added */
+    --sequence-light-dimension: 20px; /* added */
 }
 
 body {
@@ -23,7 +24,7 @@ body {
 }
 
 #drum-machine {
-    width: 80%;
+    width: 100%;
     margin: 0 auto;
     padding: 0px;
     background-color: var(--secondary-bg-color);
@@ -40,7 +41,6 @@ h1 {
 
 .button {
     border: none;
-    border-radius: 5px;
     background-color: var(--primary-color);
     cursor: pointer;
     box-shadow: var(--box-shadow-style);
@@ -57,14 +57,15 @@ h3 .subtext {
 }
 
 h3:hover .subtext {
-    font-size: 0.6em; /* Customize the font size for the shrunk subtext on hover */
+    font-size: 1em; /* Customize the font size for the shrunk subtext on hover */
     opacity: 0.5; /* Customize the opacity for the shrunk subtext on hover */
 }
 
 .step-button {
-    margin-top: 10px;
-/* width: calc(100% / 16 - 2px); Remove this */    
-    height: 10px;
+    margin-top: 0px;
+    width: 15px;
+    flex: 1 1 auto; /* added */
+    height: 20px;
     background-color: #555;
     color: #fff;
 }
@@ -111,30 +112,19 @@ h3:hover .subtext {
 
 
 .channel {
-    position: relative; 
     display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
 .steps-container {
-    display: flex;
-    justify-content: center;
     flex-wrap: wrap;
     gap: 0px;
     margin: 0px 0;
 }
 
-.controls-container {
-    width: 15%;
-    gap: 5px;
-}
 
 .button-container {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
 }
 .title {
     font-size: 40px; /* Adjust the font size as needed */
@@ -167,12 +157,6 @@ h3:hover .subtext {
     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
 }
 
-.channel-controls {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 5px; /* Adjusts spacing between buttons */
-}
 
 .clear-button {
     background-color: #ff0;
@@ -181,18 +165,16 @@ h3:hover .subtext {
 .mute-button {
   background-color: #800;
 }
-.button-fixed-width {
-  width: 100px !important;
-}
+
 
 .load-sample-button {
   display: inline-block;
-  flex: 2.5;
-  white-space: nowrap;
-  overflow: hidden;
+  flex: 1;
+  overflow: auto;
   text-overflow: ellipsis;
-  font-size: 1em;
-  position: relative;
+  font-size: 0.5em;
+  height: 20px;  /* set the height of the buttons */
+  padding: 5px;  /* adjust padding as necessary */
 }
 
 .load-sample-button:hover::after {
@@ -202,14 +184,7 @@ h3:hover .subtext {
   left: 0;
   background: var(--primary-color);
   color: var(--main-bg-color);
-  padding: 5px;
-  border-radius: 10px;
   z-index: 1;
-}
-
-#load-preset {
-  font-size: 1em;
-  padding: 5px 10px;
 }
 
 
@@ -231,18 +206,12 @@ h3:hover .subtext {
     100% {background-color: var(--primary-color);}
 }
 
-.controls-container {
-    width: 15%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
 
 .channel-controls {
-    margin-top: 20px; /* Add a top margin if needed */
+    margin-top: 10px; /* Add a top margin if needed */
 }
 .button-label {
-    position: relative;
+    position: center;
     z-index: 2;
 }
 .centered {
@@ -294,6 +263,72 @@ h3:hover .subtext {
     font-size: 1em;
     color: var(--primary-color);
     opacity: 0.7;
+}
+.mode-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 50px;
+}
+
+.mode-switcher label {
+  margin-right: 10px;
+}
+
+.mode-switcher input[type="checkbox"] {
+  appearance: none;
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 10px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+}
+
+.mode-switcher input[type="checkbox"]:checked {
+  background-color: #2196f3;
+}
+
+.mode-switcher input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.mode-switcher input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+#steps-container, #sequence-lights {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 90%;
+  margin-left: 10%; /* Add 20% indentation from the left margin */
+
+}
+.sequence-light, .step-button {
+  grid-column: span 1;
+  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
+
+}
+.sequence-light {
+  width: var(--step-button-dimension); /* Update to use the same variable as step buttons */
+  height: 15px;
+  background-color: grey; /* Add your off state styles here */
+  box-sizing: border-box;
+}
+
+.sequence-light.on {
+  background-color: greenyellow; /* Add your off state styles here */
+ /* Add your on state styles here */
 }
 
 </style>    
@@ -678,13 +713,110 @@ h3:hover .subtext {
     }
     stepsContainer.appendChild(fragment);
 
-    const loadSampleButton = channel.querySelector('.load-sample-button');
-    loadSampleButton.addEventListener('click', () => {
-      const audionalId = prompt('Enter the ordinal ID for the Audional you want to load:');
-      const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalId);
-      fetchAudio(audionalUrl, index, loadSampleButton);
-    });
-  });
+    const audionalIDs = [
+            { id: '6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0', label: 'Audional Sample #1, 125BPM' },
+            { id: '0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0', label: 'Melophonic Bass + Kick, 125BPM' },
+            { id: '6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0', label: 'Melophonic Snare' },
+            { id: '6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0', label: 'Neill Armstrong "One small step for man..."' },
+            { id: '3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0', label: '8 Bit Drum Loop, 105BPM' },
+            { id: '43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0', label: 'Pump It' },
+            { id: 'fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0', label: 'Wobble Bass, 125BPM' },
+            { id: 'c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0', label: 'Audional Jim' },
+            { id: 'a511d79317efac68fea3b14070bebe208aefde07ce1c55d6f4cfe42e8273cbdbi0', label: 'Denim Avengers Kick' },
+            { id: '5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0', label: 'Denim Avengers Kick' },
+            { id: 'a511d79317efac68fea3b14070bebe208aefde07ce1c55d6f4cfe42e8273cbdbi0', label: 'Denim Avengers Tom' },
+            { id: 'fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0', label: 'Denim Avengers cheese HUUH' },
+            { id: '4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0', label: 'Denim Avengers I Like Cheese' },
+            { id: '752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0', label: 'Denim Avengers MS10 woop' },
+            { id: '8fa54ad2d9e297c79b225eff67a481ebc8682dacf4fe9dbf5b692a60b237c163i0', label: 'Entertainment - Quiet Loop' },
+            { id: 'c6decce29948ea64df9a24e689340c5907b6da207d74d13973fc5ca4dd3bd80ai0', label: 'Bitcoin Step Melody G, 105BPM' },
+            { id: 'e9885c35376ae95dd291bb02075b0763fb3e655d51dc981984130b8366a6d3c8i0', label: 'Bitcoin Step Mel Fill 2, 105BPM' },
+            { id: '34e73ef718034a3c0fdeba53899a2af8ee7771f252c419ab63cd13b0a39f6b10i0', label: 'Bitcoin Step Mel Fill 1, 105BPM' },
+            { id: '435c5c22eaf0c1791e09cb46d56ce942eb312372376abf5b5420200b1424ff7fi0', label: 'Bitcoin Step Melody E, 105BPM' },
+            { id: 'ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0', label: 'Bitcoin Step Drums Beat, 105BPM' },
+            { id: 'ef8fdd599beee731e06aba4a9ed02d9c7bfe62147b27f6b6deaf22c8c067ab11i0', label: 'Bitcoin Step Melody A, 105BPM' },
+            { id: '187a8c18ebfe07c18aea0e86cd99b3100474c1c53f56f02ee096723f1a35ce70i0', label: 'Bitcoin Step Drums Crash, 105BPM' },
+            { id: '2b6b23199eae0760ee26650a0cc02c49b94fc8fd1f519a95417f0f8478246610i0', label: 'Bitcoin Step Melody M, 105BPM' },
+            { id: '474f2b0aab9020757826b168ce58725871fd2abb26c6ca805de4b07e314416d1i0', label: 'Bitcoin Step Outro Fill 1, 105BPM' },
+            { id: '1aa69c9d3b451ab3b584dba57ba6d6fedc6e9cb3df6830b9da270e84e51ea72di0', label: 'Bitcoin Step Melody L, 105BPM' },
+            { id: '81f9e6afc38b8c647d4ea258c29f13b81f6c1a2d40afd9c0a385d03126b4d11di0', label: 'Bitcoin Step Melody F, 105BPM' },
+            { id: '4c40da69e783cfa96d2900bd15622c1ea60ad31e8ce9459cec13d155f39c463fi0', label: 'Bitcoin Step Intro Fill 1, 105BPM' },
+            { id: '695368ae1092c0633ef959dc795ddb90691648e43f560240d96da0e2753a0a08i0', label: 'Bitcoin Step Melody O, 105BPM' },
+            { id: 'd4ce1d1e80e90378d8fc49fd7e0e24e7f2310b2f5eb95d0c2318c47b6c9cd645i0', label: 'Bitcoin Step Melody K, 105BPM' },
+            { id: 'e4cb3caff3b4a5192adf0f2ab5cd9da378bacfbafce56c3d4fb678a313607970i0', label: 'Bitcoin Step Melody I, 105BPM' },
+            { id: '898cba6dc32faab5be09f13092b7500b13eb22f1e7b3d604c8e6e47b0becd139i0', label: 'Bitcoin Step Melody C, 105BPM' },
+            { id: 'ed13d5389ae6273839342698b6d5bd3342c51eb472f32b8306e60f8e1e903ce8i0', label: 'Bitcoin Step Mel Fill 3, 105BPM' },
+            { id: 'b0fb7f9eb0fe6c368a8d140b1117234431da0cd8725e9f78e6573bb7f0f61dadi0', label: 'Bitcoin Step Melody N, 105BPM' },
+            { id: '0e38f29c76b29e471f5f0022a5e98f9ae64b5b1d8f25673f85e02851daf22526i0', label: 'Bitcoin Step Mel Fill 4, 105BPM' },
+            { id: '244c785d6df173f8425d654cfc6d2b006c7bb47a605c7de576ed87022e42c7dfi0', label: 'Bitcoin Step Melody D, 105BPM' },
+            { id: 'a72adee5a07200a623c40831ae5979bc7562b542788c3ded35d9e81e39c6014fi0', label: 'Bitcoin Step Melody B, 105BPM' },
+            { id: '6a84401579707b76d9b9a77cc461e767f7ea8f08cc0e46dee0d21e5023cdde33i0', label: 'Bitcoin Step Melody J, 105BPM' },
+            { id: '83174080310b0ab71c7a725461f3bd9e486bb62727b73134ee2c67f191d9d586i0', label: 'Bitcoin Step Mel Fill 5, 105BPM' },
+            { id: '4f9bed6449d99ef3cbb0fabefac6890c20ef17db2bfe7c07f1386cb43277f220i0', label: 'Bitcoin Step Melody H, 105BPM' }
+            ];
+
+            const loadSampleButton = channel.querySelector('.load-sample-button');
+                loadSampleButton.addEventListener('click', () => {
+                    // Create a basic modal for audional ID input
+                    const idModal = document.createElement('div');
+                    idModal.style.position = 'fixed';
+                    idModal.style.left = '0';
+                    idModal.style.top = '0';
+                    idModal.style.width = '100%';
+                    idModal.style.height = '100%';
+                    idModal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                    idModal.style.display = 'flex';
+                    idModal.style.justifyContent = 'center';
+                    idModal.style.alignItems = 'center';
+                    idModal.style.zIndex = '9999';
+
+                    const idModalContent = document.createElement('div');
+                    idModalContent.style.backgroundColor = 'white';
+                    idModalContent.style.padding = '20px';
+                    idModalContent.style.borderRadius = '10px';
+                    idModalContent.style.maxHeight = '500px';  // Adjust this value as per your needs
+                    idModalContent.style.overflowY = 'auto';
+
+                    const instructionText = document.createElement('p');
+                    instructionText.textContent = 'Enter the ordinal ID for the Audional you want to load:';
+                    idModalContent.appendChild(instructionText);
+
+                    // Add input field
+                    const audionalInput = document.createElement('input');
+                    audionalInput.type = 'text';
+                    audionalInput.placeholder = 'Enter your ID here...';
+                    audionalInput.style.marginBottom = '10px';
+                    idModalContent.appendChild(audionalInput);
+
+                    const loadButton = document.createElement('button');
+                    loadButton.textContent = 'Load';
+                    loadButton.addEventListener('click', () => {
+                        const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalInput.value);
+                        fetchAudio(audionalUrl, index, loadSampleButton);
+                        document.body.removeChild(idModal);
+                    });
+                    idModalContent.appendChild(loadButton);
+
+                    audionalIDs.forEach((audionalObj) => {
+                        const idLink = document.createElement('a');
+                        idLink.href = '#';
+                        idLink.textContent = audionalObj.label;
+                        idLink.style.display = 'block';
+                        idLink.style.marginBottom = '10px';
+                        idLink.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalObj.id);
+                            fetchAudio(audionalUrl, index, loadSampleButton);
+                            document.body.removeChild(idModal);
+                        });
+                        idModalContent.appendChild(idLink);
+                    });
+
+                    idModal.appendChild(idModalContent);
+                    document.body.appendChild(idModal);
+                });
+
+        });
 
   if (playButton && stopButton) {
     const channel1 = document.querySelector('#channel-0 .step-button:nth-child(4n+1)');
