@@ -70,22 +70,7 @@ h3:hover .subtext {
     background-color: #555;
     color: #fff;
 }
-.step-button .tooltiptext {
-  position: absolute;
-  display: none;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 8px;
-  padding: 5px;
-  bottom: 100%;
-  left: 50%;
-  transform: translate(-50%, -5px);
-}
 
-.step-button:hover .tooltiptext {
-  display: block;
-}
 
 
 .control-button {
@@ -412,7 +397,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -439,7 +424,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -466,7 +451,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -493,7 +478,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -518,33 +503,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
-                </button>
-                <button class="control-button mute-button tooltip">
-                  M
-                  <span class="tooltiptext">Mute or unmute the current channel.</span>
-                </button>
-              </div>
-            <div class="channel-container">
-                <div class="steps-container"></div>
-                <div class="controls-container">
-                    <div class="channel-controls">
-                        <div class="button-container">
-                            
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="channel" id="channel-5">
-            <button class="load-sample-button" title="Load New Audional">Load New Audional
-                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
-
-            </button>
-            <div>
-                <button class="control-button clear-button tooltip">
-                  C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -570,7 +529,7 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -596,7 +555,33 @@ h3:hover .subtext {
             <div>
                 <button class="control-button clear-button tooltip">
                   C
-                  <span class="tooltiptext">Clear the current channels sequence.</span>
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
+                </button>
+                <button class="control-button mute-button tooltip">
+                  M
+                  <span class="tooltiptext">Mute or unmute the current channel.</span>
+                </button>
+              </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional
+                <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+
+            </button>
+            <div>
+                <button class="control-button clear-button tooltip">
+                  C
+                  <span class="tooltiptext">Clear the current channel's sequence.</span>
                 </button>
                 <button class="control-button mute-button tooltip">
                   M
@@ -651,6 +636,9 @@ h3:hover .subtext {
     let stepDuration;
     let gainNodes = [];
 
+    const audioBuffers = new Map();
+
+
 
   function getIDFromURL(url) {
     const parts = url.split('/');
@@ -668,37 +656,47 @@ h3:hover .subtext {
   }
   
 
-  const fetchAudio = (url, channelIndex, loadSampleButtonElement) => {
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
+  const fetchAudio = async (url, channelIndex, loadSampleButtonElement) => {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
       const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
-      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
-      const audioBlobUrl = URL.createObjectURL(audioBlob);
+      
+      if (!audioContext) {
+        try {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioContext = new AudioContext();
+        } catch (e) {
+            console.warn('Web Audio API is not supported in this browser');
+        }
+    }
+
+      const audioBuffer = await decodeAudioData(audioData); // We'll define this function later
+      audioBuffers.set(url, audioBuffer); // Store the audio buffer in the Map
 
       const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
-      channel.dataset.audioData = audioBlobUrl;
       channel.dataset.originalUrl = url; // Store the original URL
       channel.dataset.audioDataLoaded = 'true';
 
-      // Ensure loadSampleButtonElement is not null and then proceed
       if (loadSampleButtonElement) {
         const filename = data.filename || data.fileName; // Check both properties
         loadSampleButtonElement.classList.add('button-fixed-width');
         loadSampleButtonElement.style.width = '200px'; // or whatever width you want
         loadSampleButtonElement.textContent = filename ? filename.substring(0,20) : 'Load New Audional';
         loadSampleButtonElement.title = filename ? filename : 'Load New Audional';
-        
-
-        console.log(data);
       } else {
         console.log("Button element not found.");
       }
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('Error fetching audio:', error);
+    }
+  };
+
+  const decodeAudioData = (audioData) => {
+    return new Promise((resolve, reject) => {
+      audioContext.decodeAudioData(audioData, resolve, reject);
     });
-};
+  };
 
 
 
@@ -827,19 +825,6 @@ h3:hover .subtext {
         button.classList.toggle('selected');
     });
 
-    if (isBassDrumChannel) {
-        // create a span for the tooltip text
-        const tooltipSpan = document.createElement('span');
-
-        // add the tooltip class to the span
-        tooltipSpan.className = 'tooltiptext';
-
-        // set the tooltip text
-        tooltipSpan.textContent = 'Step button. Trigger sample at step ' + (i + 1);
-
-        // add the tooltip span to the button
-        button.appendChild(tooltipSpan);
-    }
 
     fragment.appendChild(button);
     }
@@ -1146,15 +1131,16 @@ h3:hover .subtext {
         });
 
         if (buttons[currentStep].classList.contains('selected') && !isMuted) {
-            const audioData = channel.dataset.audioData;
-            if (audioData) {
-                const audio = new Audio(audioData);
-                const source = audioContext.createMediaElementSource(audio);
-                source.connect(audioContext.destination);
-                audio.play();
-            }
+          const url = channel.dataset.originalUrl;
+          const audioBuffer = audioBuffers.get(url); // Get the audio buffer from the Map
+          if (audioBuffer) {
+            const source = audioContext.createBufferSource(); // Create a new source node
+            source.buffer = audioBuffer; // Set the audio buffer
+            source.connect(audioContext.destination);
+            source.start(); // Play the audio
+          }
         }
-    });
+      });
 
     // Log the beat, bar, and sequence counts
     //console.log('Step:', currentStep);
