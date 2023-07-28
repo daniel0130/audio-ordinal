@@ -9,37 +9,60 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <script>
-      function toggleInfo(buttonId) {
-          var audionalsButton = document.getElementById("audionals-button");
-          var jsonButton = document.getElementById("json-button");
+     function toggleInfo(buttonId) {
+      var audionalsButton = document.getElementById("audionals-button");
+      var jsonButton = document.getElementById("json-button");
+      var donateButton = document.getElementById("donate-button");  // Added this line
 
-          var audionalsContent = document.getElementById("info-content-audionals");
-          var jsonContent = document.getElementById("info-content-json");
+      var audionalsContent = document.getElementById("info-content-audionals");
+      var jsonContent = document.getElementById("info-content-json");
+      var donateContent = document.getElementById("info-content-donate");  // Added this line
 
-          if (buttonId === "audionals") {
-              var isAudionalsActive = audionalsButton.classList.contains("active");
-              if (isAudionalsActive) {
-                  audionalsButton.classList.remove("active");
-                  audionalsContent.style.display = "none";
-              } else {
-                  audionalsButton.classList.add("active");
-                  jsonButton.classList.remove("active");
-                  audionalsContent.style.display = "block";
-                  jsonContent.style.display = "none";
-              }
+      if (buttonId === "audionals") {
+          var isAudionalsActive = audionalsButton.classList.contains("active");
+          if (isAudionalsActive) {
+              audionalsButton.classList.remove("active");
+              audionalsContent.style.display = "none";
           } else {
-              var isJsonActive = jsonButton.classList.contains("active");
-              if (isJsonActive) {
-                  jsonButton.classList.remove("active");
-                  jsonContent.style.display = "none";
-              } else {
-                  jsonButton.classList.add("active");
-                  audionalsButton.classList.remove("active");
-                  audionalsContent.style.display = "none";
-                  jsonContent.style.display = "block";
-              }
+              audionalsButton.classList.add("active");
+              jsonButton.classList.remove("active");
+              donateButton.classList.remove("active");  // Added this line
+
+              audionalsContent.style.display = "block";
+              jsonContent.style.display = "none";
+              donateContent.style.display = "none";  // Added this line
+          }
+      } else if (buttonId === "json") {  // Changed this line
+          var isJsonActive = jsonButton.classList.contains("active");
+          if (isJsonActive) {
+              jsonButton.classList.remove("active");
+              jsonContent.style.display = "none";
+          } else {
+              jsonButton.classList.add("active");
+              audionalsButton.classList.remove("active");
+              donateButton.classList.remove("active");  // Added this line
+
+              jsonContent.style.display = "block";
+              audionalsContent.style.display = "none";
+              donateContent.style.display = "none";  // Added this line
+          }
+      } else if (buttonId === "donate") {  // Added this block
+          var isDonateActive = donateButton.classList.contains("active");
+          if (isDonateActive) {
+              donateButton.classList.remove("active");
+              donateContent.style.display = "none";
+          } else {
+              donateButton.classList.add("active");
+              audionalsButton.classList.remove("active");
+              jsonButton.classList.remove("active");
+
+              donateContent.style.display = "block";
+              audionalsContent.style.display = "none";
+              jsonContent.style.display = "none";
           }
       }
+  }
+
       function tryAudionalSequencer() {
         var sequencerContainer = document.getElementById('sequencer-container');
         
@@ -92,10 +115,12 @@
     <!-- We'll create the iframe here with JavaScript -->
 </div>
 
-    <div class="button-container">
-        <button id="audionals-button" class="info-button active" onclick="toggleInfo('audionals')">What are Audionals?</button>
-        <button id="json-button" class="more-info-button" onclick="toggleInfo('json')">New JSON standard?</button>
-    </div>
+<div class="button-container">
+  <button id="audionals-button" class="info-button active" onclick="toggleInfo('audionals')">What are Audionals?</button>
+  <button id="json-button" class="more-info-button" onclick="toggleInfo('json')">New JSON standard?</button>
+  <button id="donate-button" class="donate-button" onclick="toggleInfo('donate')">Donate to support Audional research</button>
+</div>
+
 
 
     <div class="info-content" id="info-content-audionals">
@@ -117,6 +142,10 @@
         <p>The base64 audio-embedded JSON format for Audionals represents a significant leap towards the future of audio organisation. By simplifying file management, providing easy access to audio resources, and fostering a global community of creativity and collaboration, this format ushers in a new era in audio standardisation. Embrace the possibilities offered by Audionals and embark on a journey where the potential for audio expression knows no bounds.</p>
 
     </div>
+    <div class="info-content" id="info-content-donate" style="display: none;">
+      <p>Donate to support ongoing audionals research. Send donations to jim.btc - bc1qxt4w0thady2x3cc370rx0qaau9r25wnun2k5f6</p>
+  </div>
+
     <h1>Bitcoin Audional Generator</h1>
     <main id="app" role="main">
       <fieldset class="form-group">
