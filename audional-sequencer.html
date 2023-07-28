@@ -146,8 +146,8 @@ h3:hover .subtext {
 }
 
 .step-button:active,
-.step-button.selected,
-.mute-button.selected {
+.step-button.selected
+{
     background-color: var(--accent-color);
 }
 
@@ -167,7 +167,9 @@ h3:hover .subtext {
 .mute-button {
   background-color: #800;
 }
-
+.mute-button.selected {
+  background-color: rgb(255, 0, 0);
+}
 
 .load-sample-button {
   flex: 1;
@@ -378,8 +380,8 @@ h3:hover .subtext {
             <span class="tooltiptext">Stop the sequence.</span>
           </div>
           <div class="bpm-container">
-            BPM: <input type="range" min="60" max="180" value="125" step="1" id="bpm-slider">
-            <div class="bpm-display" id="bpm-display">125</div>
+            BPM: <input type="range" min="60" max="180" value="105" step="1" id="bpm-slider">
+            <div class="bpm-display" id="bpm-display">105</div>
           </div>
         </h1>
         <div class="subtext-container">
@@ -620,24 +622,50 @@ h3:hover .subtext {
     let currentStep = 0;
     let beatCount = 1; // individual steps
     let barCount = 1; // bars
-    let sequenceCount = 0; // sequences
+    let sequenceCount = 1; // sequences
     let timeoutId;
     let stopClickCount = 0;
-    let channels;
     let playButton = document.getElementById('play');
     let stopButton = document.getElementById('stop');
     let saveButton = document.getElementById('save-button');
     let loadButton = document.getElementById('load-button');
-    let bpm = 125;
+    let bpm = 105;
     let audioContext;
     let currentStepTime;
     let startTime;
     let nextStepTime;
     let stepDuration;
     let gainNodes = [];
+    let isMuted = false;
+    let channelMutes = []; // Declare the channelMutes array as a global variable
+
+
 
     const audioBuffers = new Map();
 
+
+    function displayUpdatedValues() {
+      console.log("isPlaying:", isPlaying);
+      //console.log("currentStep:", currentStep);
+      //console.log("beatCount:", beatCount);
+      //console.log("barCount:", barCount);
+      //console.log("sequenceCount:", sequenceCount);
+      //console.log("stopClickCount:", stopClickCount);
+      //console.log("channels:", channels);
+      //console.log("bpm:", bpm);
+      //console.log("audioContext:", audioContext);
+      //console.log("currentStepTime:", currentStepTime);
+      //console.log("startTime:", startTime);
+      //console.log("nextStepTime:", nextStepTime);
+      //console.log("stepDuration:", stepDuration);
+      //console.log("gainNodes:", gainNodes);
+
+      // Log the mute state of each channel
+      channels.forEach((channel, index) => {
+        const isMuted = channel.dataset.muted === 'true';
+        console.log(`Channel-${index + 1} - Muted: ${isMuted}`);
+      });
+    }
 
 
   function getIDFromURL(url) {
@@ -705,131 +733,162 @@ h3:hover .subtext {
     let settings = { channels: [], bpm: bpm };
     channels.forEach((channel, index) => {
         let triggers = [];
+        let toggleMuteBeats = [];
         let stepButtons = channel.querySelectorAll('.step-button');
         stepButtons.forEach((button, i) => {
-        if (button.classList.contains('selected')) {
-            triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
-        }
+            if (button.classList.contains('selected')) {
+                triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
+            }
+            if (button.classList.contains('toggle-mute')) {
+                toggleMuteBeats.push(i + 1);
+            }
         });
 
         let mute = channel.dataset.muted === 'true';
         let url = channel.dataset.originalUrl; // Use the original URL
-        settings.channels.push({ triggers: triggers, mute: mute, url: url });
+        settings.channels.push({ triggers: triggers, mute: mute, toggleMuteBeats: toggleMuteBeats, url: url });
     });
 
-    return JSON.stringify(settings, null, 2); // to make the output more readable
+        let filename = `audiSeq_BPM${bpm}.json`;
+        return { settings: JSON.stringify(settings, null, 2), filename: filename };
     }
 
-    function importSettings(json) {
-        let settings = JSON.parse(json);
-        bpm = settings.bpm;
 
-        settings.channels.forEach((chSettings, index) => {
-            let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
-            let loadSampleButton = channel.querySelector('.load-sample-button');
+function importSettings(json) {
+    let settings = JSON.parse(json);
+    bpm = settings.bpm;
 
-            // Fetch and set audio sample URL only if url is defined
-            if(chSettings.url) {
+     // Get the bpm slider and display elements
+    let bpmSlider = document.getElementById('bpm-slider');
+    let bpmDisplay = document.getElementById('bpm-display');
+
+    // Update the bpm slider and display
+    bpmSlider.value = bpm;
+    bpmDisplay.innerText = bpm;  // update the bpm text label
+
+    // Manually trigger the input event to update the sequencer's bpm
+    bpmSlider.dispatchEvent(new Event('input'));
+
+    if (settings.currentSequence !== undefined) {
+      currentSequence = settings.currentSequence; // Set current sequence from imported data
+    }
+
+    settings.channels.forEach((chSettings, index) => {
+        let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+        let loadSampleButton = channel.querySelector('.load-sample-button');
+
+        // Fetch and set audio sample URL only if url is defined
+        if(chSettings.url) {
             fetchAudio(chSettings.url, index, loadSampleButton);
-            }
+        }
 
-            // Set mute settings
-            channel.dataset.muted = chSettings.mute ? 'true' : '';
-            let muteButton = channel.querySelector('.mute-button');
-            muteButton.classList.toggle('selected', chSettings.mute);
+        // Set mute settings
+        channel.dataset.muted = chSettings.mute ? 'true' : 'false';
+        let muteButton = channel.querySelector('.mute-button');
+        if (chSettings.mute) {
+            muteButton.classList.add('selected');
+            console.log(`Channel-${index + 1} Muted: true`);
 
-            // Set trigger buttons
-            let stepButtons = channel.querySelectorAll('.step-button');
-            stepButtons.forEach(button => button.classList.remove('selected')); // clear existing triggers
-            chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
-        });
+        } else {
+            muteButton.classList.remove('selected');
+            console.log(`Channel-${index + 1} Muted: false`);
+
         }
 
 
-        document.addEventListener("DOMContentLoaded", function() {
-            let saveFileInput = document.getElementById('save-file-input');
-            let loadFileInput = document.getElementById('load-file-input');
+        // Set trigger buttons
+        let stepButtons = channel.querySelectorAll('.step-button');
+        stepButtons.forEach(button => {
+            button.classList.remove('selected', 'toggle-mute'); // clear existing triggers and mute toggles
+            console.log(`Channel-${index + 1} set trigger buttons clearing mute triggers`);
 
-            saveButton.addEventListener('click', () => {
-                let settings = exportSettings();
-
-                // Create a Blob with the settings
-                let blob = new Blob([settings], { type: 'application/json' });
-
-                // Create a download link for the Blob
-                let url = URL.createObjectURL(blob);
-                let downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = 'settings.json';
-
-                // Trigger a click on the download link
-                downloadLink.click();
-            });
-
-            loadButton.addEventListener('click', () => {
-                // Trigger a click on the load file input
-                loadFileInput.click();
-            });
-
-            loadFileInput.addEventListener('change', () => {
-                let file = loadFileInput.files[0];
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    let settings = e.target.result;
-                    importSettings(settings);
-                };
-                reader.readAsText(file);
-            });
         });
+        chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+        if (chSettings.toggleMuteBeats) {
+            chSettings.toggleMuteBeats.forEach(i => stepButtons[i - 1].classList.add('toggle-mute')); // set new mute toggles
+            console.log(`Channel-${index + 1} set trigger buttons setting new mute triggers`);
 
-
-                
-
-  channels = document.querySelectorAll('.channel');
-
-  channels.forEach((channel, index) => {
-    channel.dataset.id = `Channel-${index + 1}`;
-
-    const muteButton = channel.querySelector('.mute-button');
-    muteButton.addEventListener('click', () => {
-            if (channel.dataset.muted === 'true') {
-        // If the channel is currently muted, unmute it
-                channel.dataset.muted = '';
-            } else {
-                // If the channel is currently unmuted, mute it
-                channel.dataset.muted = 'true';
-            }
-            muteButton.classList.toggle('selected');
-        });
-
-    const clearButton = channel.querySelector('.clear-button');
-    clearButton.addEventListener('click', () => {
-      const stepButtons = channel.querySelectorAll('.step-button');
-      stepButtons.forEach(button => {
-        button.classList.remove('selected');
-      });
+        }
     });
+}
 
 
-    const stepsContainer = channel.querySelector('.steps-container');
-    stepsContainer.innerHTML = '';
 
-    // Check if the current channel is 'bass-drum'
-    let isBassDrumChannel = channel.id === 'bass-drum';
+document.addEventListener("DOMContentLoaded", function() {
+  let saveFileInput = document.getElementById('save-file-input');
+  let loadFileInput = document.getElementById('load-file-input');
 
-    const fragment = document.createDocumentFragment();
-    for (let i = 0; i < 64; i++) {
+  saveButton.addEventListener('click', () => {
+    let { settings, filename } = exportSettings();
+
+    // Create a Blob with the settings
+    let blob = new Blob([settings], { type: 'application/json' });
+
+    // Create a download link for the Blob
+    let url = URL.createObjectURL(blob);
+    let downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = filename;
+
+    // Trigger a click on the download link
+    downloadLink.click();
+  });
+
+  loadButton.addEventListener('click', () => {
+    // Trigger a click on the load file input
+    loadFileInput.click();
+  });
+
+  loadFileInput.addEventListener('change', () => {
+    let file = loadFileInput.files[0];
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      let settings = e.target.result;
+      importSettings(settings);
+    };
+    reader.readAsText(file);
+  });
+});
+
+let channels = document.querySelectorAll('.channel');
+
+channels.forEach((channel, index) => {
+  channel.dataset.id = `Channel-${index + 1}`;
+
+  const muteButton = channel.querySelector('.mute-button');
+  muteButton.addEventListener('click', () => {
+    const currentMuteState = channel.dataset.muted === 'true';
+    setMuteState(channel, !currentMuteState);
+    console.log(`Channel-${index + 1} channels.forEach setMuteState`);
+
+  });
+
+  const clearButton = channel.querySelector('.clear-button');
+  clearButton.addEventListener('click', () => {
+    const stepButtons = channel.querySelectorAll('.step-button');
+    stepButtons.forEach(button => {
+      button.classList.remove('selected');
+    });
+  });
+
+  const stepsContainer = channel.querySelector('.steps-container');
+  stepsContainer.innerHTML = '';
+
+  // Check if the current channel is 'bass-drum'
+  let isBassDrumChannel = channel.id === 'bass-drum';
+
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < 64; i++) {
     const button = document.createElement('button');
     button.classList.add('step-button');
     button.addEventListener('click', () => {
-        button.classList.toggle('selected');
+      button.classList.toggle('selected');
     });
 
-
     fragment.appendChild(button);
-    }
+  }
 
-    stepsContainer.appendChild(fragment);
+  stepsContainer.appendChild(fragment);
 
 
     const audionalIDs = [
@@ -985,71 +1044,192 @@ h3:hover .subtext {
   
   const presets = {
   preset1: {
-    urls: [
-      'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0',
-      'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
-      'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
-      'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
-      'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0',
-    ],
-    triggers: [
-      ['1', '5', '9', '13', '17', '21', '25', '29', '33', '37', '41', '45', '49', '53', '57', '61'],
-      ['1', '7', '33', '39'],
-      ['62'],
-      ['5', '13', '21', '29', '37', '45', '53', '61', '64'],
-      ['1'],
-      [], // Add empty array for track 6
-      [], // Add empty array for track 7
-      [], // Add empty array for track 8
-    ],
-    muted: [false, false, true, true, true, false, false, false], // Update muted array accordingly
-    unmuteBeats: [null, null, 28, 63, 128, null, null, null], // Update unmuteBeats array accordingly
-    muteBeats: [null, null, 63, null, null, null, null, null], // Update muteBeats array accordingly
-  },
+  "channels": [
+    {
+      "triggers": [
+        1,
+        6,
+        9,
+        14,
+        17,
+        22,
+        25,
+        30,
+        33,
+        38,
+        41,
+        46,
+        49,
+        54,
+        57,
+        62,
+        63
+      ],
+      "mute": false,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
+    },
+    {
+      "triggers": [
+        1,
+        17,
+        33,
+        49
+      ],
+      "mute": true,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0"
+    },
+    {
+      "triggers": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47,
+        51,
+        55,
+        59,
+        63,
+        64
+      ],
+      "mute": true,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
+    },
+    {
+      "triggers": [
+        61,
+        62
+      ],
+      "mute": false,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
+    },
+    {
+      "triggers": [
+        4,
+        20,
+        36,
+        52,
+        60
+      ],
+      "mute": true,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
+    },
+    {
+      "triggers": [
+        3,
+        19,
+        35,
+        47
+      ],
+      "mute": false,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
+    },
+    {
+      "triggers": [
+        1,
+        16,
+        33,
+        48,
+        50
+      ],
+      "mute": true,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
+    },
+    {
+      "triggers": [
+        61
+      ],
+      "mute": true,
+      "toggleMuteBeats": [],
+      "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
+    }
+          ],
+          "bpm": "105"
+        },
+};
+
+// The mute state is now stored in only one place: the dataset attribute on the channel element
+function setMuteState(channel, state, index) {
+  channel.dataset.muted = state ? 'true' : 'false';
+  const muteButton = channel.querySelector('.mute-button');
+  if (state) {
+    muteButton.classList.add('selected');
+    console.log(`Channel-${index + 1} Mute classList.add`);
+  } else {
+    muteButton.classList.remove('selected');
+    console.log(`Channel-${index + 1} Mute classList.remove`);
+  }
+
+  // Update the channelMutes array for the specified channel
+  channelMutes[index] = state;
+}
+
+// Add this function to handle manual toggle of the mute button
+function toggleMute(channelElement) {
+  const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]) - 1;
+  const isMuted = channelMutes[channelIndex];
+  setMuteState(channelElement, !isMuted, channelIndex);
+}
+
+// Use setMuteState in the loadPreset function
+const loadPreset = (preset) => {
+  const presetData = presets[preset];
+
+  if (!presetData) {
+    console.error('Preset not found:', preset);
+    return;
+  }
+
+  presetData.channels.forEach((channelData, index) => {
+    const { url, triggers, toggleMuteBeats, mute } = channelData;
+
+    if (url) { // Only fetch audio if a URL is provided
+      const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
+      fetchAudio(url, index, loadSampleButton);
+    }
+
+    triggers.forEach(pos => {
+      const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
+      if (btn) btn.classList.add('selected');
+    });
+
+    toggleMuteBeats.forEach(pos => {
+      const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
+      if (btn) btn.classList.add('toggle-mute');
+      console.log(`Channel-${index + 1} loadPreset classList.add`);
+    });
+
+    const channelElement = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+    const muteButton = channelElement.querySelector('.mute-button');
+    if (muteButton) {
+      setMuteState(channelElement, mute, index); // Correctly pass the 'index' argument to setMuteState function
+      console.log(`Channel-${index + 1} loadPreset - Muted: ${mute}`);
+    }
+  });
 };
 
 
+// Load a preset when the page loads
+const presetToLoadOnPageLoad = 'preset1';
+if (presets[presetToLoadOnPageLoad]) {
+  loadPreset(presetToLoadOnPageLoad);
+} else {
+  console.error('Preset not found:', presetToLoadOnPageLoad);
+}
 
-  // Load a preset when the page loads
-    const presetToLoadOnPageLoad = 'preset1'; // replace with the name of your preset
-            if (presets[presetToLoadOnPageLoad]) {
-            loadPreset(presetToLoadOnPageLoad);
-            } else {
-            console.error('Preset not found:', presetToLoadOnPageLoad);
-            }
-    
-          // Function to load a preset
-    function loadPreset(preset) {
-    const { urls, triggers, muted } = presets[preset];
-    
-    // Load urls
-    urls.forEach((url, index) => {
-        const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
-        fetchAudio(url, index, loadSampleButton);
-    });
-
-    // Set triggers
-    triggers.forEach((trigger, index) => {
-        trigger.forEach(pos => {
-        const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
-        if (btn) btn.classList.add('selected');
-        });
-    });
-
-    // Set mute state
-    muted.forEach((isMuted, index) => {
-        const channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
-        const muteButton = channel.querySelector('.mute-button');
-        channel.dataset.muted = isMuted ? 'true' : '';
-        if (muteButton) {
-        if (isMuted) {
-            muteButton.classList.add('selected');
-        } else {
-            muteButton.classList.remove('selected');
-        }
-        }
-    });
-    }
 
     
   function setChannelVolume(channelIndex, volume) {
@@ -1092,55 +1272,58 @@ h3:hover .subtext {
   }
 
   function playStep() {
-    const currentBeat = ((currentStep / 4) | 0) % 16; // Calculate the current beat and ensure it wraps
+  const currentBeat = ((currentStep / 4) | 0) % 16; // Calculate the current beat and ensure it wraps
+  const presetData = presets.preset1;
 
-    channels.forEach((channel, index) => {
-        const buttons = channel.querySelectorAll('.step-button');
-        let isMuted = channel.dataset.muted === 'true';
+  channels.forEach((channel, index) => {
+    const buttons = channel.querySelectorAll('.step-button');
+    let isMuted = channel.dataset.muted === 'true';
 
-        // Unmute the channel at the designated beat if it's currently muted
-        const unmuteBeat = presets.preset1.unmuteBeats[index];
-        if (isMuted && unmuteBeat !== null && unmuteBeat === beatCount) {
-        channel.dataset.muted = 'false';
-        isMuted = false;
-        channel.querySelector('.mute-button').classList.remove('selected');
+    const channelData = presetData.channels[index];
+    if (!channelData) {
+      console.error('Channel data not found for index:', index);
+      return;
+    }
+
+    // Move mute toggle after the beat check
+    buttons.forEach((button, buttonIndex) => {
+      button.classList.remove('playing'); // Reset the playhead/step light for all buttons
+      button.classList.remove('triggered'); // Reset the triggered light for all buttons
+
+      if (buttonIndex === currentStep && !isMuted) {
+        button.classList.add('playing'); // Highlight the current step with the playhead/step light
+      }
+
+      if (button.classList.contains('selected')) {
+        const triggerIndex = channelData.triggers.indexOf(String(buttonIndex + 1)); // Changed to get from channelData
+        if (triggerIndex !== -1) {
+          button.classList.add('triggered'); // Highlight the live trigger with the triggered light
         }
+      }
+    });
 
-        // Mute the channel at the designated beat if it's currently unmuted
-        const muteBeat = presets.preset1.muteBeats[index];
-        if (!isMuted && muteBeat !== null && muteBeat === beatCount) {
-        channel.dataset.muted = 'true';
-        isMuted = true;
-        channel.querySelector('.mute-button').classList.add('selected');
-        }
-        
-        buttons.forEach((button, buttonIndex) => {
-            button.classList.remove('playing'); // Reset the playhead/step light for all buttons
-            button.classList.remove('triggered'); // Reset the triggered light for all buttons
+    // Check for the current step in the toggleMuteBeats array and toggle mute state accordingly
+    if (channelData.toggleMuteBeats.includes(currentBeat + 1)) {
+      isMuted = !isMuted;
+      channel.dataset.muted = isMuted ? 'true' : 'false';
+      channel.querySelector('.mute-button').classList.toggle('selected');
+    }
 
-            if (buttonIndex === currentStep && !isMuted) {
-                button.classList.add('playing'); // Highlight the current step with the playhead/step light
-            }
+    if (buttons[currentStep].classList.contains('selected') && !isMuted) {
+      const url = channel.dataset.originalUrl;
+      const audioBuffer = audioBuffers.get(url); // Get the audio buffer from the Map
+      if (audioBuffer) {
+        const source = audioContext.createBufferSource(); // Create a new source node
+        source.buffer = audioBuffer; // Set the audio buffer
+        source.connect(audioContext.destination);
+        source.start(); // Play the audio
+      }
+    }
+  });
 
-            if (button.classList.contains('selected')) {
-                const triggerIndex = presets.preset1.triggers[index].indexOf(String(buttonIndex + 1));
-                if (triggerIndex !== -1) {
-                    button.classList.add('triggered'); // Highlight the live trigger with the triggered light
-                }
-            }
-        });
 
-        if (buttons[currentStep].classList.contains('selected') && !isMuted) {
-          const url = channel.dataset.originalUrl;
-          const audioBuffer = audioBuffers.get(url); // Get the audio buffer from the Map
-          if (audioBuffer) {
-            const source = audioContext.createBufferSource(); // Create a new source node
-            source.buffer = audioBuffer; // Set the audio buffer
-            source.connect(audioContext.destination);
-            source.start(); // Play the audio
-          }
-        }
-      });
+
+
 
     // Log the beat, bar, and sequence counts
     //console.log('Step:', currentStep);
@@ -1163,6 +1346,9 @@ h3:hover .subtext {
     }
 
     nextStepTime += stepDuration;
+
+    displayUpdatedValues();
+
 }
 
 
