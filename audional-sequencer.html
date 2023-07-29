@@ -624,6 +624,7 @@ h3:hover .subtext {
 
     let isPlaying = false;
     let currentStep = 0;
+    let totalStepCount = 0
     let beatCount = 1; // individual steps
     let barCount = 1; // bars
     let sequenceCount = 1; // sequences
@@ -644,16 +645,18 @@ h3:hover .subtext {
     let gainNodes = [];
     let isMuted = false;
     let channelMutes = []; // Declare the channelMutes array as a global variable
+    let muteState = false
     
 
 
-
+    const sequenceLength = 64;
     const audioBuffers = new Map();
 
 
     function displayUpdatedValues() {
       console.log("isPlaying:", isPlaying);
       console.log("currentStep:", currentStep);
+      console.log("totalStepCount:", totalStepCount);
       console.log("beatCount:", beatCount);
       console.log("barCount:", barCount);
       console.log("sequenceCount:", sequenceCount);
@@ -739,20 +742,20 @@ h3:hover .subtext {
     let settings = { channels: [], bpm: bpm };
     channels.forEach((channel, index) => {
         let triggers = [];
-        let toggleMuteBeats = [];
+        let toggleMuteSteps = [];
         let stepButtons = channel.querySelectorAll('.step-button');
         stepButtons.forEach((button, i) => {
             if (button.classList.contains('selected')) {
                 triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
             }
             if (button.classList.contains('toggle-mute')) {
-                toggleMuteBeats.push(i + 1);
+                toggleMuteSteps.push(i + 1);
             }
         });
 
         let mute = channel.dataset.muted === 'true';
         let url = channel.dataset.originalUrl; // Use the original URL
-        settings.channels.push({ triggers: triggers, mute: mute, toggleMuteBeats: toggleMuteBeats, url: url });
+        settings.channels.push({ triggers: triggers, mute: mute, toggleMuteSteps: toggleMuteSteps, url: url });
     });
 
         let filename = `audiSeq_BPM${bpm}.json`;
@@ -760,7 +763,7 @@ h3:hover .subtext {
     }
 
 
-// Update the mute state in a single function, 
+// Update the mute state in a single function
 function updateMuteState(channel, shouldMute) {
   const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
   channel.dataset.muted = shouldMute ? 'true' : 'false';
@@ -803,6 +806,8 @@ function importSettings(json) {
 
     // Set mute settings
     updateMuteState(channel, chSettings.mute);
+    console.log('Mute has been toggled in importSettings 1st call');
+
 
     // Set trigger buttons
     let stepButtons = channel.querySelectorAll('.step-button');
@@ -811,11 +816,13 @@ function importSettings(json) {
     });
     chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
 
-    if (chSettings.toggleMuteBeats) {
-      chSettings.toggleMuteBeats.forEach(i => {
+    if (chSettings.toggleMuteSteps) {
+      chSettings.toggleMuteSteps.forEach(i => {
         const shouldMute = !stepButtons[i - 1].classList.contains('toggle-mute');
         stepButtons[i - 1].classList.toggle('toggle-mute'); // toggle mute
         updateMuteState(channel, shouldMute);
+        console.log('Mute has been toggled in importSettings 2nd call');
+
       });
     }
   });
@@ -868,7 +875,7 @@ channels.forEach((channel, index) => {
   muteButton.addEventListener('click', () => {
     const currentMuteState = channel.dataset.muted === 'true';
     updateMuteState(channel, !currentMuteState);
-    console.log(`Channel-${index + 1} channels.forEach updateMuteState`);
+    console.log(`Channel-${index + 1} channels.forEach just toggled updateMuteState`);
   });
 
   const clearButton = channel.querySelector('.clear-button');
@@ -1043,6 +1050,7 @@ channels.forEach((channel, index) => {
                   barCount = 0; // reset the bar count
                   sequenceCount = 0; // reset the sequence count
                   currentStep = 0;  // reset the step count
+                  totalStepCount = 0;
                   resetStepLights();  // reset the step lights
               }
           });
@@ -1083,8 +1091,8 @@ channels.forEach((channel, index) => {
         62,
         63
       ],
-      "mute": false,
-      "toggleMuteBeats": [4],
+      "mute": true,
+      "toggleMuteSteps": [128, 493, 511],
       "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
     },
     {
@@ -1095,7 +1103,7 @@ channels.forEach((channel, index) => {
         49
       ],
       "mute": true,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [384, 493, 511],
       "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0"
     },
     {
@@ -1104,7 +1112,7 @@ channels.forEach((channel, index) => {
         62
       ],
       "mute": false,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [493, 511],
       "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
     },
     {
@@ -1116,7 +1124,7 @@ channels.forEach((channel, index) => {
         60
       ],
       "mute": true,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [256, 493, 511],
       "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
     },
     {
@@ -1127,7 +1135,7 @@ channels.forEach((channel, index) => {
         47
       ],
       "mute": false,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [493, 511],
       "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
     },
     {
@@ -1139,7 +1147,7 @@ channels.forEach((channel, index) => {
         50
       ],
       "mute": true,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [256, 493, 511],
       "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
     },
     {
@@ -1147,7 +1155,7 @@ channels.forEach((channel, index) => {
         61
       ],
       "mute": true,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [379],
       "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
     },
     {
@@ -1171,7 +1179,7 @@ channels.forEach((channel, index) => {
         64
       ],
       "mute": true,
-      "toggleMuteBeats": [],
+      "toggleMuteSteps": [511],
       "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
     }
           ],
@@ -1184,10 +1192,12 @@ function toggleMute(channelElement) {
   const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]) - 1;
   const isMuted = channelMutes[channelIndex];
   updateMuteState(channelElement, !isMuted, channelIndex);
+  console.log('Mute has been toggled by the toggleMute function');
+
 }
 
 // The loadPreset function is updated to use updateMuteState function
-const loadPreset = (preset) => {
+  const loadPreset = (preset) => {
   const presetData = presets[preset];
 
   if (!presetData) {
@@ -1196,7 +1206,7 @@ const loadPreset = (preset) => {
   }
 
   presetData.channels.forEach((channelData, index) => {
-    const { url, triggers, toggleMuteBeats, mute } = channelData;
+    const { url, triggers, toggleMuteSteps, mute } = channelData;
 
     if (url) { // Only fetch audio if a URL is provided
       const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
@@ -1208,7 +1218,7 @@ const loadPreset = (preset) => {
       if (btn) btn.classList.add('selected');
     });
 
-    toggleMuteBeats.forEach(pos => {
+    toggleMuteSteps.forEach(pos => {
       const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
       if (btn) btn.classList.add('toggle-mute');
       console.log(`Channel-${index + 1} loadPreset classList.add`);
@@ -1218,7 +1228,7 @@ const loadPreset = (preset) => {
     const muteButton = channelElement.querySelector('.mute-button');
     if (muteButton) {
       updateMuteState(channelElement, mute); // Correctly pass the 'mute' argument to updateMuteState function
-      console.log(`Channel-${index + 1} loadPreset - Muted: ${mute}`);
+      console.log(`Channel-${index + 1} updateMuteState toggled by the loadPreset function - Muted: ${mute}`);
     }
   });
 };
@@ -1290,30 +1300,38 @@ if (presets[presetToLoadOnPageLoad]) {
     }
 
     function renderPlayhead(buttons, currentStep, isMuted) {
-  buttons.forEach((button, buttonIndex) => {
-    button.classList.remove('playing');
-    button.classList.remove('triggered');
+      buttons.forEach((button, buttonIndex) => {
+      button.classList.remove('playing');
+      button.classList.remove('triggered');
 
-    if (buttonIndex === currentStep && !isMuted) {
-      button.classList.add('playing');
-    }
+      if (buttonIndex === currentStep && !isMuted) {
+        button.classList.add('playing');
+      }
 
-    if (button.classList.contains('selected')) {
-      button.classList.add('triggered');
-    }
-  });
-}
-
-function handleBeat(channel, channelData, currentBeat) {
-  let isMuted = channel.dataset.muted === 'true';
-
-  if (channelData.toggleMuteBeats.includes(currentBeat + 1)) {
-    isMuted = !isMuted;
-    updateMuteState(channel, isMuted);
+      if (button.classList.contains('selected')) {
+        button.classList.add('triggered');
+      }
+    });
   }
 
-  return isMuted;
-}
+  function handleStep(channel, channelData, totalStepCount) {
+    let isMuted = channel.dataset.muted === 'true';
+    const isToggleMuteStep = channelData.toggleMuteSteps.includes(totalStepCount);
+
+    // Update toggleMuteState only if conditions are met
+    if (isToggleMuteStep) {
+      isMuted = !isMuted;
+      channel.dataset.muted = isMuted ? 'true' : 'false';
+      // Update the mute state in the DOM
+      updateMuteState(channel, isMuted);
+      console.log('Mute toggled by the handleStep function');
+    }
+
+    return isMuted;
+  }
+
+
+
 
 function playSound(channel, currentStep, isMuted) {
   if (channel.querySelectorAll('.step-button')[currentStep].classList.contains('selected') && !isMuted) {
@@ -1329,7 +1347,6 @@ function playSound(channel, currentStep, isMuted) {
 }
 
 function playStep() {
-  const currentBeat = ((currentStep / 4) | 0) % 16;
   const presetData = presets.preset1;
 
   channels.forEach((channel, index) => {
@@ -1342,7 +1359,7 @@ function playStep() {
     }
 
     renderPlayhead(buttons, currentStep, channel.dataset.muted === 'true');
-    const isMuted = handleBeat(channel, channelData, currentBeat);
+    const isMuted = handleStep(channel, channelData, totalStepCount);
     playSound(channel, currentStep, isMuted);
   });
 
@@ -1353,6 +1370,7 @@ function playStep() {
     //console.log('Sequence:', sequenceCount);
 
     currentStep = (currentStep + 1) % 64;
+    totalStepCount = (totalStepCount + 1);
 
     if (currentStep % 4 === 0) {
         beatCount++;  // No wrap-around here
