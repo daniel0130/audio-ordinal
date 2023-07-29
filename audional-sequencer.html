@@ -391,7 +391,7 @@ h3:hover .subtext {
         </div>
         <main id="app" role="main">
 
-        <div class="channel" id="bass-drum">
+        <div class="channel" id="channel-1">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -418,7 +418,7 @@ h3:hover .subtext {
 
             </div>
         </div>
-        <div class="channel" id="snare">
+        <div class="channel" id="channel-2">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -445,7 +445,7 @@ h3:hover .subtext {
 
             </div>
         </div>
-        <div class="channel" id="hi-hat">
+        <div class="channel" id="channel-3">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -472,7 +472,7 @@ h3:hover .subtext {
 
             </div>
         </div>
-        <div class="channel" id="bass">
+        <div class="channel" id="channel-4">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -523,7 +523,7 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-5">
+        <div class="channel" id="channel-6">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -549,7 +549,7 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-5">
+        <div class="channel" id="channel-7">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -575,7 +575,7 @@ h3:hover .subtext {
                 </div>
             </div>
         </div>
-        <div class="channel" id="channel-5">
+        <div class="channel" id="channel-8">
             <button class="load-sample-button" title="Load New Audional">Load New Audional
                 <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
 
@@ -756,62 +756,65 @@ h3:hover .subtext {
     }
 
 
+// Update the mute state in a single function, 
+function updateMuteState(channel, shouldMute) {
+  const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
+  channel.dataset.muted = shouldMute ? 'true' : 'false';
+  const muteButton = channel.querySelector('.mute-button');
+
+  muteButton.classList.toggle('selected', shouldMute);
+  channelMutes[channelIndex] = shouldMute;
+
+  console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${shouldMute}`);
+}
+
+
 function importSettings(json) {
-    let settings = JSON.parse(json);
-    bpm = settings.bpm;
+  let settings = JSON.parse(json);
+  bpm = settings.bpm;
 
-     // Get the bpm slider and display elements
-    let bpmSlider = document.getElementById('bpm-slider');
-    let bpmDisplay = document.getElementById('bpm-display');
+  // Get the bpm slider and display elements
+  let bpmSlider = document.getElementById('bpm-slider');
+  let bpmDisplay = document.getElementById('bpm-display');
 
-    // Update the bpm slider and display
-    bpmSlider.value = bpm;
-    bpmDisplay.innerText = bpm;  // update the bpm text label
+  // Update the bpm slider and display
+  bpmSlider.value = bpm;
+  bpmDisplay.innerText = bpm;  // update the bpm text label
 
-    // Manually trigger the input event to update the sequencer's bpm
-    bpmSlider.dispatchEvent(new Event('input'));
+  // Manually trigger the input event to update the sequencer's bpm
+  bpmSlider.dispatchEvent(new Event('input'));
 
-    if (settings.currentSequence !== undefined) {
-      currentSequence = settings.currentSequence; // Set current sequence from imported data
+  if (settings.currentSequence !== undefined) {
+    currentSequence = settings.currentSequence; // Set current sequence from imported data
+  }
+
+  settings.channels.forEach((chSettings, index) => {
+    let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+    let loadSampleButton = channel.querySelector('.load-sample-button');
+
+    // Fetch and set audio sample URL only if url is defined
+    if(chSettings.url) {
+      fetchAudio(chSettings.url, index, loadSampleButton);
     }
 
-    settings.channels.forEach((chSettings, index) => {
-        let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
-        let loadSampleButton = channel.querySelector('.load-sample-button');
+    // Set mute settings
+    updateMuteState(channel, chSettings.mute);
 
-        // Fetch and set audio sample URL only if url is defined
-        if(chSettings.url) {
-            fetchAudio(chSettings.url, index, loadSampleButton);
-        }
-
-        // Set mute settings
-        channel.dataset.muted = chSettings.mute ? 'true' : 'false';
-        let muteButton = channel.querySelector('.mute-button');
-        if (chSettings.mute) {
-            muteButton.classList.add('selected');
-            console.log(`Channel-${index + 1} Muted: true`);
-
-        } else {
-            muteButton.classList.remove('selected');
-            console.log(`Channel-${index + 1} Muted: false`);
-
-        }
-
-
-        // Set trigger buttons
-        let stepButtons = channel.querySelectorAll('.step-button');
-        stepButtons.forEach(button => {
-            button.classList.remove('selected', 'toggle-mute'); // clear existing triggers and mute toggles
-            console.log(`Channel-${index + 1} set trigger buttons clearing mute triggers`);
-
-        });
-        chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
-        if (chSettings.toggleMuteBeats) {
-            chSettings.toggleMuteBeats.forEach(i => stepButtons[i - 1].classList.add('toggle-mute')); // set new mute toggles
-            console.log(`Channel-${index + 1} set trigger buttons setting new mute triggers`);
-
-        }
+    // Set trigger buttons
+    let stepButtons = channel.querySelectorAll('.step-button');
+    stepButtons.forEach(button => {
+      button.classList.remove('selected', 'toggle-mute'); // clear existing triggers and mute toggles
     });
+    chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+
+    if (chSettings.toggleMuteBeats) {
+      chSettings.toggleMuteBeats.forEach(i => {
+        const shouldMute = !stepButtons[i - 1].classList.contains('toggle-mute');
+        stepButtons[i - 1].classList.toggle('toggle-mute'); // toggle mute
+        updateMuteState(channel, shouldMute);
+      });
+    }
+  });
 }
 
 
@@ -860,9 +863,8 @@ channels.forEach((channel, index) => {
   const muteButton = channel.querySelector('.mute-button');
   muteButton.addEventListener('click', () => {
     const currentMuteState = channel.dataset.muted === 'true';
-    setMuteState(channel, !currentMuteState);
-    console.log(`Channel-${index + 1} channels.forEach setMuteState`);
-
+    updateMuteState(channel, !currentMuteState);
+    console.log(`Channel-${index + 1} channels.forEach updateMuteState`);
   });
 
   const clearButton = channel.querySelector('.clear-button');
@@ -876,8 +878,8 @@ channels.forEach((channel, index) => {
   const stepsContainer = channel.querySelector('.steps-container');
   stepsContainer.innerHTML = '';
 
-  // Check if the current channel is 'bass-drum'
-  let isBassDrumChannel = channel.id === 'bass-drum';
+  // Check if the current channel is 'channel-1'
+  let isChannelOne = channel.id === 'channel-1';
 
   const fragment = document.createDocumentFragment();
   for (let i = 0; i < 64; i++) {
@@ -1078,7 +1080,7 @@ channels.forEach((channel, index) => {
         63
       ],
       "mute": false,
-      "toggleMuteBeats": [],
+      "toggleMuteBeats": [4],
       "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
     },
     {
@@ -1173,30 +1175,14 @@ channels.forEach((channel, index) => {
         },
 };
 
-// The mute state is now stored in only one place: the dataset attribute on the channel element
-function setMuteState(channel, state, index) {
-  channel.dataset.muted = state ? 'true' : 'false';
-  const muteButton = channel.querySelector('.mute-button');
-  if (state) {
-    muteButton.classList.add('selected');
-    console.log(`Channel-${index + 1} Mute classList.add`);
-  } else {
-    muteButton.classList.remove('selected');
-    console.log(`Channel-${index + 1} Mute classList.remove`);
-  }
-
-  // Update the channelMutes array for the specified channel
-  channelMutes[index] = state;
-}
-
 // Add this function to handle manual toggle of the mute button
 function toggleMute(channelElement) {
   const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]) - 1;
   const isMuted = channelMutes[channelIndex];
-  setMuteState(channelElement, !isMuted, channelIndex);
+  updateMuteState(channelElement, !isMuted, channelIndex);
 }
 
-// Use setMuteState in the loadPreset function
+// The loadPreset function is updated to use updateMuteState function
 const loadPreset = (preset) => {
   const presetData = presets[preset];
 
@@ -1227,7 +1213,7 @@ const loadPreset = (preset) => {
     const channelElement = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
     const muteButton = channelElement.querySelector('.mute-button');
     if (muteButton) {
-      setMuteState(channelElement, mute, index); // Correctly pass the 'index' argument to setMuteState function
+      updateMuteState(channelElement, mute); // Correctly pass the 'mute' argument to updateMuteState function
       console.log(`Channel-${index + 1} loadPreset - Muted: ${mute}`);
     }
   });
@@ -1299,54 +1285,61 @@ if (presets[presetToLoadOnPageLoad]) {
         }, (nextStepTime - audioContext.currentTime) * 1000);
     }
 
-  function playStep() {
-  const currentBeat = ((currentStep / 4) | 0) % 16; // Calculate the current beat and ensure it wraps
+    function renderPlayhead(buttons, currentStep, isMuted) {
+  buttons.forEach((button, buttonIndex) => {
+    button.classList.remove('playing');
+    button.classList.remove('triggered');
+
+    if (buttonIndex === currentStep && !isMuted) {
+      button.classList.add('playing');
+    }
+
+    if (button.classList.contains('selected')) {
+      button.classList.add('triggered');
+    }
+  });
+}
+
+function handleBeat(channel, channelData, currentBeat) {
+  let isMuted = channel.dataset.muted === 'true';
+
+  if (channelData.toggleMuteBeats.includes(currentBeat + 1)) {
+    isMuted = !isMuted;
+    updateMuteState(channel, isMuted);
+  }
+
+  return isMuted;
+}
+
+function playSound(channel, currentStep, isMuted) {
+  if (channel.querySelectorAll('.step-button')[currentStep].classList.contains('selected') && !isMuted) {
+    const url = channel.dataset.originalUrl;
+    const audioBuffer = audioBuffers.get(url);
+    if (audioBuffer) {
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+    }
+  }
+}
+
+function playStep() {
+  const currentBeat = ((currentStep / 4) | 0) % 16;
   const presetData = presets.preset1;
 
   channels.forEach((channel, index) => {
     const buttons = channel.querySelectorAll('.step-button');
-    let isMuted = channel.dataset.muted === 'true';
-
     const channelData = presetData.channels[index];
+
     if (!channelData) {
       console.error('Channel data not found for index:', index);
       return;
     }
 
-    // Move mute toggle after the beat check
-    buttons.forEach((button, buttonIndex) => {
-      button.classList.remove('playing'); // Reset the playhead/step light for all buttons
-      button.classList.remove('triggered'); // Reset the triggered light for all buttons
-
-      if (buttonIndex === currentStep && !isMuted) {
-        button.classList.add('playing'); // Highlight the current step with the playhead/step light
-      }
-
-      if (button.classList.contains('selected')) {
-        const triggerIndex = channelData.triggers.indexOf(String(buttonIndex + 1)); // Changed to get from channelData
-        if (triggerIndex !== -1) {
-          button.classList.add('triggered'); // Highlight the live trigger with the triggered light
-        }
-      }
-    });
-
-    // Check for the current step in the toggleMuteBeats array and toggle mute state accordingly
-    if (channelData.toggleMuteBeats.includes(currentBeat + 1)) {
-      isMuted = !isMuted;
-      channel.dataset.muted = isMuted ? 'true' : 'false';
-      channel.querySelector('.mute-button').classList.toggle('selected');
-    }
-
-    if (buttons[currentStep].classList.contains('selected') && !isMuted) {
-      const url = channel.dataset.originalUrl;
-      const audioBuffer = audioBuffers.get(url); // Get the audio buffer from the Map
-      if (audioBuffer) {
-        const source = audioContext.createBufferSource(); // Create a new source node
-        source.buffer = audioBuffer; // Set the audio buffer
-        source.connect(audioContext.destination);
-        source.start(); // Play the audio
-      }
-    }
+    renderPlayhead(buttons, currentStep, channel.dataset.muted === 'true');
+    const isMuted = handleBeat(channel, channelData, currentBeat);
+    playSound(channel, currentStep, isMuted);
   });
 
     // Log the beat, bar, and sequence counts
@@ -1406,27 +1399,27 @@ if (presets[presetToLoadOnPageLoad]) {
     }
   }
   
-  // Listen for messages
-  window.addEventListener('message', function(event) {
-      // If a 'load' command is received, load the song
-      if (event.data.command === 'load') {
-          fetch(event.data.path)
-              .then(response => response.json())
-              .then(song => loadSong(song));
-      }
-      // If a 'play' command is received, start the sequencer
-      else if (event.data.command === 'play') {
-          startScheduler();
-      }
-      // If a 'stop' command is received, stop the sequencer
-      else if (event.data.command === 'stop') {
-          stopScheduler();
-      }
-      // If a 'pause' command is received, pause the sequencer
-      else if (event.data.command === 'pause') {
-          pauseScheduler();
-      }
-  });
+    // Listen for messages
+    window.addEventListener('message', function(event) {
+        // If a 'load' command is received, load the song
+        if (event.data.command === 'load') {
+            fetch(event.data.path)
+                .then(response => response.json())
+                .then(song => loadSong(song));
+        }
+        // If a 'play' command is received, start the sequencer
+        else if (event.data.command === 'play') {
+            startScheduler();
+        }
+        // If a 'stop' command is received, stop the sequencer
+        else if (event.data.command === 'stop') {
+            stopScheduler();
+        }
+        // If a 'pause' command is received, pause the sequencer
+        else if (event.data.command === 'pause') {
+            pauseScheduler();
+        }
+    });
 
 
 </script>
