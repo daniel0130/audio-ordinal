@@ -97,7 +97,7 @@ function createQuickPlayButton(index) {
 
     const tooltipText = document.createElement('span'); // Create the tooltip text element
     tooltipText.classList.add('tooltiptext');
-    tooltipText.textContent = `Quick Load Sequence ${index}`; // Tooltip message
+    tooltipText.innerHTML = `Quick Load Sequence ${index}<br><br>Right click to change button colour.`;
     button.appendChild(tooltipText); // Append the tooltip to the button
 
     quickPlayButtons.push(button); // Add the button to the array

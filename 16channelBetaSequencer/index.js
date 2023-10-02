@@ -221,31 +221,35 @@ channels.forEach((channel, index) => {
 
     const stepsContainer = channel.querySelector('.steps-container');
     stepsContainer.innerHTML = '';
-
-    // Check if the current channel is 'channel-1'
-    let isChannelOne = channel.id === 'channel-1';
-
+    
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < 64; i++) {
-      const button = document.createElement('button');
-      button.classList.add('step-button');
-      
-      // Retrieve the channel index from the channel's id attribute
-      let channelIndex = parseInt(channel.id.split('-')[1]) - 1; // Convert 'channel-x' format to an index (0-15)
-      
-      button.addEventListener('click', () => {
-        button.classList.toggle('selected');
+        const button = document.createElement('button');
+        button.classList.add('step-button', 'tooltip');  // Added 'tooltip' class
+        button.title = `Toggle step ${i + 1}`;  // Added title attribute for tooltip
+    
+        // Create the tooltip text span
+        const tooltipText = document.createElement('span');
+        tooltipText.classList.add('tooltiptext');
+        tooltipText.textContent = `Click to activate or deactivate step ${i + 1} in the sequence.`;
+        button.appendChild(tooltipText);  // Append tooltip text to the button
+    
+        // Retrieve the channel index from the channel's id attribute
+        let channelIndex = parseInt(channel.id.split('-')[1]) - 1; // Convert 'channel-x' format to an index (0-15)
         
-        // Update the step's state in the channelSettings
-        let stepState = button.classList.contains('selected');
-        updateStep(channelIndex, i, stepState);
-      });
-
-      fragment.appendChild(button);
+        button.addEventListener('click', () => {
+            button.classList.toggle('selected');
+            
+            // Update the step's state in the channelSettings
+            let stepState = button.classList.contains('selected');
+            updateStep(channelIndex, i, stepState);
+        });
+    
+        fragment.appendChild(button);
     }
-
+    
     stepsContainer.appendChild(fragment);
-
+    
 
             const loadSampleButton = channel.querySelector('.load-sample-button');
                 loadSampleButton.addEventListener('click', () => {
