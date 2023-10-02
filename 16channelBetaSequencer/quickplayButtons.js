@@ -10,8 +10,8 @@ let currentActiveIndex = null; // To track which button is currently active
 function setActiveSequence(index) {
     console.log(`Setting active sequence for index: ${index}`);
 
-    // If there's a previously active sequence, set it to inactive
-    if (currentActiveIndex !== null) {
+    // If there's a previously active sequence that's different from the current one, set it to inactive
+    if (currentActiveIndex !== null && currentActiveIndex !== index) {
         console.log(`Deactivating previously active sequence ${currentActiveIndex}`);
         quickPlayButtons[currentActiveIndex - 1].classList.add('inactive');
     }
