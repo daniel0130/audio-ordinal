@@ -231,16 +231,7 @@ function loadNextSequence() {
 // Use loadNextSequence inside the event listener
 document.getElementById('next-sequence').addEventListener('click', loadNextSequence);
 
-function updateActiveQuickPlayButton() {
-    // Remove 'active' class from all buttons
-    quickPlayButtons.forEach(btn => {
-        btn.classList.remove('active');
-    });
 
-    // Add 'active' class to current sequence button
-    const activeBtn = quickPlayButtons[currentSequence - 1];
-    activeBtn.classList.add('active');
-}
 
 function updateUIForSequence(sequenceNumber) {
     if (sequenceNumber > 0 && sequenceNumber <= sequences.length) {
@@ -273,38 +264,7 @@ function updateUIForSequence(sequenceNumber) {
 }
 
 
-function insertQuickPlayButtons() {
-    console.log("insertQuickPlayButtons called!");
 
-    const checkBox = document.getElementById('continuous-play');
-    const quickPlayButton = document.getElementById('quick-play-button');
-
-    if (checkBox && quickPlayButton) {
-        for (let j = 0; j < 16; j++) {
-            const quickBtn = createQuickPlayButton(j + 1);
-            console.log(`Created Quick Play Button for Sequence_${j+1}`);
-            checkBox.parentNode.insertBefore(quickBtn, quickPlayButton);
-            console.log(`Added Quick Play Button for Sequence_${j+1} to DOM`);
-        }
-    } else {
-        console.error("Either checkBox or quickPlayButton is missing!");
-    }
-}
-
-insertQuickPlayButtons();
-
-// Now that the quickplay buttons have been inserted, we can set up their event listeners.
-quickPlayButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        const sequenceIndex = parseInt(button.dataset.sequenceIndex, 10);
-        currentSequence = sequenceIndex;
-        loadSequence(sequenceIndex);
-
-        // Update the display and highlight the active button
-        document.getElementById('current-sequence-display').textContent = `Sequence ${currentSequence}`;
-        updateActiveQuickPlayButton();
-    });
-});
 
 
 document.getElementById('prev-sequence').addEventListener('click', function() {
