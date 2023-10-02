@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+</head>
+
+<body>
+    <div id="main-container">
+        <div id="drum-machine">
+            <h1>
+                <span class="button-label">Play</span>
+                <div class="button button-round tooltip">
+                    <div class="button play-button" id="play"></div>
+                    <span class="tooltiptext">Start the sequence.</span>
+                </div>
+                <span class="title">
+                    Audional Sequencer <span class="bright-orange">&#x20bf;</span>itcoin<span class="bright-orange">&#x20bf;</span>eats<span class="small-text"> &#x20bf;eta</span>
+                </span>
+                <span class="button-label stop">Stop</span>
+                <div class="button button-round tooltip">
+                    <div class="button stop-button" id="stop"></div>
+                    <span class="tooltiptext">Stop the sequence.</span>
+                </div>
+                <div class="bpm-container">
+                    BPM: <input type="range" min="60" max="180" value="105" step="1" id="bpm-slider">
+                    <div class="bpm-display" id="bpm-display">105</div>
+                </div>
+            </h1>
+            <div class="subtext-container">
+                <p class="subtext centered-text">
+                    Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+                </p>
+            </div>
+            <main id="app" role="main">
+                <div class="channel-template" style="display: none;">
+                    <div class="channel">
+                        <button class="load-sample-button" title="Load New Audional">Load New Audional
+                            <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+                        </button>
+                        <button class="control-button clear-button tooltip">
+                            <span class="letter">C</span>
+                            <span class="tooltiptext">Clear the current channel's sequence.</span>
+                            <div class="clear-confirm" style="display: none; position: absolute; background-color: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 3px; z-index: 10;">
+                                Click again to confirm clear
+                            </div>
+                        </button>
+                        <button class="control-button mute-button tooltip">
+                            <span class="letter">M</span>
+                            <span class="tooltiptext">Mute or unmute the current channel.</span>
+                        </button>
+                        <button class="control-button solo-button tooltip">
+                            <span class="letter">S</span>
+                            <span class="tooltiptext">Solo the current channel.</span>
+                        </button>
+                        
+                        <div class="channel-container">
+                            <div class="steps-container"></div>
+                            <div class="controls-container">
+                                <div class="channel-controls">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <div class="button-container">
+                
+         
+   <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
+<div class="button-container">
+    <button id="prev-sequence">Previous Sequence</button>
+    <span id="current-sequence-display">Sequence 1</span>
+    <button id="next-sequence">Next Sequence</button>
+    <label for="continuous-play">Continuous Play</label>
+    <input type="checkbox" id="continuous-play">
+    <label id="quick-play-button"></label> <!-- Note: I removed the erroneous </button> tag -->
+  
+    <button id="save-button" class="tooltip">Save
+      <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
+    </button>
+    <input type="file" id="save-file-input" style="display: none">
+    <button id="load-button" class="tooltip">Load
+      <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
+    </button>
+    <input type="file" id="load-file-input" style="display: none" accept=".json">
+  </div>
+  
+</div>
+</div>
+</div>
+    
+
+<script src="quickplayButtons.js"></script> <!-- Newly added external script link -->
+<script src="sequenceChannelSettings.js"></script>
+<script src="displayUpdatedValues.js"></script>
+<script src="eventListeners.js"></script>
+<script src="masterSettings.js"></script>
+<script src="channelSettings.js"></script>
+<script src="stepHandling.js"></script>
+<script src="stepSchedulers.js"></script>
+<script src="embeddedPreset.js"></script>
+<script src="audionalSampleLibrary.js"></script>
+<script src="audioUtils.js"></script>
+<script src="importExport.js"></script>
+<script src="index.js"></script>
+
+</body>
+
+</html>
