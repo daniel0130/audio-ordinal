@@ -88,12 +88,18 @@ quickPlayButtons.forEach((button) => {
 function createQuickPlayButton(index) {
     console.log(`Creating quickplay button with index: ${index}`);
     const button = document.createElement('div');
-    button.classList.add('quick-play-button');
+    button.classList.add('quick-play-button', 'tooltip'); // Add the tooltip class
     button.dataset.sequenceIndex = index; // Store the sequence index as a data attribute
     console.log(`Button for sequence ${index} has data attribute:`, button.dataset.sequenceIndex);
     button.style.textAlign = "center"; // Center the text
     button.style.fontWeight = "bold"; // Bold the text
     button.innerHTML = index; // Add the number inside the button
+
+    const tooltipText = document.createElement('span'); // Create the tooltip text element
+    tooltipText.classList.add('tooltiptext');
+    tooltipText.textContent = `Quick Load Sequence ${index}`; // Tooltip message
+    button.appendChild(tooltipText); // Append the tooltip to the button
+
     quickPlayButtons.push(button); // Add the button to the array
     console.log(`Quickplay button added. Current count: ${quickPlayButtons.length}`);
     console.log("Current indexes: ", quickPlayButtons.map(btn => btn.dataset.sequenceIndex));
@@ -113,6 +119,7 @@ function createQuickPlayButton(index) {
 
     return button;
 }
+
 
 
 quickPlayButtons.forEach(button => button.classList.add('inactive'));

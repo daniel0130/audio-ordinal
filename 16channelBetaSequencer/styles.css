@@ -343,7 +343,6 @@ div[idModalContent] div a:hover {
 }
 
 /* --- Tooltip Styles --- */
-/* --- Tooltip Styles --- */
 .tooltip {
     position: relative;
     display: inline-block;
@@ -351,8 +350,7 @@ div[idModalContent] div a:hover {
 }
 
 .tooltip .tooltiptext {
-    display: none;
-    visibility: hidden;
+    visibility: hidden;  /* Keep this as hidden */
     max-width: 150px; /* Reduce the width */
     background-color: #333;
     color: #fff;
@@ -371,7 +369,7 @@ div[idModalContent] div a:hover {
 }
 
 .tooltip:hover .tooltiptext {
-    visibility: visible;
+    visibility: visible; /* Set this to visible */
     opacity: 0.7; /* Maintain the reduced opacity even on hover */
 }
 

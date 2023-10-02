@@ -70,26 +70,41 @@
                 
          
    <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
-<div class="button-container">
-    <button id="prev-sequence">Previous Sequence</button>
-    <span id="current-sequence-display">Sequence 1</span>
-    <button id="next-sequence">Next Sequence</button>
-    <label for="continuous-play">Continuous Play</label>
-    <input type="checkbox" id="continuous-play">
-    <label id="quick-play-button"></label> <!-- Note: I removed the erroneous </button> tag -->
+    <div class="button-container">
+        <button id="prev-sequence" class="tooltip">Previous Sequence
+            <span class="tooltiptext">Go to the previous sequence</span>
+        </button>
+        
+        <span id="current-sequence-display" class="tooltip">Sequence 1
+            <span class="tooltiptext">Currently displayed sequence</span>
+        </span>
+        
+        <button id="next-sequence" class="tooltip">Next Sequence
+            <span class="tooltiptext">Go to the next sequence</span>
+        </button>
+        
+        <label for="continuous-play" class="tooltip">Continuous Play
+            <span class="tooltiptext">Toggle continuous play mode</span>
+        </label>
+        
+        <input type="checkbox" id="continuous-play" class="tooltip">
+        
+        <div id="quick-play-button" class="tooltip"> <!-- Changed from label to div -->
+            <span class="tooltiptext">Quick play button</span>
+        </div>
   
+
     <button id="save-button" class="tooltip">Save
-      <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
+        <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
     </button>
+
     <input type="file" id="save-file-input" style="display: none">
+
     <button id="load-button" class="tooltip">Load
-      <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
+        <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
     </button>
+
     <input type="file" id="load-file-input" style="display: none" accept=".json">
-  </div>
-  
-</div>
-</div>
 </div>
     
 
