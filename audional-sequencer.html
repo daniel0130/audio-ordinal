@@ -894,13 +894,22 @@ channels.forEach((channel, index) => {
 
   const fragment = document.createDocumentFragment();
   for (let i = 0; i < 64; i++) {
-    const button = document.createElement('button');
-    button.classList.add('step-button');
-    button.addEventListener('click', () => {
-      button.classList.toggle('selected');
-    });
+      const button = document.createElement('button');
+      button.classList.add('step-button', 'tooltip'); // Added 'tooltip' class
+      button.title = "Step " + (i + 1); // Title for the button
 
-    fragment.appendChild(button);
+      // Create the tooltip text span
+      const tooltipText = document.createElement('span');
+      tooltipText.classList.add('tooltiptext');
+      tooltipText.textContent = `Click to activate or deactivate step ${i + 1} in the sequence.`;
+      
+      button.appendChild(tooltipText); // Append tooltip text to the button
+
+      button.addEventListener('click', () => {
+          button.classList.toggle('selected');
+      });
+
+      fragment.appendChild(button);
   }
 
   stepsContainer.appendChild(fragment);
