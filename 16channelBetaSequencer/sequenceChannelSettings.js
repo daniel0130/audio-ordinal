@@ -51,6 +51,7 @@ var channelURLs = Array(totalSequenceCount).fill().map(() => Array(16).fill(''))
 function onSequenceOrDataChange() {
   // reset channelSettings to initial state
   channelSettings = Array(16).fill().map(() => [null].concat(Array(64).fill(false)));
+  saveCurrentSequence(currentSequence);
   // update the settings and URLs for the current sequence
   updateChannelSettingsForSequence();
   updateChannelURLsForSequence();
@@ -70,9 +71,11 @@ function addURLsToSequenceArrays(urls) {
 
 // Call this function whenever the sequence changes
 function changeSequence(seq) {
-  currentSequence = seq;
-  onSequenceOrDataChange();
-}
+    currentSequence = seq;
+    onSequenceOrDataChange();
+    // If onSequenceOrDataChange doesn't already update the sequence data, call updateSequenceData here.
+  }
+  
 
 // Assuming your load button calls the loadJson function, make sure to also call onSequenceOrDataChange after loading new JSON data
 
@@ -92,6 +95,12 @@ function loadChannelSettingsFromPreset(preset) {
         channelSettings[channelIndex] = stepSettings;
         console.log(`Loaded settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
         
+        // Update sequence data for each channel
+        updateSequenceData({
+            channelIndex: channelIndex,
+            stepSettings: stepSettings
+        });
+
         // Fetch audio data
         if (channelData.url) {
             const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"] .load-sample-button`);
@@ -105,6 +114,7 @@ function loadChannelSettingsFromPreset(preset) {
 }
 
 
+
 /**
  * Updates a specific step's state for a given channel.
  * @param {number} channelIndex - The index of the channel (0 to 15).
@@ -116,8 +126,13 @@ function updateStep(channelIndex, stepIndex, state) {
     channelSettings[channelIndex][stepIndex + 1] = state;
     
     // Log updated settings for the specific channel after the update
+    updateSequenceData({
+        channelIndex: channelIndex,
+        stepSettings: channelSettings[channelIndex]
+    });
     console.log(`Updated settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
 }
+
 
 /**
  * Gets the current settings for a specific channel.
@@ -159,12 +174,23 @@ function loadSequence(sequenceNumber) {
     }
 
     // Set the BPM slider and display to match the current sequence's BPM
-    let bpm = sequenceBPMs[sequenceNumber - 1];  // Get the BPM for the current sequence
+    let bpm = sequenceBPMs[sequenceNumber - 1];
     let bpmSlider = document.getElementById('bpm-slider');
     let bpmDisplay = document.getElementById('bpm-display');
     bpmSlider.value = bpm;
     bpmDisplay.innerText = bpm;
+
+    // Add event listener to BPM slider to update sequence data when BPM changes
+    bpmSlider.addEventListener('input', function() {
+        let newBpm = parseInt(bpmSlider.value);
+        updateSequenceData({
+            sequenceIndex: currentSequence - 1, // Assuming 0-based indexing
+            bpm: newBpm
+        });
+    });
+
     bpmSlider.dispatchEvent(new Event('input')); // Update the sequencer's BPM
+
 
     
     const sequenceChannels = sequences[sequenceNumber - 1];
@@ -198,6 +224,12 @@ function loadSequence(sequenceNumber) {
             const loadSampleButton = channelElement.querySelector('.load-sample-button');
             fetchAudio(currentUrl, channelIndex, loadSampleButton);
         }
+
+        // Update sequence data for each channel
+        updateSequenceData({
+            channelIndex: channelIndex,
+            stepSettings: channelData.slice(1) // Assuming the step settings start from the 1st index
+        });
     });
 }
 
@@ -236,6 +268,8 @@ document.getElementById('next-sequence').addEventListener('click', loadNextSeque
 function updateUIForSequence(sequenceNumber) {
     if (sequenceNumber > 0 && sequenceNumber <= sequences.length) {
         channelSettings = sequences[sequenceNumber - 1];
+        saveCurrentSequence(currentSequence);
+
         // Rest of the function remains unchanged...
     } else {
         console.error("Invalid sequence number:", sequenceNumber);

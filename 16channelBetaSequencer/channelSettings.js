@@ -2,10 +2,18 @@
 
 
 function setChannelVolume(channelIndex, volume) {
-    const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
-    channel.dataset.volume = volume;
-    updateChannelVolume(channel);
-    }
+  const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
+  channel.dataset.volume = volume;
+  updateChannelVolume(channel);
+
+  // Update sequence data
+  updateSequenceData({
+      channelIndex: channelIndex,
+      volume: volume
+  });
+
+  saveCurrentSequence(currentSequence);
+}
 
   function updateChannelVolume(channel) {
     const volume = parseFloat(channel.dataset.volume);

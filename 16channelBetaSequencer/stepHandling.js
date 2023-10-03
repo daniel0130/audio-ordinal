@@ -9,6 +9,7 @@ function handleStep(channel, channelData, totalStepCount) {
       channel.dataset.muted = isMuted ? 'true' : 'false';
       // Update the mute state in the DOM
       updateMuteState(channel, isMuted);
+      saveCurrentSequence(currentSequence);
       console.log('Mute toggled by the handleStep function');
     }
 
