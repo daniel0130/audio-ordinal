@@ -137,11 +137,6 @@ function updateMuteState(channel, shouldMute) {
       gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
   }
 
-  // Update sequence data
-  updateSequenceData({
-      channelIndex: channelIndex,
-      muteState: shouldMute
-  });
 
   saveCurrentSequence(currentSequence);
   console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${shouldMute}`);
