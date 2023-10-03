@@ -15,12 +15,12 @@ let channelSettings = createArray(16, [null].concat(createArray(64, false)));
 let sequences = createArray(totalSequenceCount, createArray(16, [null].concat(createArray(64, false))));
 
 
-function updateSequenceData(callback) {
-    const sequenceData = jsonData[currentSequence - 1];
-    if (sequenceData) {
-        callback(sequenceData);
-    }
-}
+// function updateSequenceData(callback) {
+//     const sequenceData = jsonData[currentSequence - 1];
+//     if (sequenceData) {
+//         callback(sequenceData);
+//     }
+// }
 
 function updateChannelSettingsForSequence() {
     updateSequenceData((sequenceData) => {
@@ -163,6 +163,12 @@ function loadSequence(sequenceNumber) {
         // If the sequence doesn't exist, initialize it with default settings
         sequences[sequenceNumber - 1] = Array(16).fill().map(() => [null].concat(Array(64).fill(false)));
     }
+
+    // Assertion to ensure valid indexing
+    if (sequenceNumber - 1 < 0 || sequenceNumber - 1 >= sequenceBPMs.length) {
+        console.error(`Invalid sequenceNumber: ${sequenceNumber}`);
+        return;
+    }   
 
     // Set the BPM slider and display to match the current sequence's BPM
     let bpm = sequenceBPMs[sequenceNumber - 1];  // Get the BPM for the current sequence

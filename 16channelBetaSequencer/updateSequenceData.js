@@ -12,11 +12,12 @@
  * @param {Array} [params.stepSettings] - An array of step button states for the channel.
  */
 function updateSequenceData(params) {
+    
     if (params.sequenceIndex !== undefined) {
-        if (params.sequenceName) {
-            // Update sequence name
-            // Assuming you have a sequencesNames array
-            sequencesNames[params.sequenceIndex] = params.sequenceName;
+        // Assertion to ensure valid indexing
+        if (params.sequenceIndex < 0 || params.sequenceIndex >= sequenceBPMs.length) {
+            console.error(`Invalid sequenceIndex: ${params.sequenceIndex}`);
+            return;
         }
         if (params.bpm) {
             // Update BPM for the sequence
