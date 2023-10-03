@@ -89,6 +89,7 @@ document.addEventListener('click', () => {
 
 channels.forEach((channel, index) => {
     channel.dataset.id = `Channel-${index + 1}`;
+    saveCurrentSequence(currentSequence);
     
     // Create a gain node for the channel
     const gainNode = audioContext.createGain();
@@ -163,46 +164,52 @@ channels.forEach((channel, index) => {
 
 
     
-    const clearButton = channel.querySelector('.clear-button');
-    const clearConfirm = channel.querySelector('.clear-confirm');
-
-    clearButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-    
-        if (!clearClickedOnce[index]) {
-            // Start the flashing effect
-            clearButton.classList.add('flashing');
-            clearButton.classList.remove('dimmed');
-
-    
-            // Show the visual indication
-            clearClickedOnce[index] = true;
-    
-            // Set a timer to hide the confirmation after 2 seconds
-            clearConfirmTimeout[index] = setTimeout(() => {
+        const clearButton = channel.querySelector('.clear-button');
+        const clearConfirm = channel.querySelector('.clear-confirm');
+        
+        clearButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+        
+            if (!clearClickedOnce[index]) {
+                // Start the flashing effect
+                clearButton.classList.add('flashing');
+                clearButton.classList.remove('dimmed');
+        
+                // Show the visual indication
+                clearClickedOnce[index] = true;
+        
+                // Set a timer to hide the confirmation after 2 seconds
+                clearConfirmTimeout[index] = setTimeout(() => {
+                    clearConfirm.style.display = "none";
+                    clearClickedOnce[index] = false;
+                    // Stop the flashing effect
+                    clearButton.classList.remove('flashing');
+                    clearButton.classList.add('dimmed');
+                }, 2000);
+            } else {
+                // Clear the steps
+                const stepButtons = channel.querySelectorAll('.step-button');
+                stepButtons.forEach(button => {
+                    button.classList.remove('selected');
+                });
+        
+                // Update the step settings in the sequence data
+                let stepSettings = [null].concat(Array(64).fill(false)); // Reset all steps to false
+                updateSequenceData({
+                    channelIndex: index,
+                    stepSettings: stepSettings
+                });
+        
+                // Hide the visual indication
                 clearConfirm.style.display = "none";
+                clearTimeout(clearConfirmTimeout[index]);
                 clearClickedOnce[index] = false;
                 // Stop the flashing effect
-                clearButton.classList.remove('flashing');  // <-- This line was corrected
+                clearButton.classList.remove('flashing');
                 clearButton.classList.add('dimmed');
-            }, 2000);
-        } else {
-            // Clear the steps
-            const stepButtons = channel.querySelectorAll('.step-button');
-            stepButtons.forEach(button => {
-                button.classList.remove('selected');
-            });
-    
-            // Hide the visual indication
-            clearConfirm.style.display = "none";
-            clearTimeout(clearConfirmTimeout[index]);
-            clearClickedOnce[index] = false;
-            // Stop the flashing effect
-            clearButton.classList.remove('flashing');  // <-- This line was corrected
-            clearButton.classList.add('dimmed');
-
-        }
-    });
+            }
+        });
+        
     
 
     // Handle clicks outside the clear button

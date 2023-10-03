@@ -51,6 +51,7 @@ var channelURLs = Array(totalSequenceCount).fill().map(() => Array(16).fill(''))
 function onSequenceOrDataChange() {
   // reset channelSettings to initial state
   channelSettings = Array(16).fill().map(() => [null].concat(Array(64).fill(false)));
+  saveCurrentSequence(currentSequence);
   // update the settings and URLs for the current sequence
   updateChannelSettingsForSequence();
   updateChannelURLsForSequence();
@@ -116,8 +117,13 @@ function updateStep(channelIndex, stepIndex, state) {
     channelSettings[channelIndex][stepIndex + 1] = state;
     
     // Log updated settings for the specific channel after the update
+    updateSequenceData({
+        channelIndex: channelIndex,
+        stepSettings: channelSettings[channelIndex]
+    });
     console.log(`Updated settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
 }
+
 
 /**
  * Gets the current settings for a specific channel.
@@ -164,6 +170,15 @@ function loadSequence(sequenceNumber) {
     let bpmDisplay = document.getElementById('bpm-display');
     bpmSlider.value = bpm;
     bpmDisplay.innerText = bpm;
+// Add event listener to BPM slider to update sequence data when BPM changes
+    bpmSlider.addEventListener('input', function() {
+        let newBpm = parseInt(bpmSlider.value);
+        updateSequenceData({
+            sequenceIndex: currentSequence - 1, // Assuming 0-based indexing
+            bpm: newBpm
+        });
+    });
+
     bpmSlider.dispatchEvent(new Event('input')); // Update the sequencer's BPM
 
     
@@ -236,6 +251,8 @@ document.getElementById('next-sequence').addEventListener('click', loadNextSeque
 function updateUIForSequence(sequenceNumber) {
     if (sequenceNumber > 0 && sequenceNumber <= sequences.length) {
         channelSettings = sequences[sequenceNumber - 1];
+        saveCurrentSequence(currentSequence);
+
         // Rest of the function remains unchanged...
     } else {
         console.error("Invalid sequence number:", sequenceNumber);

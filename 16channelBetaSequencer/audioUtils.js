@@ -38,6 +38,10 @@ const fetchAudio = async (url, channelIndex, loadSampleButtonElement = null) => 
     const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
     channel.dataset.originalUrl = url;
     channel.dataset.audioDataLoaded = 'true';
+    channelSettings[channelIndex][0] = url;
+    saveCurrentSequence(currentSequence);
+
+
 
     if (loadSampleButtonElement) {
       const filename = data.filename || data.fileName;
@@ -119,22 +123,30 @@ function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton
 
 // Function to update the mute state in a single function
 function updateMuteState(channel, shouldMute) {
-    const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
-    channel.dataset.muted = shouldMute ? 'true' : 'false';
-    const muteButton = channel.querySelector('.mute-button');
-  
-    muteButton.classList.toggle('selected', shouldMute);
-    channelMutes[channelIndex] = shouldMute;
-  
-    // Mute or unmute using gain node
-    if (shouldMute) {
-        gainNodes[channelIndex].gain.value = 0; // Mute the channel
-    } else {
-        gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
-    }
-  
-    console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${shouldMute}`);
+  const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
+  channel.dataset.muted = shouldMute ? 'true' : 'false';
+  const muteButton = channel.querySelector('.mute-button');
+
+  muteButton.classList.toggle('selected', shouldMute);
+  channelMutes[channelIndex] = shouldMute;
+
+  // Mute or unmute using gain node
+  if (shouldMute) {
+      gainNodes[channelIndex].gain.value = 0; // Mute the channel
+  } else {
+      gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
+  }
+
+  // Update sequence data
+  updateSequenceData({
+      channelIndex: channelIndex,
+      muteState: shouldMute
+  });
+
+  saveCurrentSequence(currentSequence);
+  console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${shouldMute}`);
 }
+
 
   
 

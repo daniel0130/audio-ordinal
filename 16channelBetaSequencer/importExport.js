@@ -17,9 +17,12 @@ let collectedURLsForSequences = Array(sequences.length).fill().map(() => []);
 function exportSettings() {
     let allSequencesSettings = [];
 
+    // First, update the current sequence in the sequences array with the channelSettings
+    sequences[currentSequence - 1] = channelSettings;
+
     for (let seqIndex = 0; seqIndex < sequences.length; seqIndex++) {
         const sequence = sequences[seqIndex];
-        let hasTriggers = false;  // Assume sequence has no triggers until proven otherwise
+        let hasTriggers = false;
         let settings = {
             name: `Sequence_${seqIndex + 1}`,
             bpm: sequenceBPMs[seqIndex],
@@ -50,17 +53,14 @@ function exportSettings() {
             });
         }
 
-        if (!hasTriggers) {
-            break;  // Stop the export process if the current sequence doesn't have any triggers
+        if (hasTriggers) {
+            allSequencesSettings.push(settings);
         }
-
-        allSequencesSettings.push(settings);
     }
 
     let filename = `audiSeq_AllSequences.json`;
     return { settings: JSON.stringify(allSequencesSettings, null, 2), filename: filename };
 }
-
 
 
 
@@ -165,7 +165,9 @@ function importSettings(settings) {
         console.log("setActiveSequence to:", currentSequence);  
 
         channelSettings = sequences[currentSequence - 1];
+        sequences[currentSequence - 1] = channelSettings;
         updateUIForSequence(currentSequence);
+        saveCurrentSequence(currentSequence);
 
         console.log("Final sequences array:", sequences);
 
