@@ -15,13 +15,6 @@ let channelSettings = createArray(16, [null].concat(createArray(64, false)));
 let sequences = createArray(totalSequenceCount, createArray(16, [null].concat(createArray(64, false))));
 
 
-// function updateSequenceData(callback) {
-//     const sequenceData = jsonData[currentSequence - 1];
-//     if (sequenceData) {
-//         callback(sequenceData);
-//     }
-// }
-
 function updateChannelSettingsForSequence() {
     updateSequenceData((sequenceData) => {
         sequenceData.channels.forEach((channel, index) => {
