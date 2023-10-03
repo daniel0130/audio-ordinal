@@ -71,11 +71,9 @@ function addURLsToSequenceArrays(urls) {
 
 // Call this function whenever the sequence changes
 function changeSequence(seq) {
-    currentSequence = seq;
-    onSequenceOrDataChange();
-    // If onSequenceOrDataChange doesn't already update the sequence data, call updateSequenceData here.
-  }
-  
+  currentSequence = seq;
+  onSequenceOrDataChange();
+}
 
 // Assuming your load button calls the loadJson function, make sure to also call onSequenceOrDataChange after loading new JSON data
 
@@ -95,12 +93,6 @@ function loadChannelSettingsFromPreset(preset) {
         channelSettings[channelIndex] = stepSettings;
         console.log(`Loaded settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
         
-        // Update sequence data for each channel
-        updateSequenceData({
-            channelIndex: channelIndex,
-            stepSettings: stepSettings
-        });
-
         // Fetch audio data
         if (channelData.url) {
             const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"] .load-sample-button`);
@@ -112,7 +104,6 @@ function loadChannelSettingsFromPreset(preset) {
     // Save the loaded preset to the current sequence
     saveCurrentSequence(currentSequence);
 }
-
 
 
 /**
@@ -174,13 +165,12 @@ function loadSequence(sequenceNumber) {
     }
 
     // Set the BPM slider and display to match the current sequence's BPM
-    let bpm = sequenceBPMs[sequenceNumber - 1];
+    let bpm = sequenceBPMs[sequenceNumber - 1];  // Get the BPM for the current sequence
     let bpmSlider = document.getElementById('bpm-slider');
     let bpmDisplay = document.getElementById('bpm-display');
     bpmSlider.value = bpm;
     bpmDisplay.innerText = bpm;
-
-    // Add event listener to BPM slider to update sequence data when BPM changes
+// Add event listener to BPM slider to update sequence data when BPM changes
     bpmSlider.addEventListener('input', function() {
         let newBpm = parseInt(bpmSlider.value);
         updateSequenceData({
@@ -190,7 +180,6 @@ function loadSequence(sequenceNumber) {
     });
 
     bpmSlider.dispatchEvent(new Event('input')); // Update the sequencer's BPM
-
 
     
     const sequenceChannels = sequences[sequenceNumber - 1];
@@ -224,12 +213,6 @@ function loadSequence(sequenceNumber) {
             const loadSampleButton = channelElement.querySelector('.load-sample-button');
             fetchAudio(currentUrl, channelIndex, loadSampleButton);
         }
-
-        // Update sequence data for each channel
-        updateSequenceData({
-            channelIndex: channelIndex,
-            stepSettings: channelData.slice(1) // Assuming the step settings start from the 1st index
-        });
     });
 }
 
