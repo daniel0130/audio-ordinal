@@ -100,8 +100,9 @@ function importSettings(settings) {
     console.log("Initial sequenceBPMs:", sequenceBPMs);
 
     // Build the sequences array first
-    sequences = parsedSettings.map(seqSettings => {
+    sequences = parsedSettings.map((seqSettings, index) => {
         if (isValidSequence(seqSettings)) {
+            sequenceBPMs[index] = seqSettings.bpm || 105;  // Update the BPM value using the correct index
             return convertSequenceSettings(seqSettings);
         } else {
             return null;
@@ -146,12 +147,14 @@ function importSettings(settings) {
             if (isValidSequence(seqSettings)) {
                 sequenceBPMs[seqIndex] = seqSettings.bpm || 105; // Update the BPM value
 
-                let bpm = seqSettings.bpm;
+                // After processing all sequences
+                let bpm = sequenceBPMs[0];
                 let bpmSlider = document.getElementById('bpm-slider');
                 let bpmDisplay = document.getElementById('bpm-display');
                 bpmSlider.value = bpm;
                 bpmDisplay.innerText = bpm;
                 bpmSlider.dispatchEvent(new Event('input'));
+
 
                 return convertSequenceSettings(seqSettings);
             } else {
