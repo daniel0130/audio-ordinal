@@ -99,25 +99,22 @@ function importSettings(settings) {
 
     console.log("Initial sequenceBPMs:", sequenceBPMs);
 
-
     sequences = parsedSettings.map(seqSettings => {
         if (isValidSequence(seqSettings)) {
-            // Assertion to ensure valid indexing
             if (sequenceBPMs.length >= sequences.length) {
                 console.error(`sequenceBPMs array is out of sync with sequences array.`);
                 console.log("Current sequenceBPMs:", sequenceBPMs);
                 console.log("Current sequences:", sequences);
                 return null;
             }
-
             sequenceBPMs.push(seqSettings.bpm || 0);
-        return convertSequenceSettings(seqSettings);
+            return convertSequenceSettings(seqSettings);
         }
     }).filter(Boolean);
 
     console.log("Extracted sequence names:", sequenceNames);
 
-    sequenceBPMs = [];
+    sequenceBPMs = Array(totalSequenceCount).fill(105); // Initialize with 105 BPM for all sequences
     console.log("Updated sequenceBPMs:", sequenceBPMs);
 
     if (!Array.isArray(parsedSettings) && sequences.length > 0) {
@@ -144,9 +141,9 @@ function importSettings(settings) {
             }
         }
 
-        sequences = parsedSettings.map(seqSettings => {
+        sequences = parsedSettings.map((seqSettings, seqIndex) => {
             if (isValidSequence(seqSettings)) {
-                sequenceBPMs.push(seqSettings.bpm || 0);
+                sequenceBPMs[seqIndex] = seqSettings.bpm || 105; // Update the BPM value
 
                 let bpm = seqSettings.bpm;
                 let bpmSlider = document.getElementById('bpm-slider');
@@ -164,26 +161,27 @@ function importSettings(settings) {
         console.log("Final sequenceBPMs:", sequenceBPMs);
         console.log("Final sequences:", sequences);
     }
-      // Set current sequence to the first one
-        currentSequence = 1;
-        console.log("Setting current sequence to:", currentSequence);
 
-        // Activate the quick play button for sequence 1
-        setActiveSequence(currentSequence);
-        console.log("setActiveSequence to:", currentSequence);  
+    // Set current sequence to the first one
+    currentSequence = 1;
+    console.log("Setting current sequence to:", currentSequence);
 
-        channelSettings = sequences[currentSequence - 1];
-        sequences[currentSequence - 1] = channelSettings;
-        updateUIForSequence(currentSequence);
-        saveCurrentSequence(currentSequence);
+    // Activate the quick play button for sequence 1
+    setActiveSequence(currentSequence);
+    console.log("setActiveSequence to:", currentSequence);
 
-        console.log("Final sequences array:", sequences);
+    channelSettings = sequences[currentSequence - 1];
+    sequences[currentSequence - 1] = channelSettings;
+    updateUIForSequence(currentSequence);
+    saveCurrentSequence(currentSequence);
 
-        loadAndDisplaySequence(currentSequence);
+    console.log("Final sequences array:", sequences);
 
-        console.log("Import settings completed.");
+    loadAndDisplaySequence(currentSequence);
 
+    console.log("Import settings completed.");
 }
+
 
 
 function convertSequenceSettings(settings) {
