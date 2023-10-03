@@ -33,7 +33,7 @@ function exportSettings() {
             let channelSteps = sequence[i] || [];
             
             // Fetch URL from collectedURLsForSequences or set as an empty string
-            let url = collectedURLsForSequences[seqIndex][i] || "";
+            let url = (collectedURLsForSequences[seqIndex] && collectedURLsForSequences[seqIndex][i]) || "";
 
             let triggers = [];
             channelSteps.forEach((stepState, stepIndex) => {
@@ -99,18 +99,19 @@ function importSettings(settings) {
 
     console.log("Initial sequenceBPMs:", sequenceBPMs);
 
+    // Build the sequences array first
     sequences = parsedSettings.map(seqSettings => {
         if (isValidSequence(seqSettings)) {
-            if (sequenceBPMs.length >= sequences.length) {
-                console.error(`sequenceBPMs array is out of sync with sequences array.`);
-                console.log("Current sequenceBPMs:", sequenceBPMs);
-                console.log("Current sequences:", sequences);
-                return null;
-            }
-            sequenceBPMs.push(seqSettings.bpm || 0);
             return convertSequenceSettings(seqSettings);
+        } else {
+            return null;
         }
     }).filter(Boolean);
+
+    // Now, construct the sequenceBPMs array based on the valid sequences
+    sequenceBPMs = sequences.map((seq, index) => {
+        return parsedSettings[index].bpm || 105; // Default to 105 if bpm is not provided
+    });
 
     console.log("Extracted sequence names:", sequenceNames);
 
