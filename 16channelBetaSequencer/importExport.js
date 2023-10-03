@@ -97,11 +97,16 @@ function importSettings(settings) {
         return isValid;
     }
 
+    console.log("Initial sequenceBPMs:", sequenceBPMs);
+
+
     sequences = parsedSettings.map(seqSettings => {
         if (isValidSequence(seqSettings)) {
             // Assertion to ensure valid indexing
             if (sequenceBPMs.length >= sequences.length) {
                 console.error(`sequenceBPMs array is out of sync with sequences array.`);
+                console.log("Current sequenceBPMs:", sequenceBPMs);
+                console.log("Current sequences:", sequences);
                 return null;
             }
 
@@ -118,7 +123,6 @@ function importSettings(settings) {
     if (!Array.isArray(parsedSettings) && sequences.length > 0) {
         if (isValidSequence(parsedSettings)) {
             sequences.push(convertSequenceSettings(parsedSettings));
-            sequenceBPMs.push(parsedSettings.bpm || 0);
 
             let bpm = parsedSettings.bpm;
             let bpmSlider = document.getElementById('bpm-slider');
@@ -157,7 +161,8 @@ function importSettings(settings) {
                 return null;
             }
         }).filter(Boolean);
-
+        console.log("Final sequenceBPMs:", sequenceBPMs);
+        console.log("Final sequences:", sequences);
     }
       // Set current sequence to the first one
         currentSequence = 1;
