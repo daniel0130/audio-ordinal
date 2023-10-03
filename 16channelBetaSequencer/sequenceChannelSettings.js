@@ -164,6 +164,12 @@ function loadSequence(sequenceNumber) {
         sequences[sequenceNumber - 1] = Array(16).fill().map(() => [null].concat(Array(64).fill(false)));
     }
 
+    // Assertion to ensure valid indexing
+    if (sequenceNumber - 1 < 0 || sequenceNumber - 1 >= sequenceBPMs.length) {
+        console.error(`Invalid sequenceNumber: ${sequenceNumber}`);
+        return;
+    }   
+
     // Set the BPM slider and display to match the current sequence's BPM
     let bpm = sequenceBPMs[sequenceNumber - 1];  // Get the BPM for the current sequence
     let bpmSlider = document.getElementById('bpm-slider');

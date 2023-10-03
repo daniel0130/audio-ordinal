@@ -99,12 +99,15 @@ function importSettings(settings) {
 
     sequences = parsedSettings.map(seqSettings => {
         if (isValidSequence(seqSettings)) {
-            sequenceNames.push(seqSettings.name);
-        } else {
-            console.error("One of the sequences in the imported array doesn't match the expected format.");
-            return null;
-        }
+            // Assertion to ensure valid indexing
+            if (sequenceBPMs.length >= sequences.length) {
+                console.error(`sequenceBPMs array is out of sync with sequences array.`);
+                return null;
+            }
+
+            sequenceBPMs.push(seqSettings.bpm || 0);
         return convertSequenceSettings(seqSettings);
+        }
     }).filter(Boolean);
 
     console.log("Extracted sequence names:", sequenceNames);
