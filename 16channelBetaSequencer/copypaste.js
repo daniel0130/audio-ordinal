@@ -141,10 +141,6 @@ function pasteSettings() {
     console.log('P1 Data pasted:', copiedData);
 }
 
-
-
-
-
 function pasteSequenceSettings(settings) {
     console.log("Pasting sequence settings...");
 
