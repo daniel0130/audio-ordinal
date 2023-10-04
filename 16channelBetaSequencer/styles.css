@@ -491,8 +491,9 @@ div[idModalContent] div a:hover {
 #prev-sequence,
 #next-sequence,
 button[for="mode-switcher"] {
-    font-size: 5px; /* Adjust the font size as needed */
+    font-size: 12.5px; /* Adjust the font size as needed */
     padding: 5px 10px; /* Adjust the padding as needed */
+    font-weight: bold; /* Make the text bold */
 }
 
 
