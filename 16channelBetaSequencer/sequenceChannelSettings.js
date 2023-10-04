@@ -214,7 +214,10 @@ function loadSequence(sequenceNumber) {
 }
 
 
-
+// Listen for the custom event and then load and display sequence 1
+window.addEventListener('setupComplete', function() {
+    loadAndDisplaySequence(1);
+});
 
 
 function loadNextSequence() {

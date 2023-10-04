@@ -141,6 +141,7 @@ for (let i = 1; i <= 16; i++) {
 
 channelTemplateContainer.remove();
 
-// Ensure that sequence 1 is loaded and its quickplay button is lit after everything has been set up
-loadAndDisplaySequence(1);
+// Dispatch a custom event indicating that the setup is complete
+const setupCompleteEvent = new Event('setupComplete');
+window.dispatchEvent(setupCompleteEvent);
 
