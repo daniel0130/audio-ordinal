@@ -254,6 +254,27 @@ div[idModalContent] div a:hover {
     margin-top: 0px;
 }
 
+.quickplay-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quickplay-button {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.quickplay-button:hover {
+    background-color: #0056b3;
+}
+
 /* --- Button Specific Styles --- */
 #play {
     animation: flash 2s infinite ease-in-out;
@@ -453,7 +474,7 @@ div[idModalContent] div a:hover {
     display: inline-flex;
     justify-content: center; /* Center the content horizontally */
     align-items: center; /* Center the content vertically */
-    margin: 0 15px; /* Margin to space buttons */
+    margin: 0 10px; /* Margin to space buttons */
     cursor: pointer; /* Add pointer cursor to indicate interactivity */
 }
 
@@ -475,3 +496,68 @@ button[for="mode-switcher"] {
 }
 
 
+/* Dropdown Button */
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    bottom: 100%;  /* This will position the dropdown right above the button */
+    left: 0;
+    z-index: 1;
+    background-color: #f9f9f9;
+    min-width: 250px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    display: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+.action-button {
+    background-color: #4CAF50; /* Green background */
+    border: none;
+    color: white; /* White text */
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.action-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}

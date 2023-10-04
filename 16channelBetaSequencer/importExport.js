@@ -195,6 +195,7 @@ function convertSequenceSettings(settings) {
         for (let i = 0; i < emptyChannelsToAdd; i++) {
             channels.push(EMPTY_CHANNEL);
         }
+        console.log("Converted channel:", convertedChannel);
     }
 
     return channels.map(ch => {

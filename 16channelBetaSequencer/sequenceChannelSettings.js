@@ -1,6 +1,5 @@
 // sequenceChannelSettings.js
 
-let currentSequence = 1;
 let totalSequenceCount = 64;
 
 

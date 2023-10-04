@@ -5,6 +5,8 @@ let beatCount = 1; // individual steps
 let barCount = 1; // bars
 
 let sequenceCount = 1;
+let currentSequence = 1;
+
 const sequenceLength = 64;
 const maxSequenceCount = 64; // sequences
 const allSequencesLength = 4096;

@@ -7,6 +7,14 @@ const quickPlayButtons = [];
 
 let currentActiveIndex = null; // To track which button is currently active
 
+// Create a new container for the quickplay buttons
+const quickPlayContainer = document.createElement('div');
+quickPlayContainer.id = 'quickplay-container';
+quickPlayContainer.style.display = 'flex';
+quickPlayContainer.style.justifyContent = 'center';
+quickPlayContainer.style.marginBottom = '20px';  // Add some margin for spacing
+
+
 function setActiveSequence(index) {
     console.log(`Setting active sequence for index: ${index}`);
 
@@ -65,6 +73,15 @@ function insertQuickPlayButtons() {
 
 insertQuickPlayButtons();
 
+// Now that the quickplay buttons have been inserted, we can set up their event listeners.
+quickPlayButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const sequenceIndex = parseInt(button.dataset.sequenceIndex, 10);
+        loadAndDisplaySequence(sequenceIndex);
+    });
+});
+
+
 function loadAndDisplaySequence(sequenceIndex) {
     currentSequence = sequenceIndex;
     loadSequence(sequenceIndex);
@@ -73,15 +90,6 @@ function loadAndDisplaySequence(sequenceIndex) {
     document.getElementById('current-sequence-display').textContent = `Sequence ${currentSequence}`;
     updateActiveQuickPlayButton();
 }
-
-
-// Now that the quickplay buttons have been inserted, we can set up their event listeners.
-quickPlayButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        const sequenceIndex = parseInt(button.dataset.sequenceIndex, 10);
-        loadAndDisplaySequence(sequenceIndex);
-    });
-});
 
 
 // Function to create the quick-play-button
@@ -124,7 +132,6 @@ function createQuickPlayButton(index) {
 
 quickPlayButtons.forEach(button => button.classList.add('inactive'));
 
-
 for (let i = 1; i <= 16; i++) {
     let clonedChannel = channelTemplate.cloneNode(true);
     clonedChannel.id = `channel-${i}`;
@@ -133,4 +140,7 @@ for (let i = 1; i <= 16; i++) {
 }
 
 channelTemplateContainer.remove();
+
+// Ensure that sequence 1 is loaded and its quickplay button is lit after everything has been set up
+loadAndDisplaySequence(1);
 

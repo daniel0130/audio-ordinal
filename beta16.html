@@ -73,29 +73,58 @@
                 
          
    <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
-    <div class="button-container">
-        <button id="prev-sequence" class="tooltip">Previous Sequence
-            <span class="tooltiptext">Go to the previous sequence</span>
-        </button>
-        
-        <span id="current-sequence-display" class="tooltip">Sequence 1
-            <span class="tooltiptext">Currently displayed sequence</span>
-        </span>
-        
-        <button id="next-sequence" class="tooltip">Next Sequence
-            <span class="tooltiptext">Go to the next sequence</span>
-        </button>
-        
-        <label for="continuous-play" class="tooltip">Continuous Play
-            <span class="tooltiptext">Toggle continuous play mode</span>
-        </label>
-        
-        <input type="checkbox" id="continuous-play" class="tooltip">
-        
-        <div id="quick-play-button" class="tooltip"> <!-- Changed from label to div -->
-            <span class="tooltiptext">Quick play button</span>
+   <div class="button-container">
+    <button id="prev-sequence" class="tooltip">Previous Sequence
+        <span class="tooltiptext">Go to the previous sequence</span>
+    </button>
+    
+    <span id="current-sequence-display" class="tooltip">Sequence 1
+        <span class="tooltiptext">Currently displayed sequence</span>
+    </span>
+    
+    <button id="next-sequence" class="tooltip">Next Sequence
+        <span class="tooltiptext">Go to the next sequence</span>
+    </button>
+    
+    <label for="continuous-play" class="tooltip">Continuous Play
+        <span class="tooltiptext">Toggle continuous play mode</span>
+    </label>
+    
+    <input type="checkbox" id="continuous-play" class="tooltip">
+    
+    <div id="quick-play-button" class="tooltip">
+        <span class="tooltiptext">Quick play button</span>
+    </div>
+
+    <!-- Added Copy and Paste buttons -->
+    <div class="dropdown">
+        <div class="dropdown-content">
+            <a href="#" id="copy-sequence-settings">Copy Sequence Steps</a>
+            <a href="#" id="copy-channel-1-settings">Copy Channel 1 Steps</a>
+            <a href="#" id="copy-channel-2-settings">Copy Channel 2 Steps</a>
+            <a href="#" id="copy-channel-3-settings">Copy Channel 3 Steps</a>
+            <a href="#" id="copy-channel-4-settings">Copy Channel 4 Steps</a>
+            <a href="#" id="copy-channel-5-settings">Copy Channel 5 Steps</a>
+            <a href="#" id="copy-channel-6-settings">Copy Channel 6 Steps</a>
+            <a href="#" id="copy-channel-7-settings">Copy Channel 7 Steps</a>
+            <a href="#" id="copy-channel-8-settings">Copy Channel 8 Steps</a>
+            <a href="#" id="copy-channel-9-settings">Copy Channel 9 Steps</a>
+            <a href="#" id="copy-channel-10-settings">Copy Channel 10 Steps</a>
+            <a href="#" id="copy-channel-11-settings">Copy Channel 11 Steps</a>
+            <a href="#" id="copy-channel-12-settings">Copy Channel 12 Steps</a>
+            <a href="#" id="copy-channel-13-settings">Copy Channel 13 Steps</a>
+            <a href="#" id="copy-channel-14-settings">Copy Channel 14 Steps</a>
+            <a href="#" id="copy-channel-15-settings">Copy Channel 15 Steps</a>
+            <a href="#" id="copy-channel-16-settings">Copy Channel 16 Steps</a>
         </div>
-  
+        <button class="dropbtn action-button tooltip">Copy
+            <span class="tooltiptext">Select what you'd like to copy.</span>
+        </button>
+        
+        
+        <button id="paste-button" class="action-button tooltip">Paste
+            <span class="tooltiptext">Paste the sequence settings from clipboard.</span>
+        </button>
 
     <button id="save-button" class="tooltip">Save
         <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
@@ -109,10 +138,12 @@
 
     <input type="file" id="load-file-input" style="display: none" accept=".json">
 </div>
+
     
 <script src="16channelBetaSequencer/updateSequenceData.js"></script>
 <script src="16channelBetaSequencer/quickplayButtons.js"></script> <!-- Newly added external script link -->
 <script src="16channelBetaSequencer/sequenceChannelSettings.js"></script>
+<script src="16channelBetaSequencer/copyPaste.js"></script>
 <script src="16channelBetaSequencer/displayUpdatedValues.js"></script>
 <script src="16channelBetaSequencer/eventListeners.js"></script>
 <script src="16channelBetaSequencer/colourPicker.js"></script>
