@@ -63,47 +63,40 @@
       }
   }
 
-  function tryAudionalSequencer() {
-    var sequencerContainer = document.getElementById('sequencer-container');
-    
-    // Check if the iframe already exists
-    var existingIframe = document.getElementById('sequencer-iframe');
-    if (existingIframe) {
-        // If it exists, simply toggle its visibility
-        if (existingIframe.style.display === 'none') {
-            existingIframe.style.display = 'block';
-        } else {
-            existingIframe.style.display = 'none';
-        }
-    } else {
-        // If it doesn't exist, create it
-        var sequencerIframe = document.createElement('iframe');
-        sequencerIframe.id = 'sequencer-iframe';
-        sequencerIframe.src = 'beta16.html';
-        sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+      function tryAudionalSequencer() {
+        var sequencerContainer = document.getElementById('sequencer-container');
         
-        // Set the height of the iframe as desired (e.g., 600px)
-        sequencerIframe.style.height = '550px';
+        // Check if the iframe already exists
+        var existingIframe = document.getElementById('sequencer-iframe');
+        if (existingIframe) {
+            // If it exists, simply toggle its visibility
+            if (existingIframe.style.display === 'none') {
+                existingIframe.style.display = 'block';
+            } else {
+                existingIframe.style.display = 'none';
+            }
+        } else {
+            // If it doesn't exist, create it
+            var sequencerIframe = document.createElement('iframe');
+            sequencerIframe.id = 'sequencer-iframe';
+            sequencerIframe.src = 'audional-sequencer.html';
+            sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+            
+            // Set the height of the iframe as desired (e.g., 600px)
 
-        // Apply CSS scaling to shrink the content of the iframe
-        var scaleValue = 0.9; // e.g., shrink to 80% of the original size
-        sequencerIframe.style.transform = 'scale(' + scaleValue + ')';
-        sequencerIframe.style.transformOrigin = '0 0'; // Set the origin of the transformation to the top-left corner
+            sequencerIframe.style.height = '550px';
 
-        // Adjust the width and height of the iframe element to fit the scaled content
-        sequencerIframe.style.width = (100 / scaleValue) + '%';
-        sequencerIframe.style.height = (750 / scaleValue) + 'px';
-
-        // Add the iframe to the container
-        sequencerContainer.appendChild(sequencerIframe);
+            
+            // Add the iframe to the container
+            sequencerContainer.appendChild(sequencerIframe);
+        }
     }
-}
 
-// Call tryAudionalSequencer function once the window has loaded
-window.onload = function() {
-    tryAudionalSequencer();
-};
+    // Call tryAudionalSequencer function once the window has loaded
 
+      window.onload = function() {
+        tryAudionalSequencer();
+      };
       
   </script>
   </head>
@@ -112,7 +105,7 @@ window.onload = function() {
         <img src="AudionalsLogo.png" alt="Audionals Logo">
         <h1>Audionals.com</h1>
         <div>
-          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Inscribe your own Audionals</button>
+          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Try the Audional Sequencer</button>
           <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
         </div>
         <img src="AudionalsLogo.png" alt="Audionals Logo">
@@ -149,17 +142,9 @@ window.onload = function() {
         <p>The base64 audio-embedded JSON format for Audionals represents a significant leap towards the future of audio organisation. By simplifying file management, providing easy access to audio resources, and fostering a global community of creativity and collaboration, this format ushers in a new era in audio standardisation. Embrace the possibilities offered by Audionals and embark on a journey where the potential for audio expression knows no bounds.</p>
 
     </div>
-    <div class="info-content" id="info-content-donate" style="display: none; text-align: center;">
-      <p style="color: gold;">Donate to support ongoing audionals research.</p>
-      <p style="color: rgb(8, 245, 8);">Send donations to jim.btc</p>
-      <p style="color: orange;">BTC - bc1qxt4w0thady2x3cc370rx0qaau9r25wnun2k5f6</p>
-      <p style="color: rgb(0, 157, 255);">STX - SP162D87CY84QVVCMJKNKGHC7GGXFGA0TAR9D0XJW</p>
+    <div class="info-content" id="info-content-donate" style="display: none;">
+      <p>Donate to support ongoing audionals research. Send donations to jim.btc - bc1qxt4w0thady2x3cc370rx0qaau9r25wnun2k5f6</p>
   </div>
-  
-  
-  
-
-  
 
     <h1>Bitcoin Audional Generator</h1>
     <main id="app" role="main">
