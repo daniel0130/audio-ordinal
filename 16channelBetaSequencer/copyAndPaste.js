@@ -1,4 +1,4 @@
-// copyPaste.js
+// copyAndPaste.js
 
 // Introduce the flag at the top level
 let isCopyPasteEvent = false;
