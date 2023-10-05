@@ -16,12 +16,12 @@ function handleStep(channel, channelData, totalStepCount) {
     return isMuted;
 }
 
-function renderPlayhead(buttons, currentStep, isMuted) {
+function renderPlayhead(buttons, currentStep) {
     buttons.forEach((button, buttonIndex) => {
         button.classList.remove('playing');
         button.classList.remove('triggered');
 
-        if (buttonIndex === currentStep && !isMuted) {
+        if (buttonIndex === currentStep) {
             button.classList.add('playing');
         }
 
@@ -30,6 +30,7 @@ function renderPlayhead(buttons, currentStep, isMuted) {
         }
     });
 }
+
 
 function playStep() {
     const presetData = presets.preset1;
@@ -40,6 +41,8 @@ function playStep() {
         const buttons = channel.querySelectorAll('.step-button');
         let channelData = presetData.channels[channelIndex];
         const defaultTriggerArray = Array(4096).fill(false);
+        renderPlayhead(buttons, currentStep, channel.dataset.muted === 'true');
+
 
         // If no channelData is found for the current channel, use a default set of values
         if (!channelData) {
@@ -52,7 +55,7 @@ function playStep() {
             };
         }
 
-        renderPlayhead(buttons, currentStep, channel.dataset.muted === 'true');
+        renderPlayhead(buttons, currentStep);
         const isMuted = handleStep(channel, channelData, totalStepCount);
         playSound(channel, currentStep, isMuted);
     });

@@ -1,1809 +1,2240 @@
-
 [
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            6,
-            9,
-            14,
-            17,
-            22,
-            25,
-            30,
-            33,
-            38,
-            41,
-            46,
-            49,
-            54,
-            57,
-            62,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            61,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            4,
-            20,
-            36,
-            52,
-            60
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            3,
-            19,
-            35,
-            47
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            1,
-            16,
-            33,
-            48,
-            50
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            61
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            3,
-            7,
-            11,
-            15,
-            19,
-            23,
-            27,
-            31,
-            35,
-            39,
-            43,
-            47,
-            51,
-            55,
-            59,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_1"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            6,
-            9,
-            14,
-            17,
-            22,
-            25,
-            30,
-            33,
-            38,
-            41,
-            46,
-            49,
-            54,
-            57,
-            62,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            61,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            4,
-            20,
-            36,
-            52,
-            60
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            3,
-            19,
-            35,
-            47
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            1,
-            16,
-            33,
-            48,
-            50
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            61
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            3,
-            7,
-            11,
-            15,
-            19,
-            23,
-            27,
-            31,
-            35,
-            39,
-            43,
-            47,
-            51,
-            55,
-            59,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_2"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            7,
-            17,
-            23,
-            33,
-            39,
-            49,
-            55
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            5,
-            13,
-            21,
-            29,
-            37,
-            45,
-            53,
-            61,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            1,
-            9,
-            17,
-            25,
-            33,
-            41,
-            49,
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            14
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            45
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_3"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            6,
-            9,
-            14,
-            17,
-            22,
-            25,
-            30,
-            33,
-            38,
-            41,
-            46,
-            49,
-            54,
-            57,
-            62,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            3,
-            7,
-            11,
-            15,
-            19,
-            23,
-            27,
-            31,
-            35,
-            39,
-            43,
-            47,
-            51,
-            55,
-            59,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            61,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            4,
-            20,
-            36,
-            52,
-            60
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            3,
-            19,
-            35,
-            47
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            1,
-            33
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            61
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_4"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            6,
-            9,
-            14,
-            17,
-            22,
-            25,
-            30,
-            33,
-            38,
-            41,
-            46,
-            49,
-            54,
-            57,
-            62,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            5,
-            17,
-            21,
-            33,
-            37,
-            49,
-            53
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            3,
-            7,
-            11,
-            15,
-            19,
-            23,
-            27,
-            31,
-            35,
-            39,
-            43,
-            47,
-            51,
-            55,
-            59,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            3,
-            19,
-            35,
-            47
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_5"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            10,
-            11,
-            12,
-            13,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            26,
-            27,
-            28,
-            29,
-            31,
-            32,
-            33,
-            34,
-            35,
-            36,
-            37,
-            38,
-            39,
-            40,
-            42,
-            43,
-            44,
-            45,
-            47,
-            48,
-            49,
-            50,
-            51,
-            52,
-            53,
-            54,
-            55,
-            56,
-            58,
-            59,
-            60,
-            61,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            3,
-            5,
-            6,
-            7,
-            8,
-            9,
-            11,
-            17,
-            19,
-            21,
-            22,
-            23,
-            24,
-            25,
-            27,
-            33,
-            35,
-            37,
-            38,
-            39,
-            40,
-            41,
-            43,
-            49,
-            51,
-            53,
-            55,
-            57,
-            59
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            5,
-            13,
-            21,
-            29,
-            37,
-            45,
-            50,
-            53,
-            56,
-            60,
-            61,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            45
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_6"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            5,
-            9,
-            13,
-            17,
-            21,
-            25,
-            29,
-            33,
-            37,
-            41,
-            45,
-            49,
-            53,
-            57,
-            61
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            7,
-            17,
-            23,
-            33,
-            39,
-            49,
-            55
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            5,
-            13,
-            21,
-            29,
-            37,
-            45,
-            53,
-            61,
-            63,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            1,
-            9,
-            17,
-            25,
-            33,
-            41,
-            49,
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            12,
-            14,
-            44,
-            46
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            8,
-            10,
-            24,
-            26,
-            40,
-            42
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            45
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_7"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            6,
-            9,
-            14,
-            17,
-            22,
-            25,
-            30,
-            33,
-            38,
-            41,
-            46,
-            49,
-            54,
-            57,
-            62,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            1
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_8"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            1,
-            9,
-            17,
-            25,
-            33,
-            41,
-            45,
-            57,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            3,
-            5,
-            7,
-            9,
-            11,
-            13,
-            15,
-            17,
-            19,
-            21,
-            23,
-            25,
-            27,
-            29,
-            31,
-            33,
-            35,
-            37,
-            39,
-            41,
-            43,
-            45,
-            47,
-            49,
-            51,
-            53,
-            55,
-            57,
-            59,
-            61,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            2,
-            4,
-            6,
-            8,
-            10,
-            12,
-            14,
-            16,
-            18,
-            20,
-            22,
-            24,
-            26,
-            28,
-            30,
-            32,
-            34,
-            36,
-            38,
-            40,
-            42,
-            44,
-            46,
-            48,
-            50,
-            52,
-            54,
-            56,
-            58,
-            60,
-            62,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            1,
-            9,
-            17,
-            25,
-            33,
-            41,
-            49,
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            14,
-            30,
-            46,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 105,
-      "name": "Sequence_9"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            9,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            9,
-            25,
-            41,
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            1,
-            11,
-            14,
-            45,
-            47,
-            61
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            1,
-            3,
-            27,
-            33,
-            35
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            1,
-            9,
-            17,
-            25,
-            33,
-            41,
-            49,
-            57
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            17,
-            27,
-            33
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "bpm": 127,
-      "name": "Sequence_10"
-    },
-    {
-      "channels": [
-        {
-          "triggers": [
-            2,
-            6,
-            10,
-            14,
-            18,
-            22,
-            26,
-            30,
-            34,
-            38,
-            42,
-            46,
-            50,
-            54,
-            58,
-            62,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            2,
-            6,
-            10,
-            14,
-            18,
-            22,
-            26,
-            30,
-            34,
-            38,
-            42,
-            46,
-            50,
-            54,
-            58,
-            62,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0"
-        },
-        {
-          "triggers": [
-            1,
-            2,
-            32,
-            33,
-            57,
-            61,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0"
-        },
-        {
-          "triggers": [
-            3,
-            31,
-            35,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0"
-        },
-        {
-          "triggers": [
-            1,
-            17,
-            33,
-            49
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0"
-        },
-        {
-          "triggers": [
-            2,
-            4,
-            6,
-            8,
-            10,
-            12,
-            14,
-            16,
-            18,
-            20,
-            22,
-            24,
-            26,
-            28,
-            30,
-            32,
-            34,
-            36,
-            38,
-            40,
-            42,
-            44,
-            46,
-            48,
-            50,
-            52,
-            54,
-            56,
-            58,
-            60,
-            61,
-            62,
-            64
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [
-            1,
-            3,
-            5,
-            7,
-            9,
-            11,
-            13,
-            15,
-            17,
-            19,
-            21,
-            23,
-            25,
-            27,
-            29,
-            31,
-            33,
-            35,
-            37,
-            39,
-            41,
-            43,
-            45,
-            47,
-            49,
-            51,
-            53,
-            55,
-            57,
-            59,
-            63
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0"
-        },
-        {
-          "triggers": [
-            6,
-            14,
-            22,
-            30,
-            38,
-            46,
-            54,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [
-            6,
-            14,
-            22,
-            30,
-            38,
-            46,
-            54,
-            62
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0"
-        },
-        {
-          "triggers": [
-            1,
-            2
-          ],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": [],
-          "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0"
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        },
-        {
-          "triggers": [],
-          "mute": false,
-          "toggleMuteSteps": []
-        }
-      ],
-      "name": "Sequence_11"
-    }
-  ]
+  {
+    "name": "Sequence_1",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0",
+        "mute": false,
+        "triggers": [
+          59
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0",
+        "mute": false,
+        "triggers": [
+          1
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_2",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          13,
+          29,
+          45,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          9,
+          41,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          28,
+          30,
+          44,
+          46,
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_3",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          13,
+          45,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          9,
+          27,
+          41,
+          59
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          44,
+          46
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          53
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_4",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          5,
+          13,
+          21,
+          29,
+          37,
+          45,
+          53,
+          61,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          9,
+          27,
+          41,
+          59
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          44,
+          46
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          21,
+          31,
+          53,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_5",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          49
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          5,
+          13,
+          21,
+          29,
+          37,
+          45,
+          53,
+          61,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          9,
+          27,
+          41,
+          59
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          44,
+          46
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          21,
+          31,
+          53,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_6",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "https://ordinals.com/content/a511d79317efac68fea3b14070bebe208aefde07ce1c55d6f4cfe42e8273cbdbi0",
+        "mute": false,
+        "triggers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "mute": false,
+        "triggers": [
+          1,
+          7,
+          17,
+          23,
+          33,
+          39,
+          49,
+          55
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "mute": false,
+        "triggers": [
+          5,
+          13,
+          21,
+          29,
+          37,
+          45,
+          53,
+          61,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          49,
+          57
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          44,
+          46
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "mute": false,
+        "triggers": [
+          8,
+          10,
+          24,
+          26,
+          40,
+          42
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          45
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_7",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          5,
+          13,
+          21,
+          29,
+          37,
+          45,
+          53,
+          61,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          9,
+          27,
+          41,
+          59
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          12,
+          14,
+          44,
+          46
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          21,
+          31,
+          53,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_8",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          49
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0",
+        "mute": false,
+        "triggers": [
+          61,
+          62
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "mute": false,
+        "triggers": [
+          4,
+          20,
+          36,
+          52,
+          60
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
+        "mute": false,
+        "triggers": [
+          3,
+          19,
+          35,
+          47
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0",
+        "mute": false,
+        "triggers": [
+          1,
+          16,
+          33,
+          48,
+          50
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0",
+        "mute": false,
+        "triggers": [
+          61
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "mute": false,
+        "triggers": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_9",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/8fa54ad2d9e297c79b225eff67a481ebc8682dacf4fe9dbf5b692a60b237c163i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "mute": false,
+        "triggers": [
+          9,
+          25,
+          41,
+          57
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/a511d79317efac68fea3b14070bebe208aefde07ce1c55d6f4cfe42e8273cbdbi0",
+        "mute": false,
+        "triggers": [
+          1,
+          11,
+          14,
+          45,
+          47,
+          61
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "mute": false,
+        "triggers": [
+          1,
+          3,
+          27,
+          33,
+          35
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/8fa54ad2d9e297c79b225eff67a481ebc8682dacf4fe9dbf5b692a60b237c163i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_10",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "mute": false,
+        "triggers": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          11,
+          13,
+          14,
+          17,
+          19,
+          21,
+          22,
+          25,
+          27,
+          29,
+          30,
+          33,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          45,
+          46,
+          49,
+          51,
+          53,
+          54,
+          57,
+          59,
+          61,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0",
+        "mute": false,
+        "triggers": [
+          61,
+          62
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "mute": false,
+        "triggers": [
+          4,
+          20,
+          36,
+          52,
+          60
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0",
+        "mute": false,
+        "triggers": [
+          1,
+          16,
+          33,
+          48,
+          50
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0",
+        "mute": false,
+        "triggers": [
+          61
+        ]
+      },
+      {
+        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "mute": false,
+        "triggers": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_11",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          7,
+          17,
+          23,
+          33,
+          39,
+          49,
+          55
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          5,
+          13,
+          21,
+          29,
+          37,
+          45,
+          53,
+          61,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          49,
+          57
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          57
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          14
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          45
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_12",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          15,
+          17,
+          33,
+          49
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          61,
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          4,
+          20,
+          36,
+          52,
+          60
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          19,
+          35,
+          47
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          33
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          61
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_13",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          5,
+          17,
+          21,
+          33,
+          37,
+          49,
+          53
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          19,
+          35,
+          47
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_14",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          6,
+          9,
+          14,
+          17,
+          22,
+          25,
+          30,
+          33,
+          38,
+          41,
+          46,
+          49,
+          54,
+          57,
+          62,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          5,
+          17,
+          21,
+          33,
+          37,
+          49,
+          53
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          19,
+          35,
+          47
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_15",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          45,
+          57,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          3,
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27,
+          29,
+          31,
+          33,
+          35,
+          37,
+          39,
+          41,
+          43,
+          45,
+          47,
+          49,
+          51,
+          53,
+          55,
+          57,
+          59,
+          61,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26,
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40,
+          42,
+          44,
+          46,
+          48,
+          50,
+          52,
+          54,
+          56,
+          58,
+          60,
+          62,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          49,
+          57
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          14,
+          30,
+          46,
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          49
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  },
+  {
+    "name": "Sequence_16",
+    "bpm": 105,
+    "channels": [
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          45,
+          57,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          3,
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27,
+          29,
+          31,
+          33,
+          35,
+          37,
+          39,
+          41,
+          43,
+          45,
+          47,
+          49,
+          51,
+          53,
+          55,
+          57,
+          59,
+          61,
+          63
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26,
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40,
+          42,
+          44,
+          46,
+          48,
+          50,
+          52,
+          54,
+          56,
+          58,
+          60,
+          62,
+          64
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          9,
+          17,
+          25,
+          33,
+          41,
+          49,
+          57
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          14,
+          30,
+          46,
+          62
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          17,
+          33,
+          49
+        ]
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
+        "mute": false,
+        "triggers": []
+      }
+    ]
+  }
+]

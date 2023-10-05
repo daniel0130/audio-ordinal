@@ -141,9 +141,9 @@ function setChannelSettings(channelIndex, settings) {
 
 function saveCurrentSequence(sequenceNumber) {
     sequences[sequenceNumber - 1] = [...channelSettings];
-    console.log(`Saved settings for Sequence ${sequenceNumber}:`, sequences[sequenceNumber - 1]);
+    console.log(`from saveCurrentSequence: Saved settings for Sequence ${sequenceNumber}:`, sequences[sequenceNumber - 1]);
     const urlsForSavedSequence = channelSettings.map(channelData => channelData[0]);
-    console.log(`Saved URLs for Sequence ${sequenceNumber}:`, urlsForSavedSequence);
+    console.log(`from saveCurrentSequence: Saved URLs for Sequence ${sequenceNumber}:`, urlsForSavedSequence);
 
 }
 
