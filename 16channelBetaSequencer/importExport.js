@@ -66,6 +66,11 @@ function exportSettings() {
 
 function importSettings(settings) {
     console.log("Importing settings...");
+    channels.forEach(channel => {
+        const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
+        updateMuteState(channel, false); // unmute
+        setChannelVolume(channelIndex, 1); // set volume to 1
+    });
 
     let parsedSettings;
     let sequenceNames = [];
@@ -166,6 +171,7 @@ function importSettings(settings) {
         console.log("Final sequences:", sequences);
     }
 
+
     // Set current sequence to the first one
     currentSequence = 1;
     console.log("Setting current sequence to:", currentSequence);
@@ -176,6 +182,18 @@ function importSettings(settings) {
 
     channelSettings = sequences[currentSequence - 1];
     sequences[currentSequence - 1] = channelSettings;
+
+    const currentSeqSettings = parsedSettings[0]; // since currentSequence is set to 1
+    currentSeqSettings.channels.forEach((channelData, channelIndex) => {
+        const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
+        if (channelData.mute !== undefined) { // Only if mute is defined in the JSON
+            updateMuteState(channel, channelData.mute);
+        }
+        if (channelData.volume !== undefined) { // Only if volume is defined in the JSON
+            setChannelVolume(channelIndex, channelData.volume);
+        }
+    });
+
     updateUIForSequence(currentSequence);
     saveCurrentSequence(currentSequence);
 

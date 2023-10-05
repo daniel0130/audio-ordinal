@@ -541,6 +541,10 @@ channels.forEach((channel, index) => {
 
 // The loadPreset function is updated to use updateMuteState function
 const loadPreset = (preset) => {
+    console.log("loadPreset: before loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+
+    console.log("loadPreset: Loading preset:", preset);
+
   const presetData = presets[preset];
 
   if (!presetData) {
@@ -585,6 +589,8 @@ const loadPreset = (preset) => {
   console.log(preset);
   // Load settings into the internal array
   loadChannelSettingsFromPreset(presets[preset]);
+  console.log("loadPreset: After loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+
 };
 
 // Load a preset when the page loads

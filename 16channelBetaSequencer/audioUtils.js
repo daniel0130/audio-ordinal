@@ -60,6 +60,8 @@ const fetchAudio = async (url, channelIndex, loadSampleButtonElement = null) => 
 };
 
 function playSound(channel, currentStep) {
+  console.log("playSound: initial preset settings -  gainNodes values:", gainNodes.map(gn => gn.gain.value));
+
   if (channel.querySelectorAll('.step-button')[currentStep].classList.contains('selected')) {
     const url = channel.dataset.originalUrl;
     const audioBuffer = audioBuffers.get(url);
@@ -133,10 +135,14 @@ function updateMuteState(channel, shouldMute) {
   // Mute or unmute using gain node
   if (shouldMute) {
       gainNodes[channelIndex].gain.value = 0; // Mute the channel
+      console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Muted");
   } else {
       gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
+      console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Unmuted");
   }
 
+  // Update the dim state of the channel
+  updateDimState(channel, channelIndex);
 
   saveCurrentSequence(currentSequence);
   console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${shouldMute}`);
