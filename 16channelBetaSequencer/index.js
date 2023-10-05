@@ -333,27 +333,26 @@ channels.forEach((channel, index) => {
                     const loadButton = document.createElement('button');
                     loadButton.textContent = 'Load';
                     loadButton.addEventListener('click', () => {
-                      if (audionalInput.value) {
-                        const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalInput.value);
-                        console.log(audionalUrl); // or ipfsUrl
-                        collectedURLs[index] = audionalUrl; // Instead of using .push
-                        fetchAudio(audionalUrl, index, loadSampleButton);
-                        
-                        // Add the orange margin to the channel container
-                        const channelContainer = channel.querySelector('.channel-container');
-                        channelContainer.classList.add('ordinal-loaded');
+                        if (audionalInput.value) {
+                            const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalInput.value);
+                            console.log(`index.js loadButton: Setting URL for channel ${index + 1}:`, audionalUrl);
+                            collectedURLs[index] = audionalUrl; 
+                            fetchAudio(audionalUrl, index, loadSampleButton);
+                            // Add the orange margin to the channel container
+                            const channelContainer = channel.querySelector('.channel-container');
+                            channelContainer.classList.add('ordinal-loaded');
                         } else if (ipfsInput.value) {
-                        // Handle IPFS address logic here
-                        const ipfsUrl = 'https://ipfs.io/ipfs/' + ipfsInput.value;
-                        console.log(ipfsUrl); // or ipfsUrl
-                        collectedURLs[index] = ipfsUrl; // Instead of using .push
-                        fetchAudio(ipfsUrl, index, loadSampleButton);
-
-                        // Remove the orange margin from the channel container
-                        const channelContainer = channel.querySelector('.channel-container');
-                        channelContainer.classList.remove('ordinal-loaded');
-}
+                            const ipfsUrl = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+                            console.log(ipfsUrl);
+                            collectedURLs[index] = ipfsUrl;
+                            fetchAudio(ipfsUrl, index, loadSampleButton);
+                            console.log(`index.js loadButton: Setting IPFS URL for channel ${index + 1}:`, ipfsUrl);
+                            const channelContainer = channel.querySelector('.channel-container');
+                            channelContainer.classList.remove('ordinal-loaded');
+                        }
+                        updateCollectedURLsForSequences();  // Call the update function here
                         document.body.removeChild(idModal);
+                        console.log(`loadButton: Updated collectedURLs after adding URL for channel ${index + 1}:`, collectedURLs);
                     });
                     idModalContent.appendChild(loadButton);
 
@@ -471,11 +470,13 @@ channels.forEach((channel, index) => {
         
         
         
-        function updateSequenceDisplay(sequenceNum) {
-            const sequenceDisplay = document.getElementById('current-sequence-display');
-            if (sequenceDisplay) {
-                sequenceDisplay.textContent = `Sequence ${sequenceNum}`;
+        function updateCollectedURLsForSequences() {
+            // Assuming collectedURLsForSequences is a 2D array where each inner array represents URLs for a sequence.
+            if (!collectedURLsForSequences[currentSequence - 1]) {
+                collectedURLsForSequences[currentSequence - 1] = [];
             }
+            collectedURLsForSequences[currentSequence - 1] = [...collectedURLs];
+            console.log(`index.js loadButton: Updated collectedURLsForSequences for sequence ${currentSequence}:`, collectedURLsForSequences[currentSequence - 1]);
         }
         
         // Inside your playButton event listener, after the play logic

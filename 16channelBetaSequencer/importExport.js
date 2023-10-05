@@ -15,10 +15,19 @@ let collectedURLsForSequences = Array(sequences.length).fill().map(() => []);
 
 
 function exportSettings() {
+    console.log("exportSettings: collectedURLsForSequences before export:", collectedURLsForSequences);
+
     let allSequencesSettings = [];
 
     // First, update the current sequence in the sequences array with the channelSettings
     sequences[currentSequence - 1] = channelSettings;
+    sequences.forEach((sequence, sequenceIndex) => {
+        console.log(`Exporting sequence ${sequenceIndex + 1}...`);
+        sequence.forEach((channel, channelIndex) => {
+            console.log(`exportSettings: Exporting URL for sequence ${sequenceIndex + 1}, channel ${channelIndex + 1}: ${channel[0]}`);
+            // ... existing channel export logic ...
+        });
+    });
 
     for (let seqIndex = 0; seqIndex < sequences.length; seqIndex++) {
         const sequence = sequences[seqIndex];
@@ -33,7 +42,8 @@ function exportSettings() {
             let channelSteps = sequence[i] || [];
             
             // Fetch URL from collectedURLsForSequences or set as an empty string
-            let url = (collectedURLsForSequences[seqIndex] && collectedURLsForSequences[seqIndex][i]) || "";
+            let url = sequence[i] && sequence[i][0] ? sequence[i][0] : "";
+            console.log(`exportSettings: Exporting URL for sequence ${seqIndex + 1}, channel ${i + 1}:`, url);
 
             let triggers = [];
             channelSteps.forEach((stepState, stepIndex) => {
