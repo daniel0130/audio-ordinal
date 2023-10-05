@@ -68,7 +68,7 @@ function exportSettings() {
         }
     }
 
-    let filename = `audiSeq_AllSequences.json`;
+    let filename = `Audional_Sequencer_Settings.json`;
     return { settings: JSON.stringify(allSequencesSettings, null, 2), filename: filename };
 }
 
