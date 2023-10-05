@@ -94,6 +94,8 @@ function loadChannelSettingsFromPreset(preset) {
 
     // Save the loaded preset to the current sequence
     saveCurrentSequence(currentSequence);
+    console.log("loadChannelSettingsFromPreset: After loadChannelSettingsFromPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+
 }
 
 

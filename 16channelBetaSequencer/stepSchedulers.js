@@ -2,8 +2,12 @@
 
 function startScheduler() {
     channels.forEach(channel => {
-        setChannelVolume(parseInt(channel.dataset.id.split('-')[1]) - 1, 1); 
-      });
+        const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
+        if(!channelMutes[channelIndex]) {  // If channel is not muted
+            setChannelVolume(channelIndex, 1);
+        }
+    });
+    
     clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
     audioContext.resume();
     startTime = audioContext.currentTime;
