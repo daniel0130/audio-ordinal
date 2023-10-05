@@ -1145,58 +1145,41 @@
     "bpm": 105,
     "channels": [
       {
-        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "url": "",
         "mute": false,
         "triggers": [
           1,
-          2,
-          3,
-          4,
           6,
-          7,
-          8,
           9,
-          11,
-          13,
           14,
           17,
-          19,
-          21,
           22,
           25,
-          27,
-          29,
           30,
           33,
-          35,
-          36,
-          37,
           38,
-          39,
-          40,
           41,
-          42,
-          43,
-          45,
           46,
           49,
-          51,
-          53,
           54,
           57,
-          59,
-          61,
           62,
           63
         ]
       },
       {
-        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
+        "url": "",
         "mute": false,
-        "triggers": []
+        "triggers": [
+          1,
+          15,
+          17,
+          33,
+          49
+        ]
       },
       {
-        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "url": "",
         "mute": false,
         "triggers": [
           3,
@@ -1214,13 +1197,20 @@
           51,
           55,
           59,
-          61,
           63,
           64
         ]
       },
       {
-        "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0",
+        "url": "",
+        "mute": false,
+        "triggers": [
+          61,
+          62
+        ]
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": [
           4,
@@ -1231,23 +1221,22 @@
         ]
       },
       {
-        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "url": "",
+        "mute": false,
+        "triggers": [
+          3,
+          19,
+          35,
+          47
+        ]
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
-        "mute": false,
-        "triggers": [
-          1,
-          16,
-          33,
-          48,
-          50
-        ]
-      },
-      {
-        "url": "https://ordinals.com/content/c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0",
+        "url": "",
         "mute": false,
         "triggers": [
           61
@@ -1259,42 +1248,44 @@
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/ed13d5389ae6273839342698b6d5bd3342c51eb472f32b8306e60f8e1e903ce8i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/0e38f29c76b29e471f5f0022a5e98f9ae64b5b1d8f25673f85e02851daf22526i0",
+        "url": "",
+        "mute": false,
+        "triggers": [
+          1,
+          16,
+          18,
+          33,
+          48,
+          50
+        ]
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/187a8c18ebfe07c18aea0e86cd99b3100474c1c53f56f02ee096723f1a35ce70i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/34e73ef718034a3c0fdeba53899a2af8ee7771f252c419ab63cd13b0a39f6b10i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/e9885c35376ae95dd291bb02075b0763fb3e655d51dc981984130b8366a6d3c8i0",
-        "mute": false,
-        "triggers": []
-      },
-      {
-        "url": "https://ordinals.com/content/474f2b0aab9020757826b168ce58725871fd2abb26c6ca805de4b07e314416d1i0",
-        "mute": false,
-        "triggers": []
-      },
-      {
-        "url": "https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0",
+        "url": "",
         "mute": false,
         "triggers": []
       }
@@ -2046,177 +2037,156 @@
     "bpm": 105,
     "channels": [
       {
-        "url": "https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0",
+        "url": "",
         "mute": false,
         "triggers": [
           1,
-          9,
-          17,
-          25,
-          33,
-          41,
-          45,
-          57,
-          63
-        ]
-      },
-      {
-        "url": "https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0",
-        "mute": false,
-        "triggers": [
-          1,
+          2,
           3,
-          5,
+          4,
+          6,
           7,
+          8,
           9,
           11,
           13,
-          15,
+          14,
           17,
           19,
           21,
-          23,
+          22,
           25,
           27,
           29,
-          31,
+          30,
           33,
           35,
+          36,
           37,
+          38,
           39,
+          40,
           41,
+          42,
           43,
           45,
-          47,
+          46,
           49,
           51,
           53,
-          55,
+          54,
           57,
           59,
           61,
+          62,
           63
         ]
       },
       {
-        "url": "https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0",
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": [
-          2,
-          4,
-          6,
-          8,
-          10,
-          12,
-          14,
-          16,
-          18,
-          20,
-          22,
-          24,
-          26,
-          28,
-          30,
-          32,
-          34,
-          36,
-          38,
-          40,
-          42,
-          44,
-          46,
-          48,
-          50,
-          52,
-          54,
-          56,
-          58,
-          60,
-          62,
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          61,
+          63,
           64
         ]
       },
       {
-        "url": "https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0",
+        "url": "",
+        "mute": false,
+        "triggers": [
+          4,
+          20,
+          36,
+          52,
+          60
+        ]
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/5b2dc7be28ad70c233b06d0ba23888aa38eb8711c24f8462d2774ac5fb7e7212i0",
+        "url": "",
         "mute": false,
         "triggers": [
           1,
-          9,
-          17,
-          25,
+          16,
           33,
-          41,
-          49,
-          57
+          48,
+          50
         ]
       },
       {
-        "url": "https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0",
-        "mute": false,
-        "triggers": []
-      },
-      {
-        "url": "https://ordinals.com/content/c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0",
+        "url": "",
         "mute": false,
         "triggers": [
-          14,
-          30,
-          46,
-          62
+          61
         ]
       },
       {
-        "url": "https://ordinals.com/content/4d73f49620b708e098a59b9c7d5a40bd0c14057d4b803e2f8842d183708ed8a5i0",
-        "mute": false,
-        "triggers": [
-          1,
-          17,
-          33,
-          49
-        ]
-      },
-      {
-        "url": "https://ordinals.com/content/ed13d5389ae6273839342698b6d5bd3342c51eb472f32b8306e60f8e1e903ce8i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/0e38f29c76b29e471f5f0022a5e98f9ae64b5b1d8f25673f85e02851daf22526i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/fb0e5e0b512ad0caf2b0ebed011d2d29aa670ce48f3c147cfc9e633d963f369bi0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/187a8c18ebfe07c18aea0e86cd99b3100474c1c53f56f02ee096723f1a35ce70i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/34e73ef718034a3c0fdeba53899a2af8ee7771f252c419ab63cd13b0a39f6b10i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/e9885c35376ae95dd291bb02075b0763fb3e655d51dc981984130b8366a6d3c8i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/474f2b0aab9020757826b168ce58725871fd2abb26c6ca805de4b07e314416d1i0",
+        "url": "",
         "mute": false,
         "triggers": []
       },
       {
-        "url": "https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0",
+        "url": "",
+        "mute": false,
+        "triggers": []
+      },
+      {
+        "url": "",
         "mute": false,
         "triggers": []
       }
