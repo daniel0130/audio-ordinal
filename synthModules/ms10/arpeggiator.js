@@ -2,10 +2,9 @@
 
 let isArpeggiatorOn = false;
 let isArpeggiatorPaused = false;
-let arpInterval;
-let awaitingFirstBeat = true;  // Introduce this variable at the top of the file
+let awaitingFirstBeat = true;
 
-const arpNotes = []; // Queue to hold notes for the arpeggiator
+const arpNotes = []; 
 
 const arpSequencerChannel = new BroadcastChannel('sequencerChannel');
 arpSequencerChannel.onmessage = function(event) {
@@ -13,8 +12,8 @@ arpSequencerChannel.onmessage = function(event) {
 
     if (type === 'beat' && awaitingFirstBeat) {
         awaitingFirstBeat = false;
-        playArpNotes();  // Start the arpeggiator as soon as the first beat is received
-    }    if (type === 'pause') {
+        playArpNotes();  
+    } else if (type === 'pause') {
         pauseArpeggiator();
     } else if (type === 'stop') {
         stopArpeggiator();
@@ -38,7 +37,6 @@ function toggleArpeggiator() {
 
 function startArpeggiator() {
     if (isArpeggiatorPaused) {
-        // If the arpeggiator was paused, just restart the interval without changing the arpNotes
         isArpeggiatorPaused = false;
     } else if (!awaitingFirstBeat) {
         playArpNotes();
@@ -47,14 +45,23 @@ function startArpeggiator() {
 
 function playArpNotes() {
     const tempo = parseFloat(document.getElementById('arpTempo').value);
-    const intervalDuration = 60000 / tempo; // Convert BPM to ms per beat
+    const intervalDuration = 60 / tempo; // Convert BPM to seconds per beat
 
-    // Play the first note immediately
+    // Schedule the first note to play immediately
     playNextArpNote();
 
-    arpInterval = setInterval(() => {
-        playNextArpNote();
-    }, intervalDuration);
+    // Use the Web Audio API's timing mechanism instead of setInterval
+    let nextTime = context.currentTime + intervalDuration;
+
+    function schedule() {
+        while (nextTime < context.currentTime + 0.1) {  // schedule notes for the next 100ms
+            playNextArpNote();
+            nextTime += intervalDuration;
+        }
+        window.requestAnimationFrame(schedule);
+    }
+
+    schedule();
 }
 
 function playNextArpNote() {
@@ -80,14 +87,13 @@ function playNextArpNote() {
     }
 }
 
-
 function pauseArpeggiator() {
     isArpeggiatorPaused = true;
-    clearInterval(arpInterval);
+    // Since we're not using setInterval, there's no clearInterval equivalent here.
+    // Pausing is handled by the isArpeggiatorPaused flag.
 }
 
 function stopArpeggiator() {
-    clearInterval(arpInterval);
     arpNotes.length = 0; // Clear the arpNotes array
     isArpeggiatorPaused = false;
 }
