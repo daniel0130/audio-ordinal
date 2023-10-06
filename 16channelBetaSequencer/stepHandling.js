@@ -65,14 +65,20 @@ function playStep() {
 
     if (currentStep % 4 === 0) {
         beatCount++;  
+        emitBeat(beatCount);
     }
 
     if (currentStep % 16 === 0) {
         barCount = (barCount + 1);
+        emitBar(barCount);
     }
 
     if (currentStep % 64 === 0) {
         sequenceCount++;
+
+        
+    
+        
 
         // Check if we need to switch to the next sequence (continuous play logic)
         const continuousPlayCheckbox = document.getElementById('continuous-play');

@@ -491,9 +491,11 @@ channels.forEach((channel, index) => {
                 isPaused = false;  // Ensure that the isPaused flag is set to false when starting playback
             } else if (!isPaused) {  // If the sequencer is playing and is not paused, pause the sequencer
                 pauseScheduler();
+                emitPause();
                 isPaused = true;
             } else {  // If the sequencer is paused, resume the sequencer
                 resumeScheduler();
+                emitResume();  // Assuming you'd like to inform other parts of your application that the sequencer is resuming
                 isPaused = false;
             }
         
@@ -522,6 +524,7 @@ channels.forEach((channel, index) => {
             
               if (isPlaying) {
                   stopScheduler();
+                  emitStop();
                   stopButton.classList.add('selected');
                   playButton.classList.remove('selected');
                   isPlaying = false;
