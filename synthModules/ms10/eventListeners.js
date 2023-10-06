@@ -16,5 +16,12 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+document.addEventListener('keyup', function(event) {
+    const midiNote = keyToMidiNote[event.code];
+    if (midiNote) {
+        stopMS10TriangleBass();  // You'll need to implement this function to stop the corresponding oscillator.
+    }
+});
+
 
 document.getElementById('arpToggle').addEventListener('click', toggleArpeggiator);

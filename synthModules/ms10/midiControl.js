@@ -33,10 +33,10 @@ function onMIDIMessage(message) {
                 if (isArpeggiatorOn) {
                     arpNotes.push(frequency);
                     if (awaitingFirstBeat) {
-                        startArpeggiator();  // If it's the first note and we're waiting for the first beat, start the arpeggiator
+                        startArpeggiator();
                     }
                 } else {
-                    playMS10TriangleBass(frequency);
+                    playMS10TriangleBass(frequency, velocity / 127);  // Normalize velocity to [0, 1]
                 }
             }
             break;
@@ -60,10 +60,10 @@ function midiNoteToFrequency(midiNote) {
     return Math.pow(2, (midiNote - A4_MIDI_NUMBER) / 12) * A4_FREQUENCY;
 }
 
-function playNote(midiNote, velocity) {
+function playNote(midiNote, velocity = 1) {
     // Convert MIDI note to frequency
     let frequency = Math.pow(2, (midiNote - 69) / 12) * 440;
-    playMS10TriangleBass(frequency, velocity); // You may need to modify your playMS10TriangleBass function to take in frequency and velocity
+    playMS10TriangleBass(frequency, velocity);  // Pass velocity to the synth function
 }
 
 function stopNote(midiNote) {

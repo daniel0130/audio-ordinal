@@ -30,11 +30,9 @@ sequencerChannel.onmessage = function(event) {
         const arpTempoSlider = document.getElementById('arpTempo');
         arpTempoSlider.value = updatedBPM;
     
-        // Update the arpeggiator's internal BPM and refresh its interval if it's on
-        if (isArpeggiatorOn) {
-            stopArpeggiator();
-            startArpeggiator();
-        }
+        // Update the arpeggiator's internal BPM
+        // Given the precision of the Web Audio API, we don't need to manually stop and restart the arpeggiator
+        // The timing will adjust smoothly due to the changes in the arpeggiator.js
     
         console.log(`Updated BPM: ${updatedBPM}`);
     } else if (type === 'pause') {
@@ -48,7 +46,6 @@ sequencerChannel.onmessage = function(event) {
     } else if (type === 'stop') {
         if (isArpeggiatorOn) {
             stopArpeggiator();
-            // Optionally, reset the arpeggiator's internal state if needed
         }
         syncBeat = 1; // Reset syncBeat
         syncBar = 1; // Reset syncBar
@@ -56,3 +53,4 @@ sequencerChannel.onmessage = function(event) {
 
     console.log(`syncBeat ${syncBeat} - syncBar ${syncBar}`); // Log the updated syncBeat and syncBar
 };
+
