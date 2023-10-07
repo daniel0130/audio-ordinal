@@ -2,105 +2,106 @@
 
 let isArpeggiatorOn = false;
 let isArpeggiatorPaused = false;
-let awaitingFirstBeat = true;
+let nextArpNoteTimeout;
 
 const arpNotes = []; 
+
 
 const arpSequencerChannel = new BroadcastChannel('sequencerChannel');
 arpSequencerChannel.onmessage = function(event) {
     const type = event.data.type;
+    console.log(`[ARP] Received message: ${type} at ${new Date().toISOString()}`);
 
-    if (type === 'beat' && awaitingFirstBeat) {
-        awaitingFirstBeat = false;
-        playArpNotes();  
+    if (type === 'beat') {
+        
+            // Clear the timeout for the next arp note (if any)
+            clearTimeout(nextArpNoteTimeout);
+
+            // Play the next arp note in sync with the sequencer's beat
+            playNextArpNote();
+
+            // Schedule the next arp note
+            const tempo = parseFloat(document.getElementById('arpTempo').value);
+            const intervalDuration = 60 / tempo * 1000; // Convert BPM to milliseconds per beat
+            nextArpNoteTimeout = setTimeout(playNextArpNote, intervalDuration);
+        
     } else if (type === 'pause') {
         pauseArpeggiator();
     } else if (type === 'stop') {
         stopArpeggiator();
     } else if (type === 'resume') {
         startArpeggiator();
+    } else if (type === 'play') {
+        console.log(`[ARP] Play button pressed at ${new Date().toISOString()}`);
+        if (!isArpeggiatorOn && !isArpeggiatorPaused) {
+            playNextArpNote(); // Play the first note immediately
+            isArpeggiatorOn = true; // Set the arpeggiator to on
+        }
     }
 };
 
-function toggleArpeggiator() {
-    isArpeggiatorOn = !isArpeggiatorOn;
-    const arpButton = document.getElementById('arpToggle');
-    
-    if (isArpeggiatorOn) {
-        arpButton.innerText = "Stop Arpeggiator";
-        startArpeggiator();
-    } else {
-        arpButton.innerText = "Start Arpeggiator";
-        stopArpeggiator();
-    }
-}
-
-function startArpeggiator() {
-    if (isArpeggiatorPaused) {
-        isArpeggiatorPaused = false;
-    } else if (!awaitingFirstBeat) {
-        playArpNotes();
-    }
-}
-
 function playArpNotes() {
+    playNote(arpNotes[0]); // Immediately play the first note
+
     const tempo = parseFloat(document.getElementById('arpTempo').value);
-    const intervalDuration = 60 / tempo; // Convert BPM to seconds per beat
-
-    // Schedule the first note to play immediately
-    playNextArpNote();
-
-    // Use the Web Audio API's timing mechanism instead of setInterval
-    let nextTime = context.currentTime + intervalDuration;
+    const intervalDuration = 60 / tempo * 1000; // Convert BPM to milliseconds per beat
 
     function schedule() {
-        while (nextTime < context.currentTime + 0.1) {  // schedule notes for the next 100ms
-            playNextArpNote();
-            nextTime += intervalDuration;
-        }
-        window.requestAnimationFrame(schedule);
+        playNextArpNote();
+        setTimeout(schedule, intervalDuration);
     }
 
-    schedule();
+    // Delay the scheduling of the next arp note to synchronize with the next beat
+    const delay = intervalDuration - (new Date().getTime() - new Date('2023-10-07T21:58:20.130Z').getTime()) % intervalDuration;
+    setTimeout(schedule, delay);
+}
+
+function updateArpNotes(action, note, noteName) {
+    if (action === "add") {
+        arpNotes.push(note);
+        arpNoteNames.push(noteName);
+    } else if (action === "remove") {
+        let index = arpNotes.indexOf(note);
+        if (index !== -1) {
+            arpNotes.splice(index, 1);
+            arpNoteNames.splice(index, 1);
+        }
+    }
+    console.log(`[ARP] ${action} note: ${noteName}. Current arpNotes: [${arpNoteNames.join(", ")}]`);
 }
 
 function playNextArpNote() {
     if (arpNotes.length) {
         const pattern = document.getElementById('arpPattern').value;
         let noteToPlay;
+        let noteNameToPlay;
 
-        switch (pattern) {
-            case "up":
-                noteToPlay = arpNotes.shift();
-                arpNotes.push(noteToPlay);
-                break;
-            case "down":
-                noteToPlay = arpNotes.pop();
-                arpNotes.unshift(noteToPlay);
-                break;
-            case "random":
-                noteToPlay = arpNotes[Math.floor(Math.random() * arpNotes.length)];
-                break;
+        if (arpNotes.length === 1) {
+            noteToPlay = arpNotes[0];
+            noteNameToPlay = arpNoteNames[0];
+        } else {
+            switch (pattern) {
+                case "up":
+                    noteToPlay = arpNotes.shift();
+                    noteNameToPlay = arpNoteNames.shift();
+                    arpNotes.push(noteToPlay);
+                    arpNoteNames.push(noteNameToPlay);
+                    break;
+                case "down":
+                    noteToPlay = arpNotes.pop();
+                    noteNameToPlay = arpNoteNames.pop();
+                    arpNotes.unshift(noteToPlay);
+                    arpNoteNames.unshift(noteNameToPlay);
+                    break;
+                case "random":
+                    let randomIndex = Math.floor(Math.random() * arpNotes.length);
+                    noteToPlay = arpNotes[randomIndex];
+                    noteNameToPlay = arpNoteNames[randomIndex];
+                    break;
+            }
         }
 
         playMS10TriangleBass(noteToPlay);
+        console.log(`[ARP] Played note: ${noteNameToPlay} (Frequency: ${noteToPlay}) at ${new Date().toISOString()}`); 
     }
 }
-
-function pauseArpeggiator() {
-    isArpeggiatorPaused = true;
-    // Since we're not using setInterval, there's no clearInterval equivalent here.
-    // Pausing is handled by the isArpeggiatorPaused flag.
-}
-
-function stopArpeggiator() {
-    arpNotes.length = 0; // Clear the arpNotes array
-    isArpeggiatorPaused = false;
-}
-
-// window.addEventListener('focus', function() {
-//     if (context.state === 'suspended') {
-//         context.resume();
-//     }
-// });
-// This is just a basic example. You can add more functionality like adding/removing notes to arpNotes, changing patterns dynamically, etc.

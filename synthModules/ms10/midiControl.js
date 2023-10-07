@@ -3,6 +3,8 @@
 const A4_MIDI_NUMBER = 69;
 const A4_FREQUENCY = 440.0;
 
+const arpNoteNames = []; // parallel array to arpNotes
+
 if (navigator.requestMIDIAccess) {
     navigator.requestMIDIAccess()
         .then(onMIDISuccess, onMIDIFailure);
@@ -30,22 +32,27 @@ function onMIDIMessage(message) {
         case 144: // noteOn
             if (velocity > 0) {
                 let frequency = midiNoteToFrequency(midiNote);
+                let noteName = window.frequencyToNoteName(frequency);
+                console.log(`[MIDI] noteOn: MIDI note ${midiNote}, Note: ${noteName}, Frequency: ${frequency}`);
                 if (isArpeggiatorOn) {
+                    playMS10TriangleBass(frequency, velocity / 127);
+
                     arpNotes.push(frequency);
-                    if (awaitingFirstBeat) {
-                        startArpeggiator();
-                    }
-                } else {
-                    playMS10TriangleBass(frequency, velocity / 127);  // Normalize velocity to [0, 1]
+                    arpNoteNames.push(noteName); // parallel addition
+                    console.log(`[MIDI] Added note to arpNotes: ${midiNote}. Current arpNotes: [${arpNoteNames}]`);
                 }
             }
             break;
         case 128: // noteOff
             if (isArpeggiatorOn) {
                 let frequency = midiNoteToFrequency(midiNote);
+                let noteName = window.frequencyToNoteName(frequency);
+                console.log(`[MIDI] noteOff: MIDI note ${midiNote}, Note: ${noteName}, Frequency: ${frequency}`);
                 let index = arpNotes.indexOf(frequency);
                 if (index !== -1) {
                     arpNotes.splice(index, 1);
+                    arpNoteNames.splice(index, 1); // parallel removal
+                    console.log(`[MIDI] Removed note from arpNotes: ${midiNote}. Current arpNotes: [${arpNoteNames}]`);
                 }
             }
             break;

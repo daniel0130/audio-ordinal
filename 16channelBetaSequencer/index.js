@@ -485,6 +485,7 @@ channels.forEach((channel, index) => {
 
             if (!isPlaying) {
                 startScheduler();
+                emitPlay(); 
                 playButton.classList.add('selected');
                 stopButton.classList.remove('selected');
                 isPlaying = true;

@@ -12,6 +12,7 @@ document.addEventListener('keydown', function(event) {
     const midiNote = keyToMidiNote[event.code];
     if (midiNote) {
         const frequency = Math.pow(2, (midiNote - 69) / 12) * 440;
+        console.log(`[KEYDOWN] Key: ${event.code}, MIDI note: ${midiNote}, Frequency: ${frequency}`);
         playMS10TriangleBass(frequency);
     }
 });
@@ -19,6 +20,7 @@ document.addEventListener('keydown', function(event) {
 document.addEventListener('keyup', function(event) {
     const midiNote = keyToMidiNote[event.code];
     if (midiNote) {
+        console.log(`[KEYUP] Key: ${event.code}, MIDI note: ${midiNote}`);
         stopMS10TriangleBass();  // You'll need to implement this function to stop the corresponding oscillator.
     }
 });
