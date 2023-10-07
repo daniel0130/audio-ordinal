@@ -98,5 +98,9 @@ function stopArpeggiator() {
     isArpeggiatorPaused = false;
 }
 
-
+// window.addEventListener('focus', function() {
+//     if (context.state === 'suspended') {
+//         context.resume();
+//     }
+// });
 // This is just a basic example. You can add more functionality like adding/removing notes to arpNotes, changing patterns dynamically, etc.
