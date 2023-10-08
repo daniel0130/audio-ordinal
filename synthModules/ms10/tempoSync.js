@@ -35,22 +35,28 @@ sequencerChannel.onmessage = function(event) {
         // The timing will adjust smoothly due to the changes in the arpeggiator.js
     
         console.log(`Updated BPM: ${updatedBPM}`);
-    } else if (type === 'pause') {
+   } else if (type === 'pause') {
         if (isArpeggiatorOn) {
+            console.log(`[MS10] Stopping arpeggiator due to pause message at ${new Date().toISOString()}`);
             stopArpeggiator();
         }
     } else if (type === 'resume') {
         if (!isArpeggiatorOn) {
+            console.log(`[MS10] Starting arpeggiator due to resume message at ${new Date().toISOString()}`);
             startArpeggiator();
         }
     } else if (type === 'stop') {
         if (isArpeggiatorOn) {
+            console.log(`[MS10] Stopping arpeggiator due to stop message at ${new Date().toISOString()}`);
             stopArpeggiator();
         }
+        console.log(`[MS10] Resetting syncBeat and syncBar due to stop message at ${new Date().toISOString()}`);
         syncBeat = 1; // Reset syncBeat
         syncBar = 1; // Reset syncBar
+    } else if (type === 'play') {
+        console.log(`[MS10] Playing arpeggiator due to play message at ${new Date().toISOString()}`);
+        playArpeggiator();
     }
 
     console.log(`syncBeat ${syncBeat} - syncBar ${syncBar}`); // Log the updated syncBeat and syncBar
 };
-
