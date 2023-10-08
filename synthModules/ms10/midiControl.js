@@ -24,40 +24,41 @@ function onMIDIFailure() {
 }
 
 function onMIDIMessage(message) {
-    let command = message.data[0];
+    console.log("Received MIDI message:", message.data);
+
+    let command = message.data[0] & 0xF0; // Mask the channel bits to get the message type
     let midiNote = message.data[1];
     let velocity = (message.data.length > 2) ? message.data[2] : 0;
 
     switch (command) {
-        case 144: // noteOn
+        case 0x90: // noteOn for all channels
             if (velocity > 0) {
                 let frequency = midiNoteToFrequency(midiNote);
-                let noteName = window.frequencyToNoteName(frequency);
-                console.log(`[MIDI] noteOn: MIDI note ${midiNote}, Note: ${noteName}, Frequency: ${frequency}`);
+                console.log(`Note On. MIDI note: ${midiNote}, Frequency: ${frequency}`);
                 if (isArpeggiatorOn) {
-                    playMS10TriangleBass(frequency, velocity / 127);
-
                     arpNotes.push(frequency);
-                    arpNoteNames.push(noteName); // parallel addition
-                    console.log(`[MIDI] Added note to arpNotes: ${midiNote}. Current arpNotes: [${arpNoteNames}]`);
+                  
+                } else {
+                    playMS10TriangleBass(frequency, velocity / 127);  // Normalize velocity to [0, 1]
                 }
             }
             break;
-        case 128: // noteOff
+        case 0x80: // noteOff for all channels
+            console.log(`Note Off. MIDI note: ${midiNote}`);
             if (isArpeggiatorOn) {
                 let frequency = midiNoteToFrequency(midiNote);
-                let noteName = window.frequencyToNoteName(frequency);
-                console.log(`[MIDI] noteOff: MIDI note ${midiNote}, Note: ${noteName}, Frequency: ${frequency}`);
                 let index = arpNotes.indexOf(frequency);
                 if (index !== -1) {
                     arpNotes.splice(index, 1);
-                    arpNoteNames.splice(index, 1); // parallel removal
-                    console.log(`[MIDI] Removed note from arpNotes: ${midiNote}. Current arpNotes: [${arpNoteNames}]`);
                 }
             }
             break;
+        default:
+            console.log(`Unhandled MIDI message type: ${command}`);
+            break;
     }
 }
+
 
 function midiNoteToFrequency(midiNote) {
     if (midiNote < 0 || midiNote > 127) {

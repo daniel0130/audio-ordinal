@@ -35,6 +35,8 @@ function emitStop() {
 function emitPlay() {
     console.log(`[timingMessages ${new Date().toISOString()}] Emitting play message`);
     emitMessage('play', {});
+    emitMessage('beat', { beat: beatCount, bar: barCount });
+
 }
 
 
