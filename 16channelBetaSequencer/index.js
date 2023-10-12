@@ -598,6 +598,17 @@ const loadPreset = (preset) => {
 
 };
 
+// Fetch and load the allSequencesEmbedded.json file during initialization
+fetch('16channelBetaSequencer/allSequencesEmbedded.json')
+    .then(response => response.json())
+    .then(data => {
+        importSettings(JSON.stringify(data));
+        loadSequence(sequenceCount);  // Ensure the current sequence is loaded
+    })
+    .catch(error => {
+        console.error("Error loading the allSequencesEmbedded.json file:", error);
+    });
+
 
 // Load a preset when the page loads
 const presetToLoadOnPageLoad = 'preset1';
