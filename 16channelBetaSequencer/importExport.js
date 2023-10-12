@@ -1,6 +1,8 @@
 // importExport.js
 
 let newJsonImport = false;
+let liveSequences = [];  // New array to keep track of "live" sequences
+
 
 
 const EMPTY_CHANNEL = {
@@ -19,19 +21,8 @@ function exportSettings() {
 
     let allSequencesSettings = [];
 
-    // First, update the current sequence in the sequences array with the channelSettings
-    sequences[currentSequence - 1] = channelSettings;
-    sequences.forEach((sequence, sequenceIndex) => {
-        console.log(`Exporting sequence ${sequenceIndex + 1}...`);
-        sequence.forEach((channel, channelIndex) => {
-            console.log(`exportSettings: Exporting URL for sequence ${sequenceIndex + 1}, channel ${channelIndex + 1}: ${channel[0]}`);
-            // ... existing channel export logic ...
-        });
-    });
-
-    for (let seqIndex = 0; seqIndex < sequences.length; seqIndex++) {
+    for (let seqIndex of liveSequences) {  // Only export "live" sequences
         const sequence = sequences[seqIndex];
-        let hasTriggers = false;
         let settings = {
             name: `Sequence_${seqIndex + 1}`,
             bpm: sequenceBPMs[seqIndex],
@@ -40,11 +31,7 @@ function exportSettings() {
 
         for (let i = 0; i < 16; i++) {
             let channelSteps = sequence[i] || [];
-            
-            // Fetch URL from collectedURLsForSequences or set as an empty string
             let url = sequence[i] && sequence[i][0] ? sequence[i][0] : "";
-            console.log(`exportSettings: Exporting URL for sequence ${seqIndex + 1}, channel ${i + 1}:`, url);
-
             let triggers = [];
             channelSteps.forEach((stepState, stepIndex) => {
                 if (stepState && stepIndex !== 0) {
@@ -53,9 +40,6 @@ function exportSettings() {
             });
 
             let mute = channels[i] && channels[i].dataset ? channels[i].dataset.muted === 'true' : false;
-            if (triggers.length > 0) {
-                hasTriggers = true;  // The sequence has triggers if at least one channel has triggers
-            }
             settings.channels.push({
                 url: url,
                 mute: mute,
@@ -63,9 +47,7 @@ function exportSettings() {
             });
         }
 
-        if (hasTriggers) {
-            allSequencesSettings.push(settings);
-        }
+        allSequencesSettings.push(settings);
     }
 
     let filename = `Audional_Sequencer_Settings.json`;
@@ -81,6 +63,7 @@ function importSettings(settings) {
         updateMuteState(channel, false); // unmute
         setChannelVolume(channelIndex, 1); // set volume to 1
     });
+
 
     let parsedSettings;
     let sequenceNames = [];
@@ -176,9 +159,16 @@ function importSettings(settings) {
                 console.error("One of the sequences in the imported array doesn't match the expected format.");
                 return null;
             }
+
+            
         }).filter(Boolean);
         console.log("Final sequenceBPMs:", sequenceBPMs);
         console.log("Final sequences:", sequences);
+        
+        // Mark all loaded sequences as "live"
+        for (let i = 0; i < sequences.length; i++) {
+            liveSequences.push(i);
+        }
     }
 
 
@@ -214,7 +204,12 @@ function importSettings(settings) {
     console.log("Import settings completed.");
 }
 
-
+// Function to mark a sequence as "live" when edited
+function markSequenceAsLive(seqIndex) {
+    if (!liveSequences.includes(seqIndex)) {
+        liveSequences.push(seqIndex);
+    }
+}
 
 function convertSequenceSettings(settings) {
     let channels = settings.channels;
@@ -242,5 +237,3 @@ function convertChannelToStepSettings(channel) {
 
     return stepSettings;
 }
-
-
