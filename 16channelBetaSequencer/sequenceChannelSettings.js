@@ -31,9 +31,6 @@ function updateChannelURLsForSequence() {
     });
 }
 
-
-
-
 // Create a two-dimensional array to store the URLs for each channel for every sequence
 var channelURLs = Array(totalSequenceCount).fill().map(() => Array(16).fill(''));
 
@@ -60,63 +57,12 @@ function addURLsToSequenceArrays(urls) {
     console.log("Updated channelURLs:", channelURLs);
 }
 
-// Call this function whenever the sequence changes
-function changeSequence(seq) {
-  currentSequence = seq;
-  onSequenceOrDataChange();
-}
+
 
 // Assuming your load button calls the loadJson function, make sure to also call onSequenceOrDataChange after loading new JSON data
 
-
-
 // Log initial channel settings
 console.log("Initial channel settings:", channelSettings);
-
-
-function loadChannelSettingsFromPreset(preset) {
-    preset.channels.forEach((channelData, channelIndex) => {
-        let stepSettings = [null].concat(Array(64).fill(false));  // Add placeholder for 0th index
-        channelData.triggers.forEach(trigger => {
-            // Account for 1-indexing
-            stepSettings[trigger] = true;
-        });
-        channelSettings[channelIndex] = stepSettings;
-        console.log(`Loaded settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
-        
-        // Fetch audio data
-        if (channelData.url) {
-            const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"] .load-sample-button`);
-            fetchAudio(channelData.url, channelIndex, loadSampleButton);
-            console.log(`Channel-${channelIndex + 1} fetchAudio called`);
-        }
-    });
-
-    // Save the loaded preset to the current sequence
-    saveCurrentSequence(currentSequence);
-    console.log("loadChannelSettingsFromPreset: After loadChannelSettingsFromPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
-
-}
-
-
-/**
- * Updates a specific step's state for a given channel.
- * @param {number} channelIndex - The index of the channel (0 to 15).
- * @param {number} stepIndex - The index of the step (0 to 63).
- * @param {boolean} state - The new state of the step (true for on, false for off).
- */
-function updateStep(channelIndex, stepIndex, state) {
-    // Account for 1-indexing
-    channelSettings[channelIndex][stepIndex + 1] = state;
-    
-    // Log updated settings for the specific channel after the update
-    updateSequenceData({
-        channelIndex: channelIndex,
-        stepSettings: channelSettings[channelIndex]
-    });
-    console.log(`Updated settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
-}
-
 
 /**
  * Gets the current settings for a specific channel.

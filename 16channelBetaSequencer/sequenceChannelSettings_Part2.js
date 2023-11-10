@@ -1,12 +1,5 @@
 // sequenceChannelSettings_Part2.js
 
-function saveCurrentSequence(sequenceNumber) {
-    sequences[sequenceNumber - 1] = [...channelSettings];
-    console.log(`from saveCurrentSequence: Saved settings for Sequence ${sequenceNumber}:`, sequences[sequenceNumber - 1]);
-    const urlsForSavedSequence = channelSettings.map(channelData => channelData[0]);
-    console.log(`from saveCurrentSequence: Saved URLs for Sequence ${sequenceNumber}:`, urlsForSavedSequence);
-
-}
 
 
 function loadSequence(sequenceNumber) {
@@ -76,6 +69,15 @@ function loadSequence(sequenceNumber) {
 }
 
 
+function saveCurrentSequence(sequenceNumber) {
+    sequences[sequenceNumber - 1] = [...channelSettings];
+    console.log(`from saveCurrentSequence: Saved settings for Sequence ${sequenceNumber}:`, sequences[sequenceNumber - 1]);
+    const urlsForSavedSequence = channelSettings.map(channelData => channelData[0]);
+    console.log(`from saveCurrentSequence: Saved URLs for Sequence ${sequenceNumber}:`, urlsForSavedSequence);
+
+}
+
+
 function loadNextSequence() {
     if (currentSequence < totalSequenceCount) {
         // Save current sequence's settings
@@ -98,7 +100,6 @@ function loadNextSequence() {
         console.warn("You've reached the last sequence.");
     }
 }
-
 
 function updateUIForSequence(sequenceNumber) {
     if (sequenceNumber > 0 && sequenceNumber <= sequences.length) {
@@ -132,11 +133,62 @@ function updateUIForSequence(sequenceNumber) {
     });
 }
 
+// Call this function whenever the sequence changes
+function changeSequence(seq) {
+    currentSequence = seq;
+    onSequenceOrDataChange();
+  }
+
+
+  function loadChannelSettingsFromPreset(preset) {
+    preset.channels.forEach((channelData, channelIndex) => {
+        let stepSettings = [null].concat(Array(64).fill(false));  // Add placeholder for 0th index
+        channelData.triggers.forEach(trigger => {
+            // Account for 1-indexing
+            stepSettings[trigger] = true;
+        });
+        channelSettings[channelIndex] = stepSettings;
+        console.log(`Loaded settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
+        
+        // Fetch audio data
+        if (channelData.url) {
+            const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"] .load-sample-button`);
+            fetchAudio(channelData.url, channelIndex, loadSampleButton);
+            console.log(`Channel-${channelIndex + 1} fetchAudio called`);
+        }
+    });
+
+    // Save the loaded preset to the current sequence
+    saveCurrentSequence(currentSequence);
+    console.log("loadChannelSettingsFromPreset: After loadChannelSettingsFromPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+
+}
+
+
+/**
+ * Updates a specific step's state for a given channel.
+ * @param {number} channelIndex - The index of the channel (0 to 15).
+ * @param {number} stepIndex - The index of the step (0 to 63).
+ * @param {boolean} state - The new state of the step (true for on, false for off).
+ */
+function updateStep(channelIndex, stepIndex, state) {
+    // Account for 1-indexing
+    channelSettings[channelIndex][stepIndex + 1] = state;
+    
+    // Log updated settings for the specific channel after the update
+    updateSequenceData({
+        channelIndex: channelIndex,
+        stepSettings: channelSettings[channelIndex]
+    });
+    console.log(`Updated settings for Channel-${channelIndex + 1}:`, channelSettings[channelIndex]);
+}
+
+
+
 // Listen for the custom event and then load and display sequence 1
 window.addEventListener('setupComplete', function() {
     loadAndDisplaySequence(1);
 });
-
 
 // Use loadNextSequence inside the event listener
 document.getElementById('next-sequence').addEventListener('click', loadNextSequence);
