@@ -1105,7 +1105,7 @@ var app = (function () {
     	];
     }
 
-    class AudioTrimmer extends SvelteComponentDev {
+	window.AudioTrimmer = class extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
 
@@ -1232,5 +1232,3 @@ var app = (function () {
     return app;
 
 })();
-//# sourceMappingURL=bundle.js.map
-window.AudioTrimmer = AudioTrimmer;
