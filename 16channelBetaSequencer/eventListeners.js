@@ -93,3 +93,39 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+// Assuming each channel has a button with a class 'open-audio-trimmer'
+document.querySelectorAll('.open-audio-trimmer').forEach(button => {
+    button.addEventListener('click', function(event) {
+        // Get the channel element. This depends on your HTML structure.
+        const channelElement = event.target.closest('.channel');
+        const ordinalId = channelElement.dataset.id; // Or however you determine the ordinal ID
+
+        // Display the modal
+        const modal = document.getElementById('audio-trimmer-modal');
+        modal.style.display = 'block';
+
+        // Instantiate the Audio Trimmer
+        const audioTrimmer = new AudioTrimmer({
+            target: document.getElementById('audio-trimmer-container'),
+            props: {
+                externalAudioContext: audioContext, // Assuming audioContext is globally accessible
+                externalOrdinalId: ordinalId
+            }
+        });
+    });
+});
+
+
+// Close the modal when the user clicks on <span> (x)
+document.querySelector('.close-button').addEventListener('click', function() {
+    document.getElementById('audio-trimmer-modal').style.display = 'none';
+});
+
+// Close the modal when the user clicks anywhere outside of the modal
+window.onclick = function(event) {
+    const modal = document.getElementById('audio-trimmer-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
+

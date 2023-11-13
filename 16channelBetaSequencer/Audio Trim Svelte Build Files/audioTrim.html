@@ -8,9 +8,9 @@
 </head>
 <body>
     <div id="audio-trimmer-container"></div>
+    <script src="audioTrim.js"></script>
 
-    <script type="module">
-        import AudioTrimmer from './audioTrim.js';
+    <script>
 
         const container = document.getElementById('audio-trimmer-container');
         const audioTrimmer = new AudioTrimmer({
@@ -22,6 +22,8 @@
                 // externalOrdinalId: 'some-id'
             }
         });
+
+
     </script>
 </body>
 </html>

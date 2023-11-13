@@ -1233,3 +1233,4 @@ var app = (function () {
 
 })();
 //# sourceMappingURL=bundle.js.map
+window.AudioTrimmer = AudioTrimmer;
