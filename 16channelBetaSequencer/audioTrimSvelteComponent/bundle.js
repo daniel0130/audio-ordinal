@@ -581,48 +581,48 @@ var app = (function () {
     			t14 = space();
     			button3 = element("button");
     			button3.textContent = "Loop Selection";
-    			add_location(h1, file$1, 235, 0, 7010);
+    			add_location(h1, file$1, 256, 0, 7605);
     			attr_dev(input0, "type", "text");
     			attr_dev(input0, "placeholder", "Enter Ordinal ID");
-    			add_location(input0, file$1, 236, 0, 7033);
-    			add_location(button0, file$1, 237, 0, 7109);
+    			add_location(input0, file$1, 257, 0, 7628);
+    			add_location(button0, file$1, 258, 0, 7704);
     			attr_dev(canvas0, "width", "4000");
     			attr_dev(canvas0, "height", "800");
     			attr_dev(canvas0, "class", "waveform-canvas svelte-14j8dif");
-    			add_location(canvas0, file$1, 240, 4, 7198);
+    			add_location(canvas0, file$1, 261, 4, 7793);
     			attr_dev(canvas1, "width", "4000");
     			attr_dev(canvas1, "height", "800");
     			attr_dev(canvas1, "class", "playback-canvas svelte-14j8dif");
-    			add_location(canvas1, file$1, 241, 4, 7289);
+    			add_location(canvas1, file$1, 262, 4, 7884);
     			attr_dev(div0, "class", "dimmed svelte-14j8dif");
     			set_style(div0, "width", /*startDimmedWidth*/ ctx[4]);
     			set_style(div0, "left", "0");
-    			add_location(div0, file$1, 242, 4, 7388);
+    			add_location(div0, file$1, 263, 4, 7983);
     			attr_dev(div1, "class", "dimmed svelte-14j8dif");
     			set_style(div1, "width", /*endDimmedWidth*/ ctx[5]);
     			set_style(div1, "right", "0");
     			set_style(div1, "left", "auto");
-    			add_location(div1, file$1, 243, 4, 7463);
+    			add_location(div1, file$1, 264, 4, 8058);
     			attr_dev(div2, "class", "waveform-container svelte-14j8dif");
-    			add_location(div2, file$1, 239, 0, 7161);
+    			add_location(div2, file$1, 260, 0, 7756);
     			attr_dev(input1, "type", "range");
     			attr_dev(input1, "class", "slider svelte-14j8dif");
     			attr_dev(input1, "min", "0");
     			attr_dev(input1, "max", /*maxDuration*/ ctx[0]);
     			attr_dev(input1, "step", "0.01");
-    			add_location(input1, file$1, 246, 0, 7553);
+    			add_location(input1, file$1, 267, 0, 8148);
     			attr_dev(input2, "type", "range");
     			attr_dev(input2, "class", "slider svelte-14j8dif");
     			attr_dev(input2, "min", "0");
     			attr_dev(input2, "max", /*maxDuration*/ ctx[0]);
     			attr_dev(input2, "step", "0.01");
-    			add_location(input2, file$1, 247, 0, 7659);
-    			add_location(button1, file$1, 249, 0, 7764);
-    			add_location(button2, file$1, 250, 0, 7807);
+    			add_location(input2, file$1, 268, 0, 8254);
+    			add_location(button1, file$1, 270, 0, 8359);
+    			add_location(button2, file$1, 271, 0, 8402);
     			attr_dev(button3, "class", "loop-button svelte-14j8dif");
     			toggle_class(button3, "off", !/*isLooping*/ ctx[6]);
     			toggle_class(button3, "on", /*isLooping*/ ctx[6]);
-    			add_location(button3, file$1, 252, 0, 7851);
+    			add_location(button3, file$1, 273, 0, 8446);
     		},
     		l: function claim(nodes) {
     			throw new Error_1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -637,10 +637,10 @@ var app = (function () {
     			insert_dev(target, t4, anchor);
     			insert_dev(target, div2, anchor);
     			append_dev(div2, canvas0);
-    			/*canvas0_binding*/ ctx[19](canvas0);
+    			/*canvas0_binding*/ ctx[20](canvas0);
     			append_dev(div2, t5);
     			append_dev(div2, canvas1);
-    			/*canvas1_binding*/ ctx[20](canvas1);
+    			/*canvas1_binding*/ ctx[21](canvas1);
     			append_dev(div2, t6);
     			append_dev(div2, div0);
     			append_dev(div2, t7);
@@ -660,12 +660,12 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[18]),
+    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[19]),
     					listen_dev(button0, "click", /*loadSample*/ ctx[11], false, false, false, false),
-    					listen_dev(input1, "change", /*input1_change_input_handler*/ ctx[21]),
-    					listen_dev(input1, "input", /*input1_change_input_handler*/ ctx[21]),
-    					listen_dev(input2, "change", /*input2_change_input_handler*/ ctx[22]),
-    					listen_dev(input2, "input", /*input2_change_input_handler*/ ctx[22]),
+    					listen_dev(input1, "change", /*input1_change_input_handler*/ ctx[22]),
+    					listen_dev(input1, "input", /*input1_change_input_handler*/ ctx[22]),
+    					listen_dev(input2, "change", /*input2_change_input_handler*/ ctx[23]),
+    					listen_dev(input2, "input", /*input2_change_input_handler*/ ctx[23]),
     					listen_dev(button1, "click", /*playAudio*/ ctx[13], false, false, false, false),
     					listen_dev(button2, "click", /*stopAudio*/ ctx[14], false, false, false, false),
     					listen_dev(button3, "click", /*toggleLoop*/ ctx[12], false, false, false, false)
@@ -721,8 +721,8 @@ var app = (function () {
     			if (detaching) detach_dev(button0);
     			if (detaching) detach_dev(t4);
     			if (detaching) detach_dev(div2);
-    			/*canvas0_binding*/ ctx[19](null);
-    			/*canvas1_binding*/ ctx[20](null);
+    			/*canvas0_binding*/ ctx[20](null);
+    			/*canvas1_binding*/ ctx[21](null);
     			if (detaching) detach_dev(t8);
     			if (detaching) detach_dev(input1);
     			if (detaching) detach_dev(t9);
@@ -779,6 +779,19 @@ var app = (function () {
     	validate_slots('AudioTrimmer', slots, []);
     	let { externalOrdinalId = '' } = $$props;
     	let { externalAudioContext } = $$props;
+    	let { channelIndex } = $$props;
+
+    	// In your Svelte component
+function storeTrimSettings() {
+    console.log(`Storing trim settings for channel ${channelIndex}`);
+    window.trimSettings.update({
+        [channelIndex]: {
+            start: $startSliderValue,
+            end: $endSliderValue
+        }
+    });
+    console.log(`Trim settings stored successfully for channel ${channelIndex}`);
+}
 
     	// Use the external AudioContext if provided, otherwise create a new one
     	let audioContext = externalAudioContext || new (window.AudioContext || window.webkitAudioContext)();
@@ -811,10 +824,7 @@ var app = (function () {
     			sourceNode.disconnect();
     		}
 
-    		// Close the audio context only if it was created internally
-    		if (!externalAudioContext) {
-    			audioContext.close();
-    		}
+    		audioContext.close();
     	});
 
     	function decodeAudioData(audioData) {
@@ -844,7 +854,7 @@ var app = (function () {
     				arrayBuffer = await response.arrayBuffer();
     			}
 
-    			$$invalidate(17, audioBuffer = await decodeAudioData(arrayBuffer));
+    			$$invalidate(18, audioBuffer = await decodeAudioData(arrayBuffer));
     			startSliderValue.set(0);
     			endSliderValue.set(audioBuffer.duration);
     			drawWaveform();
@@ -950,9 +960,13 @@ var app = (function () {
     		if (externalAudioContext === undefined && !('externalAudioContext' in $$props || $$self.$$.bound[$$self.$$.props['externalAudioContext']])) {
     			console_1.warn("<AudioTrimmer> was created without expected prop 'externalAudioContext'");
     		}
+
+    		if (channelIndex === undefined && !('channelIndex' in $$props || $$self.$$.bound[$$self.$$.props['channelIndex']])) {
+    			console_1.warn("<AudioTrimmer> was created without expected prop 'channelIndex'");
+    		}
     	});
 
-    	const writable_props = ['externalOrdinalId', 'externalAudioContext'];
+    	const writable_props = ['externalOrdinalId', 'externalAudioContext', 'channelIndex'];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<AudioTrimmer> was created with unknown prop '${key}'`);
@@ -990,14 +1004,18 @@ var app = (function () {
     	$$self.$$set = $$props => {
     		if ('externalOrdinalId' in $$props) $$invalidate(15, externalOrdinalId = $$props.externalOrdinalId);
     		if ('externalAudioContext' in $$props) $$invalidate(16, externalAudioContext = $$props.externalAudioContext);
+    		if ('channelIndex' in $$props) $$invalidate(17, channelIndex = $$props.channelIndex);
     	};
 
     	$$self.$capture_state = () => ({
     		externalOrdinalId,
     		externalAudioContext,
+    		channelIndex,
     		onMount,
     		onDestroy,
     		writable,
+    		trimSettings,
+    		storeTrimSettings,
     		audioContext,
     		audioBuffer,
     		sourceNode,
@@ -1034,8 +1052,9 @@ var app = (function () {
     	$$self.$inject_state = $$props => {
     		if ('externalOrdinalId' in $$props) $$invalidate(15, externalOrdinalId = $$props.externalOrdinalId);
     		if ('externalAudioContext' in $$props) $$invalidate(16, externalAudioContext = $$props.externalAudioContext);
+    		if ('channelIndex' in $$props) $$invalidate(17, channelIndex = $$props.channelIndex);
     		if ('audioContext' in $$props) audioContext = $$props.audioContext;
-    		if ('audioBuffer' in $$props) $$invalidate(17, audioBuffer = $$props.audioBuffer);
+    		if ('audioBuffer' in $$props) $$invalidate(18, audioBuffer = $$props.audioBuffer);
     		if ('sourceNode' in $$props) sourceNode = $$props.sourceNode;
     		if ('startTime' in $$props) startTime = $$props.startTime;
     		if ('isPlaying' in $$props) isPlaying = $$props.isPlaying;
@@ -1055,7 +1074,7 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*audioBuffer, $startSliderValue, maxDuration, $endSliderValue*/ 131079) {
+    		if ($$self.$$.dirty[0] & /*audioBuffer, $startSliderValue, maxDuration, $endSliderValue*/ 262151) {
     			if (audioBuffer) {
     				$$invalidate(0, maxDuration = audioBuffer.duration);
     				$$invalidate(4, startDimmedWidth = `${Math.max(0, $startSliderValue / maxDuration) * 100}%`);
@@ -1067,6 +1086,10 @@ var app = (function () {
 
     				if ($endSliderValue <= $startSliderValue) {
     					endSliderValue.set($startSliderValue + 0.01);
+    				}
+
+    				if ($startSliderValue !== undefined && $endSliderValue !== undefined) {
+    					storeTrimSettings();
     				}
     			}
     		}
@@ -1096,6 +1119,7 @@ var app = (function () {
     		stopAudio,
     		externalOrdinalId,
     		externalAudioContext,
+    		channelIndex,
     		audioBuffer,
     		input0_input_handler,
     		canvas0_binding,
@@ -1117,7 +1141,8 @@ var app = (function () {
     			safe_not_equal,
     			{
     				externalOrdinalId: 15,
-    				externalAudioContext: 16
+    				externalAudioContext: 16,
+    				channelIndex: 17
     			},
     			null,
     			[-1, -1]
@@ -1144,6 +1169,14 @@ var app = (function () {
     	}
 
     	set externalAudioContext(value) {
+    		throw new Error_1("<AudioTrimmer>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get channelIndex() {
+    		throw new Error_1("<AudioTrimmer>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set channelIndex(value) {
     		throw new Error_1("<AudioTrimmer>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -1232,3 +1265,4 @@ var app = (function () {
     return app;
 
 })();
+//# sourceMappingURL=bundle.js.map

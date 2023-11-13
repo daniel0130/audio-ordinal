@@ -176,5 +176,22 @@
 <script src="16channelBetaSequencer/audioUtils.js"></script>
 <script src="16channelBetaSequencer/importExport.js"></script>
 <script src="16channelBetaSequencer/index.js"></script>
+
+<script>
+    // Define trimSettings globally
+    window.trimSettings = (function() {
+        let settings = {};
+
+        function update(newSettings) {
+            settings = { ...settings, ...newSettings };
+        }
+
+        function get(channelIndex) {
+            return settings[channelIndex] || { start: 0, end: 100 };
+        }
+
+        return { update, get };
+    })();
+</script>
 </body>
 </html>

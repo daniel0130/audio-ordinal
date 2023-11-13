@@ -117,12 +117,23 @@ function playSound(channel, currentStep) {
       const source = audioContext.createBufferSource();
       source.buffer = audioBuffer;
       const channelIndex = parseInt(channel.dataset.id.split('-')[1]) - 1;
+
+      // Use trim settings if available, with validation
+      let trimStart = parseFloat(channel.dataset.trimStart) || 0;
+      let trimEnd = parseFloat(channel.dataset.trimEnd) || audioBuffer.duration;
+      trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
+      trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
+      const duration = trimEnd - trimStart;
+
       source.connect(gainNodes[channelIndex]);
       gainNodes[channelIndex].connect(audioContext.destination);
-      source.start();
+
+      // Start playback at trimStart and play for the duration of trimEnd - trimStart
+      source.start(0, trimStart, duration);
     }
   }
 }
+
 
 async function playAuditionedSample(url) {
   try {
