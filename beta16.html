@@ -3,6 +3,7 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="16channelBetaSequencer/styles.css">
+    <link rel="stylesheet" type="text/css" href="16channelBetaSequencer/audioTrimSvelteComponent/bundle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    
 </head>
@@ -29,7 +30,7 @@
                     <div class="bpm-display" id="bpm-display">105</div>
                     <span class="tooltiptext">Drag to adjust the BPM (Beats Per Minute) of the sequence.</span>
                 </div>
-                
+
             </h1>
             <div class="subtext-container">
                 <p class="subtext centered-text">
@@ -41,6 +42,11 @@
                     <div class="channel">
                         <button class="load-sample-button tooltip" title="Load New Audional">Load New Audional
                             <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+                        </button>
+                        <!-- Open Audio Trimmer Button for each channel -->
+                        <button class="open-audio-trimmer tooltip" style="background-color: blue; font-weight: bold;">
+                            T
+                            <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
                         </button>
                         
                         <button class="control-button clear-button tooltip">
@@ -66,6 +72,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <!-- Modal Structure -->
+                <div id="audio-trimmer-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <div id="audio-trimmer-container"></div>
                     </div>
                 </div>
             </main>
@@ -144,6 +157,9 @@
     <input type="file" id="load-file-input" style="display: none" accept=".json">
 </div>
 
+<script src="16channelBetaSequencer/audioTrimSvelteComponent/LocalStorageUtils.js"></script>
+<script src="16channelBetaSequencer/audioTrimSvelteComponent/audioTrimSettingsLocalStorage.js"></script>
+<script src="16channelBetaSequencer/audioTrimSvelteComponent/bundle.js"></script>
 <script src="16channelBetaSequencer/updateSequenceData.js"></script>
 <script src="16channelBetaSequencer/quickplayButtons.js"></script> <!-- Newly added external script link -->
 <script src="16channelBetaSequencer/copyAndPaste.js"></script>
@@ -163,10 +179,21 @@
 <script src="16channelBetaSequencer/importExport.js"></script>
 <script src="16channelBetaSequencer/index.js"></script>
 
+<script>
+    // Define trimSettings globally
+    window.trimSettings = (function() {
+        let settings = {};
 
+        function update(newSettings) {
+            settings = { ...settings, ...newSettings };
+        }
 
+        function get(channelIndex) {
+            return settings[channelIndex] || { start: 0, end: 100 };
+        }
 
-
+        return { update, get };
+    })();
+</script>
 </body>
-
 </html>
