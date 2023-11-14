@@ -104,7 +104,7 @@ document.querySelectorAll('.open-audio-trimmer').forEach(button => {
             return;
         }
 
-        // Extract the ID from the originalUrl
+        // Extract the ID from the originalUrl for the audio sample
         const originalUrl = channelElement.dataset.originalUrl;
         if (!originalUrl) {
             console.error('Original URL not found on the channel element');
@@ -112,6 +112,18 @@ document.querySelectorAll('.open-audio-trimmer').forEach(button => {
         }
         const ordinalId = originalUrl.split('/').pop();
         console.log('Ordinal ID:', ordinalId);
+
+        // Use the ID of the channel element as the channel number
+        const channelNumber = channelElement.id;
+        if (!channelNumber) {
+            console.error('Channel number not found on the channel element');
+            return;
+        }
+        console.log('Channel Number:', channelNumber);
+
+        // Retrieve trim settings for the channel
+        const trimSettings = getTrimSettings(channelNumber);
+        console.log('Retrieved trim settings for channel:', channelNumber, trimSettings);
 
         // Display the modal
         const modal = document.getElementById('audio-trimmer-modal');
@@ -127,17 +139,20 @@ document.querySelectorAll('.open-audio-trimmer').forEach(button => {
         trimmerContainer.innerHTML = ''; // Clear the container
 
         // Instantiate the Audio Trimmer
-        
         const audioTrimmer = new AudioTrimmer({
             target: trimmerContainer,
             props: {
                 externalAudioContext: audioContext,
-                externalOrdinalId: ordinalId
+                externalOrdinalId: ordinalId,
+                channelIndex: channelNumber,
+                initialStartValue: trimSettings ? trimSettings.start : 0.01, // Use retrieved start value or default
+                initialEndValue: trimSettings ? trimSettings.end : 100    // Use retrieved end value or default
             }
         });
         console.log('Audio trimmer instantiated');
     });
 });
+
 
 // Close the modal when the user clicks on <span> (x)
 document.querySelector('.close-button').addEventListener('click', function() {

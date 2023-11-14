@@ -804,19 +804,43 @@ function storeTrimSettings() {
     	let startDimmedWidth = '0%';
     	let endDimmedWidth = '0%';
     	let maxDuration = 0;
-    	const startSliderValue = writable(0.01);
-    	validate_store(startSliderValue, 'startSliderValue');
-    	component_subscribe($$self, startSliderValue, value => $$invalidate(2, $startSliderValue = value));
-    	const endSliderValue = writable(100);
-    	validate_store(endSliderValue, 'endSliderValue');
-    	component_subscribe($$self, endSliderValue, value => $$invalidate(1, $endSliderValue = value));
-    	const loopEnabled = writable(false);
-    	let isLooping = false;
-    	let canvas, playbackCanvas, ctx, playbackCtx;
+		const startSliderValue = writable(0.01);
+		validate_store(startSliderValue, 'startSliderValue');
+		component_subscribe($$self, startSliderValue, value => $$invalidate(2, $startSliderValue = value));
+		const endSliderValue = writable(100);
+		validate_store(endSliderValue, 'endSliderValue');
+		component_subscribe($$self, endSliderValue, value => $$invalidate(1, $endSliderValue = value));
+		const loopEnabled = writable(false);
+		let isLooping = false;
+		let canvas, playbackCanvas, ctx, playbackCtx;
 
-    	onMount(() => {
-    		ctx = canvas.getContext('2d');
-    		playbackCtx = playbackCanvas.getContext('2d');
+		// Reactive block for updating dimmed areas
+		$: if (audioBuffer) {
+			maxDuration = audioBuffer.duration;
+			startDimmedWidth = `${Math.max(0, $startSliderValue / maxDuration) * 100}%`;
+			endDimmedWidth = `${Math.max(0, (1 - $endSliderValue / maxDuration)) * 100}%`;
+
+			if ($startSliderValue >= $endSliderValue) {
+				startSliderValue.set($endSliderValue - 0.01);
+			}
+			if ($endSliderValue <= $startSliderValue) {
+				endSliderValue.set($startSliderValue + 0.01);
+			}
+			if ($startSliderValue !== undefined && $endSliderValue !== undefined) {
+				storeTrimSettings();
+			}
+		}
+
+		onMount(() => {
+			ctx = canvas.getContext('2d');
+			playbackCtx = playbackCanvas.getContext('2d');
+		
+			// Check for saved trim settings in local storage
+			const savedTrimSettings = getTrimSettings(channelIndex);
+			if (savedTrimSettings) {
+				startSliderValue.set(savedTrimSettings.start * maxDuration);
+				endSliderValue.set(savedTrimSettings.end * maxDuration);
+			}
     	});
 
     	onDestroy(() => {
@@ -992,14 +1016,17 @@ function storeTrimSettings() {
     	}
 
     	function input1_change_input_handler() {
-    		$startSliderValue = to_number(this.value);
-    		startSliderValue.set($startSliderValue);
-    	}
-
-    	function input2_change_input_handler() {
-    		$endSliderValue = to_number(this.value);
-    		endSliderValue.set($endSliderValue);
-    	}
+			$startSliderValue = to_number(this.value);
+			startSliderValue.set($startSliderValue);
+			saveTrimSettings(channelIndex, { start: $startSliderValue, end: $endSliderValue });
+		}
+		
+		function input2_change_input_handler() {
+			$endSliderValue = to_number(this.value);
+			endSliderValue.set($endSliderValue);
+			saveTrimSettings(channelIndex, { start: $startSliderValue, end: $endSliderValue });
+		}
+		
 
     	$$self.$$set = $$props => {
     		if ('externalOrdinalId' in $$props) $$invalidate(15, externalOrdinalId = $$props.externalOrdinalId);
