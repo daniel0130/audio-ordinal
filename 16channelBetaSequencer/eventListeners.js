@@ -100,53 +100,52 @@ document.querySelectorAll('.open-audio-trimmer').forEach(button => {
         // Get the channel element
         const channelElement = event.target.closest('.channel');
         if (!channelElement) {
-            console.error('Channel element not found');
-            return;
+            return console.error('Channel element not found');
         }
 
         // Extract the ID from the originalUrl for the audio sample
         const originalUrl = channelElement.dataset.originalUrl;
-        if (!originalUrl) {
-            console.error('Original URL not found on the channel element');
-            return;
+        const ordinalId = originalUrl ? originalUrl.split('/').pop() : '';
+        if (!ordinalId) {
+            return console.error('Original URL not found on the channel element');
         }
-        const ordinalId = originalUrl.split('/').pop();
         console.log('Ordinal ID:', ordinalId);
 
         // Use the ID of the channel element as the channel number
         const channelNumber = channelElement.id;
         if (!channelNumber) {
-            console.error('Channel number not found on the channel element');
-            return;
+            return console.error('Channel number not found on the channel element');
         }
         console.log('Channel Number:', channelNumber);
 
         // Retrieve trim settings for the channel
-        const trimSettings = getTrimSettings(channelNumber);
-        console.log('Retrieved trim settings for channel:', channelNumber, trimSettings);
+        const savedTrimSettings = getTrimSettings(channelNumber);
+        console.log('Retrieved trim settings for channel:', channelNumber, savedTrimSettings);
 
         // Display the modal
         const modal = document.getElementById('audio-trimmer-modal');
         if (!modal) {
-            console.error('Modal element not found');
-            return;
+            return console.error('Modal element not found');
         }
         modal.style.display = 'block';
         console.log('Modal displayed');
 
-        // Clear previous Audio Trimmer instance
+        // Clear previous Audio Trimmer instance and instantiate a new one
         const trimmerContainer = document.getElementById('audio-trimmer-container');
         trimmerContainer.innerHTML = ''; // Clear the container
 
-        // Instantiate the Audio Trimmer
+        // Define default settings
+        const defaultSettings = { start: 0.01, end: 100 };
+
+        // Instantiate the Audio Trimmer with settings
         const audioTrimmer = new AudioTrimmer({
             target: trimmerContainer,
             props: {
                 externalAudioContext: audioContext,
                 externalOrdinalId: ordinalId,
                 channelIndex: channelNumber,
-                initialStartValue: trimSettings ? trimSettings.start : 0.01, // Use retrieved start value or default
-                initialEndValue: trimSettings ? trimSettings.end : 100    // Use retrieved end value or default
+                startSliderValue: savedTrimSettings?.start || defaultSettings.start,
+                endSliderValue: savedTrimSettings?.end || defaultSettings.end
             }
         });
         console.log('Audio trimmer instantiated');

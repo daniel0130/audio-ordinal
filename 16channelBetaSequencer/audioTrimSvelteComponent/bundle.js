@@ -813,23 +813,27 @@ function storeTrimSettings() {
 		const loopEnabled = writable(false);
 		let isLooping = false;
 		let canvas, playbackCanvas, ctx, playbackCtx;
+		let shouldSaveSettings = false;
 
-		// Reactive block for updating dimmed areas
+		// Reactive block for updating dimmed areas and saving settings
 		$: if (audioBuffer) {
 			maxDuration = audioBuffer.duration;
 			startDimmedWidth = `${Math.max(0, $startSliderValue / maxDuration) * 100}%`;
 			endDimmedWidth = `${Math.max(0, (1 - $endSliderValue / maxDuration)) * 100}%`;
+			console.log(`Start dimmed width: ${startDimmedWidth}, End dimmed width: ${endDimmedWidth}`);
 
-			if ($startSliderValue >= $endSliderValue) {
-				startSliderValue.set($endSliderValue - 0.01);
-			}
-			if ($endSliderValue <= $startSliderValue) {
-				endSliderValue.set($startSliderValue + 0.01);
-			}
-			if ($startSliderValue !== undefined && $endSliderValue !== undefined) {
+			if (shouldSaveSettings) {
 				storeTrimSettings();
 			}
 		}
+
+		// Reactive block for handling slider value changes
+		$: if (shouldSaveSettings && maxDuration > 0) {
+			startDimmedWidth = `${Math.max(0, $startSliderValue / maxDuration) * 100}%`;
+			endDimmedWidth = `${Math.max(0, (1 - $endSliderValue / maxDuration)) * 100}%`;
+			storeTrimSettings();
+		}
+
 
 		onMount(() => {
 			ctx = canvas.getContext('2d');
@@ -838,10 +842,22 @@ function storeTrimSettings() {
 			// Check for saved trim settings in local storage
 			const savedTrimSettings = getTrimSettings(channelIndex);
 			if (savedTrimSettings) {
-				startSliderValue.set(savedTrimSettings.start * maxDuration);
-				endSliderValue.set(savedTrimSettings.end * maxDuration);
+				console.log(`Retrieved trim settings for channel ${channelIndex}:`, savedTrimSettings);
+				startSliderValue.set(savedTrimSettings.start);
+				endSliderValue.set(savedTrimSettings.end);
+		
+				// Update dimmed widths based on saved settings
+				if (audioBuffer) {
+					maxDuration = audioBuffer.duration;
+					startDimmedWidth = `${Math.max(0, savedTrimSettings.start / maxDuration) * 100}%`;
+					endDimmedWidth = `${Math.max(0, (1 - savedTrimSettings.end / maxDuration)) * 100}%`;
+				}
+				shouldSaveSettings = true;
+			} else {
+				console.log(`No saved trim settings found for channel ${channelIndex}`);
 			}
-    	});
+		});
+		
 
     	onDestroy(() => {
     		if (sourceNode) {
@@ -879,9 +895,13 @@ function storeTrimSettings() {
     			}
 
     			$$invalidate(18, audioBuffer = await decodeAudioData(arrayBuffer));
-    			startSliderValue.set(0);
-    			endSliderValue.set(audioBuffer.duration);
-    			drawWaveform();
+    			// Only set default values if no saved settings are found
+				const savedTrimSettings = getTrimSettings(channelIndex);
+				if (!savedTrimSettings) {
+					startSliderValue.set(0);
+					endSliderValue.set(audioBuffer.duration);
+				}
+				drawWaveform();
     		} catch(error) {
     			console.error('Error fetching or decoding audio:', error);
     		}
@@ -1018,14 +1038,17 @@ function storeTrimSettings() {
     	function input1_change_input_handler() {
 			$startSliderValue = to_number(this.value);
 			startSliderValue.set($startSliderValue);
+			console.log(`Saving start trim setting for channel ${channelIndex}:`, $startSliderValue);
 			saveTrimSettings(channelIndex, { start: $startSliderValue, end: $endSliderValue });
 		}
 		
 		function input2_change_input_handler() {
 			$endSliderValue = to_number(this.value);
 			endSliderValue.set($endSliderValue);
+			console.log(`Saving end trim setting for channel ${channelIndex}:`, $endSliderValue);
 			saveTrimSettings(channelIndex, { start: $startSliderValue, end: $endSliderValue });
 		}
+		
 		
 
     	$$self.$$set = $$props => {
