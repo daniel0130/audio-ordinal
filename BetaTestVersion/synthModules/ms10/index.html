@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korg MS10 Emulator</title>
+    <link rel="stylesheet" href="style.css">
+    <body>
+
+<div class="synth-container">
+        <h2>Audional Synth</h2>
+        <label>
+            Note:
+            <select id="note"></select>
+        </label>
+        <label>
+            Waveform:
+            <select id="waveform">
+                <option value="sawtooth" selected>Sawtooth</option>
+                <option value="square">Square</option>
+                <option value="triangle">Triangle</option>
+                <option value="pulse">Pulse</option>
+            </select>
+        </label>
+        
+        <button onclick="playMS10TriangleBass()">Play Note</button>
+        <label>
+            Attack (ms):
+            <input id="attack" type="range" min="0" max="2000" value="10">
+        </label>
+        <label>
+            Release (ms):
+            <input id="release" type="range" min="0" max="2000" value="500">
+        </label>
+        <label>
+            Cutoff (Hz):
+            <input id="cutoff" type="range" min="20" max="2000" value="2000">
+        </label>
+        <label>
+            Resonance:
+            <input id="resonance" type="range" min="0" max="10" value="5" step="0.1">
+        </label>
+        <label>
+            Volume:
+            <input id="volume" type="range" min="0" max="100" value="100">
+        </label>
+        <div class="arpeggiator-controls">
+            <h3>Arpeggiator</h3>
+            <button id="arpToggle">Toggle Arpeggiator</button>
+            <label>
+                Tempo (BPM):
+                <input id="arpTempo" type="number" min="40" max="240" value="105">
+            </label>
+            <label>
+                Pattern:
+                <select id="arpPattern">
+                    <option value="up">Up</option>
+                    <option value="down">Down</option>
+                    <option value="random">Random</option>
+                </select>
+            </label>
+        </div>
+        <label for="timingAdjust">Timing Adjust (ms):</label>
+        <input type="range" id="timingAdjust" min="-100" max="100" value="0">
+
+    </div>
+    <script src="synth.js"></script>
+    <script src="midiControl.js"></script>
+    <script src="noteSelector.js"></script>
+    <script src="arpControl.js"></script>
+    <script src="arpeggiator.js"></script>
+    <script src="arpToggle.js"></script>
+    <script src="eventListeners.js"></script>
+    <script src="tempoSync.js"></script>
+
+
+
+</body>
+</html>

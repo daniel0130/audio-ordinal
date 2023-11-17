@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+    --main-bg-color: #000;
+    --secondary-bg-color: #333;
+    --primary-color: #fff;
+    --accent-color: #f00;
+    --play-button-dimension: 50px;
+    --stop-button-dimension: 50px;
+    --step-button-dimension: 25px; 
+    --control-button-dimension: 25px;
+    --box-shadow-style: 0 0 10px var(--main-bg-color) inset;
+    --margin-style: 10px;
+    --default-font: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--main-bg-color);
+    color: var(--primary-color);
+    font: normal normal normal 100%/1 var(--default-font);
+}
+
+#drum-machine {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--secondary-bg-color);
+    border: 5px solid var(--main-bg-color);
+}
+
+h1 {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.button {
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: var(--box-shadow-style);
+}
+
+h1 .button {
+    padding: 10px;
+    color: var(--main-bg-color);
+    font-size: 1em;
+}
+h3 .subtext {
+    font-size: 0.8em; /* Customize the font size for shrinking the subtext */
+    opacity: 0.7; /* Customize the opacity for shrinking the subtext */
+}
+
+h3:hover .subtext {
+    font-size: 0.6em; /* Customize the font size for the shrunk subtext on hover */
+    opacity: 0.5; /* Customize the opacity for the shrunk subtext on hover */
+}
+
+.step-button {
+    margin-top: 10px;
+/* width: calc(100% / 16 - 2px); Remove this */    
+    height: 10px;
+    background-color: #555;
+    color: #fff;
+}
+
+
+.control-button {
+    width: var(--control-button-dimension);
+    height: var(--control-button-dimension);
+}
+.play-button {
+    position: relative;
+    top: 0px; /* Adjust the value as needed */
+    width: var(--play-button-dimension);
+    height: var(--play-button-dimension);
+}
+#play.selected {
+    background-color: #00ff00;
+}
+.button-label {
+    color: #00ff00; /* Green */
+}
+
+
+
+.stop-button {
+    position: relative;
+    top: 0px; /* Adjust the value as needed */
+    width: var(--stop-button-dimension);
+    height: var(--stop-button-dimension);
+}
+.button-label.stop {
+    color: #ff0000; /* Red */
+}
+
+
+#stop.selected ~ #play {
+    background-color: var(--primary-color);
+}
+
+.stop-button:active,
+.stop-button.selected {
+    background-color: var(--accent-color);
+}
+
+
+.channel {
+    position: relative; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0px;
+    margin: 0px 0;
+}
+
+.controls-container {
+    width: 15%;
+    gap: 5px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.title {
+    font-size: 40px; /* Adjust the font size as needed */
+}
+
+#play {
+    animation: flash 2s infinite ease-in-out;
+}
+
+#play.selected, 
+#stop.selected ~ #play {
+    animation: none; /* Stop the animation when the button is selected */
+}
+
+#stop.selected ~ #play {
+    background-color: var(--primary-color);
+}
+
+.step-button:active,
+.step-button.selected,
+.mute-button.selected {
+    background-color: var(--accent-color);
+}
+
+.step-button.playing {
+    box-shadow: 0 0 10px rgb(150, 150, 150) inset;
+}
+
+.step-button.playing.selected {
+    box-shadow: 0 0 10px rgb(150, 1, 1) inset;
+}
+
+.channel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px; /* Adjusts spacing between buttons */
+}
+
+.clear-button {
+    background-color: #ff0;
+}
+
+.mute-button {
+  background-color: #800;
+}
+.button-fixed-width {
+  width: 100px !important;
+}
+
+.load-sample-button {
+  display: inline-block;
+  flex: 2.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1em;
+  position: relative;
+}
+
+.load-sample-button:hover::after {
+  content: attr(data-filename); /* Use the 'data-filename' attribute as content */
+  position: absolute;
+  top: 100%; /* Position it below the load-sample-button */
+  left: 0;
+  background: var(--primary-color);
+  color: var(--main-bg-color);
+  padding: 5px;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+#load-preset {
+  font-size: 1em;
+  padding: 5px 10px;
+}
+
+
+.step-button:nth-child(16n+1) {
+    background-color: #ffff00; /* yellow */
+}
+
+.step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
+    background-color: #add8e6; /* light blue */
+}
+
+.channel-container .step-button.selected {
+    background-color: #ff0000; /* red */
+}
+
+@keyframes flash {
+    0% {background-color: var(--primary-color);}
+    50% {background-color: #00ff00;}
+    100% {background-color: var(--primary-color);}
+}
+
+.controls-container {
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.channel-controls {
+    margin-top: 20px; /* Add a top margin if needed */
+}
+.button-label {
+    position: relative;
+    z-index: 2;
+}
+.centered {
+    display: block;
+    text-align: center;
+}
+.larger-text {
+    font-size: 1.5em;
+}
+
+.smaller-text {
+    font-size: 1em;
+}
+.bright-orange {
+    color: #f7931a;
+}
+.subtext-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 400px;
+}
+
+.centered-text {
+    text-align: right;
+}
+.new-button-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    text-align: right;
+}
+
+.new-button {
+    padding: 10px 20px;
+    color: black;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.75em;
+    font-weight: bold;
+    box-shadow: var(--box-shadow-style);
+    cursor: pointer;
+    margin-left: auto;
+
+}
+
+.new-button-subtext {
+    display: block;
+    font-size: 1em;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+</style>    
+</head>
+<body>
+    <div id="drum-machine">
+        <h1>
+            
+            <span class="button-label">Play</span>
+            <div class="button button-round">
+                
+                
+                <div class="button play-button" id="play"></div> <!-- Update the class and ID for play button -->
+            </div>
+            <span class="title">Audional Sequencer <span class="">&#x20bf;</span>eta<span class="bright-orange">&#x20bf;</span>itcoin<span class="">&#x20bf;</span>eats</span>
+          
+            <span class="button-label stop">Stop</span>           
+             <div class="button button-round">
+                
+
+                
+                <div class="button stop-button" id="stop"></div> <!-- Update the class and ID for stop button -->
+            </div>
+            <div class="bpm-container">
+                BPM: <input type="range" min="60" max="180" value="125" step="1" id="bpm-slider">
+                <div class="bpm-display" id="bpm-display">125</div>
+            </div>
+        </h1>
+       
+        <div class="subtext-container">
+            <p class="subtext centered-text">
+                Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+            </p>
+            </div>
+            </span>
+          
+            <main id="app" role="main">
+        <div class="channel" id="bass-drum">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                           
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="channel" id="snare">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                 <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="channel" id="hi-hat">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="channel" id="bass">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="channel" id="channel-5">
+            <button class="load-sample-button" title="Load New Audional">Load New Audional</button>
+            <div>
+            <button class="control-button clear-button">C</button>
+            <button class="control-button mute-button">M</button>
+            </div>
+            <div class="channel-container">
+                <div class="steps-container"></div>
+                <div class="controls-container">
+                    <div class="channel-controls">
+                        <div class="button-container">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="button-container">
+          <button id="save-button">Save</button>
+          <input type="file" id="save-file-input" style="display: none">
+        
+          <button id="load-button">Load</button>
+          <input type="file" id="load-file-input" style="display: none" accept=".json">
+        
+          <button class="new-button">Inscribe Audional Composition</button>
+          <span class="new-button-subtext">(Coming soon...)</span>
+        </div>
+
+    <script>
+
+    let isPlaying = false;
+    let currentStep = 0;
+    let beatCount = 1; // individual steps
+    let barCount = 1; // bars
+    let sequenceCount = 0; // sequences
+    let timeoutId;
+    let stopClickCount = 0;
+    let channels;
+    let playButton = document.getElementById('play');
+    let stopButton = document.getElementById('stop');
+    let saveButton = document.getElementById('save-button');
+    let loadButton = document.getElementById('load-button');
+    let bpm = 125;
+    let audioContext;
+    let currentStepTime;
+    let startTime;
+    let nextStepTime;
+    let stepDuration;
+    let gainNodes = [];
+
+
+  function getIDFromURL(url) {
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+  }
+
+  function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+  
+
+  const fetchAudio = (url, channelIndex, loadSampleButtonElement) => {
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
+      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
+      const audioBlobUrl = URL.createObjectURL(audioBlob);
+
+      const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
+      channel.dataset.audioData = audioBlobUrl;
+      channel.dataset.originalUrl = url; // Store the original URL
+      channel.dataset.audioDataLoaded = 'true';
+
+      // Ensure loadSampleButtonElement is not null and then proceed
+      if (loadSampleButtonElement) {
+        const filename = data.filename || data.fileName; // Check both properties
+        loadSampleButtonElement.classList.add('button-fixed-width');
+        loadSampleButtonElement.style.width = '200px'; // or whatever width you want
+        loadSampleButtonElement.textContent = filename ? filename.substring(0,20) : 'Load New Audional';
+        loadSampleButtonElement.title = filename ? filename : 'Load New Audional';
+        
+
+        console.log(data);
+      } else {
+        console.log("Button element not found.");
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching audio:', error);
+    });
+};
+
+
+
+
+  function exportSettings() {
+    let settings = { channels: [], bpm: bpm };
+    channels.forEach((channel, index) => {
+        let triggers = [];
+        let stepButtons = channel.querySelectorAll('.step-button');
+        stepButtons.forEach((button, i) => {
+        if (button.classList.contains('selected')) {
+            triggers.push(i + 1); // we use (i+1) because nth-child selector is 1-based
+        }
+        });
+
+        let mute = channel.dataset.muted === 'true';
+        let url = channel.dataset.originalUrl; // Use the original URL
+        settings.channels.push({ triggers: triggers, mute: mute, url: url });
+    });
+
+    return JSON.stringify(settings, null, 2); // to make the output more readable
+    }
+
+    function importSettings(json) {
+        let settings = JSON.parse(json);
+        bpm = settings.bpm;
+
+        settings.channels.forEach((chSettings, index) => {
+            let channel = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+            let loadSampleButton = channel.querySelector('.load-sample-button');
+
+            // Fetch and set audio sample URL only if url is defined
+            if(chSettings.url) {
+            fetchAudio(chSettings.url, index, loadSampleButton);
+            }
+
+            // Set mute settings
+            channel.dataset.muted = chSettings.mute ? 'true' : '';
+            let muteButton = channel.querySelector('.mute-button');
+            muteButton.classList.toggle('selected', chSettings.mute);
+
+            // Set trigger buttons
+            let stepButtons = channel.querySelectorAll('.step-button');
+            stepButtons.forEach(button => button.classList.remove('selected')); // clear existing triggers
+            chSettings.triggers.forEach(i => stepButtons[i - 1].classList.add('selected')); // set new triggers
+        });
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let saveFileInput = document.getElementById('save-file-input');
+            let loadFileInput = document.getElementById('load-file-input');
+
+            saveButton.addEventListener('click', () => {
+                let settings = exportSettings();
+
+                // Create a Blob with the settings
+                let blob = new Blob([settings], { type: 'application/json' });
+
+                // Create a download link for the Blob
+                let url = URL.createObjectURL(blob);
+                let downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'settings.json';
+
+                // Trigger a click on the download link
+                downloadLink.click();
+            });
+
+            loadButton.addEventListener('click', () => {
+                // Trigger a click on the load file input
+                loadFileInput.click();
+            });
+
+            loadFileInput.addEventListener('change', () => {
+                let file = loadFileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let settings = e.target.result;
+                    importSettings(settings);
+                };
+                reader.readAsText(file);
+            });
+        });
+
+
+                
+
+  channels = document.querySelectorAll('.channel');
+
+  channels.forEach((channel, index) => {
+    channel.dataset.id = `Channel-${index + 1}`;
+
+    const muteButton = channel.querySelector('.mute-button');
+    muteButton.addEventListener('click', () => {
+            if (channel.dataset.muted === 'true') {
+        // If the channel is currently muted, unmute it
+                channel.dataset.muted = '';
+            } else {
+                // If the channel is currently unmuted, mute it
+                channel.dataset.muted = 'true';
+            }
+            muteButton.classList.toggle('selected');
+        });
+
+    const clearButton = channel.querySelector('.clear-button');
+    clearButton.addEventListener('click', () => {
+      const stepButtons = channel.querySelectorAll('.step-button');
+      stepButtons.forEach(button => {
+        button.classList.remove('selected');
+      });
+    });
+
+
+    const stepsContainer = channel.querySelector('.steps-container');
+    stepsContainer.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 64; i++) {
+      const button = document.createElement('button');
+      button.classList.add('step-button');
+      button.addEventListener('click', () => {
+        button.classList.toggle('selected');
+      });
+      fragment.appendChild(button);
+    }
+    stepsContainer.appendChild(fragment);
+
+    const loadSampleButton = channel.querySelector('.load-sample-button');
+    loadSampleButton.addEventListener('click', () => {
+      const audionalId = prompt('Enter the ordinal ID for the Audional you want to load:');
+      const audionalUrl = 'https://ordinals.com/content/' + getIDFromURL(audionalId);
+      fetchAudio(audionalUrl, index, loadSampleButton);
+    });
+  });
+
+  if (playButton && stopButton) {
+    const channel1 = document.querySelector('#channel-0 .step-button:nth-child(4n+1)');
+    if (channel1) channel1.classList.add('selected');
+
+    const channel2Beat1 = document.querySelector('#channel-1 .step-button:nth-child(1)');
+    if (channel2Beat1) channel2Beat1.classList.add('selected');
+
+    const channel2Beat6 = document.querySelector('#channel-1 .step-button:nth-child(6)');
+    if (channel2Beat6) channel2Beat6.classList.add('selected');
+
+    playButton.addEventListener('click', () => {
+      if (!isPlaying) {
+        startScheduler();
+        playButton.classList.add('selected');
+        stopButton.classList.remove('selected');
+        isPlaying = true;
+      }
+    });
+
+    stopButton.addEventListener('click', () => {
+        if (isPlaying) {
+            stopScheduler();
+            stopButton.classList.add('selected');
+            playButton.classList.remove('selected');
+            isPlaying = false;
+            beatCount = 0;  // reset the beat count
+            barCount = 0; // reset the bar count
+            sequenceCount = 0; // reset the sequence count
+            currentStep = 0;  // reset the step count
+            resetStepLights();  // reset the step lights
+        }
+    });
+
+  } else {
+    console.error("Play or Stop button is not defined");
+  }
+
+
+  const bpmSlider = document.getElementById('bpm-slider');
+  const bpmDisplay = document.getElementById('bpm-display');
+  bpmSlider.addEventListener('input', () => {
+    bpm = bpmSlider.value;
+    bpmDisplay.textContent = bpm;
+  });
+
+  
+  const presets = {
+  preset1: {
+    channels: [
+      {
+        url: 'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0',
+        triggers: ['1', '5', '9', '13', '17', '21', '25', '29', '33', '37', '41', '45', '49', '53', '57', '61'],
+        muted: false,
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
+      },
+      {
+        url: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
+        triggers: ['1', '7', '33', '39'],
+        muted: true,
+        unmuteBeats: [15],
+        muteBeats: []
+      },
+      {
+        url: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
+        triggers: ['5', '13', '21', '29', '37', '45', '53', '61', '63', '64'],
+        muted: true,
+         unmuteBeats: [60],
+        muteBeats: []
+      },
+      {
+        url: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
+        triggers: ['62'],
+        muted: true,
+        unmuteBeats: [2, 4, 6, 20],
+        muteBeats: [1, 3, 5, 10]
+      },
+      {
+        url: 'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0',
+        triggers: [],
+        muted: true,
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
+      },
+      {
+        url: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0',
+        triggers: [],
+        muted: true,
+        unmuteBeats: [1, 3, 5, 10],
+        muteBeats: [2, 4, 6, 20]
+      },
+      {
+        url: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0',
+        triggers: [],
+        muted: true,
+        unmuteBeats: [3, 6, 9, 12],
+        muteBeats: [1, 5, 7, 11]
+      },
+      {
+        url: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0',
+        triggers: [],
+        muted: true,
+        unmuteBeats: [2, 4, 6, 20],
+        muteBeats: [1, 3, 5, 10]
+      },
+      // ...
+    ],
+  },
+};
+
+
+
+  // Load a preset when the page loads
+    const presetToLoadOnPageLoad = 'preset1'; // replace with the name of your preset
+            if (presets[presetToLoadOnPageLoad]) {
+            loadPreset(presetToLoadOnPageLoad);
+            } else {
+            console.error('Preset not found:', presetToLoadOnPageLoad);
+            }
+    
+          // Function to load a preset
+          function loadPreset(preset) {
+            const presetData = presets[preset];
+
+            if (!presetData) {
+                console.error('Preset not found:', preset);
+                return;
+            }
+
+            const channels = presetData.channels;
+
+            // Iterate through each channel in the preset
+            channels.forEach((channelData, index) => {
+                const { url, triggers, muted } = channelData;
+
+                // Load url
+                const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .load-sample-button`);
+                fetchAudio(url, index, loadSampleButton);
+
+                // Set triggers
+                triggers.forEach(pos => {
+                    const btn = document.querySelector(`.channel[data-id="Channel-${index + 1}"] .step-button:nth-child(${pos})`);
+                    if (btn) btn.classList.add('selected');
+                });
+
+                // Set mute state
+                const channelElement = document.querySelector(`.channel[data-id="Channel-${index + 1}"]`);
+                const muteButton = channelElement.querySelector('.mute-button');
+                channelElement.dataset.muted = muted ? 'true' : '';
+                if (muteButton) {
+                    if (muted) {
+                        muteButton.classList.add('selected');
+                    } else {
+                        muteButton.classList.remove('selected');
+                    }
+                }
+    });
+    }
+
+    
+  function setChannelVolume(channelIndex, volume) {
+    const channel = document.querySelector(`.channel[data-id="Channel-${channelIndex + 1}"]`);
+    channel.dataset.volume = volume;
+    updateChannelVolume(channel);
+    }
+
+  function updateChannelVolume(channel) {
+    const volume = parseFloat(channel.dataset.volume);
+    const gainNode = gainNodes[parseInt(channel.dataset.id.split('-')[1]) - 1];
+    gainNode.gain.value = volume;
+    }
+
+  function createGainNodes() {
+    const audioContext = new AudioContext();
+    channels.forEach(channel => {
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 1; // Initial volume set to 1 (full volume)
+        gainNode.connect(audioContext.destination);
+        gainNodes.push(gainNode);
+    });
+    }
+
+  function startScheduler() {
+    audioContext = new AudioContext();
+    startTime = audioContext.currentTime;
+    nextStepTime = startTime;
+
+    scheduleNextStep();
+  }
+
+  function scheduleNextStep() {
+    stepDuration = 60 / bpm / 4;
+
+    timeoutId = setTimeout(() => {
+      playStep();
+      scheduleNextStep();
+    }, (nextStepTime - audioContext.currentTime) * 1000);
+  }
+
+  function playStep() {
+    const currentBeat = ((currentStep / 4) | 0) % 16; // Calculate the current beat and ensure it wraps
+
+    channels.forEach((channel, index) => {
+        const buttons = channel.querySelectorAll('.step-button');
+        let isMuted = channel.dataset.muted === 'true';
+
+        // Unmute the channel at the designated beat if it's currently muted
+        const unmuteBeats = presets.preset1.channels[index].unmuteBeats;
+        if (isMuted && unmuteBeats && unmuteBeats.includes(beatCount)) {
+            channel.dataset.muted = 'false';
+            isMuted = false;
+            channel.querySelector('.mute-button').classList.remove('selected');
+        }
+
+        // Mute the channel at the designated beat if it's currently unmuted
+        const muteBeats = presets.preset1.channels[index].muteBeats;
+        if (muteBeats && !isMuted && muteBeats.includes(beatCount)) {
+            channel.dataset.muted = 'true';
+            isMuted = true;
+            channel.querySelector('.mute-button').classList.add('selected');
+        }
+        
+        buttons.forEach((button, buttonIndex) => {
+            button.classList.remove('playing'); // Reset the playhead/step light for all buttons
+            button.classList.remove('triggered'); // Reset the triggered light for all buttons
+
+            if (buttonIndex === currentStep && !isMuted) {
+                button.classList.add('playing'); // Highlight the current step with the playhead/step light
+            }
+
+            if (button.classList.contains('selected')) {
+                const triggerIndex = presets.preset1.channels[index].triggers.indexOf(String(buttonIndex + 1));
+                if (triggerIndex !== -1) {
+                    button.classList.add('triggered'); // Highlight the live trigger with the triggered light
+                }
+            }
+        });
+
+        if (buttons[currentStep].classList.contains('selected') && !isMuted) {
+            const audioData = channel.dataset.audioData;
+            if (audioData) {
+                const audio = new Audio(audioData);
+                const source = audioContext.createMediaElementSource(audio);
+                source.connect(audioContext.destination);
+                audio.play();
+            }
+        }
+    });
+
+
+    // Log the beat, bar, and sequence counts
+    //console.log('Step:', currentStep);
+    //console.log('Beat:', beatCount);
+    //console.log('Bar:', barCount);  // Use barCount instead of currentBar
+    //console.log('Sequence:', sequenceCount);
+
+    currentStep = (currentStep + 1) % 64;
+
+    if (currentStep % 4 === 0) {
+        beatCount++;  // No wrap-around here
+    }
+
+    if (currentStep % 16 === 0) {
+        barCount = (barCount + 1);
+    }
+
+    if (currentStep % 64 === 0) {
+        sequenceCount++;
+    }
+
+    nextStepTime += stepDuration;
+}
+
+
+
+
+
+function stopScheduler() {
+    if (audioContext) {
+      audioContext.close();
+    }
+    clearTimeout(timeoutId);
+
+    // Reset counters
+    currentStep = 0;
+    beatCount = 1;
+    barCount = 1; // Reset barCount to 1
+    sequenceCount = 0;
+}
+
+  function resetStepLights() {
+    const buttons = document.querySelectorAll('.step-button');
+    buttons.forEach(button => {
+        button.classList.remove('playing');
+    });
+    }
+
+  function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
+    if (!isPlaying) {
+      isPlaying = true;
+      startStopFunction();
+      firstButton.classList.add('selected');
+      secondButton.classList.remove('selected');
+    }
+  }
+  
+
+
+</script>
+
+    
+    </body>
+    </html>
+    

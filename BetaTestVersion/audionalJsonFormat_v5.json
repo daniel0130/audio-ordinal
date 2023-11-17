@@ -1,0 +1,92 @@
+var audionalObject = {
+    "p": "audional",
+    "op": "deploy",
+    "audional_id": fileInput.audional_id,
+    "filename": fileInput.name,
+    "audio_data": base64AudioInput.value,
+    "metadata": {
+        "technical": {
+            "encoding_format": encodingFormatInput.value,
+            "sample_rate": fileInput.sampleRate,
+            "number_of_channels": fileInput.numberOfChannels,
+            "bit_depth": bitDepthInput.value,
+            "duration": durationInput.value
+        },
+        "descriptive": {
+            "title": titleInput.value,
+            "creator": creatorInput.value,
+            "audional_logo_url": audionalLogoUrlInput.value,
+            "cover_art_url": coverArtUrlInput.value,
+            "other_art_url": otherArtUrlInput.value,
+            "inscribers_address": inscribersAddressInput.value,
+            "description": descriptionInput.value
+        },
+        "audio_type": audioTypeInput.value,
+        "type_music": {
+            "instrument": instrumentInput.value,
+            "instrument_specifics": instrumentSpecificsInput.value,
+            "genre": genreInput.value,
+            "note": noteInput.value,
+            "key": keyInput.value,
+            "is_loop": isLoopInput.value,
+            "tempo" : tempoInput.value
+        },
+        "type_speech": {
+            "language": languageInput.value,
+            "speaker": speakerInput.value,
+            "context": contextInput.value
+        },
+        "type_nature": {
+            "environment": environmentInput.value,
+            "time_of_day": timeOfDayInput.value,
+            "weather_conditions": weatherConditionsInput.value,
+            "animal_sounds": {
+                "animal_species": animalSpeciesInput.value,
+                "animal_behavior": animalBehaviorInput.value,
+                "group_size": groupSizeInput.value,
+                "geographic_location": geographicLocationInput.value,
+                "season": seasonInput.value,
+                "natural_phenomenon": naturalPhenomenonInput.value
+            }
+        },
+        "type_sfx": {
+            "source": sfxSourceInput.value,
+            "method": sfxMethodInput.value
+        },
+        "type_other": {
+            "custom_field1": customField1Input.value,
+            "custom_field2": customField2Input.value
+        },
+        "structural": {
+            "sequence_info": sequenceInfoInput.value,
+            "hierarchy_info": hierarchyInfoInput.value
+        },
+        "administrative": {
+            "ownership_info": ownershipInfoInput.value,
+            "rights_info": rightsInfoInput.value,
+            "source": sourceInput.value,
+            "preservation_history": preservationHistoryInput.value
+        },
+        "contextual": {
+            "recording_location": recordingLocationInput.value,
+            "cultural_context": culturalContextInput.value,
+            "historical_context": historicalContextInput.value
+        },
+        "preservation": {
+            "preservation_steps": preservationStepsInput.value,
+            "future_preservation_plan": futurePreservationPlanInput.value
+        },
+        "user_defined": userDefinedInput.value,
+        "playback_controls": {
+            "note": noteInput.value,
+            "name": filenameWithoutExtensionInput.value,
+            "velocity": velocityInput.value,
+            "sample_duration": durationInput.value,
+            "is_loop": isLoopInput.value,
+            "loop_buffer": loopBufferInput.value,
+            "tempo": tempoInput.value,
+            "play_speed": playSpeedInput.value,
+            "key_shift": keyShiftInput.value
+        }
+    }
+};
