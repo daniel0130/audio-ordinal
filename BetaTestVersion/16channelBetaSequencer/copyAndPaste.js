@@ -6,22 +6,13 @@ let isCopyPasteEvent = false;
 let copiedData = null; // This will hold the copied data
 
 document.addEventListener('DOMContentLoaded', function() {
-    const dropdownContent = document.querySelector('.dropdown-content');
-    const dropbtn = document.querySelector('.dropbtn');
+    // Assuming this is the ID of your copy button
+    const copyButton = document.getElementById('copy-sequence-settings');
+    const pasteButton = document.getElementById('paste-button');
 
-    // Toggle dropdown visibility when "Copy" button is clicked
-    dropbtn.addEventListener('click', function() {
-        if (dropdownContent.style.display === 'none' || !dropdownContent.style.display) {
-            dropdownContent.style.display = 'block';
-        } else {
-            dropdownContent.style.display = 'none';
-        }
-    });
-
-    dropdownContent.addEventListener('click', function(event) {
-        const targetId = event.target.id;
-        console.log("P1 channelURLs for current sequence:", channelURLs[currentSequence - 1]);
-        if (targetId === 'copy-sequence-settings') {
+    if (copyButton) {
+        copyButton.addEventListener('click', function() {
+            // Logic to copy the sequence settings
             copiedData = {
                 type: 'sequence',
                 sequenceNumber: currentSequence,
@@ -30,40 +21,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 channelURLs: channelURLs[currentSequence - 1]
             };
             console.log('Sequence settings copied:', copiedData);
-        } else if (targetId.startsWith('copy-channel-')) {
-            const channelIndex = parseInt(targetId.split('-')[2]) - 1;
-            copiedData = {
-                type: 'channel',
-                sequenceNumber: currentSequence,
-                channelIndex: channelIndex,
-                channelSetting: channelSettings[channelIndex],
-                channelURL: channelURLs[currentSequence - 1][channelIndex]
-            };
-            console.log(`Channel ${channelIndex + 1} settings copied:`, copiedData);
-        }
 
-        // Hide dropdown after selection
-        dropdownContent.style.display = 'none';
+            // Start flashing animation on the paste button
+            if (pasteButton) {
+                pasteButton.classList.add('flashing');
+            }
 
-        // Show soft confirmation message
-        const copiedType = targetId.includes('sequence') ? 'sequence settings' : 'channel settings';
-        showConfirmationTooltip(`Copied ${targetId.replace('copy-', '').replace('-settings', '').replace('-', ' ')}. Select another sequence to paste ${copiedType} to.`);
-            });
+            // Show soft confirmation message
+            showConfirmationTooltip('Copied sequence settings. Select another sequence to paste to.');
+        });
+    }
 
-    const pasteButton = document.getElementById('paste-button');
-    pasteButton.addEventListener('click', function() {
-        if (!copiedData) {
-            alert('No data copied to paste!');
-            return;
-        }
+    if (pasteButton) {
+        pasteButton.addEventListener('click', function() {
+            if (!copiedData) {
+                alert('No data copied to paste!');
+                return;
+            }
 
-        if (currentSequence === copiedData.sequenceNumber) {
-            alert('Please select a different sequence to paste the settings.');
-            return;
-        }
+            if (currentSequence === copiedData.sequenceNumber) {
+                alert('Please select a different sequence to paste the settings.');
+                return;
+            }
 
-        pasteSettings();
-    });
+            pasteSettings();
+            // Stop the flashing animation after pasting the settings
+            this.classList.remove('flashing');
+        });
+    }
 });
 
 function showConfirmationTooltip(message) {

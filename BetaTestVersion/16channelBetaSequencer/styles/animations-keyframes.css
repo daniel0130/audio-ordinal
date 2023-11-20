@@ -1,0 +1,16 @@
+/* --- Animations --- */
+@keyframes flash {
+    0%   { background-color: var(--primary-color); }
+    50%  { background-color: #00ff00; }
+    100% { background-color: var(--primary-color); }
+}
+
+@keyframes flashingYellow {
+    0% { background-color: rgb(153, 153, 2); }
+    50% { background-color: rgb(255, 255, 0); }
+    100% { background-color: rgb(153, 153, 2); }
+}
+
+.clear-button.flashing {
+    animation: flashingYellow 0.5s infinite; /* Will make it blink twice per second */
+}

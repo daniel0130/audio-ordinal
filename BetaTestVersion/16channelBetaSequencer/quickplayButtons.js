@@ -94,13 +94,11 @@ function loadAndDisplaySequence(sequenceIndex) {
 
 // Function to create the quick-play-button
 function createQuickPlayButton(index) {
-   // console.log(`Creating quickplay button with index: ${index}`);
     const button = document.createElement('div');
-    button.classList.add('quick-play-button', 'tooltip'); // Add the tooltip class
+    button.classList.add('quick-play-button', 'tooltip'); // Added 'quickplay-button' class
     button.dataset.sequenceIndex = index; // Store the sequence index as a data attribute
-   // console.log(`Button for sequence ${index} has data attribute:`, button.dataset.sequenceIndex);
-    button.style.textAlign = "center"; // Center the text
-    button.style.fontWeight = "bold"; // Bold the text
+
+    // Removed inline styles that are now handled by CSS
     button.innerHTML = index; // Add the number inside the button
 
     const tooltipText = document.createElement('span'); // Create the tooltip text element
@@ -109,15 +107,11 @@ function createQuickPlayButton(index) {
     button.appendChild(tooltipText); // Append the tooltip to the button
 
     quickPlayButtons.push(button); // Add the button to the array
-   // console.log(`Quickplay button added. Current count: ${quickPlayButtons.length}`);
-    // console.log("Current indexes: ", quickPlayButtons.map(btn => btn.dataset.sequenceIndex));
 
     // Add a click event to set the sequence as active when clicked
     button.addEventListener('click', function() {
-        console.log(`Quickplay button for index ${index} clicked.`);
         setActiveSequence(index);
     });
-    
 
     // Add right-click event listener
     button.addEventListener('contextmenu', function(event) {
@@ -127,6 +121,7 @@ function createQuickPlayButton(index) {
 
     return button;
 }
+
 
 
 
