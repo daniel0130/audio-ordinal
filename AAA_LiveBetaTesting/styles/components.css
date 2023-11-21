@@ -126,10 +126,11 @@ div[idModalContent] div a:hover {
 }
 
 .step-button {
-    flex: 1; /* Distribute available space equally among step buttons */
+    position: relative;
+    /* flex: 1; /* Distribute available space equally among step buttons */
     min-width: 0; /* Allow buttons to shrink beyond their content width */
     width: auto; /* Allow buttons to expand based on content */
-    height: var(--step-button-max-width); /* Set the height equal to the width */
+    aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
     background-color: #555;
     color: #fff;
     max-width: var(--step-button-max-width);
