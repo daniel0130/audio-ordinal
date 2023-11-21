@@ -50,12 +50,6 @@
 
 
 
-.quickplay-container {
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
 .channel-controls {
     margin-top: 0px;
@@ -87,15 +81,17 @@
     right: 20px;
     text-align: right;
 }
-/* CSS for evenly spacing "Quick Play" buttons between the checkbox and "Save/Load" buttons */
-.button-container {
+
+
+.quickplay-button-container {
+    width: 90%;
+    margin: 0 auto; /* Center the container horizontally */
     display: flex; /* Use flexbox for horizontal alignment */
     align-items: center; /* Center items vertically */
-    justify-content: space-between; /* Space out items */
+    justify-content: center; /* Center items horizontally */
 }
-  
 
-  .quick-play-button {
+.quick-play-button {
     width: 5%; /* Set a fixed width */
     height: 5%; /* Set the same value for height to make it square */
     padding: 5px; /* Adjust padding as needed */
@@ -109,6 +105,7 @@
     /* Add other styles as needed */
 }
 
+/* Media query for smaller screens */
 @media (max-width: 600px) {
     .quick-play-button {
         width: 30px; /* Smaller size for smaller screens */
@@ -117,22 +114,20 @@
     }
 }
 
-  .quick-play-button strong {
-      display: block; /* Ensure the <strong> element takes full width */
-      font-weight: bold;
-  }
-  
-  .quick-play-button.active {
-      background-color: limegreen; /* Change to bright green when active */
-  }
+.quick-play-button strong {
+    display: block; /* Ensure the <strong> element takes full width */
+    font-weight: bold;
+}
 
-  
-  /* Reduce the font size and padding for the buttons */
-  #prev-sequence,
-  #next-sequence,
-  button[for="mode-switcher"] {
-      font-size: 12.5px; /* Adjust the font size as needed */
-      padding: 5px 10px; /* Adjust the padding as needed */
-      font-weight: bold; /* Make the text bold */
-  }
+.quick-play-button.active {
+    background-color: limegreen; /* Change to bright green when active */
+}
 
+/* Styles for other buttons */
+#prev-sequence,
+#next-sequence,
+button[for="mode-switcher"] {
+    font-size: 12.5px; /* Adjust the font size as needed */
+    padding: 5px 10px; /* Adjust the padding as needed */
+    font-weight: bold; /* Make the text bold */
+}
