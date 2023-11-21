@@ -61,6 +61,14 @@
         --step-button-max-height: 0.8vw;
     }
 
+    /* Add media queries for smaller screens */
+@media (max-width: 600px) {
+    .load-sample-button {
+        font-size: 0.7em; /* Smaller font size for smaller screens */
+        min-width: 15%; /* Adjust min-width for smaller screens */
+    }
+}
+
     #main-container {
         transform: scale(0.6);
     }

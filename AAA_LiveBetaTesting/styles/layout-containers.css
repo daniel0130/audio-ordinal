@@ -1,9 +1,17 @@
 /* --- Containers & Layout --- */
+
+.drum-machine-container {
+    width: 90%;
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 20px; /* Add some padding for spacing */
+}
+
 .steps-container {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap; /* Prevent wrapping */
     gap: 0px;
     justify-content: space-around; /* Adjust the alignment of buttons */
+    overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
 }
 
 .button-container, .subtext-container {
@@ -11,38 +19,7 @@
     align-items: center;
 }
 
-.step-button {
-    position: relative;
-    width: var(--step-button-max-width);  /* Set the width */
-    height: var(--step-button-max-width);  /* Set the height equal to the width */
-    background-color: #555;
-    color: #fff;
-    max-width: var(--step-button-max-width);
-    max-height: var(--step-button-max-height);
-}
 
-.step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
-    background-color: #add8e6; /* light blue */
-}
-
-.step-button:nth-child(16n+1) {
-    background-color: #ffff00; /* yellow */
-}
-
-/* Increase specificity for selected state to override nth colors */
-.step-button.selected,
-.step-button.selected:nth-child(4n+1):not(:nth-child(16n+1)),
-.step-button.selected:nth-child(16n+1) {
-    background-color: var(--accent-color);
-}
-
-.step-button.playing {
-    box-shadow: 0 0 10px rgb(150, 150, 150) inset;
-}
-
-.step-button.playing.selected {
-    box-shadow: 0 0 10px rgb(150, 1, 1) inset;
-}
 
 .quickplay-container {
     background-color: #fff;
@@ -89,11 +66,7 @@
     padding: 10px; /* Add some padding for spacing */
 }
   
-  #save-button, #load-button {
-    margin-left: 2px; /* Add some space between buttons */
-    right: 0px;
-  }
-  
+
   .quick-play-button {
     width: 5%; /* Set a fixed width */
     height: 5%; /* Set the same value for height to make it square */
