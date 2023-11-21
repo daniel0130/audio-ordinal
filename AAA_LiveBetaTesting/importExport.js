@@ -29,12 +29,17 @@ function markSequenceAsLive(seqIndex) {
 
 function exportSettings() {
    // console.log("exportSettings: collectedURLsForSequences before export:", collectedURLsForSequences);
+   let projectName = document.getElementById('project-name').value.trim();
+   if (!projectName) {
+       projectName = 'Default_Project';  // Default name if none is entered
+   }
 
     let allSequencesSettings = [];
 
     for (let seqIndex of liveSequences) {  // Only export "live" sequences
         const sequence = sequences[seqIndex];
         let settings = {
+            projectName: projectName, // Add the project name here
             name: `Sequence_${seqIndex + 1}`,
             bpm: sequenceBPMs[seqIndex],
             channels: [],
@@ -61,7 +66,7 @@ function exportSettings() {
         allSequencesSettings.push(settings);
     }
 
-    let filename = `Audional_Sequencer_Settings.json`;
+    let filename = `Audional_Sequencer_Settings_${projectName}.json`;
     return { settings: JSON.stringify(allSequencesSettings, null, 2), filename: filename };
 }
 
@@ -78,6 +83,7 @@ function importSettings(settings) {
 
     let parsedSettings;
     let sequenceNames = [];
+    let projectName = ""; // Variable to store the project name
     newJsonImport = true;
 
     try {
@@ -87,6 +93,15 @@ function importSettings(settings) {
         console.error("Error parsing settings:", error);
         return;
     }
+
+    // Check if there is a project name in the parsed settings
+    if (parsedSettings && Array.isArray(parsedSettings) && parsedSettings.length > 0) {
+        projectName = parsedSettings[0].projectName || "";
+        console.log("Project name:", projectName);
+    }
+
+    // Update the project name in the text box
+    document.getElementById('project-name').value = projectName;
 
     if (parsedSettings && Array.isArray(parsedSettings)) {
         collectedURLsForSequences = parsedSettings.map(seq => {
