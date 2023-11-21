@@ -6,7 +6,26 @@
     padding: 20px; /* Add some padding for spacing */
 }
 
+.controls-container {
+    flex: 1; /* Takes up 1 part of the available space */
+    padding: 10px; /* Optional: for some internal spacing */
+    /* Add more styling as needed */
+}
+
+.controls-container, .steps-container {
+    margin: 5px;
+    border: 1px solid #ccc; /* Example border */
+    border-radius: 5px; /* Rounded corners */
+    overflow: auto; /* In case content overflows */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 .steps-container {
+    flex: 2; /* Takes up 2 parts of the available space, making it larger than the controls container */
+    padding: 10px; /* Optional: for some internal spacing */
     width: 90%;
     display: flex;
     flex-wrap: nowrap; /* Prevent wrapping */
