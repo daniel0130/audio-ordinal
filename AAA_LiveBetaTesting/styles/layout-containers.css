@@ -75,12 +75,6 @@
 }
 
 /* --- LOWER Button and Container Styles --- */
-.new-button-container {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    text-align: right;
-}
 
 
 .quickplay-button-container {
@@ -92,8 +86,8 @@
 }
 
 .quick-play-button {
-    width: 5%; /* Set a fixed width */
-    height: 5%; /* Set the same value for height to make it square */
+    width: 30px; /* Set a fixed width */
+    height: 30px; /* Set the same value for height to make it square */
     padding: 5px; /* Adjust padding as needed */
     margin: 0 5px; /* Adjust margin for spacing between buttons */
     display: flex;
