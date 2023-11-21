@@ -26,15 +26,19 @@
 
 .play-button, .stop-button {
     position: relative;
-    width: 30px; /* Smaller width */
-    height: 30px; /* Smaller height */
-    font-size: 14px; /* Adjust font size if needed */
-    padding: 5px; /* Adjust padding if needed */
+    width: 70px; /* Smaller width */
+    height: 70px; /* Smaller height */
+    font-size: 10px; /* Adjust font size if needed */
+    padding-top: 20px; /* Adjust padding if needed */
 }
 
 #play.selected {
     background-color: #00ff00;
 }
+
+#stop.selected {
+    background-color: #ff0000;
+}   
 
 .stop-button {
     background-color: var(--accent-color);

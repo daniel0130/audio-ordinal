@@ -2,7 +2,7 @@
 
 .drum-machine-container {
     width: 95%;
-    margin: 0 auto; /* Center the container horizontally */
+    margin: 10 auto; /* Center the container horizontally */
     padding: 20px; /* Add some padding for spacing */
 }
 
