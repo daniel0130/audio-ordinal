@@ -1,9 +1,6 @@
 /* --- Channel Elements --- */
 .channel {
-    width: 92vw;
-    margin: 5px;
     display: flex;
-    /* justify-content: space-between;*/
 }
 
 .ordinal-loaded {
@@ -20,7 +17,7 @@
     animation: none;
 }
 
-#stop.selected ~ #play, /*.step-button.selected,*/ .mute-button.selected, .solo-button.selected {
+#stop.selected ~ #play, .step-button.selected, .mute-button.selected, .solo-button.selected {
     background-color: var(--accent-color);
 }
 
@@ -39,46 +36,46 @@
 .solo-button.selected {
     background-color: rgb(255, 128, 0);
 }
-/* 
-/* .step-button {
-/*     position: relative;
-/*     /* flex: 1; /* Distribute available space equally among step buttons */
-/*     min-width: 0; /* Allow buttons to shrink beyond their content width */
-/*     width: auto; /* Allow buttons to expand based on content */
-/*     aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
-/*     background-color: #555;
-/*     color: #fff;
-/*     max-width: var(--step-button-max-width);
-/*     max-height: var(--step-button-max-height);
-/* }
-/* 
-/* .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
-/*     background-color: #add8e6; /* light blue */
-/* }
-/* 
-/* .step-button:nth-child(16n+1) {
-/*     background-color: #ffff00; /* yellow */
-/* }
-/* 
-/* /* Increase specificity for selected state to override nth colors */
-/* .step-button.selected,
-/* .step-button.selected:nth-child(4n+1):not(:nth-child(16n+1)),
-/* .step-button.selected:nth-child(16n+1) {
-/*     background-color: var(--accent-color);
-/* }
-/* 
-/* .step-button.playing {
-/*     box-shadow: 0 0 10px rgb(150, 150, 150) inset;
-/* }
-/* 
-/* .step-button.playing.selected {
-/*     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
-/* }
-/* 
-/* .step-button.dimmed {
-/*     opacity: 0.5; /* You can adjust this value as needed */
-/* }
-/* */
+
+.step-button {
+    position: relative;
+
+    /* flex: 1; /* Distribute available space equally among step buttons */
+    min-width: 0; /* Allow buttons to shrink beyond their content width */
+    aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
+    background-color: #555;
+    color: #fff;
+    max-width: 20px;
+    max-height: 20px;
+}
+ 
+ .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
+     background-color: #add8e6; /* light blue */
+ }
+ 
+ .step-button:nth-child(16n+1) {
+     background-color: #ffff00; /* yellow */
+ }
+ 
+ /* Increase specificity for selected state to override nth colors */
+ .step-button.selected,
+ .step-button.selected:nth-child(4n+1):not(:nth-child(16n+1)),
+ .step-button.selected:nth-child(16n+1) {
+     background-color: var(--accent-color);
+ }
+ 
+ .step-button.playing {
+     box-shadow: 0 0 10px rgb(150, 150, 150) inset;
+ }
+ 
+ .step-button.playing.selected {
+     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
+ }
+ 
+ .step-button.dimmed {
+     opacity: 0.5; /* You can adjust this value as needed */
+ }
+ 
 .load-sample-button {
     flex: 1; /* Flex grow and shrink */
     overflow: auto;

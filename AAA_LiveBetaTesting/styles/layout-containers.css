@@ -1,18 +1,17 @@
 /* --- Containers & Layout --- */
 
 .drum-machine-container {
-    width: 90%;
+    width: 95%;
     margin: 0 auto; /* Center the container horizontally */
     padding: 20px; /* Add some padding for spacing */
 }
 
 .controls-container {
     flex: 1; /* Takes up 1 part of the available space */
-    padding: 10px; /* Optional: for some internal spacing */
     /* Add more styling as needed */
 }
 
-.controls-container, .steps-container {
+.controls-container{
     margin: 5px;
     border: 1px solid #ccc; /* Example border */
     border-radius: 5px; /* Rounded corners */
@@ -24,15 +23,32 @@
 }
 
 .steps-container {
-    flex: 2; /* Takes up 2 parts of the available space, making it larger than the controls container */
-    padding: 10px; /* Optional: for some internal spacing */
-    width: 90%;
-    display: flex;
-    flex-wrap: nowrap; /* Prevent wrapping */
+    display: grid;
+    grid-template-columns: repeat(64, minmax(10px, 1fr)); /* 64 columns */
     gap: 0px;
-    justify-content: space-around; /* Adjust the alignment of buttons */
     overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
 }
+
+/* Adjust the breakpoints as needed based on the total width of 64 buttons */
+@media screen and (max-width: 1280px) { /* Example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(32, minmax(10px, 1fr)); /* Adjust to 48 columns */
+    }
+}
+
+@media screen and (max-width: 1024px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 32 columns */
+    }
+}
+
+@media screen and (max-width: 768px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+
 
 .quickplay-container {
     background-color: #fff;
@@ -76,7 +92,6 @@
     display: flex; /* Use flexbox for horizontal alignment */
     align-items: center; /* Center items vertically */
     justify-content: space-between; /* Space out items */
-    padding: 10px; /* Add some padding for spacing */
 }
   
 

@@ -69,10 +69,10 @@
 /* 
 /*     #main-container {
 /*         transform: scale(0.6);
-/*     }
-/* 
-/*     .channel {
-/*         width: 100%; /* Full width on small screens */
-/*     }
-/* }
-/* 
+/*     }*/
+ 
+     .channel {
+         width: 100%; /* Full width on small screens */
+     }
+ 
+ 
