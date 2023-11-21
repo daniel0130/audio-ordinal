@@ -7,8 +7,8 @@
     --accent-color: #f00;
     --button-dimension: 5vw; /* Using viewport width for relative sizing */
     --control-button-dimension: 1.8vw;
-    --step-button-max-width: 10px; /* Adjust as needed */
-    --step-button-max-height: 10px; /* Adjust as needed */
+    --step-button-max-width: 30px; /* Adjust as needed */
+    --step-button-max-height: 30px; /* Adjust as needed */
     --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;
     --default-font: Arial, sans-serif;
 }

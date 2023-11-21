@@ -7,19 +7,13 @@
 }
 
 .steps-container {
+    width: 90%;
     display: flex;
     flex-wrap: nowrap; /* Prevent wrapping */
     gap: 0px;
     justify-content: space-around; /* Adjust the alignment of buttons */
     overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
 }
-
-.button-container, .subtext-container {
-    display: center;
-    align-items: center;
-}
-
-
 
 .quickplay-container {
     background-color: #fff;
