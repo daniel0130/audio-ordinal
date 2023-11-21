@@ -1,0 +1,100 @@
+/* --- Channel Elements --- */
+.channel {
+    display: flex;
+}
+
+.ordinal-loaded {
+    border: 2px solid #f7931a;
+}
+
+/* --- Button Specific Styles --- */
+#play {
+    animation: flash 2s infinite ease-in-out;
+}
+
+#play.selected, 
+#stop.selected ~ #play {
+    animation: none;
+}
+
+#stop.selected ~ #play, .step-button.selected, .mute-button.selected, .solo-button.selected {
+    background-color: var(--accent-color);
+}
+
+.clear-button {
+    background-color: rgb(153, 153, 2);
+}
+
+.mute-button {
+    background-color: #800;
+}
+
+.solo-button {
+    background-color: rgb(177, 105, 33);
+}
+
+.solo-button.selected {
+    background-color: rgb(255, 128, 0);
+}
+
+.step-button {
+    position: relative;
+
+    /* flex: 1; /* Distribute available space equally among step buttons */
+    min-width: 0; /* Allow buttons to shrink beyond their content width */
+    aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
+    background-color: #555;
+    color: #fff;
+    max-width: 20px;
+    max-height: 20px;
+}
+ 
+ .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
+     background-color: #add8e6; /* light blue */
+ }
+ 
+ .step-button:nth-child(16n+1) {
+     background-color: #ffff00; /* yellow */
+ }
+ 
+ /* Increase specificity for selected state to override nth colors */
+ .step-button.selected,
+ .step-button.selected:nth-child(4n+1):not(:nth-child(16n+1)),
+ .step-button.selected:nth-child(16n+1) {
+     background-color: var(--accent-color);
+ }
+ 
+ .step-button.playing {
+     box-shadow: 0 0 10px rgb(150, 150, 150) inset;
+ }
+ 
+ .step-button.playing.selected {
+     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
+ }
+ 
+ .step-button.dimmed {
+     opacity: 0.5; /* You can adjust this value as needed */
+ }
+ 
+.load-sample-button {
+    flex: 1; /* Flex grow and shrink */
+    overflow: auto;
+    text-overflow: ellipsis;
+    font-size: 0.8em; /* Consider making this responsive as well */
+    height: 20px;
+    max-width: 15%;
+    min-width: 10%; /* Example of a responsive width */
+    padding: 1px;
+    font-weight: bold;
+}
+
+
+
+.load-sample-button:hover::after {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--primary-color);
+    color: var(--main-bg-color);
+    z-index: 1;
+}

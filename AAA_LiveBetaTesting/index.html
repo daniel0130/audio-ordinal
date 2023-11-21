@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--<link rel="stylesheet" type="text/css" href="16channelBetaSequencer/styles.css">-->
+    <link rel="stylesheet" type="text/css" href="styles/channel-elements.css">
+    <link rel="stylesheet" type="text/css" href="styles/variables-media-queries.css">
+    <link rel="stylesheet" type="text/css" href="styles/global-structural.css">
+    <link rel="stylesheet" type="text/css" href="styles/components.css">
+    <link rel="stylesheet" type="text/css" href="styles/layout-containers.css">
+    <link rel="stylesheet" type="text/css" href="styles/popups-modals.css">
+    <link rel="stylesheet" type="text/css" href="styles/animations-keyframes.css">
+    <link rel="stylesheet" type="text/css" href="styles/utility-buttons.css">
+    <link rel="stylesheet" type="text/css" href="audioTrimSvelteComponent/bundle.css">
+    <link rel="stylesheet" type="text/css" href="audioTrimSvelteComponent/bundle.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+</head>
+
+<body>
+    <div class="drum-machine-container">
+    <div id="drum-machine">
+        <h1>
+            <span class="button-label">Play</span>
+            <div class="button button-round tooltip">
+                <div class="button play-button" id="play"></div>
+                <span class="tooltiptext">Start the sequence.</span>
+            </div>
+            <span class="button-label stop">Stop</span>
+            <div class="button button-round tooltip">
+                <div class="button stop-button" id="stop"></div>
+                <span class="tooltiptext">Stop the sequence.</span>
+            </div>
+            <div class="bpm-container tooltip">
+                BPM: <input type="range" min="60" max="180" value="105" step="1" id="bpm-slider" title="Adjust the Beats Per Minute">
+                <div class="bpm-display" id="bpm-display">105</div>
+                <span class="tooltiptext">Drag to adjust the BPM (Beats Per Minute) of the sequence.</span>
+            </div>
+            <span class="title">
+                Audional Sequencer <span class="bright-orange">&#x20bf;</span>itcoin<span class="bright-orange">&#x20bf;</span>eats<span class="small-text"> &#x20bf;eta</span>
+            </span>
+        </h1>
+         <!-- Utility Buttons Container -->
+         <div class="utility-buttons">
+            <!-- Save Button -->
+            <button id="save-button" class="tooltip">Save
+                <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
+            </button>
+            <input type="file" id="save-file-input" style="display: none">
+            <!-- Load Button -->
+            <button id="load-button" class="tooltip">Load
+                <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
+            </button>
+            <div id="loadOptions" class="load-popup">
+                <button id="loadJson">Load from Json file</button>
+                <button id="loadInternalPreset">Random Ordinal Sounds</button>
+                <button id="loadInternalPreset2">Random Ordinal Sounds 2</button>
+                <button id="loadInternalPreset3">Load Japanese Koto Preset</button>
+                <button id="loadInternalPreset4">Nobodys Cutting It Up</button>
+                <button id="loadInternalPreset5">Koto2</button>
+            </div>
+            <input type="file" id="load-file-input" style="display: none" accept=".json">
+            <!-- Copy Button -->
+            <button id="copy-sequence-settings" class="action-button tooltip copy-button">Copy
+                <span class="tooltiptext">Copy Sequence Steps</span>
+            </button>
+            <!-- Paste Button -->
+            <button id="paste-button" class="action-button tooltip paste-button">Paste
+                <span class="tooltiptext">Paste the sequence settings from clipboard.</span>
+            </button>
+        </div>
+        <div class="subtext-container">
+            <p class="subtext centered-text">
+                Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+            </p>
+        </div>
+        <main id="app" role="main"><!-- Channel Templates -->
+            <div class="channel-template" style="display: none;">
+                <div class="channel">
+                    <button class="load-sample-button tooltip" title="Load New Audional">Load New Audional
+                        <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+                    </button>
+                    <!-- Open Audio Trimmer Button for each channel -->
+                    <button class="control-button open-audio-trimmer tooltip" style="background-color: blue; font-weight: bold;">
+                        T
+                        <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
+                    </button>
+                    <button class="control-button clear-button tooltip">
+                        <span class="letter">C</span>
+                        <span class="tooltiptext">Clear the current channel's sequence.</span>
+                        <div class="clear-confirm" style="display: none; position: absolute; background-color: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 3px; z-index: 10;">
+                            Click again to confirm clear
+                        </div>
+                    </button>
+                    <button class="control-button mute-button tooltip">
+                        <span class="letter">M</span>
+                        <span class="tooltiptext">Mute or unmute the current channel.</span>
+                    </button>
+                    <button class="control-button solo-button tooltip">
+                        <span class="letter">S</span>
+                        <span class="tooltiptext">Solo the current channel.</span>
+                    </button>
+                        <!-- Steps Container (Where step buttons go) -->
+                        <div class="steps-container"></div>
+                       
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main><!-- Modal Structure -->
+        <!-- Button Container for Playback and Actions -->
+        <div class="button-container">
+            <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
+            <button id="prev-sequence" class="tooltip">Previous Sequence
+                <span class="tooltiptext">Go to the previous sequence</span>
+            </button>
+            <span id="current-sequence-display" class="tooltip">Sequence 1
+                <span class="tooltiptext">Currently displayed sequence</span>
+            </span>
+            <button id="next-sequence" class="tooltip">Next Sequence
+                <span class="tooltiptext">Go to the next sequence</span>
+            </button>
+            <label for="continuous-play" class="tooltip">Continuous Play
+                <span class="tooltiptext">Toggle continuous play mode</span>
+            </label>
+            <input type="checkbox" id="continuous-play" class="tooltip">
+            <div id="quick-play-button" class="tooltip">
+                <span class="tooltiptext">Quick play button</span>
+            </div>
+        </div>
+        <div id="audio-trimmer-modal" class="modal" hidden>
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <div id="audio-trimmer-container"></div>
+            </div>
+        </div>
+       
+        
+    </div>
+    </div>
+    </div>
+    </main>
+    </div>
+    </div>
+    
+
+<script src="audioTrimSvelteComponent/LocalStorageUtils.js"></script>
+<!-- <script src="16channelBetaSequencer/audioTrimSvelteComponent/audioTrimSettingsLocalStorage.js"></script>  -->
+<script src="audioTrimSvelteComponent/bundle.js"></script>
+<script src="updateSequenceData.js"></script>
+<script src="quickplayButtons.js"></script> <!-- Newly added external script link -->
+<script src="copyAndPaste.js"></script>
+<script src="sequenceChannelSettings.js"></script>
+<script src="sequenceChannelSettings_Part2.js"></script>
+<script src="displayUpdatedValues.js"></script>
+<script src="eventListeners.js"></script>
+<script src="colourPicker.js"></script>
+<script src="timingMessages.js"></script>
+<script src="masterSettings.js"></script>
+<script src="channelSettings.js"></script>
+<script src="stepHandling.js"></script>
+<script src="stepSchedulers.js"></script>
+<script src="embeddedPreset.js"></script>
+<script src="audionalSampleLibrary.js"></script>
+<script src="audioUtils.js"></script>
+<script src="importExport.js"></script>
+<script src="index.js"></script>
+
+<script>
+    window.trimSettings = (function() {
+        let settings = JSON.parse(localStorage.getItem('audioTrimSettings') || '{}');
+
+        function update(channelIndex, newSettings) {
+            settings[channelIndex] = newSettings;
+            localStorage.setItem('audioTrimSettings', JSON.stringify(settings));
+        }
+
+        function get(channelIndex) {
+            return settings[channelIndex] || { start: 0.01, end: 100 };
+        }
+
+        return { update, get };
+    })();
+</script>
+
+</body>
+</html>
