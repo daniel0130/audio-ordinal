@@ -85,8 +85,15 @@
         <main id="app" role="main"><!-- Channel Templates -->
             <div class="channel-template" style="display: none;">
                 <div class="channel">
-                    <button class="load-sample-button tooltip" title="Load New Audional">Load New Audional
+                    <button class="load-sample-button tooltip" title="Load New Audional">
+                        Load New Audional
                         <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+                        
+                        <!-- Added dropdown menu -->
+                        <div class="dropdown-content">
+                          <a href="#" id="rename-channel">Rename Channel</a>
+                          <a href="#" id="copy-ordinal-id">Copy Ordinal ID</a>
+                        </div>
                     </button>
                     <!-- Open Audio Trimmer Button for each channel -->
                     <button class="control-button open-audio-trimmer tooltip" style="background-color: blue; font-weight: bold;">
