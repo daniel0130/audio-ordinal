@@ -76,25 +76,35 @@
      opacity: 0.5; /* You can adjust this value as needed */
  }
  
-.load-sample-button {
-    flex: 1; /* Flex grow and shrink */
+ .load-sample-button {
+    flex: 1;
     overflow: auto;
     text-overflow: ellipsis;
-    font-size: 0.8em; /* Consider making this responsive as well */
+    font-size: 0.8em;
     height: 20px;
     max-width: 15%;
-    min-width: 10%; /* Example of a responsive width */
+    min-width: 10%;
     padding: 1px;
     font-weight: bold;
+    position: relative; /* Add this for dropdown positioning */
 }
 
-
-
-.load-sample-button:hover::after {
+.dropdown-content {
+    display: none;
     position: absolute;
-    top: 100%;
-    left: 0;
-    background: var(--primary-color);
-    color: var(--main-bg-color);
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.load-sample-button:hover .dropdown-content {
+    display: block; /* Show the dropdown when hovering over the button */
 }
