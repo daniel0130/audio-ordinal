@@ -5,6 +5,9 @@
     --secondary-bg-color: #333;
     --primary-color: #fff;
     --accent-color: #f00;
+    --soft-red: #f8aaaa; /* Example of a soft red color */
+    --soft-green: #96fc9d; /* Example of a soft red color */
+
     --button-dimension: 5vw; /* Using viewport width for relative sizing */
     --control-button-dimension: 1.8vw;
     --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;

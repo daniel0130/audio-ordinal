@@ -32,6 +32,10 @@
     padding-top: 20px; /* Adjust padding if needed */
 }
 
+.button.play-button {
+    background-color: var(--soft-green);
+}
+
 #play.selected {
     background-color: #00ff00;
 }
@@ -40,8 +44,8 @@
     background-color: #ff0000;
 }   
 
-.stop-button {
-    background-color: var(--accent-color);
+.button.stop-button {
+    background-color: var(--soft-red);
 }
 
 .button-label.stop {
