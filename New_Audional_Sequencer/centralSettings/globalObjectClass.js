@@ -342,37 +342,37 @@ class UnifiedSequencerSettings {
 
 
     loadSettings(jsonSettings) {
-        console.log("loadSettings entered");
+        console.log("[internalPresetDebug] loadSettings entered");
         try {
-            console.log("[loadSettings] Received JSON Settings:", jsonSettings);
+            console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
             const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-            console.log("[loadSettings] Parsed Settings:", parsedSettings);
+            console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
     
             // Update the masterSettings with the parsed settings
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
-            // console.log("[loadSettings]  currentSequence before update:", this.settings.currentSequence);
-            // this.settings.masterSettings.currentSequence = parsedSettings.currentSequence;
-            // console.log("[loadSettings]  currentSequence after update:", this.settings.currentSequence);
             this.settings.masterSettings.projectURLs = parsedSettings.projectURLs;
             this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
             this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
+            console.log("[internalPresetDebug] Updated masterSettings:", this.settings.masterSettings);
     
             // Update projectSequences
             if (parsedSettings.projectSequences) {
+                console.log("[internalPresetDebug] Updating project sequences");
                 this.setProjectSequences(parsedSettings.projectSequences);
             }
     
-            console.log("[loadSettings] Updated masterSettings:", this.settings.masterSettings);
+            console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
     
             // Update the text of each loadSampleButton with the loaded URL
             this.updateAllLoadSampleButtonTexts();
         } catch (error) {
-            console.error('Error loading settings:', error);
+            console.error('[internalPresetDebug] Error loading settings:', error);
         }
         // Notify all observers about the change
         this.notifyObservers();
     }
+    
     
     
         
