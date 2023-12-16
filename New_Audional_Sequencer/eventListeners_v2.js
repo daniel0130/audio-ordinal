@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadButton = document.getElementById('load-button');
     let loadOptions = document.getElementById('loadOptions');
     let loadJson = document.getElementById('loadJson');
-    let loadInternalPreset = document.getElementById('loadInternalPreset');
+    let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
     let loadInternalPreset2 = document.getElementById('loadInternalPreset2');
     let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
     let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
@@ -82,12 +82,25 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log(`Loading preset from: ${filePath}`);
         fetch(filePath)
             .then(response => response.json())
-            .then(jsonSettings => window.unifiedSequencerSettings.loadSettings(jsonSettings))
+            .then(async jsonSettings => {
+                window.unifiedSequencerSettings.loadSettings(jsonSettings);
+    
+                if (jsonSettings.projectURLs && Array.isArray(jsonSettings.projectURLs)) {
+                    for (let i = 0; i < jsonSettings.projectURLs.length; i++) {
+                        const url = jsonSettings.projectURLs[i];
+                        if (url) {
+                            const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
+                            await fetchAudio(url, i, loadSampleButtonElement);
+                        }
+                    }
+                }
+            })
             .catch(error => console.error(`Error loading preset from ${filePath}:`, error));
         loadOptions.style.display = "none";
     }
     
-    // loadInternalPreset.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset1.json'));
+    
+    loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Vitalik Ordinals Remix.json'));
     // loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/randomOrdinalSounds2.json'));
     // loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Japanese_Koto_Samples.json'));
     // loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset4.json'));
