@@ -1,0 +1,64 @@
+    /* audio-trim-module.css */
+
+
+    .waveform-container {
+        position: relative;
+        width: 100%;
+        height: 200px; /* Adjust if needed */
+        background: #f3f3f3;
+        border: 1px solid #000;
+    }
+    
+    canvas, .dimmed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    canvas {
+        display: block;
+    }
+    
+    .dimmed {
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .loop-button.on {
+        background-color: green;
+    }
+    
+    .loop-button.off {
+        background-color: red;
+    }
+    
+    /* General slider style */
+    .slider {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        cursor: pointer;
+        /* Removed border-radius for square shape */
+    }
+    
+    .slider-track {
+        width: 100%;
+        height: 10px;
+        background-color: #ccc;
+        position: absolute;
+        top: calc(100% - 10px); /* Position at the bottom of the container */
+    }
+    
+    #startSlider {
+        background-color: blue;
+        left: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+    }
+    
+    #endSlider {
+        background-color: red;
+        left: 100%; /* Initially align left side with the right edge of the container */
+        z-index: 100;
+    }    

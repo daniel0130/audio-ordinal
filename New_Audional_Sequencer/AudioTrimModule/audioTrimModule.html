@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="AudioTrimModule/audio-trim-module.css">
+
+    <title>Audio Trimmer</title>
+   
+</head>
+<body>
+    <div id="audioTrimmerModal">
+        <h1>Audio Trimmer</h1>
+        <input type="text" id="ordinalIdInput" placeholder="Enter Ordinal ID" />
+        <button id="loadSampleButton">Load Sample</button>
+        <div class="waveform-container">
+            <canvas id="waveformCanvas" width="4000" height="800"></canvas>
+            <canvas id="playbackCanvas" width="4000" height="800"></canvas>
+           
+            <div class="dimmed" id="startDimmed"></div>
+            <div class="dimmed" id="endDimmed"></div>
+
+            <div class="slider-track">
+                <div id="startSlider" class="slider"></div>
+                <div id="endSlider" class="slider"></div>
+            </div>
+            
+        </div>
+        <br><br>
+        <div>
+        <button id="trimmerPlayButton">Play</button>
+        <button id="trimmerStopButton">Stop</button>
+        <button id="loopButton" class="loop-button off">Loop Selection</button>
+    </div>
+</div>
+   
+    <script src="audioTrimModule_v2.js"></script>
+    <script src="audioTrimmerModuleHelperFunctions.js"></script>
+</body>
+</html>
