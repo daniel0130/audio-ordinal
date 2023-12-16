@@ -2,7 +2,7 @@
 
 let totalSequenceCount = 16;
 
-let isContinuousPlay = false;
+let isContinuousPlay = true;
 
 document.addEventListener('DOMContentLoaded', () => {
     const continuousPlayButton = document.getElementById('continuous-play');

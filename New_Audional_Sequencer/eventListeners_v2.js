@@ -82,10 +82,23 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log(`Loading preset from: ${filePath}`);
         fetch(filePath)
             .then(response => response.json())
-            .then(jsonSettings => window.unifiedSequencerSettings.loadSettings(jsonSettings))
+            .then(async jsonSettings => {
+                window.unifiedSequencerSettings.loadSettings(jsonSettings);
+    
+                if (jsonSettings.projectURLs && Array.isArray(jsonSettings.projectURLs)) {
+                    for (let i = 0; i < jsonSettings.projectURLs.length; i++) {
+                        const url = jsonSettings.projectURLs[i];
+                        if (url) {
+                            const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
+                            await fetchAudio(url, i, loadSampleButtonElement);
+                        }
+                    }
+                }
+            })
             .catch(error => console.error(`Error loading preset from ${filePath}:`, error));
         loadOptions.style.display = "none";
     }
+    
     
     loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Vitalik Ordinals Remix.json'));
     // loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/randomOrdinalSounds2.json'));
