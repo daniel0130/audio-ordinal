@@ -296,12 +296,6 @@ class UnifiedSequencerSettings {
         return this.settings.masterSettings.projectURLs[channelIndex];
     }
 
-    setProjectName(name) {
-        console.log("setProjectName entered");
-        this.settings.masterSettings.projectName = name;
-        console.log(`[setProjectName] Project name set to: ${name}`);
-    }
-
     setProjectURLs(urls) {
         console.log("setProjectURLs entered");
         this.settings.masterSettings.projectURLs = urls;
@@ -310,6 +304,14 @@ class UnifiedSequencerSettings {
         // Correctly calling the method within the same class
         this.updateAllLoadSampleButtonTexts();
     }
+
+    setProjectName(name) {
+        console.log("setProjectName entered");
+        this.settings.masterSettings.projectName = name;
+        console.log(`[setProjectName] Project name set to: ${name}`);
+    }
+
+    
     
 
     // setTrimSettings(settings) {

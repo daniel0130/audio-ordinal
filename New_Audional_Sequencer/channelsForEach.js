@@ -250,7 +250,7 @@ console.log("channelsForeach.js entered");
             }
         }
 
-        // Function to extract and copy the Ordinal ID
+        // Function to copy the full URL instead of just the Ordinal ID
         function copyOrdinalId(channelIndex) {
             const url = window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
             if (!url) {
@@ -258,15 +258,12 @@ console.log("channelsForeach.js entered");
                 return;
             }
 
-            const ordinalId = extractOrdinalIdFromUrl(url);
-            if (ordinalId) {
-                navigator.clipboard.writeText(ordinalId)
-                    .then(() => console.log('Ordinal ID copied:', ordinalId))
-                    .catch(err => console.error('Error copying Ordinal ID:', err));
-            } else {
-                console.log('No Ordinal ID found in URL:', url);
-            }
+            // Copying the full URL to the clipboard
+            navigator.clipboard.writeText(url)
+                .then(() => console.log('Full URL copied:', url))
+                .catch(err => console.error('Error copying URL:', err));
         }
+
 
         // Function to extract the Ordinal ID from a URL
         function extractOrdinalIdFromUrl(url) {
@@ -274,29 +271,36 @@ console.log("channelsForeach.js entered");
             return match ? match[1] : null;
         }
 
-      // Function to paste the Ordinal ID
+        // Function to paste the full URL
         function pasteOrdinalId(channelIndex) {
             navigator.clipboard.readText()
-                .then(text => {
-                    // Assuming a method 'setProjectUrlForChannel' exists
-                    window.unifiedSequencerSettings.setProjectUrlForChannel(channelIndex, text);
-                    console.log('Pasted Ordinal ID:', text);
+                .then(fullUrl => {
+                    // Retrieve the current URLs
+                    let currentURLs = window.unifiedSequencerSettings.settings.masterSettings.projectURLs;
+                    
+                    // Update the URL for the specific channel
+                    currentURLs[channelIndex] = fullUrl;
+
+                    // Set the updated URLs
+                    window.unifiedSequencerSettings.setProjectURLs(currentURLs);
+                    console.log('Pasted full URL:', fullUrl);
                 })
-                .catch(err => console.error('Error pasting Ordinal ID:', err));
+                .catch(err => console.error('Error pasting URL:', err));
         }
+
 
         // Function to paste the Channel Settings
         function pasteChannelSettings(channelIndex) {
             navigator.clipboard.readText()
                 .then(text => {
-                    // Assuming a method 'setChannelSettings' exists
-                    // You need to parse the text if it's JSON or in another format
+                    // Assuming the text is JSON-formatted settings
                     let settings = JSON.parse(text);
+
+                    // Set the channel settings
+                    // Replace 'setChannelSettings' with your actual method
                     window.unifiedSequencerSettings.setChannelSettings(channelIndex, settings);
                     console.log('Pasted Channel Settings:', settings);
                 })
                 .catch(err => console.error('Error pasting Channel Settings:', err));
-        }
-    
-
-});
+            }
+        });
