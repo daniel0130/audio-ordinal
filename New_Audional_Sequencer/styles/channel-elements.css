@@ -46,7 +46,6 @@
 }
 
 #stop.selected ~ #play,
-.step-button.selected,
 .mute-button.selected,
 .solo-button.selected {
     background-color: var(--accent-color);
@@ -87,30 +86,34 @@
     position: relative;
     min-width: 0; /* Allow buttons to shrink beyond their content width */
     aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
-    background-color: #555; /* Default color, overridden by dynamic classes */
+    background-color: #555; /* Default color */
     color: #fff;
     max-width: 20px;
     max-height: 20px;
 }
 
+
 /* Dynamic color classes - Increased specificity to override other styles */
-.color-FF0000 .step-button,
-.color-00FF00 .step-button,
-.color-0000FF .step-button,
-.color-FFFF00 .step-button,
-.color-00FFFF .step-button,
-.color-FF00FF .step-button,
-.color-808080 .step-button,
-.color-FFFFFF .step-button,
-.color-FFA500 .step-button,
-.color-800080 .step-button,
-.color-008080 .step-button,
-.color-000080 .step-button,
-.color-800000 .step-button,
-.color-008000 .step-button,
-.color-FFC0CB .step-button,
-.color-D2691E .step-button {
-    background-color: inherit; /* Inherit color from parent element (loadSampleButton) */
+.color-FF0000 .step-button.selected { background-color: #FF0000; }
+.color-00FF00 .step-button.selected { background-color: #00FF00; }
+.color-0000FF .step-button.selected { background-color: #0000FF; }
+.color-FFFF00 .step-button.selected { background-color: #FFFF00; }
+.color-00FFFF .step-button.selected { background-color: #00FFFF; }
+.color-FF00FF .step-button.selected { background-color: #FF00FF; }
+.color-808080 .step-button.selected { background-color: #808080; }
+.color-FFFFFF .step-button.selected { background-color: #FFFFFF; }
+.color-FFA500 .step-button.selected { background-color: #FFA500; }
+.color-800080 .step-button.selected { background-color: #800080; }
+.color-008080 .step-button.selected { background-color: #008080; }
+.color-000080 .step-button.selected { background-color: #000080; }
+.color-800000 .step-button.selected { background-color: #800000; }
+.color-008000 .step-button.selected { background-color: #008000; }
+.color-FFC0CB .step-button.selected { background-color: #FFC0CB; }
+.color-D2691E .step-button.selected { background-color: #D2691E; }
+
+/* Default color for non-selected step buttons */
+.step-button:not(.selected) {
+    background-color: var(--accent-color); /* Red color from :root variable */
 }
  
  .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
