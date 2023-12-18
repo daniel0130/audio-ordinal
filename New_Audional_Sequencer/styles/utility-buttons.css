@@ -24,3 +24,17 @@
     background-color: #ffb300; /* Darker amber on hover */
 }
 
+.flash-yellow {
+    animation: flash-yellow 1s infinite alternate;
+}
+
+@keyframes flash-yellow {
+    0% {
+        background-color: yellow;
+        color: black;
+    }
+    100% {
+        background-color: #ffeb3b; /* Change to your desired yellow color */
+        color: black;
+    }
+}
