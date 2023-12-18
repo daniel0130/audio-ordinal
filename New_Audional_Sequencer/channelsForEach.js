@@ -199,6 +199,11 @@
                 colorDiv.addEventListener('click', function() {
                     console.log(`Color selected: ${color}`);
                     button.style.backgroundColor = color;
+        
+                    // Remove previous color class and add the new one
+                    button.className = button.className.replace(/\bcolor-[^ ]+/g, '');
+                    button.classList.add(`color-${color.replace('#', '')}`);
+        
                     colorPicker.remove();
                 });
                 colorPicker.appendChild(colorDiv);
@@ -207,12 +212,12 @@
             // Append the color picker to the body
             document.body.appendChild(colorPicker);
             console.log('Color picker appended to the body. Check if it is visible in the DOM.');
-
+        
             // Add event listener to stop propagation of click events inside the color picker
             colorPicker.addEventListener('click', function(e) {
                 e.stopPropagation();
             });
-
+        
             // Delay the addition of the global click listener
             setTimeout(() => {
                 document.addEventListener('click', function removePicker() {
@@ -221,13 +226,14 @@
                     document.removeEventListener('click', removePicker);
                 });
             }, 0); // Small delay like 0 or 10 milliseconds
-
+        
             // Set a timeout to remove the color picker after 2 seconds
             setTimeout(() => {
                 console.log('Removing color picker after 2 seconds.');
                 colorPicker.remove();
             }, 5000);
         }
+        
 
         // Helper function to handle click outside the custom context menu
         function handleClickOutsideMenu(event) {
