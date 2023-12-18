@@ -1,10 +1,13 @@
 // createStepButtonsforSequence.js
 
 // Function to create step buttons for a given sequence
+// Function to create step buttons for a given sequence
 function createStepButtonsForSequence() {
     console.log("[createStepButtonsForSequence] [SeqDebug] entered");
     channels.forEach((channel, channelIndex) => {
         const stepsContainer = channel.querySelector('.steps-container');
+        const loadSampleButton = channel.querySelector('.load-sample-button');
+        const colorClass = loadSampleButton.className.match(/\bcolor-[^ ]+/) || '';
         stepsContainer.innerHTML = '';
     
         let currentSequence = window.unifiedSequencerSettings.settings.masterSettings.currentSequence;
@@ -13,6 +16,9 @@ function createStepButtonsForSequence() {
         for (let i = 0; i < 64; i++) {
             const button = document.createElement('button');
             button.classList.add('step-button');
+            if (colorClass) {
+                button.classList.add(colorClass);
+            }
             button.id = `Sequence${currentSequence}-ch${channelIndex}-step-${i}`;
 
             // Store the IDs of the first and last buttons
