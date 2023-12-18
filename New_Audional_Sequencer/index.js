@@ -22,7 +22,7 @@ let stopClickCount = 0;
 let playButton = document.getElementById('play');
 let stopButton = document.getElementById('stop');
 let saveButton = document.getElementById('save-button');
-let loadButton = document.getElementById('load-button');
+// let loadButton = document.getElementById('new-load-button');
 // let bpm ;
 let audioContext;
 let currentStepTime;

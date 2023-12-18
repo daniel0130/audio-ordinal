@@ -10,7 +10,7 @@ appContainer.addEventListener('click', () => {
 document.addEventListener("DOMContentLoaded", function() {
     let saveButton = document.getElementById('save-button');
     let loadFileInput = document.getElementById('load-file-input');
-    let loadButton = document.getElementById('load-button');
+    let loadButton = document.getElementById('new-load-button');
     let loadOptions = document.getElementById('loadOptions');
     let loadJson = document.getElementById('loadJson');
     let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
@@ -18,6 +18,10 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
     let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
     let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
+
+    let loadButtonClicked = false; // Flag to track if the load button is clicked
+
+    
 
     saveButton.addEventListener('click', () => {
         let settings = window.unifiedSequencerSettings.exportSettings();
@@ -39,8 +43,18 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     loadButton.addEventListener('click', () => {
+        if (!loadButtonClicked) {
+            // Remove the "smooth-wave" class when the button is clicked for the first time
+            loadButton.classList.remove('smooth-wave');
+            
+            // Remove the animation property to stop the animation
+            loadButton.style.animation = 'none';
+    
+            loadButtonClicked = true; // Set the flag to true
+        }
         loadOptions.style.display = loadOptions.style.display === "none" || loadOptions.style.display === "" ? "block" : "none";
     });
+    
 
     loadJson.addEventListener('click', () => {
         loadFileInput.click();
