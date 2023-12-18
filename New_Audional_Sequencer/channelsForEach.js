@@ -119,11 +119,11 @@ console.log("channelsForeach.js entered");
             });
 
               // Modify the event listener for the 'Copy Ordinal ID' option
-            const copyChannelSettingsOption = createMenuOption('Copy Channel Settings', () => {
+            const copyChannelSettingsOption = createMenuOption('Copy Channel Settings (coming soon)', () => {
                 console.log('Copy Channel Settings clicked');
                 closeCustomContextMenu();
             });
-            const setChannelColour = createMenuOption('Set Channel Colour', () => {
+            const setChannelColour = createMenuOption('Set Channel Colour (coming soon) ', () => {
                 console.log('Set Channel Colour clicked');
                 closeCustomContextMenu();
             });
@@ -134,17 +134,19 @@ console.log("channelsForeach.js entered");
                 closeCustomContextMenu();
             });
 
-            const pasteChannelSettingsOption = createMenuOption('Paste Channel Settings', () => {
+            const pasteChannelSettingsOption = createMenuOption('Paste Channel Settings (coming soon)', () => {
                 pasteChannelSettings(channelIndex);
                 closeCustomContextMenu();
             });
 
             menu.appendChild(addChannelNameOption);
             menu.appendChild(copyOrdinalIdOption);
-            menu.appendChild(copyChannelSettingsOption);
-            menu.appendChild(setChannelColour);
             menu.appendChild(pasteOrdinalIdOption);
-            menu.appendChild(pasteChannelSettingsOption);       
+            menu.appendChild(copyChannelSettingsOption);
+            menu.appendChild(pasteChannelSettingsOption);  
+            menu.appendChild(setChannelColour);
+           
+               
 
             document.body.appendChild(menu);
 
@@ -161,11 +163,6 @@ console.log("channelsForeach.js entered");
                 closeCustomContextMenu();
             }
         }
-
-        const setChannelColour = createMenuOption('Set Channel Colour', () => {
-            console.log('Set Channel Colour clicked');
-            closeCustomContextMenu();
-        });
 
   
         function createContextMenu(x, y) {
