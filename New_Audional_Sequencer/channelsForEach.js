@@ -88,55 +88,126 @@ console.log("channelsForeach.js entered");
 
     
 
-        // Left-click event listener
-        loadSampleButton.addEventListener('click', () => {
+       // Assuming 'loadSampleButton' is defined in a broader context
+        // and this code is part of a loop or function where 'channel' and 'index' are defined
+
+         // Left-click event listener
+         loadSampleButton.addEventListener('click', () => {
             setupLoadSampleModalButton(channel, index);
             // Additional logic for closing the modal can be added within setupLoadSampleModalButton if needed
         });
 
         // Right-click event listener
         loadSampleButton.addEventListener('contextmenu', (event) => {
-            event.preventDefault(); // Prevent the default context menu
-            showChannelNamingModal(index); // Show the channel naming modal
-       
-            // Create and show the custom context menu
-            showCustomContextMenu(event.pageX, event.pageY, () => {
-                const userChannelName = prompt("Enter a name for this channel:");
-                if (userChannelName) {
-                    // Update the button or relevant element with the new channel name
-                    loadSampleButton.textContent = userChannelName;
-                }
+            event.preventDefault();
+            showCustomContextMenu(event.pageX, event.pageY, index);
         });
-    });
 
-        // Function to create and show the custom context menu
+       // Function to create and show the custom context menu
         function showCustomContextMenu(x, y, channelIndex) {
-            // Remove any existing custom context menus
             closeCustomContextMenu();
 
-            // Create the custom context menu
-            const menu = document.createElement('div');
-            menu.classList.add('custom-context-menu');
-            menu.style.top = `${y}px`;
-            menu.style.left = `${x}px`;
-
-            // Add menu options
-            const addChannelNameOption = document.createElement('div');
-            addChannelNameOption.textContent = 'Add User Channel Name';
-            addChannelNameOption.addEventListener('click', () => {
+            const menu = createContextMenu(x, y);
+            const addChannelNameOption = createMenuOption('Add User Channel Name', () => {
                 showChannelNamingModal(channelIndex);
-                closeCustomContextMenu(); // Close the menu after opening the naming modal
+                closeCustomContextMenu();
             });
-            menu.appendChild(addChannelNameOption);
+            const copyOrdinalIdOption = createMenuOption('Copy Ordinal ID', () => {
+                copyOrdinalId(channelIndex);
+                console.log('Copy Ordinal ID clicked');
+                closeCustomContextMenu();
+            });
 
-            // Append the menu to the body and show it
+              // Modify the event listener for the 'Copy Ordinal ID' option
+            const copyChannelSettingsOption = createMenuOption('Copy Channel Settings (coming soon)', () => {
+                console.log('Copy Channel Settings clicked');
+                closeCustomContextMenu();
+            });
+            const setChannelColour = createMenuOption('Set Channel Colour (coming soon) ', () => {
+                console.log('Set Channel Colour clicked');
+                closeCustomContextMenu();
+            });
+
+            // Add new menu options for pasting
+            const pasteOrdinalIdOption = createMenuOption('Paste Ordinal ID', () => {
+                pasteOrdinalId(channelIndex);
+                closeCustomContextMenu();
+            });
+
+            const pasteChannelSettingsOption = createMenuOption('Paste Channel Settings (coming soon)', () => {
+                pasteChannelSettings(channelIndex);
+                closeCustomContextMenu();
+            });
+
+            menu.appendChild(addChannelNameOption);
+            menu.appendChild(copyOrdinalIdOption);
+            menu.appendChild(pasteOrdinalIdOption);
+            menu.appendChild(copyChannelSettingsOption);
+            menu.appendChild(pasteChannelSettingsOption);  
+            menu.appendChild(setChannelColour);
+           
+               
+
             document.body.appendChild(menu);
+
+            // Global click listener to close the menu when clicking outside
+            setTimeout(() => { // Timeout to avoid immediate closing due to the current click event
+                document.addEventListener('click', handleClickOutsideMenu, { capture: true, once: true });
+            }, 0);
         }
 
-        // Function to create and show the channel naming modal
+        // Helper function to handle click outside the custom context menu
+        function handleClickOutsideMenu(event) {
+            const existingMenu = document.querySelector('.custom-context-menu');
+            if (existingMenu && !existingMenu.contains(event.target)) {
+                closeCustomContextMenu();
+            }
+        }
+
+  
+        function createContextMenu(x, y) {
+            const menu = document.createElement('div');
+            menu.className = 'custom-context-menu';
+            Object.assign(menu.style, {
+                position: 'absolute',
+                top: `${y}px`,
+                left: `${x}px`,
+                backgroundColor: 'lightgray',
+                color: 'black',
+                padding: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '5px',
+                boxShadow: '0px 2px 5px rgba(0,0,0,0.2)'
+            });
+            return menu;
+        }
+
+        function createMenuOption(text, onClick) {
+            const option = document.createElement('div');
+            option.textContent = text;
+            Object.assign(option.style, {
+                padding: '5px 10px',
+                cursor: 'pointer'
+            });
+            option.addEventListener('mouseenter', () => option.style.backgroundColor = '#f0f0f0');
+            option.addEventListener('mouseleave', () => option.style.backgroundColor = 'lightgray');
+            option.addEventListener('click', onClick);
+            return option;
+        }
+
+        function closeCustomContextMenu() {
+            const existingMenu = document.querySelector('.custom-context-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+        }
+
         function showChannelNamingModal(channelIndex) {
+            closeModal(); // Close any existing modal first
+
             const modal = document.createElement('div');
             modal.className = 'channel-naming-modal';
+            // Add styles as needed
 
             const input = document.createElement('input');
             input.type = 'text';
@@ -149,45 +220,84 @@ console.log("channelsForeach.js entered");
                 if (input.value) {
                     window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
                 }
-                document.body.removeChild(modal);
+                closeModal();
             };
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = closeModal;
 
             modal.appendChild(input);
             modal.appendChild(submitButton);
+            modal.appendChild(cancelButton);
             document.body.appendChild(modal);
+
+            // Event listener to close the modal when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
+                    closeModal();
+                }
+            }, { capture: true, once: true });
         }
 
-        // Function to close the custom context menu
-        function closeCustomContextMenu() {
-            const existingMenu = document.querySelector('.custom-context-menu');
-            if (existingMenu) {
-                existingMenu.remove();
+        function closeModal() {
+            const existingModal = document.querySelector('.channel-naming-modal');
+            if (existingModal) {
+                document.body.removeChild(existingModal);
             }
         }
 
-        // Hide the custom context menu or modal when clicking elsewhere
-        document.addEventListener('click', (event) => {
-            // Close the custom context menu if the click is outside
-            const existingMenu = document.querySelector('.custom-context-menu');
-            if (existingMenu && !existingMenu.contains(event.target)) {
-                closeCustomContextMenu();
+        // Function to copy the full URL instead of just the Ordinal ID
+        function copyOrdinalId(channelIndex) {
+            const url = window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+            if (!url) {
+                console.log('No URL found for channel:', channelIndex);
+                return;
             }
 
-            // Logic to close the left-click modal if the click is outside
-            const modal = document.querySelector('.load-sample-buttor'); // Replace with your actual modal selector
-            if (modal && !modal.contains(event.target) && !loadSampleButton.contains(event.target)) {
-                closeModal(modal, channelIndex); // Replace with your function to close the modal
+            // Copying the full URL to the clipboard
+            navigator.clipboard.writeText(url)
+                .then(() => console.log('Full URL copied:', url))
+                .catch(err => console.error('Error copying URL:', err));
+        }
+
+
+        // Function to extract the Ordinal ID from a URL
+        function extractOrdinalIdFromUrl(url) {
+            const match = url.match(/([^\/]+)$/);
+            return match ? match[1] : null;
+        }
+
+        // Function to paste the full URL
+        function pasteOrdinalId(channelIndex) {
+            navigator.clipboard.readText()
+                .then(fullUrl => {
+                    // Retrieve the current URLs
+                    let currentURLs = window.unifiedSequencerSettings.settings.masterSettings.projectURLs;
+                    
+                    // Update the URL for the specific channel
+                    currentURLs[channelIndex] = fullUrl;
+
+                    // Set the updated URLs
+                    window.unifiedSequencerSettings.setProjectURLs(currentURLs);
+                    console.log('Pasted full URL:', fullUrl);
+                })
+                .catch(err => console.error('Error pasting URL:', err));
+        }
+
+
+        // Function to paste the Channel Settings
+        function pasteChannelSettings(channelIndex) {
+            navigator.clipboard.readText()
+                .then(text => {
+                    // Assuming the text is JSON-formatted settings
+                    let settings = JSON.parse(text);
+
+                    // Set the channel settings
+                    // Replace 'setChannelSettings' with your actual method
+                    window.unifiedSequencerSettings.setChannelSettings(channelIndex, settings);
+                    console.log('Pasted Channel Settings:', settings);
+                })
+                .catch(err => console.error('Error pasting Channel Settings:', err));
             }
         });
-
-        // Function to close the modal
-        function closeModal(modal, channelIndex) {
-            // Add logic to close the modal, e.g., hide it or remove it from the DOM
-            modal.style.display = 'none'; // Example: hide the modal
-            stopAudioForChannel(channelIndex);
-
-        }
-
-    
-
-});
