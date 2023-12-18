@@ -11,6 +11,11 @@
     --default-font: Arial, sans-serif;
 }
 
+.channel {
+    width: 100%; /* Full width on small screens */
+}
+
+
 /* --- Media Queries for Responsive Design --- */
 /* @media (max-width: 1200px) {
     :root {
@@ -71,8 +76,5 @@
 /*         transform: scale(0.6);
 /*     }*/
  
-     .channel {
-         width: 100%; /* Full width on small screens */
-     }
- 
+   
  
