@@ -1,92 +1,92 @@
 // channelsForeach.js
 
     import { setupLoadSampleModalButton } from './loadSampleModalButton_v2.js';
-console.log("channelsForeach.js entered");
-    channels.forEach((channel, index) => {
-        channel.dataset.id = `Channel-${index}`;
-    
-        // Create a gain node for the channel
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 1; // Initial volume set to 1 (full volume)
-        gainNode.connect(audioContext.destination);
-        gainNodes[index] = gainNode;
-    
-        const muteButton = channel.querySelector('.mute-button');
-        muteButton.addEventListener('click', () => {
-            console.log(`Mute button clicked for Channel-${index}`);
-            const isMuted = muteButton.classList.toggle('selected');
-            updateMuteState(channel, isMuted);
-            updateDimState(channel, index);
-        });
-    
-        const soloButton = channel.querySelector('.solo-button');
-            soloButton.addEventListener('click', () => {
-                soloedChannels[index] = !soloedChannels[index];
-                soloButton.classList.toggle('selected', soloedChannels[index]);
-
-                // Update mute state for all channels based on solo state
-                channels.forEach((otherChannel, otherIndex) => {
-                    if (index === otherIndex) {
-                        // If this is the soloed channel, ensure it's not muted
-                        updateMuteState(otherChannel, false);
-                    } else {
-                        // Mute all other channels if this channel is soloed
-                        updateMuteState(otherChannel, soloedChannels[index]);
-                    }
-                    updateDimState(otherChannel, otherIndex);
-                });
+    console.log("channelsForeach.js entered");
+        channels.forEach((channel, index) => {
+            channel.dataset.id = `Channel-${index}`;
+        
+            // Create a gain node for the channel
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = 1; // Initial volume set to 1 (full volume)
+            gainNode.connect(audioContext.destination);
+            gainNodes[index] = gainNode;
+        
+            const muteButton = channel.querySelector('.mute-button');
+            muteButton.addEventListener('click', () => {
+                console.log(`Mute button clicked for Channel-${index}`);
+                const isMuted = muteButton.classList.toggle('selected');
+                updateMuteState(channel, isMuted);
+                updateDimState(channel, index);
             });
+        
+            const soloButton = channel.querySelector('.solo-button');
+                soloButton.addEventListener('click', () => {
+                    soloedChannels[index] = !soloedChannels[index];
+                    soloButton.classList.toggle('selected', soloedChannels[index]);
 
-
-        const clearButton = channel.querySelector('.clear-button');
-        const clearConfirm = channel.querySelector('.clear-confirm');
-        let clearConfirmTimeout;
-        
-        clearButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-        
-            if (!clearButton.classList.contains('flashing')) {
-                // Start the flashing effect
-                clearButton.classList.add('flashing');
-        
-                // Set a timer to reset the button after 2 seconds
-                clearConfirmTimeout = setTimeout(() => {
-                    clearButton.classList.remove('flashing');
-                }, 2000);
-            } else {
-                // Clear the steps if the button is clicked again while flashing
-                const stepButtons = channel.querySelectorAll('.step-button');
-                stepButtons.forEach(button => {
-                    button.classList.remove('selected');
+                    // Update mute state for all channels based on solo state
+                    channels.forEach((otherChannel, otherIndex) => {
+                        if (index === otherIndex) {
+                            // If this is the soloed channel, ensure it's not muted
+                            updateMuteState(otherChannel, false);
+                        } else {
+                            // Mute all other channels if this channel is soloed
+                            updateMuteState(otherChannel, soloedChannels[index]);
+                        }
+                        updateDimState(otherChannel, otherIndex);
+                    });
                 });
-        
-                // Update the step settings in the sequence data
-                let stepSettings = Array(64).fill(false); // Reset all steps to false
-                for (let stepIndex = 0; stepIndex < stepSettings.length; stepIndex++) {
-                    window.unifiedSequencerSettings.updateStepState(currentSequence, index, stepIndex, stepSettings[stepIndex]);
+
+
+            const clearButton = channel.querySelector('.clear-button');
+            const clearConfirm = channel.querySelector('.clear-confirm');
+            let clearConfirmTimeout;
+            
+            clearButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+            
+                if (!clearButton.classList.contains('flashing')) {
+                    // Start the flashing effect
+                    clearButton.classList.add('flashing');
+            
+                    // Set a timer to reset the button after 2 seconds
+                    clearConfirmTimeout = setTimeout(() => {
+                        clearButton.classList.remove('flashing');
+                    }, 2000);
+                } else {
+                    // Clear the steps if the button is clicked again while flashing
+                    const stepButtons = channel.querySelectorAll('.step-button');
+                    stepButtons.forEach(button => {
+                        button.classList.remove('selected');
+                    });
+            
+                    // Update the step settings in the sequence data
+                    let stepSettings = Array(64).fill(false); // Reset all steps to false
+                    for (let stepIndex = 0; stepIndex < stepSettings.length; stepIndex++) {
+                        window.unifiedSequencerSettings.updateStepState(currentSequence, index, stepIndex, stepSettings[stepIndex]);
+                    }
+            
+                    // Immediately stop the flashing effect and reset the button
+                    clearTimeout(clearConfirmTimeout);
+                    clearButton.classList.remove('flashing');
                 }
-        
-                // Immediately stop the flashing effect and reset the button
-                clearTimeout(clearConfirmTimeout);
-                clearButton.classList.remove('flashing');
-            }
-        });
-        
-        // Handle clicks outside the clear button
-        document.addEventListener('click', (e) => {
-            if (!clearButton.contains(e.target) && clearButton.classList.contains('flashing')) {
-                // Reset the button if clicked outside while flashing
-                clearTimeout(clearConfirmTimeout);
-                clearButton.classList.remove('flashing');
-            }
-        });
-        
+            });
+            
+            // Handle clicks outside the clear button
+            document.addEventListener('click', (e) => {
+                if (!clearButton.contains(e.target) && clearButton.classList.contains('flashing')) {
+                    // Reset the button if clicked outside while flashing
+                    clearTimeout(clearConfirmTimeout);
+                    clearButton.classList.remove('flashing');
+                }
+            });
+            
 
 
-        
-    const loadSampleButton = channel.querySelector('.load-sample-button');
+            
+        const loadSampleButton = channel.querySelector('.load-sample-button');
 
-    
+        
 
        // Assuming 'loadSampleButton' is defined in a broader context
         // and this code is part of a loop or function where 'channel' and 'index' are defined
@@ -97,14 +97,18 @@ console.log("channelsForeach.js entered");
             // Additional logic for closing the modal can be added within setupLoadSampleModalButton if needed
         });
 
-        // Right-click event listener
+       // Right-click event listener for the loadSampleButton
         loadSampleButton.addEventListener('contextmenu', (event) => {
+            console.log('Right-click on loadSampleButton');
+
             event.preventDefault();
-            showCustomContextMenu(event.pageX, event.pageY, index);
+            showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
         });
 
-       // Function to create and show the custom context menu
-        function showCustomContextMenu(x, y, channelIndex) {
+        // Function to create and show the custom context menu
+        function showCustomContextMenu(contextEvent, x, y, channelIndex, button) {
+            console.log('Creating custom context menu');
+
             closeCustomContextMenu();
 
             const menu = createContextMenu(x, y);
@@ -123,11 +127,15 @@ console.log("channelsForeach.js entered");
                 console.log('Copy Channel Settings clicked');
                 closeCustomContextMenu();
             });
-            const setChannelColour = createMenuOption('Set Channel Colour (coming soon) ', () => {
-                console.log('Set Channel Colour clicked');
+
+            // Modify the event listener for the 'Set Channel Colour' option
+            const setChannelColour = createMenuOption('Set Channel Colour', () => {
+                console.log('Set Channel Colour option selected');
+
+                showColorPicker(contextEvent, button); // Call showColorPicker with the captured right-click event and the button
                 closeCustomContextMenu();
             });
-
+        
             // Add new menu options for pasting
             const pasteOrdinalIdOption = createMenuOption('Paste Ordinal ID', () => {
                 pasteOrdinalId(channelIndex);
@@ -140,11 +148,12 @@ console.log("channelsForeach.js entered");
             });
 
             menu.appendChild(addChannelNameOption);
+            menu.appendChild(setChannelColour);
             menu.appendChild(copyOrdinalIdOption);
             menu.appendChild(pasteOrdinalIdOption);
             menu.appendChild(copyChannelSettingsOption);
             menu.appendChild(pasteChannelSettingsOption);  
-            menu.appendChild(setChannelColour);
+   
            
                
 
@@ -154,6 +163,70 @@ console.log("channelsForeach.js entered");
             setTimeout(() => { // Timeout to avoid immediate closing due to the current click event
                 document.addEventListener('click', handleClickOutsideMenu, { capture: true, once: true });
             }, 0);
+        }
+
+        function showColorPicker(event, button) {
+            console.log('showColorPicker function called inside channelsForEach.js');
+        
+            // Define colors for the grid
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#808080', '#FFFFFF',
+                            '#FFA500', '#800080', '#008080', '#000080', '#800000', '#008000', '#FFC0CB', '#D2691E'];
+        
+            // Create color picker container
+            const colorPicker = document.createElement('div');
+            colorPicker.style.position = 'absolute';
+            colorPicker.style.display = 'grid';
+            colorPicker.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            colorPicker.style.gap = '1px';
+        
+            // Calculate the position
+            const gridHeight = (colors.length / 4) * 20; // 20px height for each color div
+            const topPosition = event.clientY - gridHeight;
+            const leftPosition = event.clientX;
+        
+            // Log calculated position
+            console.log(`Color picker position - Top: ${topPosition}px, Left: ${leftPosition}px`);
+        
+            colorPicker.style.top = topPosition + 'px';
+            colorPicker.style.left = leftPosition + 'px';
+        
+            // Add color options to the picker
+            colors.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.style.width = '20px';
+                colorDiv.style.height = '20px';
+                colorDiv.style.backgroundColor = color;
+                colorDiv.addEventListener('click', function() {
+                    console.log(`Color selected: ${color}`);
+                    button.style.backgroundColor = color;
+                    colorPicker.remove();
+                });
+                colorPicker.appendChild(colorDiv);
+            });
+        
+            // Append the color picker to the body
+            document.body.appendChild(colorPicker);
+            console.log('Color picker appended to the body. Check if it is visible in the DOM.');
+
+            // Add event listener to stop propagation of click events inside the color picker
+            colorPicker.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Delay the addition of the global click listener
+            setTimeout(() => {
+                document.addEventListener('click', function removePicker() {
+                    console.log('Global click detected. Removing color picker.');
+                    colorPicker.remove();
+                    document.removeEventListener('click', removePicker);
+                });
+            }, 0); // Small delay like 0 or 10 milliseconds
+
+            // Set a timeout to remove the color picker after 2 seconds
+            setTimeout(() => {
+                console.log('Removing color picker after 2 seconds.');
+                colorPicker.remove();
+            }, 5000);
         }
 
         // Helper function to handle click outside the custom context menu
