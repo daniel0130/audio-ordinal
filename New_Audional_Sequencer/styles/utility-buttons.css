@@ -1,10 +1,43 @@
 
 
-#save-button, #load-button {
+#save-button, #new-load-button {
     margin-left: 2px; /* Add some space between buttons */
     right: 0px;
   }
   
+
+/* Apply the smooth wave effect directly to the Load button */
+#new-load-button {
+    margin-left: 2px; /* Add some space between buttons */
+    right: 0px;
+    background-color: rgb(255, 255, 255); /* Initial background color */
+    color: black; /* Initial text color */
+    animation: smooth-wave 4s linear infinite;
+}
+
+@keyframes smooth-wave {
+    0% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+    25% {
+        background-color: #ff0000; /* Change to your desired yellow color */
+        color: black;
+    }
+    50% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+    75% {
+        background-color: #ff0000; /* Change to your desired yellow color */
+        color: black;
+    }
+    100% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+}
+
 
 /* Specific styles for the copy button */
 .copy-button {
@@ -22,23 +55,4 @@
 
 .paste-button:hover {
     background-color: #ffb300; /* Darker amber on hover */
-}
-
-.flash-yellow {
-    animation: flash-yellow 0.5s infinite alternate;
-}
-
-@keyframes flash-yellow {
-    0% {
-        background-color: yellow;
-        color: black;
-    }
-    50% {
-        background-color: #ffeb3b; /* Change to your desired yellow color */
-        color: black;
-    }
-    100% {
-        background-color: yellow;
-        color: black;
-    }
 }

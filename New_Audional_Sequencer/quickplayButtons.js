@@ -67,7 +67,7 @@ function insertQuickPlayButtons() {
        // console.log(`${quickPlayButtons.length} quickplay buttons inserted.`);
 
     } else {
-        console.error("Either checkBox or quickPlayButton is missing!");
+        console.log("QUICKPLAY BUTTONS TEMPORARILY REMOVED UNTIL THEY CAN BE FIXED");
     }
 }
 

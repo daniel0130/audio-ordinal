@@ -10,8 +10,7 @@ appContainer.addEventListener('click', () => {
 document.addEventListener("DOMContentLoaded", function() {
     let saveButton = document.getElementById('save-button');
     let loadFileInput = document.getElementById('load-file-input');
-    let loadButton = document.getElementById('load-button');
-    loadButton.classList.add('flash-yellow'); // Flash effect starts as soon as the page loads
+    let loadButton = document.getElementById('new-load-button');
     let loadOptions = document.getElementById('loadOptions');
     let loadJson = document.getElementById('loadJson');
     let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
@@ -45,12 +44,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     loadButton.addEventListener('click', () => {
         if (!loadButtonClicked) {
-            // Apply the "flash" class if the button is clicked for the first time
-            loadButton.classList.remove('flash-yellow');
+            // Remove the "smooth-wave" class when the button is clicked for the first time
+            loadButton.classList.remove('smooth-wave');
+            
+            // Remove the animation property to stop the animation
+            loadButton.style.animation = 'none';
+    
             loadButtonClicked = true; // Set the flag to true
         }
         loadOptions.style.display = loadOptions.style.display === "none" || loadOptions.style.display === "" ? "block" : "none";
     });
+    
 
     loadJson.addEventListener('click', () => {
         loadFileInput.click();
