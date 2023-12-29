@@ -344,8 +344,10 @@ displayValues() {
             this.isPlaying = true;
             console.log("[playTrimmedAudio] isPlaying set to true, starting new playback");
         
-            // Initialize startTime to the current context time
-            this.startTime = this.audioContext.currentTime;
+            // Convert the start slider value to a timecode and add it to the current context time
+            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
+            this.startTime = this.audioContext.currentTime - startOffset;
+
         
             // Convert internal state slider values to timecodes
             const startTime = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
@@ -388,11 +390,6 @@ displayValues() {
             };
         }
         
-        
-        
-        
-        
-        
 
         stopAudio() {
             console.log("[Class Functions] stopAudio");
@@ -421,32 +418,62 @@ displayValues() {
         }
         
 
-    getCurrentPlaybackPosition() {
-        if (!this.isPlaying) return 0;
-        return (this.audioContext.currentTime - this.startTime) % this.audioBuffer.duration;
+        getCurrentPlaybackPosition() {
+            if (!this.isPlaying) return 0;
+            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
+            return ((this.audioContext.currentTime - this.startTime) % this.audioBuffer.duration) + startOffset;
         }
         
-    updatePlaybackCanvas() {
-        const currentPosition = this.getCurrentPlaybackPosition();
-        const width = this.playbackCanvas.width;
-        const height = this.playbackCanvas.height;
-        this.playbackCtx.clearRect(0, 0, width, height);
-        const xPosition = (currentPosition / this.audioBuffer.duration) * width;
-        this.playbackCtx.beginPath();
-        this.playbackCtx.moveTo(xPosition, 0);
-        this.playbackCtx.lineTo(xPosition, height);
-        this.playbackCtx.strokeStyle = '#FF0000';
-        this.playbackCtx.lineWidth = 2;
-        this.playbackCtx.stroke();
+        
+        
+        updatePlaybackCanvas() {
+            // 1. Calculate Exact Current Position
+            const actualCurrentPosition = this.audioContext.currentTime - this.startTime; // Current position in the actual audio playback
+            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration); // Start of the trimmed audio
+            const endOffset = this.sliderValueToTimecode(this.endSliderValue, this.audioBuffer.duration); // End of the trimmed audio
+            const trimmedDuration = endOffset - startOffset; // Duration of the trimmed audio
+        
+            // 2. Map Current Position to Trimmed Segment
+            // Ensuring the position loops correctly within the trimmed segment if looping is enabled
+            const relativePosition = (actualCurrentPosition - startOffset) % trimmedDuration;
+            if (relativePosition < 0 || relativePosition > trimmedDuration) {
+                // If outside the trimmed segment, don't draw the playbar
+                return;
+            }
+        
+            // 3. Scale Position to Canvas
+            const canvasWidth = this.playbackCanvas.width;
+            const canvasHeight = this.playbackCanvas.height;
+            const startSliderCanvasPosition = (this.startSliderValue / 100) * canvasWidth; // Canvas position of the start slider
+            const endSliderCanvasPosition = (this.endSliderValue / 100) * canvasWidth; // Canvas position of the end slider
+            const trimmedSegmentCanvasWidth = endSliderCanvasPosition - startSliderCanvasPosition; // Width of the trimmed segment on the canvas
+        
+            // Calculate the xPosition for the playback bar within the trimmed segment on the canvas
+            const xPosition = startSliderCanvasPosition + (relativePosition / trimmedDuration) * trimmedSegmentCanvasWidth;
+        
+            // Clear the previous position and draw the playbar at the new position
+            this.playbackCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            this.playbackCtx.beginPath();
+            this.playbackCtx.moveTo(xPosition, 0);
+            this.playbackCtx.lineTo(xPosition, canvasHeight);
+            this.playbackCtx.strokeStyle = '#FF0000';
+            this.playbackCtx.lineWidth = 2;
+            this.playbackCtx.stroke();
         }
+         
+        
+        
         
         animatePlayback() {
             if (this.isPlaying) {
+                console.log("[animatePlayback] Animation frame requested.");
                 this.updatePlaybackCanvas();
                 this.animationFrameRequest = requestAnimationFrame(() => this.animatePlayback());
+            } else {
+                console.log("[animatePlayback] Animation stopped. 'isPlaying' is false.");
             }
         }
-}
+    }             
 
 
 
