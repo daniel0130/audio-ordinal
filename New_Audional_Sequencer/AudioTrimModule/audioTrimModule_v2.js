@@ -196,6 +196,8 @@ displayValues() {
             // Attach new event listeners
             this.trimmerPlayButton.addEventListener('click', this.boundPlayTrimmedAudio);
             this.trimmerStopButton.addEventListener('click', this.boundStopAudio);
+
+            this.loopButton.addEventListener('click', this.toggleLoop.bind(this));
         
         
 
@@ -360,10 +362,11 @@ displayValues() {
             // Handle the end of playback
             this.sourceNode.onended = () => {
                 this.isPlaying = false;
-                console.log("[playTrimmedAudio] Playback ended, isPlaying set to false");
                 if (this.isLooping) {
-                    console.log("[playTrimmedAudio] Looping enabled, restarting playback");
-                    this.playTrimmedAudio(); // Restart if looping
+                    this.playTrimmedAudio(); // Restart playback if looping
+                } else {
+                    // Handle the end of playback when not looping
+                    console.log("[playTrimmedAudio] Playback ended, isPlaying set to false");
                 }
             };
         }
@@ -386,13 +389,16 @@ displayValues() {
         }
         
 
-    toggleLoop() {
-        console.log("[Class Functions] toggleLoop");
-
-        this.isLooping = !this.isLooping;
-        this.loopButton.classList.toggle('on', this.isLooping);
-        this.loopButton.classList.toggle('off', !this.isLooping);
-    }
+        toggleLoop() {
+            console.log("[Class Functions] toggleLoop");
+        
+            this.isLooping = !this.isLooping;
+            this.updateLoopButtonState(); // Ensure the visual state is updated
+            if (this.isPlaying) {
+                this.playTrimmedAudio(); // Restart playback with new loop setting if already playing
+            }
+        }
+        
 
     getCurrentPlaybackPosition() {
         if (!this.isPlaying) return 0;
