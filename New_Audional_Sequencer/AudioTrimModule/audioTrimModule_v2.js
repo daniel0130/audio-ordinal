@@ -137,6 +137,8 @@ displayValues() {
             this.updateLoopButtonState();
             this.updateDimmedAreas();
             this.updateSliderValues();
+            this.playbackCtx = this.playbackCanvas.getContext('2d');
+            this.playbackCtx.fillStyle = 'red';
 
         
         }
@@ -310,11 +312,19 @@ displayValues() {
 
         // Method to update the loop button's visual state based on isLooping flag
         updateLoopButtonState() {
+            console.log(`[updateLoopButtonState] isLooping: ${this.isLooping}`); // Add this line
+
             if (this.loopButton) {
-                this.loopButton.classList.toggle('on', this.isLooping);
-                this.loopButton.classList.toggle('off', !this.isLooping);
+                if (this.isLooping) {
+                    this.loopButton.classList.add('on');
+                    this.loopButton.classList.remove('off');
+                } else {
+                    this.loopButton.classList.add('off');
+                    this.loopButton.classList.remove('on');
+                }
             }
         }
+        
         
         playTrimmedAudio() {
             console.log("[playTrimmedAudio] [Class Functions] playTrimmedAudio");
@@ -333,6 +343,9 @@ displayValues() {
             // Set isPlaying to true immediately to block concurrent playbacks
             this.isPlaying = true;
             console.log("[playTrimmedAudio] isPlaying set to true, starting new playback");
+        
+            // Initialize startTime to the current context time
+            this.startTime = this.audioContext.currentTime;
         
             // Convert internal state slider values to timecodes
             const startTime = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
@@ -355,9 +368,10 @@ displayValues() {
                 this.sourceNode.loopEnd = endTime;
             }
         
-            // Start playback
+            // Start playback and animation
             this.sourceNode.start(0, startTime, endTime - startTime);
             console.log("[playTrimmedAudio] Playback started");
+            this.animatePlayback();  // Start animating the playback bar
         
             // Handle the end of playback
             this.sourceNode.onended = () => {
@@ -367,6 +381,9 @@ displayValues() {
                 } else {
                     // Handle the end of playback when not looping
                     console.log("[playTrimmedAudio] Playback ended, isPlaying set to false");
+                    if (this.animationFrameRequest) {
+                        cancelAnimationFrame(this.animationFrameRequest); // Stop the animation when playback stops
+                    }
                 }
             };
         }
@@ -375,16 +392,20 @@ displayValues() {
         
         
         
+        
 
         stopAudio() {
             console.log("[Class Functions] stopAudio");
-            this.isLooping = false;
+            this.setIsLooping(false); // Use setIsLooping to ensure consistent state management
 
             if (this.isPlaying && this.sourceNode) {
                 this.sourceNode.stop(); // Stop the audio playback
                 this.sourceNode.disconnect();
                 this.sourceNode = null;
                 this.isPlaying = false;
+            }
+            if (this.animationFrameRequest) {
+                cancelAnimationFrame(this.animationFrameRequest);
             }
         }
         
@@ -420,11 +441,11 @@ displayValues() {
         }
         
         animatePlayback() {
-        if (this.isPlaying) {
-            this.updatePlaybackCanvas();
-            requestAnimationFrame(() => this.animatePlayback());
+            if (this.isPlaying) {
+                this.updatePlaybackCanvas();
+                this.animationFrameRequest = requestAnimationFrame(() => this.animatePlayback());
+            }
         }
-    }
 }
 
 
