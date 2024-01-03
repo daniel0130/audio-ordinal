@@ -13,24 +13,29 @@
         const idModal = createModal();
         const idModalContent = createModalContent();
         idModal.appendChild(idModalContent);
-
+    
         // Add instruction texts, inputs, and buttons
         idModalContent.appendChild(createTextParagraph('Enter an Ordinal ID to load a Bitcoin Audional:'));
         const audionalInput = createInputField('Enter ORD ID:');
         idModalContent.appendChild(audionalInput);
-
+    
         idModalContent.appendChild(createTextParagraph('Or, enter an IPFS ID for an off-chain Audional:'));
         const ipfsInput = createInputField('Enter IPFS ID:');
         idModalContent.appendChild(ipfsInput);
-
+    
         addInputListeners(audionalInput, ipfsInput);
-
-        // Add Load and Cancel buttons
-        idModalContent.appendChild(createButton('Load', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton)));
-        idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal)));
-
+    
+        // Add Load and Cancel buttons with unique class names for styling
+        idModalContent.appendChild(createButton('Load Sample ID', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton), 'loadButton', 'Load Audio from ID'));
+        idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal), 'cancelButton', 'Close this window'));
+    
+        // Add the 'Search Ordinal Audio Files' button with a unique class name and tooltip
+        const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc', 'searchButton', 'Search for audio files (Copy and paste the Ordinal ID to load a sample');
+        idModalContent.appendChild(searchOrdinalButton);
+    
         document.body.appendChild(idModal);
     }
+    
 
     function createModal() {
         const modal = document.createElement('div');
@@ -69,12 +74,25 @@
         });
     }
 
-    function createButton(text, onClick) {
+    function createButton(text, onClick, className, tooltipText) {
+        const container = document.createElement('div');
+        container.className = 'tooltip';
+    
         const button = document.createElement('button');
         button.textContent = text;
         button.addEventListener('click', onClick);
-        return button;
+        button.className = className; // Apply the class name passed as a parameter
+        container.appendChild(button);
+    
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltiptext';
+        tooltip.textContent = tooltipText;
+        container.appendChild(tooltip);
+    
+        return container;
     }
+    
+    
 
     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
 
@@ -116,6 +134,27 @@
         }
         console.log(`Updated button text for channel ${channelIndex}`); // Debug log
     }
+
+
+    function createExternalLinkButton(text, url, className, tooltipText) {
+        const container = document.createElement('div');
+        container.className = 'tooltip';
+    
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = className; // Apply the class name passed as a parameter
+        button.addEventListener('click', () => window.open(url, '_blank'));
+        container.appendChild(button);
+    
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltiptext';
+        tooltip.textContent = tooltipText; // Set the tooltip text
+        container.appendChild(tooltip);
+    
+        return container;
+    }
+    
+    
     
     export { setupLoadSampleModalButton };
     
