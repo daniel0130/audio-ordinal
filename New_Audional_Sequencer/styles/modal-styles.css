@@ -67,3 +67,31 @@
     margin-bottom: 10px;
     /* Add more styling as needed */
 }
+
+.loadSampleModalButton-link {
+    padding: 10px;
+    margin-top: 10px;
+    color: white;
+    background-color: #bb00ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.loadSampleModalButton-link:hover {
+    background-color: #bb00ff;
+}
+
+.loadButton {
+    background-color: #28a745; /* Green */
+    /* Other styles... */
+}
+
+.cancelButton {
+    background-color: #dc3545; /* Red */
+    /* Other styles... */
+}
+
+.searchButton {
+    background-color: #bb00ff; /* Purple */
+    /* Other styles... */
+}

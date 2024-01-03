@@ -25,12 +25,12 @@
 
         addInputListeners(audionalInput, ipfsInput);
 
-        // Add Load and Cancel buttons
-        idModalContent.appendChild(createButton('Load', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton)));
-        idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal)));
+        // Add Load and Cancel buttons with unique class names for styling
+        idModalContent.appendChild(createButton('Load', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton), 'loadButton'));
+        idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal), 'cancelButton'));
 
-        // Add the new 'Search Ordinal Audio Files' button
-        const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc');
+        // Add the new 'Search Ordinal Audio Files' button with a unique class name
+        const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc', 'searchButton');
         idModalContent.appendChild(searchOrdinalButton);
 
 
@@ -74,12 +74,14 @@
         });
     }
 
-    function createButton(text, onClick) {
+    function createButton(text, onClick, className) {
         const button = document.createElement('button');
         button.textContent = text;
         button.addEventListener('click', onClick);
+        button.className = className; // Apply the class name passed as a parameter
         return button;
     }
+    
 
     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
 
@@ -123,13 +125,14 @@
     }
 
 
-    function createExternalLinkButton(text, url) {
+    function createExternalLinkButton(text, url, className) {
         const button = document.createElement('button');
         button.textContent = text;
-        button.className = 'loadSampleModalButton-link'; // Updated class name
+        button.className = className; // Updated class name to accept parameter
         button.addEventListener('click', () => window.open(url, '_blank'));
         return button;
     }
+    
     
     
     export { setupLoadSampleModalButton };
