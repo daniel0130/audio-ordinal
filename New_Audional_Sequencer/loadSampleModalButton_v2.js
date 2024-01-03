@@ -29,6 +29,11 @@
         idModalContent.appendChild(createButton('Load', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton)));
         idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal)));
 
+        // Add the new 'Search Ordinal Audio Files' button
+        const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc');
+        idModalContent.appendChild(searchOrdinalButton);
+
+
         document.body.appendChild(idModal);
     }
 
@@ -116,6 +121,16 @@
         }
         console.log(`Updated button text for channel ${channelIndex}`); // Debug log
     }
+
+
+    function createExternalLinkButton(text, url) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = 'loadSampleModalButton-link'; // Updated class name
+        button.addEventListener('click', () => window.open(url, '_blank'));
+        return button;
+    }
+    
     
     export { setupLoadSampleModalButton };
     

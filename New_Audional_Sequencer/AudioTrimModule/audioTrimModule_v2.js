@@ -459,8 +459,7 @@ displayValues() {
             this.playbackCtx.strokeStyle = '#FF0000';
             this.playbackCtx.lineWidth = 2;
             this.playbackCtx.stroke();
-        }
-         
+        }         
         
         
         
