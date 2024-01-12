@@ -9,59 +9,70 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <script>
-     function toggleInfo(buttonId) {
-      var audionalsButton = document.getElementById("audionals-button");
-      var jsonButton = document.getElementById("json-button");
-      var donateButton = document.getElementById("donate-button");  // Added this line
 
-      var audionalsContent = document.getElementById("info-content-audionals");
-      var jsonContent = document.getElementById("info-content-json");
-      var donateContent = document.getElementById("info-content-donate");  // Added this line
 
-      if (buttonId === "audionals") {
-          var isAudionalsActive = audionalsButton.classList.contains("active");
-          if (isAudionalsActive) {
-              audionalsButton.classList.remove("active");
-              audionalsContent.style.display = "none";
-          } else {
-              audionalsButton.classList.add("active");
-              jsonButton.classList.remove("active");
-              donateButton.classList.remove("active");  // Added this line
+function toggleInfo(buttonId) {
+    console.log("Button clicked: " + buttonId); // Debugging line
 
-              audionalsContent.style.display = "block";
-              jsonContent.style.display = "none";
-              donateContent.style.display = "none";  // Added this line
-          }
-      } else if (buttonId === "json") {  // Changed this line
-          var isJsonActive = jsonButton.classList.contains("active");
-          if (isJsonActive) {
-              jsonButton.classList.remove("active");
-              jsonContent.style.display = "none";
-          } else {
-              jsonButton.classList.add("active");
-              audionalsButton.classList.remove("active");
-              donateButton.classList.remove("active");  // Added this line
+    // Get the buttons
+    var audionalsButton = document.getElementById("audionals-button");
+    var jsonButton = document.getElementById("json-button");
+    var donateButton = document.getElementById("donate-button");
 
-              jsonContent.style.display = "block";
-              audionalsContent.style.display = "none";
-              donateContent.style.display = "none";  // Added this line
-          }
-      } else if (buttonId === "donate") {  // Added this block
-          var isDonateActive = donateButton.classList.contains("active");
-          if (isDonateActive) {
-              donateButton.classList.remove("active");
-              donateContent.style.display = "none";
-          } else {
-              donateButton.classList.add("active");
-              audionalsButton.classList.remove("active");
-              jsonButton.classList.remove("active");
+    // Get the content sections
+    var audionalsContent = document.getElementById("info-content-audionals");
+    var jsonContent = document.getElementById("info-content-json");
+    var donateContent = document.getElementById("info-content-donate");
 
-              donateContent.style.display = "block";
-              audionalsContent.style.display = "none";
-              jsonContent.style.display = "none";
-          }
-      }
-  }
+    // First, reset all buttons and content
+    audionalsButton.classList.remove("active");
+    jsonButton.classList.remove("active");
+    donateButton.classList.remove("active");
+
+    audionalsContent.style.display = "none";
+    jsonContent.style.display = "none";
+    donateContent.style.display = "none";
+
+    // Then, activate the clicked button and corresponding content
+    switch (buttonId) {
+        case "audionals":
+            audionalsButton.classList.add("active");
+            audionalsContent.style.display = "block";
+            break;
+        case "json":
+            jsonButton.classList.add("active");
+            jsonContent.style.display = "block";
+            break;
+        case "donate":
+            donateButton.classList.add("active");
+            donateContent.style.display = "block";
+            break;
+    }
+
+    // Add the event listener to the document
+    document.addEventListener('click', function(event) {
+        var audionalsButton = document.getElementById("audionals-button");
+        var jsonButton = document.getElementById("json-button");
+        var donateButton = document.getElementById("donate-button");
+
+        var audionalsContent = document.getElementById("info-content-audionals");
+        var jsonContent = document.getElementById("info-content-json");
+        var donateContent = document.getElementById("info-content-donate");
+
+        // Check if the click was outside the info content areas
+        if (!audionalsContent.contains(event.target) && !jsonContent.contains(event.target) && !donateContent.contains(event.target) && event.target !== audionalsButton && event.target !== jsonButton && event.target !== donateButton) {
+            // Reset the state of all buttons and hide the content
+            audionalsButton.classList.remove("active");
+            jsonButton.classList.remove("active");
+            donateButton.classList.remove("active");
+
+            audionalsContent.style.display = "none";
+            jsonContent.style.display = "none";
+            donateContent.style.display = "none";
+        }
+    });
+}
+
 
   function tryAudionalSequencer() {
     var sequencerContainer = document.getElementById('sequencer-container');
