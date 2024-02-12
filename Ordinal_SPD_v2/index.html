@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrdSPD - Sampling Pad</title>
+<style>
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center; /* Center the text */
+  }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column; /* Arrange elements vertically */
+    align-items: center; /* Center horizontally */
+    height: 100vh;
+  }
+
+  .roland-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: 600px;
+  }
+
+  .pad {
+    width: 150px;
+    height: 150px;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    margin: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #bbb;
+    position: relative;
+    overflow: hidden; /* This ensures that anything larger than the pad is clipped */
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    cursor: pointer;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+    <div class="title">Ordinal SPD - Sample Pad</div>
+
+
+    <div class="roland-container">
+        <div class="pad" data-pad="1">OrdSPD 1</div>
+        <div class="pad" data-pad="2">OrdSPD 2</div>
+        <div class="pad" data-pad="3">OrdSPD 3</div>
+        <div class="pad" data-pad="4">OrdSPD 4</div>
+        <div class="pad" data-pad="5">OrdSPD 5</div>
+        <div class="pad" data-pad="6">OrdSPD 6</div>
+      </div>
+      
+
+<input type="file" id="localFile" class="hidden">
+<audio id="audioPlayer" class="hidden"></audio>
+
+<script src="initialization.js"></script>
+<script src="uiHandlers.js"></script>
+<script src="audioBufferAndPlayback.js"></script>
+<script src="contentHandlers.js"></script>
+</body>
+</html>
