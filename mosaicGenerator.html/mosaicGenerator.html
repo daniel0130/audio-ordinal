@@ -1,0 +1,214 @@
+<!DOCTYPE html><html lang=en><meta charset=UTF-8><title>Marest Mosaic Generator</title><style>body{background-color:#000;color:#fff;height:100vh;margin:0;padding:0;display:flex;justify-content:center;align-items:center;box-sizing:border-box;overflow:auto}#main-container{position:relative;width:90%;height:80vh;box-sizing:border-box;display:flex;flex-direction:row;justify-content:space-around;align-items:center}#canvas-container{position:absolute;top:20%;left:20%;display:flex;justify-content:center;align-items:center;background-color:#000;width:80%;height:80%}#inputs{position:absolute;left:0;height:60%;width:30%;display:flex;flex-direction:column;align-items:flex-start;padding-right:2rem}#canvas{max-width:100%;max-height:100%;background-color:#000}#image-upload,button{padding:5px 10px;color:#fff;background-color:#00f;border:none;cursor:pointer;transition:background-color .3s ease;width:60%;box-sizing:border-box}#image-upload{background-color:red}#image-upload.green{background-color:green}button#generate-image{background-color:purple}button:hover{background-color:#00008b}</style><script src=https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js></script><div id=main-container><div id=inputs><input id=image-upload type=file multiple><br><label for=tile-space>Space around each tile:</label><input id=tile-space type=number name=tile-space value=0><br><label for=seed>Random Seed (number):</label><input id=seed type=number name=seed value=1><br><label for=num-colors>Number of Colors:</label><input id=num-colors type=number name=num-colors value=9><br><label for=logo-size>Select Logo Image Size:</label><select id=logo-size name=logo-size><option value=1>1px<option value=4>4px<option value=9>9px<option value=16>16px<option value=35 selected>35px<option value=117>117px<option value=175>175px<option value=350>350px<option value=16>16px<option value=9>9px<option value=4>4px<option value=1>1px</select><button id=generate-image>Generate Image</button> <button id=save-image>Save Image</button></div><div id=canvas-container></div></div>
+
+<script>
+       const OFFSCREEN_SIZE = 4096;
+        const SCALE_FACTOR = 1.1;
+        let images = [];
+        let input;
+        let offscreen;
+
+        function setup() {
+            const canvasDiv = document.getElementById('canvas-container');
+            const canvasSize = 600;
+            const canvas = createCanvas(canvasSize, canvasSize);
+
+            canvas.parent('canvas-container');
+            offscreen = createGraphics(OFFSCREEN_SIZE, OFFSCREEN_SIZE);
+            background(0);
+            input = select('#image-upload');
+            const button = select('#generate-image');
+            button.mousePressed(generateMosaic);
+            const saveButton = select('#save-image');
+            saveButton.mousePressed(() => {
+                // Access the settings values.
+                let tileSpace = select('#tile-space').value();
+                let seed = select('#seed').value();
+                let numColors = select('#num-colors').value();
+                let logoSize = select('#logo-size').value();
+                // Generate the filename by combining the settings.
+                let filename = `mosaic_tileSpace-${tileSpace}_seed-${seed}_numColors-${numColors}_logoSize-${logoSize}.png`;
+                // Save the offscreen buffer with the generated filename.
+                save(offscreen, filename);
+            });
+            
+            document.getElementById("image-upload").addEventListener("change", function() {
+                this.classList.toggle("red", !this.files.length);
+                this.classList.toggle("green", !!this.files.length);
+            });
+        }
+
+        async function generateMosaic() {
+            images = [];
+            const files = input.elt.files;
+            if(!files.length) {
+                alert('Please select some images before generating the mosaic.');
+                return;
+            }
+            await Promise.all([...files].map(file => new Promise(resolve => {
+                loadImage(URL.createObjectURL(file), img => {
+                    images.push({fileName: file.name, image: img});
+                    resolve();
+                });
+            })));
+
+            for(let i = 0; i < files.length; i++) {
+                await new Promise(resolve => {
+                    loadImage(URL.createObjectURL(files[i]), img => {
+                        images.push({fileName: files[i].name, image: img});
+                        resolve();
+                    });
+                });
+            }
+            clear();
+            background(0);
+            let tileSpace = int(select('#tile-space').value());
+            let seed = int(select('#seed').value());
+            let numColors = int(select('#num-colors').value());
+            let logoSize = int(select('#logo-size').value());
+
+            randomSeed(seed);
+
+            // Select the images with unique colors.
+            let uniqueColors = new Set();
+            let selectedImages = [];
+            for(let img of images) {
+                let color = img.fileName.substring(img.fileName.indexOf('#') + 1, img.fileName.lastIndexOf('.'));
+                if(!uniqueColors.has(color)) {
+                    uniqueColors.add(color);
+                    selectedImages.push(img);
+                    if(uniqueColors.size >= numColors) break;
+                }
+            }
+
+            // Sort selected images based on color.
+            selectedImages.sort((a, b) => {
+                let colorA = parseInt(a.fileName.substring(a.fileName.indexOf('#') + 1, a.fileName.lastIndexOf('.')), 16);
+                let colorB = parseInt(b.fileName.substring(b.fileName.indexOf('#') + 1, b.fileName.lastIndexOf('.')), 16);
+                return colorA - colorB;
+            });
+
+            // Draw on the offscreen buffer instead of the main canvas
+            offscreen.background(0);
+            offscreen.imageMode(CORNER);
+
+            // Draw the black and transparent images first.
+            for(let img of selectedImages) {
+                let color = parseInt(img.fileName.substring(img.fileName.indexOf('#') + 1, img.fileName.lastIndexOf('.')), 16);
+                if(color === 0) selectedImages.unshift(selectedImages.splice(selectedImages.indexOf(img), 1)[0]);
+            }
+
+            // Random number generator with the provided seed
+            randomSeed(seed);
+
+
+            let numTiles = offscreen.width / (logoSize + tileSpace);  // Use offscreen buffer dimensions
+
+            // Determine the quadrant based on the x, y position.
+            function getQuadrant(x, y, numTiles) {
+                if (x < numTiles / 2) {
+                    return y < numTiles / 2 ? 1 : 3;
+                } else {
+                    return y < numTiles / 2 ? 2 : 4;
+                }
+            }
+
+            for (let x = 0; x < numTiles; x++) {
+            for (let y = 0; y < numTiles; y++) {
+            let quadrant = getQuadrant(x, y, numTiles);
+            let img;
+
+            // Get the index based on the seed and selectedImages.length
+            let index;
+            if (seed % 4 === 0) {
+                index = (x * y) % selectedImages.length;
+            } else if (seed % 6 === 0) {
+                index = (x * x + y * y) % selectedImages.length;
+            } else if (seed % 8 === 0) {
+                let dist = abs(x - numTiles / 2) + abs(y - numTiles / 2);
+                index = floor(map(dist, 0, numTiles, 0, selectedImages.length));
+            } else if (seed % 9 === 0) {
+                let angle = atan2(y - numTiles / 2, x - numTiles / 2);
+                index = floor(map(angle, -PI, PI, 0, selectedImages.length));
+            } else if (seed % 10 === 0) {
+                index = (x + y * quadrant) % selectedImages.length;
+            } else if (seed % 12 === 0) {
+                let maxDist = numTiles / 2;
+                let dist = Math.hypot(x - numTiles / 2, y - numTiles / 2);
+                index = Math.floor((dist / maxDist) * (selectedImages.length - 1));
+                index = index % selectedImages.length;
+            } else if (seed % 14 === 0) {
+                index = (quadrant + seed) % selectedImages.length;
+            } else if (seed % 15 === 0) {
+                let angle = atan2(y - numTiles / 2, x - numTiles / 2);
+                let dist = abs(x - numTiles / 2) + abs(y - numTiles / 2);
+                index = floor(map(dist + angle, 0, numTiles + PI, 0, selectedImages.length));
+            } else if (seed % 16 === 0) {
+                let distance = dist(x, y, numTiles / 2, numTiles / 2);
+                index = floor(map(distance, 0, sqrt(sq(numTiles) / 2), 0, selectedImages.length));
+                index = index % selectedImages.length;
+            } else if (seed % 18 === 0) {
+                index = (x * y * quadrant) % selectedImages.length;
+            } else if (seed % 20 === 0) {
+                index = ((x + y) * quadrant + seed) % selectedImages.length;
+            } else if (seed % 21 === 0) {
+                let angle = atan2(y - numTiles / 2, x - numTiles / 2);
+                let dist = Math.hypot(x - numTiles / 2, y - numTiles / 2);
+                index = floor(map(angle + dist, -PI, PI + numTiles, 0, selectedImages.length));
+            } else if (seed % 24 === 0) {
+                index = ((x * y) + seed) % selectedImages.length;
+            } else if (seed % 25 === 0) {
+                index = ((x * x + y * y) + seed) % selectedImages.length;
+            } else if (seed % 27 === 0) {
+                let dist = abs(x - numTiles / 2) + abs(y - numTiles / 2);
+                let angle = atan2(y - numTiles / 2, x - numTiles / 2);
+                index = floor(map(dist + angle, 0, numTiles + PI, 0, selectedImages.length));
+            } else if (seed % 28 === 0) {
+                index = (x * y * quadrant + seed) % selectedImages.length;
+            } else if (seed % 30 === 0) {
+                let distance = dist(x, y, numTiles / 2, numTiles / 2);
+                index = floor(map(distance, 0, sqrt(sq(numTiles) / 2), 0, selectedImages.length));
+                index = index % selectedImages.length;
+            } else {
+                index = y % selectedImages.length;
+            }
+
+
+            // Ensure that the index is within the valid range
+            index = constrain(index, 0, selectedImages.length - 1);
+
+            // Get the image based on the computed index
+            img = selectedImages[index].image;
+
+            // Draw the image on the main canvas
+            image(img, x * tileSpace, y * tileSpace, logoSize, logoSize);
+
+            // Draw the image on the offscreen buffer with adjusted position and size
+            offscreen.image(img, x * (logoSize + tileSpace), y * (logoSize + tileSpace), logoSize, logoSize);
+        }
+    }
+
+
+            // Assuming you have an offscreen buffer named 'offscreen' and the desired scaled-down dimensions
+                const scaledWidth = width / 1.1; // Half of the original width
+                const scaledHeight = height / 1.1; // Half of the original height
+
+                // Draw a scaled-down version of the offscreen buffer on the main canvas
+                image(offscreen, 0, 0, width, height);
+        }
+             
+        document.getElementById("image-upload").addEventListener("change", function() {
+            const fileInput = this;
+            const isValid = fileInput.files && fileInput.files.length > 0;
+            if (isValid) {
+                fileInput.classList.remove("red");
+                fileInput.classList.add("green");
+            } else {
+                fileInput.classList.remove("green");
+                fileInput.classList.add("red");
+            }
+        });
+        
+        </script>
+
+</body>
+</html>
