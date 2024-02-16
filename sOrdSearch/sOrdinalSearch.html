@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sOrdinals Search Engine</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-column">
+            <h1 style="font-size: 36px; text-align: center;">sOrdinals Search Engine</h1>
+            <input type="text" id="inscriptionNumberInput" placeholder="Enter Inscription Number" onkeypress="handleKeypress(event, 'number')">
+            <button onclick="getDetails('number', document.getElementById('inscriptionNumberInput').value)">Search by Number</button>
+            <input type="text" id="inscriptionHashInput" placeholder="Enter Inscription ID (Hash)" onkeypress="handleKeypress(event, 'hash')">
+            <button onclick="getDetails('hash', document.getElementById('inscriptionHashInput').value)">Search by Hash</button>
+            <input type="text" id="ownerAddressInput" placeholder="Enter Owner Address" onkeypress="handleKeypress(event, 'owner')">
+            <button onclick="getDetails('owner', document.getElementById('ownerAddressInput').value)">Search Owned Inscriptions</button>
+            <input type="text" id="parentIDInput" placeholder="Enter Parent ID" onkeypress="handleKeypress(event, 'parent')">
+            <button onclick="getDetails('parent')">Search by Parent ID</button>
+         
+            <div id="childCount">
+            <p id="childCount"></p>
+            </div>            
+            <div class="section" id="inscriptionDetails">Inscription details will appear here...</div>
+            <p id="childDetails"></p>
+            <div class="section" id="inscriptionData">Inscription Raw Data will appear here...</div>
+            <div class="section" id="ownedInscriptions">Details about other inscriptions held in the same address will appear here...</div>
+        </div>
+        <div class="right-column">
+            <div class="iframe-container">
+            <iframe id="inscriptionContentIframe" style="display: none;"></iframe>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+    <script src="iframe.js"></script>
+</body>
+</html>

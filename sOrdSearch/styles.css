@@ -1,0 +1,166 @@
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #cccccc;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
+}
+
+.left-column {
+    flex: 0 0 60%; /* 60% width, no flex-grow or flex-shrink */
+    min-width: 0; /* Reset min-width to allow resizing */
+}
+
+.right-column {
+    flex: 0 0 40%; /* 40% width, no flex-grow or flex-shrink */
+    min-width: 0; /* Reset min-width to allow resizing */
+}
+
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+.section {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: auto; /* Make content scrollable */
+    max-height: 300px; /* Set a maximum height */
+}
+.section.scrollable {
+    overflow: auto; /* Make content scrollable */
+    max-height: 300px; /* Set a maximum height */
+    /* Other styles as required */
+}
+
+/* Wrap the iframe in a container */
+.iframe-container {
+    position: relative;
+    width: 100%; /* Full width of the right-column container */
+    /* Remove the margin-top unless it's needed for other styling purposes */
+    /* margin-top: 300px; remove or adjust this as necessary */
+    padding-top: 100%; /* Padding-top for 1:1 aspect ratio */
+}
+
+iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Fill the width of the iframe-container */
+    height: 100%; /* Fill the height of the iframe-container */
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-radius: 5px;
+    border: none; /* Remove the border for the iframe */
+}
+
+
+
+a {
+    color: #4caf50;
+    text-decoration: none;
+}
+
+.child-container {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    overflow: auto;
+    max-height: 300px; /* Adjust as needed */
+}
+
+.child-image {
+    flex: 0 1 auto; /* Do not grow, but allow shrinking */
+    width: auto; /* Auto width to maintain aspect ratio */
+    height: 100%; /* Full height of the container */
+    border: none;
+}
+
+.child-details {
+    flex: 1; /* Take up remaining space */
+    overflow: auto; /* Scroll if content overflows */
+}
+
+
+a:hover {
+    text-decoration: underline;
+}
+
+input[type="text"], button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+    margin: 5px 0; /* Adjusted for better spacing on small screens */
+}
+
+input[type="text"] {
+    width: 100%; /* Responsive width */
+    max-width: 375px; /* Maximum width to maintain usability */
+}
+
+button {
+    background-color: #29337c;
+    cursor: pointer;
+    white-space: nowrap;
+    width: 100%; /* Responsive width */
+    max-width: 200px; /* Maximum width for better appearance */
+}
+
+button:hover {
+    background-color: #4c5bd4;
+}
+
+/* Updated styles.css with additional rules for responsive layout and iframe display */
+.section {
+    display: flex;
+    flex-direction: row; /* Change direction to row to align items side by side */
+    justify-content: space-between; /* Space out the children */
+    align-items: flex-start; /* Align items at the start of the container */
+    flex-wrap: wrap; /* Allow items to wrap on small screens */
+}
+
+#inscriptionContentIframe {
+    width: 100%;
+    height: 500px; /* Adjust as needed */
+    max-width: 50%; /* Limit width to half of the viewport width */
+    max-height: 50vh; /* Limit height to half of the viewport height */
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .section {
+        flex-direction: column; /* Stack items vertically on small screens */
+    }
+    .left-column, .right-column {
+        min-width: 100%; /* Stacks columns on smaller screens */
+    }
+
+
+    #inscriptionContentIframe {
+        max-width: 80%; /* Allows more width on smaller screens */
+        max-height: 80vw; /* Maintains square aspect ratio */
+    }
+    .search-group, .section {
+        width: 100%; /* Full width on small screens */
+        padding: 0 15px; /* Added padding for small screens */
+    }
+    
+    input[type="text"], button {
+        width: calc(100% - 20px); /* Adjust width to allow for padding */
+    }
+}
+
