@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Grid Loader</title>
+<style>
+  body {
+    background-color: black; /* Set background color to black */
+    display: flex;
+    justify-content: center; /* Center align content horizontally */
+    align-items: center; /* Center align content vertically */
+    height: 100vh; /* Ensure the body takes up the full height of the viewport */
+    margin: 0; /* Remove default margin */
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* 6 columns for a 6x6 grid */
+    gap: 10px;
+    width: calc(100vh - 20px); /* Adjust width to the viewport height minus gap */
+    height: calc(100vh - 20px); /* Adjust height to the viewport height minus gap */
+    max-width: 100vw; /* Ensure the grid does not exceed the width of the viewport */
+    max-height: 100vh; /* Ensure the grid does not exceed the height of the viewport */
+  }
+  .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 16.66%; /* Adjust aspect ratio for 6x6 grid */
+  }
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(69, 69, 69); /* Set border color to black */
+    cursor: pointer; /* Change cursor to indicate clickable area */
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-container">
+  <!-- Iframes will be inserted here by JavaScript -->
+</div>
+
+<script>
+const numberOfIframes = 36; // 6x6 grid
+
+function createIframes() {
+  const container = document.querySelector('.grid-container');
+  for (let i = 0; i < numberOfIframes; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'iframe-wrapper';
+
+    const iframe = document.createElement('iframe');
+    iframe.id = `iframe-${i}`;
+    iframe.addEventListener('load', function() {
+      // Logic after iframe content is loaded can go here
+    });
+
+    // Directly add click event to the iframe
+    iframe.addEventListener('click', function() {
+      loadFileIntoIframe(iframe.id);
+    });
+
+    wrapper.appendChild(iframe);
+    container.appendChild(wrapper);
+  }
+}
+
+function loadFileIntoIframe(iframeId) {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'text/html';
+  fileInput.style.display = 'none'; // Hide the file input element
+  fileInput.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const blob = new Blob([e.target.result], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const iframe = document.getElementById(iframeId);
+        iframe.src = url;
+      };
+      reader.readAsText(file);
+    }
+    document.body.removeChild(fileInput); // Clean up by removing the file input element
+  };
+  document.body.appendChild(fileInput); // It's necessary to add the file input to the DOM
+  fileInput.click();
+}
+
+createIframes();
+</script>
+
+</body>
+</html>
