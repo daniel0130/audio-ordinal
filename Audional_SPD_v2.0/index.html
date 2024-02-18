@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Grid Loader</title>
+<style>
+  body {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    width: calc(100vh - 20px);
+    height: calc(100vh - 20px);
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 16.66%;
+  }
+  .bpm-display {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: red;
+    font-size: 48px; /* Large font size for visibility */
+    z-index: 10; /* Ensures it's on top of other elements */
+  }
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(69, 69, 69);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="bpm-display">
+  <input type="number" id="globalBPM" value="78" min="60" max="240">
+  <button id="setBPM">Set BPM</button>
+</div>
+<div class="grid-container"></div>
+
+<script>
+const numberOfIframes = 36; // Define the total number of iframes
+
+function createIframes() {
+  const container = document.querySelector('.grid-container');
+  for (let i = 0; i < numberOfIframes; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'iframe-wrapper';
+
+    const iframe = document.createElement('iframe');
+    iframe.id = `iframe-${i}`;
+
+    // Attach event listener for loading HTML files into iframes
+    attachIframeClickListener(iframe);
+
+    wrapper.appendChild(iframe);
+    container.appendChild(wrapper);
+  }
+}
+
+function attachIframeClickListener(iframe) {
+  iframe.addEventListener('click', () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'text/html';
+    fileInput.style.display = 'none';
+
+    fileInput.onchange = (e) => loadFileIntoIframe(e, iframe);
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+  });
+}
+
+function loadFileIntoIframe(e, iframe) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const blob = new Blob([e.target.result], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            iframe.src = url;
+
+            // Wait for the iframe to load the new content
+            iframe.onload = () => {
+                // Send the current global BPM to the newly loaded content
+                const currentGlobalBPM = parseInt(document.getElementById('globalBPM').value, 10);
+                iframe.contentWindow.postMessage({
+                    type: 'updateBPM',
+                    data: { bpm: currentGlobalBPM }
+                }, '*'); // Remember to replace '*' with the actual origin for better security
+            };
+        };
+        reader.readAsText(file);
+    }
+}
+
+
+function setGlobalBPM() {
+  const bpm = parseInt(document.getElementById('globalBPM').value, 10);
+  const iframes = document.querySelectorAll('iframe');
+
+  iframes.forEach(iframe => {
+    iframe.contentWindow.postMessage({
+      type: 'updateBPM',
+      data: { bpm: bpm }
+    }, '*'); // Adjust to use the actual origin for better security
+  });
+}
+
+createIframes();
+
+document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
+
+// Toggle selection and mute control
+document.querySelectorAll('iframe').forEach(iframe => {
+  iframe.addEventListener('click', () => iframe.classList.toggle('selected'));
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key.toLowerCase() === 'm') {
+    document.querySelectorAll('iframe.selected').forEach(iframe => {
+      const isMuted = iframe.classList.contains('muted');
+      iframe.contentWindow.postMessage({
+        type: 'muteControl',
+        data: { mute: !isMuted }
+      }, '*'); // Adjust to use the actual origin for better security
+      iframe.classList.toggle('muted', !isMuted);
+    });
+  }
+});
+</script>
+
+</body>
+</html>
