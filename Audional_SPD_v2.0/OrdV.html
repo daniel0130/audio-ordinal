@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Grid Loader</title>
+<style>
+  body {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    width: calc(100vh - 20px);
+    height: calc(100vh - 20px);
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 16.66%;
+  }
+  .bpm-display {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: red;
+    font-size: 48px; /* Large font size for visibility */
+    z-index: 10; /* Ensures it's on top of other elements */
+  }
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(69, 69, 69);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="bpm-display">
+  <input type="number" id="globalBPM" value="78" min="60" max="240">
+  <button id="setBPM">Set BPM</button>
+</div>
+<div class="grid-container"></div>
+
+<script>
+const numberOfIframes = 36; // Define the total number of iframes
+
+function createIframes() {
+  const container = document.querySelector('.grid-container');
+  for (let i = 0; i < numberOfIframes; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'iframe-wrapper';
+
+    const iframe = document.createElement('iframe');
+    iframe.id = `iframe-${i}`;
+
+    // Update: Attach event listener for loading URLs into iframes directly
+    iframe.addEventListener('click', () => loadContentFromURL(iframe));
+
+    wrapper.appendChild(iframe);
+    container.appendChild(wrapper);
+  }
+}
+
+function loadContentFromURL(iframe) {
+  const url = prompt("Please enter the URL:");
+  if (url) {
+    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
+    if (urlPattern.test(url)) {
+      iframe.src = url;
+      iframe.onload = () => {
+        // Send the current global BPM to the newly loaded content
+        const currentGlobalBPM = parseInt(document.getElementById('globalBPM').value, 10);
+        iframe.contentWindow.postMessage({
+          type: 'updateBPM',
+          data: { bpm: currentGlobalBPM }
+        }, '*'); // Adjust for better security by specifying the target origin instead of '*'
+      };
+    } else {
+      alert("Invalid URL. Please ensure it matches the expected format.");
+    }
+  }
+}
+
+
+// Updated part: Add a global message event listener to handle incoming messages
+window.addEventListener('message', function(event) {
+    // Security check: replace 'http://example.com' with the actual origin of the child iframes
+    // if (event.origin !== "http://example.com") return;
+
+    console.log(`Message received from ${event.origin}:`, event.data);
+
+    // Handling currentSettingsResponse from child iframes
+    if (event.data.type === 'currentSettingsResponse') {
+        console.log(`Settings received:`, event.data.data);
+        // Process the received settings as needed
+        // For example, display them on the page or log them
+    }
+
+    // You can add more cases here to handle other types of messages
+});
+
+function requestCurrentSettingsFromIframe(iframeId) {
+    const iframe = document.getElementById(iframeId);
+    if (iframe && iframe.contentWindow) {
+        console.log(`Requesting current settings from ${iframeId}`);
+        iframe.contentWindow.postMessage({ type: 'requestCurrentSettings' }, '*'); // Remember to replace '*' with the actual origin for better security
+    } else {
+        console.log(`Iframe ${iframeId} not found or not ready.`);
+    }
+}
+
+// Example usage:
+// This line should be called when you're ready to request the settings, for example, after the iframes are fully loaded and initialized.
+// requestCurrentSettingsFromIframe('iframe-0');
+
+
+
+function setGlobalBPM() {
+  const bpm = parseInt(document.getElementById('globalBPM').value, 10);
+  const iframes = document.querySelectorAll('iframe');
+
+  iframes.forEach(iframe => {
+    iframe.contentWindow.postMessage({
+      type: 'updateBPM',
+      data: { bpm: bpm }
+    }, '*'); // Adjust to use the actual origin for better security
+  });
+}
+
+createIframes();
+
+document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
+
+// Toggle selection and mute control for iframes
+document.querySelectorAll('iframe').forEach(iframe => {
+    iframe.addEventListener('click', () => iframe.classList.toggle('selected'));
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key.toLowerCase() === 'm') {
+        document.querySelectorAll('iframe.selected').forEach(iframe => {
+            const isMuted = iframe.classList.contains('muted');
+            iframe.contentWindow.postMessage({
+                type: 'muteControl',
+                data: { mute: !isMuted }
+            }, '*'); // Remember to replace '*' with the actual origin for better security
+            iframe.classList.toggle('muted', !isMuted);
+        });
+    }
+});
+</script>
+
+</body>
+</html>
