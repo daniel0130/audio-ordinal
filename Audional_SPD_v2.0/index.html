@@ -110,6 +110,38 @@ function loadFileIntoIframe(e, iframe) {
     }
 }
 
+// Updated part: Add a global message event listener to handle incoming messages
+window.addEventListener('message', function(event) {
+    // Security check: replace 'http://example.com' with the actual origin of the child iframes
+    // if (event.origin !== "http://example.com") return;
+
+    console.log(`Message received from ${event.origin}:`, event.data);
+
+    // Handling currentSettingsResponse from child iframes
+    if (event.data.type === 'currentSettingsResponse') {
+        console.log(`Settings received:`, event.data.data);
+        // Process the received settings as needed
+        // For example, display them on the page or log them
+    }
+
+    // You can add more cases here to handle other types of messages
+});
+
+function requestCurrentSettingsFromIframe(iframeId) {
+    const iframe = document.getElementById(iframeId);
+    if (iframe && iframe.contentWindow) {
+        console.log(`Requesting current settings from ${iframeId}`);
+        iframe.contentWindow.postMessage({ type: 'requestCurrentSettings' }, '*'); // Remember to replace '*' with the actual origin for better security
+    } else {
+        console.log(`Iframe ${iframeId} not found or not ready.`);
+    }
+}
+
+// Example usage:
+// This line should be called when you're ready to request the settings, for example, after the iframes are fully loaded and initialized.
+// requestCurrentSettingsFromIframe('iframe-0');
+
+
 
 function setGlobalBPM() {
   const bpm = parseInt(document.getElementById('globalBPM').value, 10);
@@ -127,22 +159,22 @@ createIframes();
 
 document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
 
-// Toggle selection and mute control
+// Toggle selection and mute control for iframes
 document.querySelectorAll('iframe').forEach(iframe => {
-  iframe.addEventListener('click', () => iframe.classList.toggle('selected'));
+    iframe.addEventListener('click', () => iframe.classList.toggle('selected'));
 });
 
 document.addEventListener('keydown', event => {
-  if (event.key.toLowerCase() === 'm') {
-    document.querySelectorAll('iframe.selected').forEach(iframe => {
-      const isMuted = iframe.classList.contains('muted');
-      iframe.contentWindow.postMessage({
-        type: 'muteControl',
-        data: { mute: !isMuted }
-      }, '*'); // Adjust to use the actual origin for better security
-      iframe.classList.toggle('muted', !isMuted);
-    });
-  }
+    if (event.key.toLowerCase() === 'm') {
+        document.querySelectorAll('iframe.selected').forEach(iframe => {
+            const isMuted = iframe.classList.contains('muted');
+            iframe.contentWindow.postMessage({
+                type: 'muteControl',
+                data: { mute: !isMuted }
+            }, '*'); // Remember to replace '*' with the actual origin for better security
+            iframe.classList.toggle('muted', !isMuted);
+        });
+    }
 });
 </script>
 
