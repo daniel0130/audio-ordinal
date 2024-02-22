@@ -13,38 +13,93 @@
     height: 100vh;
     margin: 0;
   }
+
   .grid-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    width: calc(100vh - 20px);
-    height: calc(100vh - 20px);
+    gap: 2px; /* Simplified from grid-gap */
+    width: calc(100vh - 10px);
+    height: calc(100vh - 10px);
     max-width: 100vw;
     max-height: 100vh;
   }
+
   .iframe-wrapper {
     position: relative;
-    width: 100%;
-    padding-top: 16.66%;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+    margin: 5px;
+    overflow: over; /* Added to ensure no overflow if children exceed the size */
   }
+
+  .iframe-wrapper:hover .load-button,
+  .iframe-wrapper:hover::after {
+    display: block;
+  }
+
   .bpm-display {
     position: absolute;
     top: 20px;
     left: 20px;
     color: red;
-    font-size: 48px; /* Large font size for visibility */
-    z-index: 10; /* Ensures it's on top of other elements */
+    font-size: 48px;
+    z-index: 10;
   }
+
   iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    border: 2px solid rgb(69, 69, 69);
+    border: 2px solid #454545; /* Changed RGB to hex */
     cursor: pointer;
   }
+
+  .load-button {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    bottom: 10px; /* Position below the iframe */
+    right: 0;
+    display: none; /* Change to 'none' if you want to hide it by default */
+  }
+
+  .iframe-wrapper::after {
+    content: "Click to load file"; /* Added content property */
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    bottom: -20px; /* Adjusted position to be outside the iframe */
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px;
+    display: none;
+    white-space: nowrap; /* Ensure the text does not wrap */
+  }
+
+  .clear-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: black;
+    color: white;
+    border-radius: 50%; /* Make it round */
+    width: 25px; /* Small size */
+    height: 25px;
+    line-height: 25px; /* Vertically center the X */
+    text-align: center;
+    cursor: pointer;
+    display: none; /* Hide by default, will be shown after iframe loads content */
+    border: none;
+    font-size: 14px;
+    padding: 0;
+    z-index: 10;
+  }
 </style>
+
 </head>
 <body>
 <div class="bpm-display">
@@ -52,10 +107,54 @@
   <button id="setBPM">Set BPM</button>
 </div>
 <div class="grid-container"></div>
-
 <script>
 const numberOfIframes = 36; // Define the total number of iframes
 
+function clearIframe(iframe, loadButton, clearButton) {
+  // Clear the iframe source
+  iframe.src = '';
+  // Hide the clear button and show the load button
+  loadButton.style.display = 'block';
+  clearButton.style.display = 'none';
+}
+
+// Update the loadContentFromURL function to pass the correct buttons
+function loadContentFromURL(iframe, loadButton, clearButton) {
+  const url = prompt("Please enter the URL:");
+  if (url) {
+    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
+    if (urlPattern.test(url)) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(html => {
+          const blob = new Blob([html], { type: 'text/html' });
+          const blobUrl = URL.createObjectURL(blob);
+          iframe.src = blobUrl;
+
+          iframe.onload = () => {
+            // Hide the load button and show the clear button
+            loadButton.style.display = 'none';
+            clearButton.style.display = 'block';
+            URL.revokeObjectURL(blobUrl); // Clean up blob URL after loading
+          };
+        })
+        .catch(error => {
+          console.error('Error fetching or loading the URL:', error);
+          alert("There was an issue loading the content. Please check the console for more details.");
+        });
+    } else {
+      alert("Invalid URL. Please ensure it matches the expected format.");
+    }
+  }
+}
+
+
+// Pass the correct button references when calling clearIframe from the clearButton onclick
 function createIframes() {
   const container = document.querySelector('.grid-container');
   for (let i = 0; i < numberOfIframes; i++) {
@@ -65,33 +164,25 @@ function createIframes() {
     const iframe = document.createElement('iframe');
     iframe.id = `iframe-${i}`;
 
-    // Update: Attach event listener for loading URLs into iframes directly
-    iframe.addEventListener('click', () => loadContentFromURL(iframe));
+    const loadButton = document.createElement('button');
+    loadButton.textContent = 'Load';
+    loadButton.className = 'load-button';
+    
+    const clearButton = document.createElement('button');
+    clearButton.textContent = 'X';
+    clearButton.className = 'clear-button';
+    clearButton.onclick = () => clearIframe(iframe, loadButton, clearButton);
+    clearButton.style.display = 'none';
+
+    loadButton.onclick = () => loadContentFromURL(iframe, loadButton, clearButton);
 
     wrapper.appendChild(iframe);
+    wrapper.appendChild(loadButton); // Position the load button inside iframe wrapper
+    wrapper.appendChild(clearButton); // Position the clear button inside iframe wrapper
     container.appendChild(wrapper);
   }
 }
 
-function loadContentFromURL(iframe) {
-  const url = prompt("Please enter the URL:");
-  if (url) {
-    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
-    if (urlPattern.test(url)) {
-      iframe.src = url;
-      iframe.onload = () => {
-        // Send the current global BPM to the newly loaded content
-        const currentGlobalBPM = parseInt(document.getElementById('globalBPM').value, 10);
-        iframe.contentWindow.postMessage({
-          type: 'updateBPM',
-          data: { bpm: currentGlobalBPM }
-        }, '*'); // Adjust for better security by specifying the target origin instead of '*'
-      };
-    } else {
-      alert("Invalid URL. Please ensure it matches the expected format.");
-    }
-  }
-}
 
 
 // Updated part: Add a global message event listener to handle incoming messages
