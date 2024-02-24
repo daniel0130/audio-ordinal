@@ -1,0 +1,12 @@
+/* grid-container.css */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    flex: 0 0 auto; /* Do not grow, do not shrink, initial width auto */
+    width: calc(100vh - 10px);
+    height: calc(100vh - 10px);
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  

@@ -1,0 +1,36 @@
+/* Button styles */
+button {
+    position: absolute;
+    background: var(--btn-bg-color);
+    color: var(--btn-color);
+    padding: 5px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  /* Initially hide the load button */
+  .load-button {
+    visibility: hidden;
+    bottom: 10px;
+    right: 10px; /* Adjusted for consistency */
+    z-index: 1; /* Ensure button is above the iframe */
+  }
+  
+  /* Show the load button when the parent .iframe-wrapper is hovered */
+  .iframe-wrapper:hover .load-button {
+    visibility: visible;
+  }
+  
+  .iframe-wrapper::after {
+    content: "Loaded"; /* Provide content for pseudo-element */
+    color: var(--btn-color);
+    font-size: 12px;
+    position: absolute;
+    bottom: -20px;
+    right: 0;
+    background: var(--btn-bg-color);
+    padding: 2px;
+    white-space: nowrap;
+  }
+  
+  

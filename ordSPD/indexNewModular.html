@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Grid Loader</title>
+
+<!-- In your <head> section of the HTML -->
+  <link rel="stylesheet" href="css/base-styles.css">
+  <link rel="stylesheet" href="css/border-styles.css">
+  <link rel="stylesheet" href="css/button-styles.css">
+  <link rel="stylesheet" href="css/grid-container.css">
+  <link rel="stylesheet" href="css/iframe-wrapper.css">
+  <link rel="stylesheet" href="css/left-column-layout.css">
+  <link rel="stylesheet" href="css/right-column-layout.css">
+  <link rel="stylesheet" href="css/text-and-menu-styles.css">
+
+  <script src="javaScript/userGuide.js" defer></script>
+
+</head>
+<body>
+  <div class="left-column">
+    <div class="title-container">
+      <h1 class="page-title">OrdSPD</h1>
+      <h2 class="page-subtitle">Audional Sample Pad</h2>
+      <h3 class="page-subtext">Regenerative Bitcoin Ordinal Mixer for Audional Smart Samples</h3>
+    </div>
+    <div class="bpm-display">
+      <label for="globalBPM" class="bpm-label">Global <span class="bitcoin-symbol">₿</span>PM:</label>
+      <input type="number" id="globalBPM" value="78" min="60" max="240">
+      <button id="setBPM">Set BPM</button>
+    </div>
+    <button id="clearAllButton" class="clear-all-btn">Clear All Pads</button>
+  </div>
+  <div class="center-column">
+    <div class="grid-container">
+      <!-- Grid content goes here -->
+    </div>
+  </div>
+  <div class="right-column">
+    <button id="toggleGuide" class="toggle-guide">Hide User Guide</button> <!-- Moved this line up -->
+    <!-- <div class="instructions-container" id="guideContent">
+      <h2>User Guide</h2>
+      <h3>Audionals 2.0 <br> User Guide </h3>
+      <p><strong>Hotkeys and Shortcuts:</strong></p>
+    <ul>
+      <li><kbd>-</kbd> / <kbd>+</kbd>: 1/2 or x2 Loop Length</li>
+      <li><kbd>0</kbd>: Return to Default Loop Length</li>
+      <li><kbd>&lt;</kbd> / <kbd>&gt;</kbd>: Adjust volume by 1</li>
+      <li><kbd>m</kbd>: Mute</li>
+      <li><kbd>Shift</kbd> + <kbd>{</kbd> / <kbd>}</kbd>: Adjust playback speed and pitch by 10 cents (using sample playback speed)</li>
+      <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>{</kbd> / <kbd>}</kbd>: Adjust playback speed and pitch by semi-tone/100 cents (using sample playback speed)</li>
+      <ul>
+        <li><kbd>Shift</kbd> + <kbd>-</kbd> / <kbd>+</kbd>: Adjust BPM by 1 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
+        <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>+</kbd> / <kbd>-</kbd>: Adjust BPM by 10 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
+      </ul>
+    </ul> -->
+  </div>
+</div>
+
+
+<script type="module" src="javaScript/IframeManager.js"></script>
+   <script type="module" src="javaScript/ContentLoader.js"></script>
+<script type="module" src="javaScript/UIController.js"></script>
+     <!-- <script type="module" src="javaScript/Initialization.js"></script>
+  <script src="javaScript/right-click-menu.js"></script> -->
+
+</body>
+</html>

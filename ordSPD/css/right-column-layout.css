@@ -1,0 +1,88 @@
+/* CSS FOR INSTRUCTIONS IN RIGHT COLUMN */
+
+.right-column {
+    width: 22%; /* Set the column width */
+    background-color: #121212; /* Dark background for the cool theme */
+    color: #c0c0c0; /* Soft light text for contrast */
+    padding: 20px; /* Spacing around the content */
+    box-sizing: border-box; /* Include padding in width */
+    border-left: 4px solid #0db9d7; /* Neon blue accent on the left for visibility */
+    border-right: 4px solid #0db9d7; 
+    height: 100vh; /* Full height of the viewport */
+    overflow-y: auto; /* Enable scrolling if content overflows */
+    position: relative; /* Establish a containing block for absolute positioning */
+    right: 0; /* Align to the right edge of the viewport */
+  }
+  
+  /* CSS for when the guide is hidden */
+  .right-column-hidden {
+    border: none; /* Remove the border */
+  }
+  
+  /* Adjust the .toggle-guide button's style when guide is hidden */
+  .right-column-hidden .toggle-guide {
+    opacity: 0.5; /* More transparent when guide is hidden */
+  }
+  
+  .instructions-container h2,
+  .instructions-container h3 {
+    color: #21d4fd; /* Neon blue text for headings */
+    text-shadow: 0px 0px 10px #21d4fd; /* Neon glow effect */
+    margin-bottom: 15px; /* Spacing after headings */
+  }
+  
+  .instructions-container p {
+    font-weight: normal; /* Normal font weight for better readability */
+    margin-top: 0; /* Remove top margin for alignment */
+    margin-bottom: 15px; /* Spacing after paragraphs */
+  }
+  
+  .instructions-container ul {
+    list-style: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+    margin-left: 10px; /* Indent list items */
+  }
+  
+  .instructions-container li {
+    margin-bottom: 10px; /* Spacing between list items */
+    background-color: #1e1e1e; /* Darker background for list items */
+    border-left: 4px solid #0db9d7; /* Neon blue accent on list items */
+    padding: 10px; /* Spacing inside list items */
+    border-radius: 2px; /* Rounded corners for list items */
+  }
+  
+  .instructions-container kbd {
+    background-color: #242424; /* Dark background for keycap appearance */
+    color: #21d4fd; /* Neon blue text for keycaps */
+    padding: 3px 5px; /* Spacing around keycap text */
+    border-radius: 3px; /* Rounded corners for keycaps */
+    box-shadow: 0px 0px 5px #21d4fd; /* Neon glow effect */
+    font-family: 'Courier New', monospace; /* Font for keycap appearance */
+    display: inline-block; /* Ensure keycaps don't break line */
+    margin: 0 2px; /* Space between keycaps */
+  }
+  
+  .toggle-guide {
+    align-self: flex-end; /* Align to the end of the flex container */
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 5px 5px;
+    font-size: 0.75em;
+    cursor: pointer;
+    margin-top: 20px; /* Move the button down by 20 pixels */
+    margin-left:150px;
+    opacity: 0.9;
+    transition: opacity 0.3s;
+  }
+  
+  .toggle-guide:hover {
+    opacity: 1; /* Full opacity on hover for better visibility */
+  }
+  
+  
+  .instructions-container {
+    display: block; /* Ensure the guide is visible by default */
+    padding-bottom: 50px; /* Add padding at the bottom at least the height of the button */
+  }
+  

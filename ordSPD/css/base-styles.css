@@ -1,0 +1,22 @@
+/* base-styles.css */
+:root {
+    --border-color: #454545;
+    --btn-bg-color: rgba(0, 0, 0, 0.5);
+    --btn-color: white;
+    --btn-size: 25px;
+    --neon-blue: #0db9d7;
+    --dark-bg: #121212;
+    --text-color: #c0c0c0;
+    --guide-visible: 1; /* 1 for true, 0 for false */
+  }
+  
+  body {
+    background-color: var(--dark-bg);
+    display: flex;
+    justify-content: space-around; /* Adjusted for equal spacing */
+    align-items: flex-start; /* Align to the top */
+    height: 100vh;
+    margin: 0;
+    color: var(--text-color);
+  }
+  

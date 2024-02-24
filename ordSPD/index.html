@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iframe Grid Loader</title>
-<style>
+
+<!-- In your <head> section of the HTML -->
+  <link rel="stylesheet" href="css/base-styles.css">
+  <link rel="stylesheet" href="css/border-styles.css">
+  <link rel="stylesheet" href="css/button-styles.css">
+  <link rel="stylesheet" href="css/grid-container.css">
+  <link rel="stylesheet" href="css/iframe-wrapper.css">
+  <link rel="stylesheet" href="css/left-column-layout.css">
+  <link rel="stylesheet" href="css/right-column-layout.css">
+  <link rel="stylesheet" href="css/text-and-menu-styles.css">
+  <link rel="stylesheet" href="css/variables-and-base.css">
+  <link rel="stylesheet" href="css/grid-and-borders.css">
+  <link rel="stylesheet" href="css/iframe-and-overlay.css">
+
+<!-- <style>
   :root {
   --border-color: #454545;
   --btn-bg-color: rgba(0, 0, 0, 0.5);
@@ -103,18 +117,6 @@ iframe {
     pointer-events: none; /* Allows click events to pass through */
     z-index: 2; /* Above the text but below the iframe content */
 }
-
-/* This CSS goes with your other styles
-.text-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8); /* Adjust color and opacity as needed */
-    /* z-index: 2; /* Above the text */
-    /* pointer-events: none; /* Allows clicking through to the iframe */
-/* }  */
 
 
 iframe::after {
@@ -360,7 +362,8 @@ button {
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-</style>
+</style> -->
+
 </head>
 <body>
   <div class="left-column">
@@ -404,7 +407,7 @@ button {
 
 
 <script>
-  (function() {
+
   const numberOfIframes = 36; // Define the total number of iframes
 
 
@@ -452,6 +455,23 @@ button {
     preloadContent(); // Preload content after creating iframes
 }
 
+// Clears the content of a single iframe
+  function clearIframe(iframe, loadButton) {
+    iframe.src = 'about:blank';
+    loadButton.style.display = 'block';
+    loadButton.textContent = 'Load';
+  }
+
+  // Clears all iframes
+  function clearAllIframes() {
+    document.querySelectorAll('.iframe-wrapper').forEach(wrapper => {
+      const iframe = wrapper.querySelector('iframe');
+      const loadButton = wrapper.querySelector('.load-button');
+      clearIframe(iframe, loadButton);
+    });
+  }
+    
+
 
 // Call createIframes function somewhere in your code when you're ready to generate the iframes
 
@@ -480,21 +500,6 @@ button {
 
 
 
-// Clears the content of a single iframe
-function clearIframe(iframe, loadButton) {
-  iframe.src = 'about:blank';
-  loadButton.style.display = 'block';
-  loadButton.textContent = 'Load';
-}
-
-// Clears all iframes
-function clearAllIframes() {
-  document.querySelectorAll('.iframe-wrapper').forEach(wrapper => {
-    const iframe = wrapper.querySelector('iframe');
-    const loadButton = wrapper.querySelector('.load-button');
-    clearIframe(iframe, loadButton);
-  });
-}
 
  // Array of URLs to preload
  const preloadUrls = [
@@ -631,11 +636,14 @@ function manageContentLoading(iframe, url, onSuccess, onError) {
   }
 
   document.addEventListener('DOMContentLoaded', initializePage);
-})();
+
 
   </script>
-
-  <script src="right-click-menu.js"></script>
+<script type="module" src="javaScript/IframeManager.js"></script>
+    <!-- <script type="module" src="javaScript/ContentLoader.js"></script>
+  <script type="module" src="javaScript/UIController.js"></script>
+  <script type="module" src="javaScript/Initialization.js"></script>
+  <script src="javaScript/right-click-menu.js"></script> -->
 
 </body>
 </html>
