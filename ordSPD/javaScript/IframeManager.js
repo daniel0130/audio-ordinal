@@ -46,7 +46,14 @@ const numberOfIframes = 36; // Define the total number of iframes
         container.appendChild(wrapper);
     }
     preloadContent(); // Preload content after creating iframes
+    
+    // Highlight the first iframe as selected
+    const firstIframe = document.getElementById('iframe-0');
+    if (firstIframe) {
+        firstIframe.classList.add('selected-iframe');
+    }
 }
+
 
 // Clears the content of a single iframe
   export function clearIframe(iframe, loadButton) {

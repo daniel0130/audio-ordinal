@@ -15,14 +15,13 @@ export class IframeSelectionManager {
         }
     }
 
-    // Update the visual state of a pad
+   // Update the visual state of a pad
     updatePadVisual(padId, isSelected) {
         const padElement = document.getElementById(padId);
         if (padElement) {
-            padElement.classList.toggle('selected-pad', isSelected);
+            padElement.classList.toggle('selected-iframe', isSelected); // Updated class name here
         }
     }
-
     // Select multiple pads
     selectMultiplePads(padIds) {
         padIds.forEach(padId => {
