@@ -406,6 +406,42 @@ function clearAllIframes() {
   });
 }
 
+function preloadContent() {
+    const iframes = document.querySelectorAll('iframe');
+
+    // Load the first 5 URLs into the first 5 iframes directly
+    for (let i = 0; i < 5; i++) {
+        manageContentLoading(iframes[i], preloadUrls[i]);
+    }
+
+    // For iframes 6-14, load four instances of each URL from positions 5, 6, and 7
+    let urlIndex = 5; // Start from the 5th position in the preloadUrls array
+    for (let i = 5; i < 15; i += 4) {
+        for (let j = 0; j < 4; j++) { // Repeat four times for each URL
+            manageContentLoading(iframes[i + j], preloadUrls[urlIndex]);
+        }
+        urlIndex++; // Move to the next URL after every four iframes
+    }
+
+    // For iframes 15-17 (indexes 14 to 16), load the next URL into each
+    for (let i = 16; i < 17; i++) {
+        if (urlIndex < preloadUrls.length) {
+            manageContentLoading(iframes[i], preloadUrls[urlIndex]);
+            urlIndex++;
+        }
+    }
+
+    // For the last two iframes (18 and 19), load the last two URLs from the preloadUrls array
+    if (17 < iframes.length && 8 < preloadUrls.length) { // Ensuring the index and length checks are correct
+        manageContentLoading(iframes[17], preloadUrls[8]); // Load the 9th URL into iframe 18
+    }
+    if (18 < iframes.length && 9 < preloadUrls.length) {
+        manageContentLoading(iframes[18], preloadUrls[9]); // Load the 10th URL into iframe 19
+    }
+}
+
+
+
 function manageContentLoading(iframe, url, onSuccess, onError) {
     fetch(url)
       .then(response => {
@@ -444,14 +480,7 @@ function manageContentLoading(iframe, url, onSuccess, onError) {
     });
   }
 
-  function preloadContent() {
-    document.querySelectorAll('iframe').forEach((iframe, index) => {
-      if (index < preloadUrls.length) {
-        const url = preloadUrls[index];
-        manageContentLoading(iframe, url);
-      }
-    });
-  }
+ 
 
   function setGlobalBPM() {
     const bpm = parseInt(document.getElementById('globalBPM').value, 10);
