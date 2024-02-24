@@ -278,11 +278,18 @@ button {
 }
 
 
-</style>
+#custom-context-menu {
+  display: none; /* Hidden by default */
+  position: absolute;
+  z-index: 1000; /* Higher than other elements */
+  background-color: #ffffff;
+  border: 1px solid #d4d4d4;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+}
 
+</style>
 </head>
 <body>
-
   <div class="left-column">
     <div class="title-container">
       <h1 class="page-title">OrdSPD</h1>
@@ -301,8 +308,6 @@ button {
       <!-- Grid content goes here -->
     </div>
   </div>
-  
-
   <div class="right-column">
     <button id="toggleGuide" class="toggle-guide">Hide User Guide</button> <!-- Moved this line up -->
     <div class="instructions-container" id="guideContent">
@@ -320,10 +325,8 @@ button {
         <li><kbd>Shift</kbd> + <kbd>-</kbd> / <kbd>+</kbd>: Adjust BPM by 1 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
         <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>+</kbd> / <kbd>-</kbd>: Adjust BPM by 10 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
       </ul>
-      
     </ul>
   </div>
-
 </div>
 
 
@@ -350,32 +353,19 @@ button {
     for (let i = 0; i < numberOfIframes; i++) {
       const wrapper = document.createElement('div');
       wrapper.className = 'iframe-wrapper';
-
       const iframe = document.createElement('iframe');
       iframe.id = `iframe-${i}`;
-
       const loadButton = document.createElement('button');
       loadButton.textContent = 'Load';
       loadButton.className = 'load-button';
-
       loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
-
       wrapper.appendChild(iframe);
       wrapper.appendChild(loadButton);
       container.appendChild(wrapper);
     }
-    preloadContent(); // Call preloadContent after iframes creation
+    preloadContent(); // Preload content after creating iframes
   }
 
-  // New function to preload content into the first 10 iframes
-  function preloadContent() {
-    document.querySelectorAll('iframe').forEach((iframe, index) => {
-      if (index < preloadUrls.length) {
-        const url = preloadUrls[index];
-        fetchAndLoadContent(iframe, url);
-      }
-    });
-  }
 
   // Function to fetch and load content from a URL into an iframe
   function fetchAndLoadContent(iframe, url) {
@@ -416,19 +406,7 @@ function clearAllIframes() {
   });
 }
 
-  function loadContentFromURL(iframe, loadButton) {
-    const url = prompt("Please enter the URL:");
-    if (!url) return;
-    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
-    if (!urlPattern.test(url)) {
-      alert("Invalid URL. Please ensure it matches the expected format.");
-      return;
-    }
-
-    // Since the files are small, we won't change the button text to 'Loading...'
-    // Instead, we'll immediately hide the load button as soon as the URL is confirmed valid
-    loadButton.style.display = 'none';
-
+function manageContentLoading(iframe, url, onSuccess, onError) {
     fetch(url)
       .then(response => {
         if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -438,47 +416,55 @@ function clearAllIframes() {
         const blob = new Blob([html], { type: 'text/html' });
         const blobUrl = URL.createObjectURL(blob);
         iframe.src = blobUrl;
-        // The 'load' event will be used to clean up after the content is loaded
-        iframe.onload = () => URL.revokeObjectURL(blobUrl);
+        iframe.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          if (onSuccess) onSuccess();
+        };
       })
       .catch(error => {
         console.error('Error:', error);
+        if (onError) onError();
         alert("There was an issue loading the content.");
-        // Show the load button again if there's an error
-        loadButton.style.display = 'block';
-        loadButton.textContent = 'Load';
       });
+  }
+
+
+  function loadContentFromURL(iframe, loadButton) {
+    const url = prompt("Please enter the URL:");
+    if (!url) return;
+    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
+    if (!urlPattern.test(url)) {
+      alert("Invalid URL. Please ensure it matches the expected format.");
+      return;
+    }
+    loadButton.style.display = 'none';
+    manageContentLoading(iframe, url, null, () => {
+      loadButton.style.display = 'block';
+      loadButton.textContent = 'Load';
+    });
+  }
+
+  function preloadContent() {
+    document.querySelectorAll('iframe').forEach((iframe, index) => {
+      if (index < preloadUrls.length) {
+        const url = preloadUrls[index];
+        manageContentLoading(iframe, url);
+      }
+    });
   }
 
   function setGlobalBPM() {
     const bpm = parseInt(document.getElementById('globalBPM').value, 10);
-    const iframes = document.querySelectorAll('iframe');
-
-    iframes.forEach(iframe => {
-      iframe.contentWindow.postMessage({
-        type: 'updateBPM',
-        data: { bpm: bpm }
-      }, '*'); // Adjust to use the actual origin for better security
+    document.querySelectorAll('iframe').forEach(iframe => {
+      iframe.contentWindow.postMessage({ type: 'updateBPM', data: { bpm: bpm } }, '*');
     });
   }
-
-
-  // // Batch operation button
-  // function addBatchOperations() {
-  //   const clearAllButton = document.createElement('button');
-  //   clearAllButton.textContent = 'Clear All';
-  //   clearAllButton.id = 'clearAllButton';
-  //   clearAllButton.onclick = clearAllIframes;
-  //   document.body.insertBefore(clearAllButton, document.body.firstChild);
-  // }
-
 
   document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
 
 
   document.addEventListener('DOMContentLoaded', () => {
     createIframes();
-    addBatchOperations();
     });
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -514,13 +500,17 @@ function clearAllIframes() {
 
   
 
+  function initializePage() {
+    document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
+    // Other initialization code here...
+  }
 
-
-  })();
+  document.addEventListener('DOMContentLoaded', initializePage);
+})();
 
   </script>
 
-  
+  <script src="right-click-menu.js"></script>
 
 </body>
 </html>
