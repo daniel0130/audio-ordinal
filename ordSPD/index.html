@@ -37,22 +37,95 @@ body {
   max-height: 100vh;
 }
 
+.border-top,
+.border-right,
+.border-bottom,
+.border-left {
+    position: absolute;
+    background-color: black;
+    z-index: 2; 
+}
+
+.border-top{
+    height: 25px; 
+    left: 0;
+    right: 0;
+}
+.border-bottom{
+  height:0px;
+}
+
+.border-top {
+    top: 0;
+}
+
+.border-bottom {
+    bottom: 0;
+}
+
+
+.border-left {
+    width: 2px; 
+    top: 0;
+    bottom: 0;
+}
+
+.border-right {
+    width: 2px; 
+    right: 0;
+}
+
+/* Update iframe-wrapper and iframe styles accordingly */
 .iframe-wrapper {
-  position: relative;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
-  margin: 5px;
-  overflow: hidden;
+    width: calc(100% - 10px); 
+    height: calc(100% - 10px);
+    margin: 5px;
+    overflow: hidden;
+    position: relative; 
 }
 
 iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--border-color);
-  cursor: pointer;
+    position: relative;
+    width: 100%; 
+    height: 100%; 
+    z-index: 1;
+}
+
+
+/* Adding a pseudo-element inside each .iframe-wrapper to act as an overlay */
+.iframe-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none; /* Allows click events to pass through */
+    z-index: 2; /* Above the text but below the iframe content */
+}
+
+/* This CSS goes with your other styles
+.text-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8); /* Adjust color and opacity as needed */
+    /* z-index: 2; /* Above the text */
+    /* pointer-events: none; /* Allows clicking through to the iframe */
+/* }  */
+
+
+iframe::after {
+    content: '';
+    position: absolute;
+    top: -20; /* Adjust this value to position the overlay correctly */
+    left: 0; /* Adjust this value to position the overlay correctly */
+    right: 0;
+    bottom: -20;
+    background-color: #121212; /* The color of the overlay */
+    z-index: 10; /* Ensure this is above the text but below the image */
 }
 
 
@@ -351,20 +424,50 @@ button {
   function createIframes() {
     const container = document.querySelector('.grid-container');
     for (let i = 0; i < numberOfIframes; i++) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'iframe-wrapper';
-      const iframe = document.createElement('iframe');
-      iframe.id = `iframe-${i}`;
-      const loadButton = document.createElement('button');
-      loadButton.textContent = 'Load';
-      loadButton.className = 'load-button';
-      loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
-      wrapper.appendChild(iframe);
-      wrapper.appendChild(loadButton);
-      container.appendChild(wrapper);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'iframe-wrapper';
+        wrapper.style.position = 'relative'; // Ensure this is set to position the borders absolutely
+
+        // Create an iframe element
+        const iframe = document.createElement('iframe');
+        iframe.id = `iframe-${i}`;
+        iframe.style.zIndex = '1'; // Ensure the iframe content is above the overlay
+
+        // Function to create a border div
+        function createBorder(className) {
+            const border = document.createElement('div');
+            border.className = className;
+            return border;
+        }
+
+        // Create and append the border divs
+        const borderTop = createBorder('border-top');
+        const borderRight = createBorder('border-right');
+        const borderBottom = createBorder('border-bottom');
+        const borderLeft = createBorder('border-left');
+
+        wrapper.appendChild(borderTop);
+        wrapper.appendChild(borderRight);
+        wrapper.appendChild(borderBottom);
+        wrapper.appendChild(borderLeft);
+        wrapper.appendChild(iframe);
+
+        // Create and append the load button
+        const loadButton = document.createElement('button');
+        loadButton.textContent = 'Load';
+        loadButton.className = 'load-button';
+        loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
+        loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
+        wrapper.appendChild(loadButton);
+
+        container.appendChild(wrapper);
     }
     preloadContent(); // Preload content after creating iframes
-  }
+}
+
+
+// Call createIframes function somewhere in your code when you're ready to generate the iframes
+
 
 
   // Function to fetch and load content from a URL into an iframe
