@@ -1,7 +1,12 @@
 // UIController.js
 
 import { createIframes, clearAllIframes } from './IframeManager.js';
+import { IframeSelectionManager } from './IframeSelectionManager.js';
 
+document.addEventListener('DOMContentLoaded', () => {
+    const padManager = new IframeSelectionManager();
+    // Setup event listeners and bind them to padManager methods
+});
 
 function setGlobalBPM() {
     const bpm = parseInt(document.getElementById('globalBPM').value, 10);

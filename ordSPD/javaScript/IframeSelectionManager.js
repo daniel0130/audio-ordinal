@@ -1,5 +1,5 @@
-// PadSelectionManager.js
-export class PadSelectionManager {
+// IframeSelectionManager.js
+export class IframeSelectionManager {
     constructor() {
         this.selectedPads = new Set();
     }
