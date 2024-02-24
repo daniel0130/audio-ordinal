@@ -1,5 +1,10 @@
 // userGuide.js
 
+import { IframeSelectionManager } from './IframeSelectionManager.js';
+
+// Now you can create an instance of IframeSelectionManager
+const iframeSelectionManager = new IframeSelectionManager();
+
 // Function to generate the user guide content
 function generateUserGuide() {
     const guideContent = document.createElement('div');
@@ -48,11 +53,13 @@ function generateUserGuide() {
     });
     ul.appendChild(subUl);
 
+    console.log('Generating user guide content...');
     return guideContent;
 }
 
 // Function to toggle the visibility of the user guide
 function toggleUserGuide() {
+    console.log('Toggling user guide visibility...');
     const guideContent = document.getElementById('guideContent');
     if (guideContent.style.display === 'none') {
         guideContent.style.display = 'block';
@@ -63,8 +70,97 @@ function toggleUserGuide() {
     }
 }
 
-// Append the user guide content to the DOM
+function postMessageToIframes(type, data) {
+    console.log(`Posting message to iframes: type=${type}, data=`, data);
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+        iframe.contentWindow.postMessage({ type, data }, '*'); // Replace '*' with the actual origin for security in production
+    });
+}
+
+// Helper function to map key text to message type
+function keyToMessageType(key) {
+    console.log(`Mapping key to message type: key=${key}`);
+    switch (key) {
+        case '-':
+            return 'decreaseScheduleMultiplier';
+        case '+':
+            return 'increaseScheduleMultiplier';
+        case '0':
+            return 'updateBPM';
+        case 'm':
+            return 'muteControl';
+        // ... add other cases as necessary
+        default:
+            return null;
+    }
+}
+
+// Function to get the IDs of the currently selected iframes
+function getSelectedIframes() {
+    console.log('Getting selected iframes...');
+
+    // Use the instance of IframeSelectionManager to get the selected pads
+    const selectedIframes = Array.from(iframeSelectionManager.selectedPads);
+    console.log('Selected iframes:', selectedIframes);
+    return selectedIframes;
+}
+
+
+// // Function to handle key press simulation
+// function simulateKeyPressForGuide(kbdElement) {
+//     const key = kbdElement.textContent.trim();
+//     const type = keyToMessageType(key);
+//     const selectedIframes = getSelectedIframes(); // Get the selected iframe IDs
+
+//     if (type && selectedIframes.length > 0) {
+//         selectedIframes.forEach(iframeId => {
+//             const iframe = document.getElementById(iframeId);
+//             if (iframe) {
+//                 iframe.contentWindow.postMessage({ type }, '*'); // Use the actual origin in production
+//             }
+//         });
+//     }
+// }
+
+// Temporary modification for testing
+function simulateKeyPressForGuide(kbdElement) {
+    const key = kbdElement.textContent.trim();
+    const type = keyToMessageType(key);
+    const selectedIframes = getSelectedIframes(); // Ensure this gets IDs correctly
+
+    if (type) {
+        const data = {}; // Initialize an empty data object
+        // Populate data based on the type, e.g., for BPM adjustment
+        if (type === 'updateBPM') {
+            data.bpm = 120; // Or some logic to determine the correct BPM
+        }
+
+        selectedIframes.forEach(iframeId => {
+            const iframe = document.getElementById(iframeId);
+            if (iframe) {
+                iframe.contentWindow.postMessage({ type, data }, '*');
+            }
+        });
+    }
+}
+
+
+// Function to make <kbd> elements clickable and simulate keypress
+function makeGuideInteractive() {
+    console.log('Making guide interactive...');
+
+    const kbdElements = document.querySelectorAll('.instructions-container kbd');
+    kbdElements.forEach(kbd => {
+        kbd.style.cursor = 'pointer'; // Make it visually apparent that kbd is clickable
+        kbd.addEventListener('click', () => simulateKeyPressForGuide(kbd));
+    });
+}
+
+// Append the user guide content to the DOM and make <kbd> elements interactive
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM fully loaded and parsed');
+
     const rightColumn = document.querySelector('.right-column');
     const toggleGuideBtn = document.createElement('button');
     toggleGuideBtn.id = 'toggleGuide';
@@ -72,5 +168,20 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleGuideBtn.textContent = 'Hide User Guide';
     toggleGuideBtn.addEventListener('click', toggleUserGuide);
     rightColumn.insertBefore(toggleGuideBtn, rightColumn.firstChild);
-    rightColumn.appendChild(generateUserGuide());
+
+    const guideContent = generateUserGuide();
+    rightColumn.appendChild(guideContent);
+    makeGuideInteractive(); // Make the guide interactive after appending it
 });
+
+// simulatedKeyPresses.js
+
+document.addEventListener('DOMContentLoaded', function () {
+// Function to post a message to the child iframes
+function postMessageToIframes(type, data) {
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+        iframe.contentWindow.postMessage({ type, data }, '*'); // Replace '*' with the actual origin for security in production
+    });
+}
+})
