@@ -1,0 +1,12 @@
+/* iframe-select-styles.css */
+.select-button {
+  position: absolute;
+  bottom: -30px; /* Adjust based on your layout */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff; /* Example color */
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+}
