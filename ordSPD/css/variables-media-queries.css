@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+    :root {
+        --button-dimension: 6vw; /* Larger buttons on smaller screens */
+        --control-button-dimension: max(20px, 5vw);
+    }
+    .step-button {
+        max-width: 10vw;
+        max-height: 10vw;
+    }
+}

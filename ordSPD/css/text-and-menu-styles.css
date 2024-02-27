@@ -32,4 +32,20 @@
   .update-note {
     color: rgb(5, 254, 5);
   }
+
+  .input-field {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 20px; /* Larger touch targets */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
   
+.steps-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.step-button {
+    scroll-snap-align: start;
+}
