@@ -1,5 +1,7 @@
 /* base-styles.css */
 :root {
+    --button-dimension: max(5vw, 44px);
+    --control-button-dimension: max(18px, 44px);
     --border-color: #454545;
     --btn-bg-color: rgba(0, 0, 0, 0.5);
     --btn-color: white;

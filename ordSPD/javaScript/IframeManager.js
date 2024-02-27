@@ -53,6 +53,8 @@ function createLoadButton(iframe) {
     loadButton.className = 'load-button';
     loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
     loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
+    loadButton.classList.add('hidden');
+
     return loadButton;
 }
 
@@ -105,7 +107,7 @@ function getSelectedIframes() {
 
 // Function to post a message to selected iframes based on the message type and data
 export function postMessageToSelectedIframes(type, data) {
-  console.log(`Posting message to selected iframes: type=${type}, data=`, data);
+  console.log(`[postMessageToSelectedIframes] Posting message to selected iframes: type=${type}, data=`, data);
   const selectedIframesIds = getSelectedIframes(); // Get the IDs of the selected iframes
 
   // Post message only to selected iframes
