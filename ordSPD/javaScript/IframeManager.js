@@ -6,6 +6,7 @@ const numberOfIframes = 36; // Define the total number of iframes
 // Array to keep track of selected iframes
 export const selectedIframeWrappers = [];
 
+
 // Toggles the selected class on a single iframe wrapper
 function toggleWrapperSelection(wrapper) {
   // Check if the iframe is already selected
@@ -95,8 +96,14 @@ export function createIframes() {
   } 
 
 
-  /// Function to post a message to selected iframes based on the message type and data
- // Function to post a message to the currently selected iframes
+
+// Function to get the IDs of the selected iframe wrappers
+function getSelectedIframes() {
+  return selectedIframeWrappers.map(wrapper => wrapper.querySelector('iframe').id);
+}
+
+
+// Function to post a message to selected iframes based on the message type and data
 export function postMessageToSelectedIframes(type, data) {
   console.log(`Posting message to selected iframes: type=${type}, data=`, data);
   const selectedIframesIds = getSelectedIframes(); // Get the IDs of the selected iframes

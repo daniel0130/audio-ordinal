@@ -1,81 +1,139 @@
 // userGuide.js
 
-import { IframeSelectionManager } from './IframeSelectionManager.js';
+// Import necessary functions
+import { postMessageToSelectedIframes } from './IframeManager.js';
 
-const iframeSelectionManager = new IframeSelectionManager();
+let isMuted = false;
 
+
+// Toggle visibility of the user guide
 function toggleUserGuide() {
     const guideContent = document.getElementById('guideContent');
     const toggleGuideBtn = document.getElementById('toggleGuide');
-    const isGuideVisible = guideContent.style.display !== 'none';
+    const isVisible = guideContent.style.display !== 'none';
 
-    console.log(`Guide content is currently ${isGuideVisible ? 'visible' : 'hidden'}. ${isGuideVisible ? 'Hiding' : 'Showing'} it now.`);
-    guideContent.style.display = isGuideVisible ? 'none' : 'block';
-    toggleGuideBtn.textContent = isGuideVisible ? 'Show User Guide' : 'Hide User Guide';
+    guideContent.style.display = isVisible ? 'none' : 'block';
+    toggleGuideBtn.textContent = isVisible ? 'Show User Guide' : 'Hide User Guide';
+
+    console.log(`Guide content is now ${isVisible ? 'hidden' : 'visible'}.`);
 }
 
-// Helper functions to simulate key events
-function simulateKeyEvent(keyCode, eventType, iframeDocument) {
+// Simulate a key event and dispatch it
+function simulateKeyEvent(keyDetails, eventType, target) {
     const evt = new KeyboardEvent(eventType, {
         bubbles: true,
         cancelable: true,
-        keyCode: keyCode
+        keyCode: keyDetails.keyCode,
+        shiftKey: keyDetails.shiftKey,
+        ctrlKey: keyDetails.ctrlKey
     });
-    iframeDocument.dispatchEvent(evt);
+    target.dispatchEvent(evt);
 }
 
-function getKeyCode(keyChar) {
-    const keyMap = {
-        '=': { keyCode: 187, shiftKey: false, ctrlKey: false }, // or 61 if 187 does not work
-        '+': { keyCode: 187, shiftKey: true, ctrlKey: false },
-        '-': { keyCode: 189, shiftKey: false, ctrlKey: false },
-        '_': { keyCode: 189, shiftKey: true, ctrlKey: false },
-        '0': { keyCode: 48, shiftKey: false, ctrlKey: false },
-        ',': { keyCode: 188, shiftKey: false, ctrlKey: false },
-        '.': { keyCode: 190, shiftKey: false, ctrlKey: false },
-        '}': { keyCode: 221, shiftKey: true, ctrlKey: false },
-        '{': { keyCode: 219, shiftKey: true, ctrlKey: false },
-        'Ctrl+Shift+=': { keyCode: 187, shiftKey: true, ctrlKey: true },
-        'Ctrl+Shift+-': { keyCode: 189, shiftKey: true, ctrlKey: true },
-        'Ctrl+Shift+}': { keyCode: 221, shiftKey: true, ctrlKey: true },
-        'Ctrl+Shift+{': { keyCode: 219, shiftKey: true, ctrlKey: true }
-    };
-    return keyMap[keyChar] || null;
-}
+// Map key characters to their event details, correcting and extending mappings
+const keyMap = {
+    '=': { keyCode: 187, shiftKey: false, ctrlKey: false },
+    '+': { keyCode: 187, shiftKey: true, ctrlKey: false },
+    '-': { keyCode: 189, shiftKey: false, ctrlKey: false },
+    '_': { keyCode: 189, shiftKey: true, ctrlKey: false },
+    '0': { keyCode: 48, shiftKey: false, ctrlKey: false },
+    ',': { keyCode: 188, shiftKey: false, ctrlKey: false }, // for "<"
+    '.': { keyCode: 190, shiftKey: false, ctrlKey: false }, // for ">"
+    '{': { keyCode: 219, shiftKey: true, ctrlKey: false },
+    '}': { keyCode: 221, shiftKey: true, ctrlKey: false },
+    'Ctrl+Shift+{': { keyCode: 219, shiftKey: true, ctrlKey: true },
+    'Ctrl+Shift+}': { keyCode: 221, shiftKey: true, ctrlKey: true },
+    'Shift+-': { keyCode: 189, shiftKey: true, ctrlKey: false },
+    'Shift++': { keyCode: 187, shiftKey: true, ctrlKey: false },
+    'Ctrl+Shift+-': { keyCode: 189, shiftKey: true, ctrlKey: true },
+    'Ctrl+Shift++': { keyCode: 187, shiftKey: true, ctrlKey: true },
+    'm': { keyCode: 77, shiftKey: false, ctrlKey: false }
+};
 
-
-function simulateKeyPressForGuide(kbdElement) {
-    const keyChar = kbdElement.textContent.trim();
-    const keyCode = getKeyCode(keyChar);
-    simulateKeyEvent(keyCode, 'keydown', iframeSelectionManager.getIframeDocument()); // Using the IframeSelectionManager to get the correct document
-    simulateKeyEvent(keyCode, 'keyup', iframeSelectionManager.getIframeDocument());
-}
-
+// Handle interactive guide elements, updated to support corrected mappings
 function makeGuideInteractive() {
-    const kbdElements = document.querySelectorAll('.instructions-container kbd');
-    kbdElements.forEach(kbd => {
+    document.querySelectorAll('.instructions-container kbd').forEach(kbd => {
         kbd.style.cursor = 'pointer';
         kbd.addEventListener('click', () => {
-            console.log(`Simulating key press for: ${kbd.textContent.trim()}`);
-            simulateKeyPressForGuide(kbd);
+            const keyChar = kbd.textContent.trim().replace('<', ',').replace('>', '.'); // Adjust for HTML entities
+            const actionKey = keyChar.includes('Ctrl') || keyChar.includes('Shift') ? keyChar : keyMap[keyChar] ? keyChar : null;
+            console.log(`Simulating key press for: ${actionKey}`);
+            if (actionKey && keyMap[actionKey]) {
+                const target = document.activeElement.contentDocument || document;
+                simulateKeyEvent(keyMap[actionKey], 'keydown', target);
+                simulateKeyEvent(keyMap[actionKey], 'keyup', target);
+
+                postKeyEventToIframes(actionKey);
+            }
         });
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+// Determine the message type based on the key pressed and post it, updated to reflect correct actions
+function postKeyEventToIframes(keyChar) {
+    const actionMap = {
+        '-': 'decreaseScheduleMultiplier',
+        '+': 'increaseScheduleMultiplier',
+        ',': 'decreaseVolume', // Corrected for "<"
+        '.': 'increaseVolume', // Corrected for ">"
+        '0': 'resetSchedulerValue', // Added for "0" to reset scheduler value
+        'm': 'muteControl', // Added for "m" to mute all selected iframes
+        '{': 'playAtSpeed', // Decrease speed by 10 cents
+        '}': 'playAtSpeed', // Increase speed by 10 cents
+        'Ctrl+Shift+{': 'playAtSpeed', // Decrease speed by 100 cents (1 semitone)
+        'Ctrl+Shift+}': 'playAtSpeed' // Increase speed by 100 cents (1 semitone)
+    };
+
+   // Determine the message type and prepare data accordingly
+   const messageType = actionMap[keyChar];
+   let messageData = {};
+
+   if (keyChar === 'm') {
+        // Toggle the mute state
+        isMuted = !isMuted;
+        // Adjust messageData to include the mute flag based on the isMuted state
+        messageData = { mute: isMuted };
+    }
+
+   switch (keyChar) {
+       case '{':
+           messageData = { speed: -0.1 }; // Decrease by 10 cents
+           break;
+       case '}':
+           messageData = { speed: 0.1 }; // Increase by 10 cents
+           break;
+       case 'Ctrl+Shift+{':
+           messageData = { speed: -1 }; // Decrease by 100 cents (1 semitone)
+           break;
+       case 'Ctrl+Shift+}':
+           messageData = { speed: 1 }; // Increase by 100 cents (1 semitone)
+           break;
+          
+    }
+
+
+   if (messageType) {
+       postMessageToSelectedIframes(messageType, messageData);
+   } else {
+       console.log(`No action defined for keyChar: ${keyChar}`);
+   }
+}
+
+// Initialize the user guide on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
     const rightColumn = document.querySelector('.right-column');
     const toggleGuideBtn = document.createElement('button');
     toggleGuideBtn.id = 'toggleGuide';
-    toggleGuideBtn.textContent = 'Hide User Guide';
+    toggleGuideBtn.textContent = 'Show User Guide';
     toggleGuideBtn.addEventListener('click', toggleUserGuide);
-    rightColumn.insertBefore(toggleGuideBtn, rightColumn.firstChild);
+    rightColumn.prepend(toggleGuideBtn);
 
-    // Assuming guideContent is defined and populated elsewhere
-    const guideContent = document.getElementById('guideContent') || createGuideContent(); // Placeholder for guide content creation
+    const guideContent = document.getElementById('guideContent') || document.createElement('div'); // Adjust based on actual content creation
+    guideContent.id = 'guideContent'; // Ensure guideContent has an ID
     rightColumn.appendChild(guideContent);
+
     makeGuideInteractive();
 });
-
 
 
 // // simulatedKeyPresses.js
