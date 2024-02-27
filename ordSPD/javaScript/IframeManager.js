@@ -3,55 +3,77 @@ import { preloadContent } from './ContentLoader.js';
 
 const numberOfIframes = 36; // Define the total number of iframes
 
+// Array to keep track of selected iframes
+export const selectedIframeWrappers = [];
 
-  export function createIframes() {
+// Toggles the selected class on a single iframe wrapper
+function toggleWrapperSelection(wrapper) {
+  // Check if the iframe is already selected
+  const isSelected = wrapper.classList.contains('selected-iframe');
+  // Toggle the 'selected-iframe' class for the clicked wrapper
+  wrapper.classList.toggle('selected-iframe');
+  // Update the array of selected iframes
+  if (isSelected) {
+    // Remove from the array
+    const index = selectedIframeWrappers.indexOf(wrapper);
+    if (index > -1) {
+      selectedIframeWrappers.splice(index, 1);
+    }
+  } else {
+    // Add to the array
+    selectedIframeWrappers.push(wrapper);
+  }
+}
+
+
+function createWrapper(i) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'iframe-wrapper';
+  wrapper.style.position = 'relative';
+
+  // Add event listener to the wrapper to toggle the selected class
+  wrapper.addEventListener('click', () => {
+      toggleWrapperSelection(wrapper); // Toggle selection for this wrapper
+  });
+
+  return wrapper;
+}
+
+function createIframe(i) {
+    const iframe = document.createElement('iframe');
+    iframe.id = `iframe-${i}`;
+    iframe.style.zIndex = '1'; // Ensure the iframe content is above the overlay
+    return iframe;
+}
+
+function createLoadButton(iframe) {
+    const loadButton = document.createElement('button');
+    loadButton.textContent = 'Load';
+    loadButton.className = 'load-button';
+    loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
+    loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
+    return loadButton;
+}
+
+function deselectAllIframes() {
+    document.querySelectorAll('.iframe-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('selected-iframe');
+    });
+}
+
+export function createIframes() {
     const container = document.querySelector('.grid-container');
+
     for (let i = 0; i < numberOfIframes; i++) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'iframe-wrapper';
-        wrapper.style.position = 'relative'; // Ensure this is set to position the borders absolutely
+        const wrapper = createWrapper(i);
+        const iframe = createIframe(i);
+        const loadButton = createLoadButton(iframe);
 
-        // Create an iframe element
-        const iframe = document.createElement('iframe');
-        iframe.id = `iframe-${i}`;
-        iframe.style.zIndex = '1'; // Ensure the iframe content is above the overlay
-
-        // Function to create a border div
-        function createBorder(className) {
-            const border = document.createElement('div');
-            border.className = className;
-            return border;
-        }
-
-        // Create and append the border divs
-        const borderTop = createBorder('border-top');
-        const borderRight = createBorder('border-right');
-        const borderBottom = createBorder('border-bottom');
-        const borderLeft = createBorder('border-left');
-
-        wrapper.appendChild(borderTop);
-        wrapper.appendChild(borderRight);
-        wrapper.appendChild(borderBottom);
-        wrapper.appendChild(borderLeft);
         wrapper.appendChild(iframe);
-
-        // Create and append the load button
-        const loadButton = document.createElement('button');
-        loadButton.textContent = 'Load';
-        loadButton.className = 'load-button';
-        loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
-        loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
         wrapper.appendChild(loadButton);
-
         container.appendChild(wrapper);
     }
     preloadContent(); // Preload content after creating iframes
-    
-    // Highlight the first iframe as selected
-    const firstIframe = document.getElementById('iframe-0');
-    if (firstIframe) {
-        firstIframe.classList.add('selected-iframe');
-    }
 }
 
 
@@ -62,12 +84,30 @@ const numberOfIframes = 36; // Define the total number of iframes
     loadButton.textContent = 'Load';
   }
 
-  // Clears all iframes
+ // Clears all iframes and deselects them
   export function clearAllIframes() {
     document.querySelectorAll('.iframe-wrapper').forEach(wrapper => {
-      const iframe = wrapper.querySelector('iframe');
-      const loadButton = wrapper.querySelector('.load-button');
-      clearIframe(iframe, loadButton);
+        const iframe = wrapper.querySelector('iframe');
+        const loadButton = wrapper.querySelector('.load-button');
+        clearIframe(iframe, loadButton);
+        wrapper.classList.remove('selected-iframe'); // Deselect the iframe
     });
-  }
-    
+  } 
+
+
+  /// Function to post a message to selected iframes based on the message type and data
+ // Function to post a message to the currently selected iframes
+export function postMessageToSelectedIframes(type, data) {
+  console.log(`Posting message to selected iframes: type=${type}, data=`, data);
+  const selectedIframesIds = getSelectedIframes(); // Get the IDs of the selected iframes
+
+  // Post message only to selected iframes
+  selectedIframesIds.forEach(id => {
+      const iframe = document.getElementById(id);
+      if (iframe) {
+          const origin = new URL(iframe.src).origin; // Get the origin of the iframe
+          iframe.contentWindow.postMessage({ type, data }, origin); // Replace '*' with the actual origin
+      }
+  });
+}
+

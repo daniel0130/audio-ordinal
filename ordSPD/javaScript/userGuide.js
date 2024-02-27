@@ -1,6 +1,8 @@
 // userGuide.js
 
 import { IframeSelectionManager } from './IframeSelectionManager.js';
+import { postMessageToSelectedIframes } from './IframeManager.js';
+
 
 // Now you can create an instance of IframeSelectionManager
 const iframeSelectionManager = new IframeSelectionManager();
@@ -70,13 +72,13 @@ function toggleUserGuide() {
     }
 }
 
-function postMessageToIframes(type, data) {
-    console.log(`Posting message to iframes: type=${type}, data=`, data);
-    const iframes = document.querySelectorAll('iframe');
-    iframes.forEach(iframe => {
-        iframe.contentWindow.postMessage({ type, data }, '*'); // Replace '*' with the actual origin for security in production
-    });
-}
+// function postMessageToIframes(type, data) {
+//     console.log(`Posting message to iframes: type=${type}, data=`, data);
+//     const iframes = document.querySelectorAll('iframe');
+//     iframes.forEach(iframe => {
+//         iframe.contentWindow.postMessage({ type, data }, '*'); // Replace '*' with the actual origin for security in production
+//     });
+// }
 
 // Helper function to map key text to message type
 function keyToMessageType(key) {

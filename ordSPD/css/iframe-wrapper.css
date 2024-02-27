@@ -19,11 +19,21 @@ iframe {
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
+    height: 5px; /* Height of the top bar */
     left: 0;
-    pointer-events: none; /* Allows click events to pass through */
-    z-index: 2; /* Above the text but below the iframe content */
+    background-color: var(--border-color, black); /* Fallback to black if variable not defined */
+    z-index: 3; /* Above the iframe content */
+    transition: background-color 0.3s; /* Smooth color transition */
+    pointer-events: all; /* Ensure it can be clicked */
+    cursor: pointer; /* Change cursor on hover */
 }
+
+.iframe-wrapper.selected-iframe::before {
+    border-color: #0db9d7 !important; /* Neon blue for selected iframe */
+    background-color: #0db9d7; /* Neon blue background for the top bar */
+}
+
+
 
 iframe::after {
     content: '';
