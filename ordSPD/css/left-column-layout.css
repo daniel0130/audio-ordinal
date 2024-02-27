@@ -10,31 +10,43 @@
   
   .title-container {
     margin-bottom: 40px; /* Space between the title and the BPM counter */
+    text-align: left; /* Align text to the left */
+  }
+
+  .page-title,
+  .page-subtitle,
+  .page-subtext {
+      text-align: left; /* Align text to the left */
+      margin: 0; /* Remove default margins */
+      padding: 0.5em 0; /* Add padding for spacing */
   }
   
   .page-title {
-    color: #0db9d7; /* Neon blue color for the title text */
-    font-size: 2.5em; /* A larger font size for the title */
-    margin: 0; /* Remove default margins */
+    font-size: 2.5em; /* Larger font size for the title */
+    color: var(--neon-blue); /* Neon blue color */
   }
-  
+
   .page-subtitle {
-    color: #21d4fd; /* Lighter neon blue for the subtitle */
-    font-size: 1.5em; /* A moderate font size for the subtitle */
-    margin: 10px 0; /* Margin for spacing between title and subtitle */
+      font-size: 1.5em; /* Moderate font size for the subtitle */
+      color: var(--text-color); /* Use the predefined text color */
   }
-  
+
   .page-subtext {
-    color: #21d4fd; /* Lighter neon blue for the subtitle */
-    font-size: 0.5em; /* A moderate font size for the subtitle */
-    margin: 10px 0; /* Margin for spacing between title and subtitle */
+      font-size: 1em; /* Smaller font size for additional text */
+      color: var(--text-color); /* Use the predefined text color */
   }
-  
-  
-  
+
+  .bpm-display {
+      display: flex;
+      position: relative;
+      gap: 10px; /* Space between label and input */
+  }
+
   .bpm-display label {
-    color: #0db9d7; /* Neon blue color for label text */
+      font-size: 1.2em;
+      color: var(--neon-blue);
   }
+
   
   .bpm-display input[type="number"] {
     background: #333;
@@ -56,37 +68,50 @@
     transition: background-color 0.3s;
   }
   
-  #setBPM:hover {
-    background-color: #21d4fd; /* Lighter blue on hover */
+  .button-container {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    justify-content: space-around; /* Space out the buttons evenly */
+    align-items: center; /* Center the buttons vertically */
+    margin-top: 10px; /* Add some space above the button container */
+  }
+  
+  .random-mix-btn,
+  .clear-all-btn {
+      width: auto; /* Adjust width to content */
+      margin: 5px 0; /* Space between buttons, only top and bottom */
+      padding: 10px 15px; /* Padding for better touch targets */
+      font-size: 1em; /* Adjust font size as needed */
+      transition: background-color 0.3s; /* Transition for hover effect */
+      border: none; /* Remove border */
+      cursor: pointer; /* Cursor pointer for button */
   }
 
+  /* Style for Random Mix button */
   .random-mix-btn {
-    background: #0276ca; /* Red color for the clear button */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 350px; /* Add margin-top to separate from the previous element */
+    position : relative;
+      background-color: purple; /* Purple background */
   }
-  
-  .random-mix-btn:hover {
-    background-color: #24a7ff; /* Lighter red on hover */
-  }
-  
+
+  /* Style for Clear All Pads button */
   .clear-all-btn {
-    background: #830e0e; /* Red color for the clear button */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 400px; /* Add margin-top to separate from the previous element */
+      background-color: red; /* Red background */
   }
-  
-  .clear-all-btn:hover {
-    background-color: #ff6b6b; /* Lighter red on hover */
+
+  /* Hover and focus styles for Random Mix button */
+  .random-mix-btn:hover,
+  .random-mix-btn:focus {
+      box-shadow: 0 0 10px var(--neon-blue); /* Glow effect */
+      outline: none; /* Remove default outline */
   }
+
+  /* Hover and focus styles for Clear All Pads button */
+  .clear-all-btn:hover,
+  .clear-all-btn:focus {
+      box-shadow: 0 0 10px var(--neon-blue); /* Glow effect */
+      outline: none; /* Remove default outline */
+  }
+ 
 
   
   
