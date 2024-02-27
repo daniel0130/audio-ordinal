@@ -1,56 +1,71 @@
 // iframeCommunication.js
+
 import { postMessageToSelectedIframes } from './IframeManager.js';
-import { keyMap } from './keySimulation.js';
+import { iframeValueTracker } from './IframeValueTracker.js'; // Ensure this is correctly imported
 
 let isMuted = false;
 
-// Determine the message type based on the key pressed and post it, updated to reflect correct actions
-export function postKeyEventToIframes(keyChar) {
+export function postKeyEventToIframes(keyChar, iframeId) { // Assuming iframeId is passed to identify the target iframe
     const actionMap = {
         '-': 'decreaseScheduleMultiplier',
         '+': 'increaseScheduleMultiplier',
-        ',': 'decreaseVolume', // Corrected for "<"
-        '.': 'increaseVolume', // Corrected for ">"
-        '0': 'resetSchedulerValue', // Added for "0" to reset scheduler value
-        'm': 'muteControl', // Added for "m" to mute all selected iframes
-        '{': 'playAtSpeed', // Decrease speed by 10 cents
-        '}': 'playAtSpeed', // Increase speed by 10 cents
-        'Ctrl+Shift+{': 'playAtSpeed', // Decrease speed by 100 cents (1 semitone)
-        'Ctrl+Shift+}': 'playAtSpeed' // Increase speed by 100 cents (1 semitone)
+        ',': 'decreaseVolume',
+        '.': 'increaseVolume',
+        '0': 'resetSchedulerValue',
+        'm': 'muteControl',
+        '{': 'playAtSpeed',
+        '}': 'playAtSpeed',
+        'Ctrl+Shift+{': 'playAtSpeed',
+        'Ctrl+Shift+}': 'playAtSpeed'
     };
 
-   // Determine the message type and prepare data accordingly
-   const messageType = actionMap[keyChar];
-   let messageData = {};
+    const messageType = actionMap[keyChar];
+    let messageData = {};
 
-   if (keyChar === 'm') {
-        // Toggle the mute state
+    // Handle mute toggle separately as before
+    if (keyChar === 'm') {
         isMuted = !isMuted;
-        // Adjust messageData to include the mute flag based on the isMuted state
         messageData = { mute: isMuted };
     }
 
-   switch (keyChar) {
-       case '{':
-           messageData = { speed: -0.1 }; // Decrease by 10 cents
-           break;
-       case '}':
-           messageData = { speed: 0.1 }; // Increase by 10 cents
-           break;
-       case 'Ctrl+Shift+{':
-           messageData = { speed: -1 }; // Decrease by 100 cents (1 semitone)
-           break;
-       case 'Ctrl+Shift+}':
-           messageData = { speed: 1 }; // Increase by 100 cents (1 semitone)
-           break;
-          
+    // Now handle volume and schedule adjustments with the tracking mechanism
+    switch (keyChar) {
+        case ',':
+            messageData = { volume: iframeValueTracker.adjustVolume(iframeId, 'decrease') };
+            break;
+        case '.':
+            messageData = { volume: iframeValueTracker.adjustVolume(iframeId, 'increase') };
+            break;
+        case '-':
+            messageData = { scheduleMultiplier: iframeValueTracker.adjustScheduleMultiplier(iframeId, 'decrease') };
+            break;
+        case '+':
+            messageData = { scheduleMultiplier: iframeValueTracker.adjustScheduleMultiplier(iframeId, 'increase') };
+            break;
+        case '0':
+            if (iframeValueTracker.resetScheduleMultiplier(iframeId)) {
+                messageData = { scheduleMultiplier: 1 };
+            }
+            break;
+        // Speed control cases as before, assuming these do not interact with the new tracking mechanism directly
+        // Adjust the playback speed based on key presses
+        case '{':
+            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, -0.1) }; // Decrease by 0.1
+            break;
+        case '}':
+            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, 0.1) }; // Increase by 0.1
+            break;
+        case 'Ctrl+Shift+{':
+            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, -1) }; // Decrease by 1
+            break;
+        case 'Ctrl+Shift+}':
+            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, 1) }; // Increase by 1
+            break;
     }
 
-
-   if (messageType) {
-       postMessageToSelectedIframes(messageType, messageData);
-   } else {
-       console.log(`No action defined for keyChar: ${keyChar}`);
-   }
+    if (messageType) {
+        postMessageToSelectedIframes(messageType, messageData);
+    } else {
+        console.log(`No action defined for keyChar: ${keyChar}`);
+    }
 }
-
