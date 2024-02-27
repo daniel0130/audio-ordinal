@@ -1,0 +1,77 @@
+/* CSS FOR LEFT COLUMN */
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px; /* Spacing between items */
+    align-items: flex-start; /* Align items to the start of the column */
+  }
+  
+  .title-container {
+    margin-bottom: 40px; /* Space between the title and the BPM counter */
+  }
+  
+  .page-title {
+    color: #0db9d7; /* Neon blue color for the title text */
+    font-size: 2.5em; /* A larger font size for the title */
+    margin: 0; /* Remove default margins */
+  }
+  
+  .page-subtitle {
+    color: #21d4fd; /* Lighter neon blue for the subtitle */
+    font-size: 1.5em; /* A moderate font size for the subtitle */
+    margin: 10px 0; /* Margin for spacing between title and subtitle */
+  }
+  
+  .page-subtext {
+    color: #21d4fd; /* Lighter neon blue for the subtitle */
+    font-size: 0.5em; /* A moderate font size for the subtitle */
+    margin: 10px 0; /* Margin for spacing between title and subtitle */
+  }
+  
+  
+  
+  .bpm-display label {
+    color: #0db9d7; /* Neon blue color for label text */
+  }
+  
+  .bpm-display input[type="number"] {
+    background: #333;
+    color: #fff;
+    border: 2px solid #0db9d7; /* Neon blue border for the input */
+    padding: 0px;
+    width: 40px; /* Fixed width for the input */
+    height: 24px;
+    text-align: center;
+    font-size:15px;
+  }
+  
+  #setBPM {
+    background: #0db9d7; /* Neon blue background for the button */
+    color: #121212; /* Dark text for the button */
+    padding: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  #setBPM:hover {
+    background-color: #21d4fd; /* Lighter blue on hover */
+  }
+  
+  .clear-all-btn {
+    background: #830e0e; /* Red color for the clear button */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 300px; /* Add margin-top to separate from the previous element */
+  }
+  
+  .clear-all-btn:hover {
+    background-color: #ff6b6b; /* Lighter red on hover */
+  }
+  
+  

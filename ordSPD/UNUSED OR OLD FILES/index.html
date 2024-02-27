@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Grid Loader</title>
+
+<!-- In your <head> section of the HTML -->
+  <link rel="stylesheet" href="css/base-styles.css">
+  <link rel="stylesheet" href="css/border-styles.css">
+  <link rel="stylesheet" href="css/button-styles.css">
+  <link rel="stylesheet" href="css/grid-container.css">
+  <link rel="stylesheet" href="css/iframe-wrapper.css">
+  <link rel="stylesheet" href="css/left-column-layout.css">
+  <link rel="stylesheet" href="css/right-column-layout.css">
+  <link rel="stylesheet" href="css/text-and-menu-styles.css">
+  <link rel="stylesheet" href="css/variables-and-base.css">
+  <link rel="stylesheet" href="css/grid-and-borders.css">
+  <link rel="stylesheet" href="css/iframe-and-overlay.css">
+
+<!-- <style>
+  :root {
+  --border-color: #454545;
+  --btn-bg-color: rgba(0, 0, 0, 0.5);
+  --btn-color: white;
+  --btn-size: 25px;
+  --neon-blue: #0db9d7;
+  --dark-bg: #121212;
+  --text-color: #c0c0c0;
+  --guide-visible: 1; /* 1 for true, 0 for false */
+}
+
+body {
+  background-color: var(--dark-bg);
+  display: flex;
+  justify-content: space-around; /* Adjusted for equal spacing */
+  align-items: flex-start; /* Align to the top */
+  height: 100vh;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  flex: 0 0 auto; /* Do not grow, do not shrink, initial width auto */
+  width: calc(100vh - 10px);
+  height: calc(100vh - 10px);
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+.border-top,
+.border-right,
+.border-bottom,
+.border-left {
+    position: absolute;
+    background-color: black;
+    z-index: 2; 
+}
+
+.border-top{
+    height: 25px; 
+    left: 0;
+    right: 0;
+}
+.border-bottom{
+  height:0px;
+}
+
+.border-top {
+    top: 0;
+}
+
+.border-bottom {
+    bottom: 0;
+}
+
+
+.border-left {
+    width: 2px; 
+    top: 0;
+    bottom: 0;
+}
+
+.border-right {
+    width: 2px; 
+    right: 0;
+}
+
+/* Update iframe-wrapper and iframe styles accordingly */
+.iframe-wrapper {
+    width: calc(100% - 10px); 
+    height: calc(100% - 10px);
+    margin: 5px;
+    overflow: hidden;
+    position: relative; 
+}
+
+iframe {
+    position: relative;
+    width: 100%; 
+    height: 100%; 
+    z-index: 1;
+}
+
+
+/* Adding a pseudo-element inside each .iframe-wrapper to act as an overlay */
+.iframe-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none; /* Allows click events to pass through */
+    z-index: 2; /* Above the text but below the iframe content */
+}
+
+
+iframe::after {
+    content: '';
+    position: absolute;
+    top: -20; /* Adjust this value to position the overlay correctly */
+    left: 0; /* Adjust this value to position the overlay correctly */
+    right: 0;
+    bottom: -20;
+    background-color: #121212; /* The color of the overlay */
+    z-index: 10; /* Ensure this is above the text but below the image */
+}
+
+
+/* Button styles */
+button {
+  position: absolute;
+  background: var(--btn-bg-color);
+  color: var(--btn-color);
+  padding: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+/* Initially hide the load button */
+.load-button {
+  visibility: hidden;
+  bottom: 10px;
+  right: 10px; /* Adjusted for consistency */
+  z-index: 1; /* Ensure button is above the iframe */
+}
+
+/* Show the load button when the parent .iframe-wrapper is hovered */
+.iframe-wrapper:hover .load-button {
+  visibility: visible;
+}
+
+.iframe-wrapper::after {
+  content: "Loaded"; /* Provide content for pseudo-element */
+  color: var(--btn-color);
+  font-size: 12px;
+  position: absolute;
+  bottom: -20px;
+  right: 0;
+  background: var(--btn-bg-color);
+  padding: 2px;
+  white-space: nowrap;
+}
+
+
+
+/* CSS FOR LEFT COLUMN */
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 20px; /* Spacing between items */
+  align-items: flex-start; /* Align items to the start of the column */
+}
+
+.title-container {
+  margin-bottom: 40px; /* Space between the title and the BPM counter */
+}
+
+.page-title {
+  color: #0db9d7; /* Neon blue color for the title text */
+  font-size: 2.5em; /* A larger font size for the title */
+  margin: 0; /* Remove default margins */
+}
+
+.page-subtitle {
+  color: #21d4fd; /* Lighter neon blue for the subtitle */
+  font-size: 1.5em; /* A moderate font size for the subtitle */
+  margin: 10px 0; /* Margin for spacing between title and subtitle */
+}
+
+.page-subtext {
+  color: #21d4fd; /* Lighter neon blue for the subtitle */
+  font-size: 0.5em; /* A moderate font size for the subtitle */
+  margin: 10px 0; /* Margin for spacing between title and subtitle */
+}
+
+
+
+.bpm-display label {
+  color: #0db9d7; /* Neon blue color for label text */
+}
+
+.bpm-display input[type="number"] {
+  background: #333;
+  color: #fff;
+  border: 2px solid #0db9d7; /* Neon blue border for the input */
+  padding: 0px;
+  width: 40px; /* Fixed width for the input */
+  height: 24px;
+  text-align: center;
+  font-size:15px;
+}
+
+#setBPM {
+  background: #0db9d7; /* Neon blue background for the button */
+  color: #121212; /* Dark text for the button */
+  padding: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#setBPM:hover {
+  background-color: #21d4fd; /* Lighter blue on hover */
+}
+
+.clear-all-btn {
+  background: #830e0e; /* Red color for the clear button */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 300px; /* Add margin-top to separate from the previous element */
+}
+
+.clear-all-btn:hover {
+  background-color: #ff6b6b; /* Lighter red on hover */
+}
+
+
+
+/* CSS FOR INSTRUCTIONS IN RIGHT COLUMN */
+
+.right-column {
+  width: 22%; /* Set the column width */
+  background-color: #121212; /* Dark background for the cool theme */
+  color: #c0c0c0; /* Soft light text for contrast */
+  padding: 20px; /* Spacing around the content */
+  box-sizing: border-box; /* Include padding in width */
+  border-left: 4px solid #0db9d7; /* Neon blue accent on the left for visibility */
+  border-right: 4px solid #0db9d7; 
+  height: 100vh; /* Full height of the viewport */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  position: relative; /* Establish a containing block for absolute positioning */
+  right: 0; /* Align to the right edge of the viewport */
+}
+
+/* CSS for when the guide is hidden */
+.right-column-hidden {
+  border: none; /* Remove the border */
+}
+
+/* Adjust the .toggle-guide button's style when guide is hidden */
+.right-column-hidden .toggle-guide {
+  opacity: 0.5; /* More transparent when guide is hidden */
+}
+
+.instructions-container h2,
+.instructions-container h3 {
+  color: #21d4fd; /* Neon blue text for headings */
+  text-shadow: 0px 0px 10px #21d4fd; /* Neon glow effect */
+  margin-bottom: 15px; /* Spacing after headings */
+}
+
+.instructions-container p {
+  font-weight: normal; /* Normal font weight for better readability */
+  margin-top: 0; /* Remove top margin for alignment */
+  margin-bottom: 15px; /* Spacing after paragraphs */
+}
+
+.instructions-container ul {
+  list-style: none; /* Remove default list styling */
+  padding: 0; /* Remove default padding */
+  margin-left: 10px; /* Indent list items */
+}
+
+.instructions-container li {
+  margin-bottom: 10px; /* Spacing between list items */
+  background-color: #1e1e1e; /* Darker background for list items */
+  border-left: 4px solid #0db9d7; /* Neon blue accent on list items */
+  padding: 10px; /* Spacing inside list items */
+  border-radius: 2px; /* Rounded corners for list items */
+}
+
+.instructions-container kbd {
+  background-color: #242424; /* Dark background for keycap appearance */
+  color: #21d4fd; /* Neon blue text for keycaps */
+  padding: 3px 5px; /* Spacing around keycap text */
+  border-radius: 3px; /* Rounded corners for keycaps */
+  box-shadow: 0px 0px 5px #21d4fd; /* Neon glow effect */
+  font-family: 'Courier New', monospace; /* Font for keycap appearance */
+  display: inline-block; /* Ensure keycaps don't break line */
+  margin: 0 2px; /* Space between keycaps */
+}
+
+.toggle-guide {
+  align-self: flex-end; /* Align to the end of the flex container */
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 5px 5px;
+  font-size: 0.75em;
+  cursor: pointer;
+  margin-top: 20px; /* Move the button down by 20 pixels */
+  margin-left:150px;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
+.toggle-guide:hover {
+  opacity: 1; /* Full opacity on hover for better visibility */
+}
+
+
+.instructions-container {
+  display: block; /* Ensure the guide is visible by default */
+  padding-bottom: 50px; /* Add padding at the bottom at least the height of the button */
+}
+
+
+
+
+/* TEXT STYLING */
+
+.disabled-text {
+  color: rgb(128, 1, 1);
+}
+
+.bpm-label {
+  font-size: 1.2em; /* Increase font size */
+  font-weight: bold; /* Apply bold font weight */
+}
+
+.bitcoin-symbol {
+  color: orange;
+}
+
+
+#custom-context-menu {
+  display: none; /* Hidden by default */
+  position: absolute;
+  z-index: 1000; /* Higher than other elements */
+  background-color: #ffffff;
+  border: 1px solid #d4d4d4;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+</style> -->
+
+</head>
+<body>
+  <div class="left-column">
+    <div class="title-container">
+      <h1 class="page-title">OrdSPD</h1>
+      <h2 class="page-subtitle">Audional Sample Pad</h2>
+      <h3 class="page-subtext">Regenerative Bitcoin Ordinal Mixer for Audional Smart Samples</h3>
+    </div>
+    <div class="bpm-display">
+      <label for="globalBPM" class="bpm-label">Global <span class="bitcoin-symbol">₿</span>PM:</label>
+      <input type="number" id="globalBPM" value="78" min="60" max="240">
+      <button id="setBPM">Set BPM</button>
+    </div>
+    <button id="clearAllButton" class="clear-all-btn">Clear All Pads</button>
+  </div>
+  <div class="center-column">
+    <div class="grid-container">
+      <!-- Grid content goes here -->
+    </div>
+  </div>
+  <div class="right-column">
+    <button id="toggleGuide" class="toggle-guide">Hide User Guide</button> <!-- Moved this line up -->
+    <div class="instructions-container" id="guideContent">
+      <h2>User Guide</h2>
+      <h3>Audionals 2.0 <br> User Guide </h3>
+      <p><strong>Hotkeys and Shortcuts:</strong></p>
+    <ul>
+      <li><kbd>-</kbd> / <kbd>+</kbd>: 1/2 or x2 Loop Length</li>
+      <li><kbd>0</kbd>: Return to Default Loop Length</li>
+      <li><kbd>&lt;</kbd> / <kbd>&gt;</kbd>: Adjust volume by 1</li>
+      <li><kbd>m</kbd>: Mute</li>
+      <li><kbd>Shift</kbd> + <kbd>{</kbd> / <kbd>}</kbd>: Adjust playback speed and pitch by 10 cents (using sample playback speed)</li>
+      <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>{</kbd> / <kbd>}</kbd>: Adjust playback speed and pitch by semi-tone/100 cents (using sample playback speed)</li>
+      <ul>
+        <li><kbd>Shift</kbd> + <kbd>-</kbd> / <kbd>+</kbd>: Adjust BPM by 1 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
+        <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>+</kbd> / <kbd>-</kbd>: Adjust BPM by 10 <span class="disabled-text">(Disabled in SPD - Use Global Setting)</span></li>
+      </ul>
+    </ul>
+  </div>
+</div>
+
+
+<script>
+
+  const numberOfIframes = 36; // Define the total number of iframes
+
+
+  function createIframes() {
+    const container = document.querySelector('.grid-container');
+    for (let i = 0; i < numberOfIframes; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'iframe-wrapper';
+        wrapper.style.position = 'relative'; // Ensure this is set to position the borders absolutely
+
+        // Create an iframe element
+        const iframe = document.createElement('iframe');
+        iframe.id = `iframe-${i}`;
+        iframe.style.zIndex = '1'; // Ensure the iframe content is above the overlay
+
+        // Function to create a border div
+        function createBorder(className) {
+            const border = document.createElement('div');
+            border.className = className;
+            return border;
+        }
+
+        // Create and append the border divs
+        const borderTop = createBorder('border-top');
+        const borderRight = createBorder('border-right');
+        const borderBottom = createBorder('border-bottom');
+        const borderLeft = createBorder('border-left');
+
+        wrapper.appendChild(borderTop);
+        wrapper.appendChild(borderRight);
+        wrapper.appendChild(borderBottom);
+        wrapper.appendChild(borderLeft);
+        wrapper.appendChild(iframe);
+
+        // Create and append the load button
+        const loadButton = document.createElement('button');
+        loadButton.textContent = 'Load';
+        loadButton.className = 'load-button';
+        loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
+        loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
+        wrapper.appendChild(loadButton);
+
+        container.appendChild(wrapper);
+    }
+    preloadContent(); // Preload content after creating iframes
+}
+
+// Clears the content of a single iframe
+  function clearIframe(iframe, loadButton) {
+    iframe.src = 'about:blank';
+    loadButton.style.display = 'block';
+    loadButton.textContent = 'Load';
+  }
+
+  // Clears all iframes
+  function clearAllIframes() {
+    document.querySelectorAll('.iframe-wrapper').forEach(wrapper => {
+      const iframe = wrapper.querySelector('iframe');
+      const loadButton = wrapper.querySelector('.load-button');
+      clearIframe(iframe, loadButton);
+    });
+  }
+    
+
+
+// Call createIframes function somewhere in your code when you're ready to generate the iframes
+
+
+
+  // Function to fetch and load content from a URL into an iframe
+  function fetchAndLoadContent(iframe, url) {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+        return response.text();
+      })
+      .then(html => {
+        const blob = new Blob([html], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        iframe.src = blobUrl;
+        // The 'load' event will be used to clean up after the content is loaded
+        iframe.onload = () => URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("There was an issue loading the content.");
+      });
+  }
+
+
+
+
+
+ // Array of URLs to preload
+ const preloadUrls = [
+    "https://ordinals.com/content/e7d344ef3098d0889856978c4d2e81ccf2358f7f8b66feecc71e03036c59ad48i0",
+    "https://ordinals.com/content/ef5707e6ecf4d5b6edb4c3a371ca1c57b5d1057c6505ccb5f8bdc8918b0c4d94i0",
+    "https://ordinals.com/content/d030eb3d8bcd68b0ed02b0c67fdb981342eea40b0383814f179a48e76927db93i0",
+    "https://ordinals.com/content/3b7482a832c4f27c32fc1da7cc4249bbbac1cbdfbdb8673079cad0c33486d233i0",
+    "https://ordinals.com/content/5a42d7b2e2fe01e4f31cbad5dd671997f87339d970faaab37f6355c4a2f3be5ai0",
+    "https://ordinals.com/content/ddc1838c1a6a3c45b2c6e19ff278c3b51b0797c3f1339c533370442d23687a68i0",
+    "https://ordinals.com/content/1e3c2571e96729153e4b63e2b561d85aec7bc5ba372d293af469a525dfa3ed59i0",
+    "https://ordinals.com/content/91f52a4ca00bb27383ae149f24b605d75ea99df033a6cbb6de2389455233bf51i0",
+    "https://ordinals.com/content/437868aecce108d49f9b29c2f477987cb5834ffdf639a650335af7f0fdd5e55bi0",
+    "https://ordinals.com/content/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0"
+  ];
+
+  function preloadContent() {
+    const iframes = document.querySelectorAll('iframe');
+
+    // Load the first 5 URLs into the first 10 iframes, twice each
+    for (let i = 0; i < 10; i += 2) {
+        manageContentLoading(iframes[i], preloadUrls[i / 2]);
+        manageContentLoading(iframes[i + 1], preloadUrls[i / 2]);
+    }
+
+    // Load four instances of the 6th, 7th, and 8th URLs into the next 12 iframes
+    for (let i = 10, urlIndex = 5; i < 22; i += 4) {
+        for (let j = 0; j < 4; j++) {
+            manageContentLoading(iframes[i + j], preloadUrls[urlIndex]);
+        }
+        urlIndex++;
+    }
+
+    // Load the last two URLs into the final four iframes, twice each
+    for (let i = 22, urlIndex = 8; i < iframes.length && i < 26; i += 2) {
+        manageContentLoading(iframes[i], preloadUrls[urlIndex]);
+        manageContentLoading(iframes[i + 1], preloadUrls[urlIndex]);
+        urlIndex++;
+    }
+}
+
+
+
+
+function manageContentLoading(iframe, url, onSuccess, onError) {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+        return response.text();
+      })
+      .then(html => {
+        const blob = new Blob([html], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        iframe.src = blobUrl;
+        iframe.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          if (onSuccess) onSuccess();
+        };
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        if (onError) onError();
+        alert("There was an issue loading the content.");
+      });
+  }
+
+
+  function loadContentFromURL(iframe, loadButton) {
+    const url = prompt("Please enter the URL:");
+    if (!url) return;
+    const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
+    if (!urlPattern.test(url)) {
+      alert("Invalid URL. Please ensure it matches the expected format.");
+      return;
+    }
+    loadButton.style.display = 'none';
+    manageContentLoading(iframe, url, null, () => {
+      loadButton.style.display = 'block';
+      loadButton.textContent = 'Load';
+    });
+  }
+
+ 
+
+  function setGlobalBPM() {
+    const bpm = parseInt(document.getElementById('globalBPM').value, 10);
+    document.querySelectorAll('iframe').forEach(iframe => {
+      iframe.contentWindow.postMessage({ type: 'updateBPM', data: { bpm: bpm } }, '*');
+    });
+  }
+
+  document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    createIframes();
+    });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the toggle and clear all buttons
+    var toggleButton = document.getElementById('toggleGuide');
+    var clearAllButton = document.getElementById('clearAllButton'); // Get the clear all button by ID
+    var rightColumn = document.querySelector('.right-column');
+    var guideContent = document.getElementById('guideContent');
+
+    // Set up the click event listener for the toggle guide button
+    toggleButton.addEventListener('click', function() {
+      var isGuideVisible = guideContent.style.display !== 'none';
+      guideContent.style.display = isGuideVisible ? 'none' : 'block';
+      toggleButton.textContent = isGuideVisible ? 'Show User Guide' : 'Hide User Guide';
+      rightColumn.classList.toggle('right-column-hidden');
+    });
+
+    // Ensure the guide is visible on load
+    if (guideContent.style.display === '') {
+      guideContent.style.display = 'block';
+    }
+  });
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the existing 'Clear All Pads' button from the HTML
+    const clearAllButton = document.getElementById('clearAllButton');
+
+    // Attach the 'clearAllIframes' function to the 'onclick' event of the button
+    clearAllButton.onclick = clearAllIframes;
+  });
+
+
+  
+
+  function initializePage() {
+    document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
+    // Other initialization code here...
+  }
+
+  document.addEventListener('DOMContentLoaded', initializePage);
+
+
+  </script>
+<script type="module" src="javaScript/IframeManager.js"></script>
+    <!-- <script type="module" src="javaScript/ContentLoader.js"></script>
+  <script type="module" src="javaScript/UIController.js"></script>
+  <script type="module" src="javaScript/Initialization.js"></script>
+  <script src="javaScript/right-click-menu.js"></script> -->
+
+</body>
+</html>

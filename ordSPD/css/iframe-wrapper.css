@@ -1,0 +1,47 @@
+/* iframe-wrapper.css */
+.iframe-wrapper {
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+    margin: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+iframe {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.iframe-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 5px; /* Height of the top bar */
+    left: 0;
+    background-color: var(--border-color, black); /* Fallback to black if variable not defined */
+    z-index: 3; /* Above the iframe content */
+    transition: background-color 0.3s; /* Smooth color transition */
+    pointer-events: all; /* Ensure it can be clicked */
+    cursor: pointer; /* Change cursor on hover */
+}
+
+.iframe-wrapper.selected-iframe::before {
+    border-color: #0db9d7 !important; /* Neon blue for selected iframe */
+    background-color: #0db9d7; /* Neon blue background for the top bar */
+}
+
+
+
+iframe::after {
+    content: '';
+    position: absolute;
+    top: -20; /* Adjust this value to position the overlay correctly */
+    left: 0; /* Adjust this value to position the overlay correctly */
+    right: 0;
+    bottom: -20;
+    background-color: #121212; /* The color of the overlay */
+    z-index: 10; /* Ensure this is above the text but below the image */
+}
