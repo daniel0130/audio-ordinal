@@ -67,7 +67,7 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-top: 300px; /* Add margin-top to separate from the previous element */
+    margin-top: 350px; /* Add margin-top to separate from the previous element */
   }
   
   .clear-all-btn:hover {
