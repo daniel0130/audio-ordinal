@@ -193,6 +193,83 @@ function fetchAndLoadContent(iframe, url) {
   window.randomizeScheduleMultipliers = randomizeScheduleMultipliers;
   
 
+  export function loadContentFromURL(iframe, loadButton) {
+    const url = prompt("Please enter the URL:");
+    if (!url) return;
+
+    // Hide the load button initially, to be shown again in case of loading failure
+    loadButton.classList.add('hidden');
+
+    const jsonUrlPattern = /\.json$/; // Example pattern for JSON URLs
+
+    if (jsonUrlPattern.test(url)) {
+        // Delegate to JSON content handler
+        processJSONContent(url, iframe, loadButton);
+    } else {
+        // Delegate to HTML content handler
+        manageContentLoading(iframe, url, loadButton);
+      }
+}
+
+
+async function processJSONContent(url, iframe, loadButton) {
+  try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+      const jsonData = await response.json();
+
+      if (!isValidAudionalJSON(jsonData)) {
+          throw new Error("Invalid JSON format for audional content");
+      }
+
+      // Process and place the audio data directly into the pad
+      placeAudioData(jsonData.audioData, iframe);
+
+      // Optionally, process and place image data if exists
+      if (jsonData.imageData) {
+          placeImageData(jsonData.imageData, iframe);
+      }
+
+      console.log("JSON content processed successfully");
+      loadButton.classList.add('hidden'); // Hide load button upon successful loading
+  } catch (error) {
+      console.error('Error:', error);
+      alert("There was an issue loading the JSON content.");
+      loadButton.classList.remove('hidden'); // Show load button again upon failure
+  }
+}
+
+function isValidAudionalJSON(jsonData) {
+  return jsonData.protocol === "audional" && jsonData.operation === "deploy" && jsonData.audioData;
+}
+
+function placeAudioData(audioData, iframe) {
+  // Custom logic to place audio data into the pad
+  console.log("Placing audio data into the pad...");
+  // Example implementation might involve decoding the base64 audio data and attaching it to an audio element
+}
+
+function placeImageData(imageData, iframe) {
+  // Custom logic to place image data into the pad
+  console.log("Placing image data into the pad...");
+  // Example implementation might involve decoding the base64 image data and displaying it alongside the audio
+}
+
+
+function dataURLtoBlob(dataURL) {
+  const [metadata, content] = dataURL.split(',');
+  const byteString = atob(content);
+  const mimeString = metadata.split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], {type: mimeString});
+}
+
+   
+
 // Function to manage content loading with visibility control for the load button
 function manageContentLoading(iframe, url, loadButton) {
   fetch(url)
@@ -221,18 +298,3 @@ function manageContentLoading(iframe, url, loadButton) {
       }
     });
 }
-
-function loadContentFromURL(iframe, loadButton) {
-  const url = prompt("Please enter the URL:");
-  if (!url) return;
-  const urlPattern = /^https:\/\/ordinals\.com\/content\/[a-zA-Z0-9]{64}i0$/;
-  if (!urlPattern.test(url)) {
-    alert("Invalid URL. Please ensure it matches the expected format.");
-    return;
-  }
-  // Hide the load button initially, to be shown again in case of loading failure
-  loadButton.classList.add('hidden');
-  manageContentLoading(iframe, url, loadButton);
-}
-
- 

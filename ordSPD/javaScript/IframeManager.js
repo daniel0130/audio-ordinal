@@ -1,5 +1,5 @@
 // IframeManager.js
-import { preloadContent } from './ContentLoader.js';
+import { preloadContent, loadContentFromURL } from './ContentLoader.js';
 
 const numberOfIframes = 36; // Define the total number of iframes
 
@@ -53,7 +53,7 @@ function createLoadButton(iframe) {
     loadButton.className = 'load-button';
     loadButton.style.zIndex = '2'; // Ensure the button is above the overlay
     loadButton.onclick = () => loadContentFromURL(iframe, loadButton);
-    loadButton.classList.add('hidden');
+    // loadButton.classList.add('hidden');
 
     return loadButton;
 }

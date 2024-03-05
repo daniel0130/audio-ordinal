@@ -14,7 +14,7 @@ button {
 }
   /* Initially hide the load button */
   .load-button {
-    visibility: hidden;
+    /* visibility: hidden; */
     bottom: 10px;
     right: 10px; /* Adjusted for consistency */
     z-index: 1; /* Ensure button is above the iframe */
