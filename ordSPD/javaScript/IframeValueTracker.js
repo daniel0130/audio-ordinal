@@ -56,7 +56,24 @@ class IframeValueTracker {
     getIframeState(iframeId) {
         return this.iframeStates[iframeId];
     }
+
+
+    // Method to get the global settings object
+    getGlobalSettings() {
+        return this.iframeStates; // Returns the current state of all iframes
+    }
+
+    // Method to set global settings from an object
+    setGlobalSettings(settings) {
+        Object.keys(settings).forEach(iframeId => {
+            if (!this.iframeStates[iframeId]) {
+                this.initializeIframeState(iframeId);
+            }
+            this.iframeStates[iframeId] = {...this.iframeStates[iframeId], ...settings[iframeId]};
+        });
+    }
 }
 
 // Export an instance so it maintains state across the app
 export const iframeValueTracker = new IframeValueTracker();
+
