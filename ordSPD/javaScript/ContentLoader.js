@@ -109,48 +109,49 @@ function placeImageData(imageData, iframe) {
 
 
   
-  function randomizeSamplesAndLoad() {
-    const iframes = document.querySelectorAll('iframe');
-    if (iframes.length !== 36) {
-      console.error('Expected 36 iframes for sample placement.');
-      return;
-    }
-  
-    // Function to get a random sample mix
-    function getRandomSampleMix() {
-      let mix = [];
-      for (let i = 0; i < 36; i++) {
-        const randomIndex = Math.floor(Math.random() * preloadUrls.length);
-        mix.push(randomIndex);
-      }
-      return mix;
-    }
-  
-  
-    // Load the randomized samples into the iframes and wait for all to load
-    const randomMix = getRandomSampleMix();
-    const loadPromises = randomMix.map((index, iframeIndex) => {
-      const url = preloadUrls[index];
-      const iframe = iframes[iframeIndex];
-      const loadButton = document.querySelectorAll('.load-button')[iframeIndex];
-      return manageContentLoadingPromise(iframe, url, loadButton);
-    });
-  
-    // Wait for all iframes to load their content, then randomize play speeds
-    // Wait for all iframes to load their content, then randomize play speeds and schedule multipliers
-    Promise.all(loadPromises).then(() => {
-      console.log('All samples loaded, randomizing play speeds and schedule multipliers...');
-      randomizePlaySpeeds();
-      randomizeScheduleMultipliers(); // Ensure this function is called here
-    }).catch(error => {
-      console.error('An error occurred while loading samples:', error);
-    });
-
+function randomizeSamplesAndLoad() {
+  const iframes = document.querySelectorAll('iframe');
+  if (iframes.length !== 36) {
+    console.error('Expected 36 iframes for sample placement.');
+    return;
   }
-  
-  // Attach this function to your random mix button's click event
-  document.querySelector('.random-mix-btn').addEventListener('click', randomizeSamplesAndLoad);
-  
+
+  // Function to get a random sample mix
+  function getRandomSampleMix() {
+    let mix = [];
+    for (let i = 0; i < 36; i++) {
+      const randomIndex = Math.floor(Math.random() * preloadUrls.length);
+      mix.push(randomIndex);
+    }
+    return mix;
+  }
+
+  // Load the randomized samples into the iframes and wait for all to load
+  const randomMix = getRandomSampleMix();
+  const loadPromises = randomMix.map((index, iframeIndex) => {
+    const url = preloadUrls[index];
+    const iframe = iframes[iframeIndex];
+    const loadButton = document.querySelectorAll('.load-button')[iframeIndex];
+
+    // Update the global iframeSettings object with the new URL
+    window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
+    window.iframeSettings[iframe.id].url = url; // Store the new URL in the global settings object
+
+    return manageContentLoadingPromise(iframe, url, loadButton);
+  });
+
+  // Wait for all iframes to load their content, then proceed with further randomization
+  Promise.all(loadPromises).then(() => {
+    console.log('All samples loaded, randomizing play speeds and schedule multipliers...');
+    randomizePlaySpeeds();
+    randomizeScheduleMultipliers(); // Ensuring these functions are called here
+  }).catch(error => {
+    console.error('An error occurred while loading samples:', error);
+  });
+}
+
+// Attach this function to your random mix button's click event
+document.querySelector('.random-mix-btn').addEventListener('click', randomizeSamplesAndLoad);
 
 
   export function randomizePlaySpeeds() {
