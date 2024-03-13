@@ -2,8 +2,30 @@
 
 window.iframeSettings = window.iframeSettings || {};
 
+// Assuming iframeValueTracker is defined and available in the scope
+export function exportIframeDetailsToJSON() {
+    // Utilize the global iframeSettings for exporting
+    const iframeDetails = Object.keys(window.iframeSettings).map(id => {
+        const settings = window.iframeSettings[id]; // Directly access the settings
+        return { id: id, url: settings.url, speed: settings.speed, action: settings.action, times: settings.times };
+    });
 
-// // Function to update iframe settings in iframeValueTracker
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "iframeDetails.json");
+    document.body.appendChild(downloadAnchorNode); // Required for Firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    }
+    
+    document.getElementById('saveSettingsButton').addEventListener('click', function() {
+    exportIframeDetailsToJSON(); // Use the updated function to export settings
+    });
+
+
+
+    // // Function to update iframe settings in iframeValueTracker
 // export function updateIframeSettings(id, settingType, value) {
 //     let currentSettings = iframeValueTracker.getIframeState(id) || {};
 //     currentSettings[settingType] = value;
@@ -28,26 +50,3 @@ window.iframeSettings = window.iframeSettings || {};
 //     });
 // }
 
-
-
-// Assuming iframeValueTracker is defined and available in the scope
-export function exportIframeDetailsToJSON() {
-    // Utilize the global iframeSettings for exporting
-    const iframeDetails = Object.keys(window.iframeSettings).map(id => {
-        const settings = window.iframeSettings[id]; // Directly access the settings
-        return { id, settings };
-    });
-
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "iframeDetails.json");
-    document.body.appendChild(downloadAnchorNode); // Required for Firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    }
-    
-    document.getElementById('saveSettingsButton').addEventListener('click', function() {
-    exportIframeDetailsToJSON(); // Use the updated function to export settings
-    });
-    

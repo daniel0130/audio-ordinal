@@ -179,7 +179,7 @@ document.querySelector('.random-mix-btn').addEventListener('click', randomizeSam
 
       // Update global settings object
       window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
-      window.iframeSettings[iframe.id].playSpeed = randomSpeed; // Record the playSpeed
+      window.iframeSettings[iframe.id].speed = randomSpeed; // Record the playSpeed
 
   
       // Directly post the message to the iframe's contentWindow
@@ -211,8 +211,8 @@ document.querySelector('.random-mix-btn').addEventListener('click', randomizeSam
         // Since multiple messages might be posted, consider how to reflect this in settings.
         // For simplicity, we'll record the actionType and repetitions.
         window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
-        window.iframeSettings[iframe.id].scheduleMultiplierAction = actionType; // Example way to record
-        window.iframeSettings[iframe.id].scheduleMultiplierRepetitions = repetitions; // Record repetitions
+        window.iframeSettings[iframe.id].action = actionType; // Example way to record
+        window.iframeSettings[iframe.id].times = repetitions; // Record repetitions
 
   
         // Directly post the message to the iframe's contentWindow
