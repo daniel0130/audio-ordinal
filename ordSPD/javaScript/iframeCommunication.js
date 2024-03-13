@@ -4,25 +4,31 @@ import { postMessageToSelectedIframes } from './IframeManager.js';
 
 let isMuted = false;
 
-// function updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental) {
-//     window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
+// Added: Update global settings function
+function updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental) {
+    // Ensure the iframe settings object exists
+    window.iframeSettings = window.iframeSettings || {};
+    window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
 
-//     // If resetting a value, set it directly
-//     if (!isIncremental) {
-//         window.iframeSettings[iframeId][setting] = adjustmentFactor;
-//     } else {
-//         // Apply increment or multiplication factor based on the adjustment type
-//         window.iframeSettings[iframeId][setting] = window.iframeSettings[iframeId][setting] || 0;
-//         window.iframeSettings[iframeId][setting] += adjustmentFactor;
-//     }
+    // Retrieve current setting value or initialize to a default
+    let currentValue = window.iframeSettings[iframeId][setting] || 0;
+    if (setting === 'mute') {
+        currentValue = isMuted ? 1 : 0; // Handle mute specifically since it's a boolean
+    }
 
-//     // Now, apply this updated setting directly to the iframe as well
-//     const messageData = {};
-//     messageData[setting] = window.iframeSettings[iframeId][setting];
-//     postMessageToSelectedIframes(setting, messageData, iframeId);
-// }
+    // Adjust or set the value based on the action
+    const newValue = isIncremental ? currentValue + adjustmentFactor : adjustmentFactor;
+
+    // Update the global settings object
+    window.iframeSettings[iframeId][setting] = newValue;
+
+    // Log the update for debugging
+    console.log(`Updated ${setting} for ${iframeId} to ${newValue}`);
+}
 
 export function postKeyEventToIframes(keyChar, iframeId) {
+    console.log("postKeyEventToIframes called", keyChar, iframeId);
+
     const actionMap = {
         '-': { setting: 'scheduleMultiplier', adjustmentFactor: -0.1, isIncremental: true },
         '+': { setting: 'scheduleMultiplier', adjustmentFactor: 0.1, isIncremental: true },
@@ -36,68 +42,38 @@ export function postKeyEventToIframes(keyChar, iframeId) {
         'Ctrl+Shift+}': { setting: 'playbackSpeed', adjustmentFactor: 1, isIncremental: true }
     };
 
+    let messageData = {};
+
     if (keyChar in actionMap) {
         const { setting, adjustmentFactor, isIncremental } = actionMap[keyChar];
         updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental);
 
-        // Special case for mute toggle
-        if (keyChar === 'm') {
+        // Handle mute toggle separately
+        if (setting === 'mute') {
             isMuted = !isMuted;
         }
+
+        // Fetch the updated value from global settings for the message
+        const updatedValue = window.iframeSettings[iframeId][setting];
+        messageData[setting] = updatedValue;
+
+    } else if (keyChar === '0' && actionMap[keyChar].setting === 'scheduleMultiplier') {
+        // Specific logic for resetting the scheduleMultiplier
+        updateGlobalSettings(iframeId, 'scheduleMultiplier', 1, false);
+        messageData['scheduleMultiplier'] = 1;
     } else {
         console.log(`No action defined for keyChar: ${keyChar}`);
+        return; // Early exit if keyChar does not match any action
     }
 
-
-    const messageType = actionMap[keyChar];
-    let messageData = {};
-
-    // Handle mute toggle separately as before
-    if (keyChar === 'm') {
-        isMuted = !isMuted;
-        messageData = { mute: isMuted };
+    // Now directly handle the message sending based on the key press, without referring to iframeValueTracker
+    if (Object.keys(messageData).length > 0) {
+        postMessageToSelectedIframes(iframeId, messageData);
     }
 
-    // Now handle volume and schedule adjustments with the tracking mechanism
-    switch (keyChar) {
-        case ',':
-            messageData = { volume: iframeValueTracker.adjustVolume(iframeId, 'decrease') };
-            break;
-        case '.':
-            messageData = { volume: iframeValueTracker.adjustVolume(iframeId, 'increase') };
-            break;
-        case '-':
-            messageData = { scheduleMultiplier: iframeValueTracker.adjustScheduleMultiplier(iframeId, 'decrease') };
-            break;
-        case '+':
-            messageData = { scheduleMultiplier: iframeValueTracker.adjustScheduleMultiplier(iframeId, 'increase') };
-            break;
-        case '0':
-            if (iframeValueTracker.resetScheduleMultiplier(iframeId)) {
-                messageData = { scheduleMultiplier: 1 };
-            }
-            break;
-        // Speed control cases as before, assuming these do not interact with the new tracking mechanism directly
-        // Adjust the playback speed based on key presses
-        case '{':
-            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, -0.1) }; // Decrease by 0.1
-            break;
-        case '}':
-            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, 0.1) }; // Increase by 0.1
-            break;
-        case 'Ctrl+Shift+{':
-            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, -1) }; // Decrease by 1
-            break;
-        case 'Ctrl+Shift+}':
-            messageData = { speed: iframeValueTracker.adjustPlaybackSpeed(iframeId, 1) }; // Increase by 1
-            break;
-    }
+    // Additional log to show the current state of window.iframeSettings
+    console.log("[iframeCommunication] Final state of window.iframeSettings:", JSON.stringify(window.iframeSettings, null, 2));
 
-    if (messageType) {
-        postMessageToSelectedIframes(messageType, messageData);
-    } else {
-        console.log(`No action defined for keyChar: ${keyChar}`);
-    }
 }
 
 

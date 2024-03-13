@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Function to post a message to the child iframes
     function postMessageToIframes(type, data) {
+        console.log(`[postMessageToIframes] Posting message to iframes: type=${type}, data=`, data);
         const iframes = document.querySelectorAll('iframe');
         iframes.forEach(iframe => {
             iframe.contentWindow.postMessage({ type, data }, '*'); // Replace '*' with the actual origin for security in production
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Event handler to post the appropriate message based on the clicked <kbd>
     function handleKbdClick(kbdElement) {
+        console.log(`[handleKbdClick] Clicked on key: ${kbdElement.textContent.trim()}`);
         const key = kbdElement.textContent.trim();
         switch (key) {
             case '-':
