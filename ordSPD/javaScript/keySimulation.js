@@ -3,6 +3,7 @@ import { postKeyEventToIframes } from './iframeCommunication.js';
 
 // Simulate a key event and dispatch it
 function simulateKeyEvent(keyDetails, eventType, target) {
+    console.log(`[simulateKeyEvent] Simulating key event for: ${keyDetails}`);
     const evt = new KeyboardEvent(eventType, {
         bubbles: true,
         cancelable: true,

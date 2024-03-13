@@ -44,7 +44,7 @@ function setGlobalBPM() {
 }
   
 
-  function initializePage() {
+  export function initializePage() {
     document.getElementById('setBPM').addEventListener('click', setGlobalBPM);
     // Other initialization code here...
   }

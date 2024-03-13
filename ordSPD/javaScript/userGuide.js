@@ -71,6 +71,7 @@ function makeGuideInteractive() {
 
 // Determine the message type based on the key pressed and post it, updated to reflect correct actions
 function postKeyEventToIframes(keyChar) {
+    console.log(`postKeyEventToIframes called: keyChar=${keyChar}`);
     const actionMap = {
         '-': 'decreaseScheduleMultiplier',
         '+': 'increaseScheduleMultiplier',
