@@ -14,31 +14,71 @@
     "https://ordinals.com/content/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0"
   ];
 
-  export function preloadContent() {
-    const iframes = document.querySelectorAll('iframe');
-    const loadButtons = document.querySelectorAll('.load-button'); // Ensure there's a load button for each iframe
-  
-    // Load the first 5 URLs into the first 10 iframes, twice each
-    for (let i = 0; i < 10; i += 2) {
-        manageContentLoading(iframes[i], preloadUrls[i / 2], loadButtons[i]);
-        manageContentLoading(iframes[i + 1], preloadUrls[i / 2], loadButtons[i + 1]);
-    }
-  
-    // Load four instances of the 6th, 7th, and 8th URLs into the next 12 iframes
-    for (let i = 10, urlIndex = 5; i < 22; i += 4) {
-        for (let j = 0; j < 4; j++) {
-            manageContentLoading(iframes[i + j], preloadUrls[urlIndex], loadButtons[i + j]);
-        }
-        urlIndex++;
-    }
-  
-    // Load the last two URLs into the final four iframes, twice each
-    for (let i = 22, urlIndex = 8; i < iframes.length && i < 26; i += 2) {
-        manageContentLoading(iframes[i], preloadUrls[urlIndex], loadButtons[i]);
-        manageContentLoading(iframes[i + 1], preloadUrls[urlIndex], loadButtons[i + 1]);
-        urlIndex++;
-    }
+  // Ensure window.iframeSettings exists
+window.iframeSettings = window.iframeSettings || {};
+
+export function preloadContent() {
+  const iframes = document.querySelectorAll('iframe');
+  const loadButtons = document.querySelectorAll('.load-button'); // Assuming load buttons exist for each iframe
+
+  // Define default settings
+  const defaultSettings = {
+      volume: 1, // Default volume level
+      playbackSpeed: 1, // Default playback speed
+      scheduleMultiplier: 1 // Default schedule multiplier
+  };
+
+  // Initialize global settings object if it doesn't exist
+  window.iframeSettings = window.iframeSettings || {};
+
+  // Limit the iteration up to the number of URLs available
+  const urlsToLoad = Math.min(iframes.length, preloadUrls.length);
+
+  for (let i = 0; i < urlsToLoad; i++) {
+      const iframe = iframes[i];
+      const iframeId = iframe.id || `iframe-${i}`;
+      iframe.id = iframeId;
+
+      // Initialize iframe settings with default values
+      window.iframeSettings[iframeId] = {...defaultSettings};
+
+      // Load each URL into the corresponding iframe
+      const urlToLoad = preloadUrls[i]; // Directly assign URLs without cycling
+      window.iframeSettings[iframeId].url = urlToLoad; // Update global settings with URL
+
+      // Load content into the iframe
+      manageContentLoading(iframe, urlToLoad, loadButtons[i]);
   }
+}
+
+// Function to manage content loading with visibility control for the load button
+function manageContentLoading(iframe, url, loadButton) {
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+      return response.text();
+    })
+    .then(html => {
+      const blob = new Blob([html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      iframe.src = blobUrl;
+      iframe.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        // Hide the load button once content is successfully loaded
+        if (loadButton) {
+          loadButton.classList.add('hidden');
+        }
+      };
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert("There was an issue loading the content.");
+      // Show the load button again if content loading fails
+      if (loadButton) {
+        loadButton.classList.remove('hidden');
+      }
+    });
+}
 
 
   export function loadContentFromURL(iframe, loadButton) {
@@ -60,6 +100,33 @@
 }
 
 
+  
+  
+      // Modified manageContentLoading to return a Promise
+      function manageContentLoadingPromise(iframe, url, loadButton) {
+        return new Promise((resolve, reject) => {
+          fetch(url)
+            .then(response => {
+              if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+              return response.text();
+            })
+            .then(html => {
+              const blob = new Blob([html], { type: 'text/html' });
+              const blobUrl = URL.createObjectURL(blob);
+              iframe.src = blobUrl;
+              iframe.onload = () => {
+                URL.revokeObjectURL(blobUrl);
+                if (loadButton) loadButton.classList.add('hidden');
+                resolve(); // Resolve the promise when content is successfully loaded
+              };
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              if (loadButton) loadButton.classList.remove('hidden');
+              reject(error); // Reject the promise if loading fails
+            });
+        });
+      }
 
 
 async function processJSONContent(url, iframe, loadButton) {
@@ -227,59 +294,3 @@ document.querySelector('.random-mix-btn').addEventListener('click', randomizeSam
   window.randomizeScheduleMultipliers = randomizeScheduleMultipliers;
   
 
-
-  // Function to manage content loading with visibility control for the load button
-  function manageContentLoading(iframe, url, loadButton) {
-    fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-        return response.text();
-      })
-      .then(html => {
-        const blob = new Blob([html], { type: 'text/html' });
-        const blobUrl = URL.createObjectURL(blob);
-        iframe.src = blobUrl;
-        iframe.onload = () => {
-          URL.revokeObjectURL(blobUrl);
-          // Hide the load button once content is successfully loaded
-          if (loadButton) {
-            loadButton.classList.add('hidden');
-          }
-        };
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert("There was an issue loading the content.");
-        // Show the load button again if content loading fails
-        if (loadButton) {
-          loadButton.classList.remove('hidden');
-        }
-      });
-  }
-  
-  
-      // Modified manageContentLoading to return a Promise
-      function manageContentLoadingPromise(iframe, url, loadButton) {
-        return new Promise((resolve, reject) => {
-          fetch(url)
-            .then(response => {
-              if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-              return response.text();
-            })
-            .then(html => {
-              const blob = new Blob([html], { type: 'text/html' });
-              const blobUrl = URL.createObjectURL(blob);
-              iframe.src = blobUrl;
-              iframe.onload = () => {
-                URL.revokeObjectURL(blobUrl);
-                if (loadButton) loadButton.classList.add('hidden');
-                resolve(); // Resolve the promise when content is successfully loaded
-              };
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              if (loadButton) loadButton.classList.remove('hidden');
-              reject(error); // Reject the promise if loading fails
-            });
-        });
-      }

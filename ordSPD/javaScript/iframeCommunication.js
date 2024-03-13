@@ -1,23 +1,53 @@
 // iframeCommunication.js
 
 import { postMessageToSelectedIframes } from './IframeManager.js';
-import { iframeValueTracker } from './IframeValueTracker.js'; // Ensure this is correctly imported
 
 let isMuted = false;
 
-export function postKeyEventToIframes(keyChar, iframeId) { // Assuming iframeId is passed to identify the target iframe
+function updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental) {
+    window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
+
+    // If resetting a value, set it directly
+    if (!isIncremental) {
+        window.iframeSettings[iframeId][setting] = adjustmentFactor;
+    } else {
+        // Apply increment or multiplication factor based on the adjustment type
+        window.iframeSettings[iframeId][setting] = window.iframeSettings[iframeId][setting] || 0;
+        window.iframeSettings[iframeId][setting] += adjustmentFactor;
+    }
+
+    // Now, apply this updated setting directly to the iframe as well
+    const messageData = {};
+    messageData[setting] = window.iframeSettings[iframeId][setting];
+    postMessageToSelectedIframes(setting, messageData, iframeId);
+}
+
+export function postKeyEventToIframes(keyChar, iframeId) {
     const actionMap = {
-        '-': 'decreaseScheduleMultiplier',
-        '+': 'increaseScheduleMultiplier',
-        ',': 'decreaseVolume',
-        '.': 'increaseVolume',
-        '0': 'resetSchedulerValue',
-        'm': 'muteControl',
-        '{': 'playAtSpeed',
-        '}': 'playAtSpeed',
-        'Ctrl+Shift+{': 'playAtSpeed',
-        'Ctrl+Shift+}': 'playAtSpeed'
+        '-': { setting: 'scheduleMultiplier', adjustmentFactor: -0.1, isIncremental: true },
+        '+': { setting: 'scheduleMultiplier', adjustmentFactor: 0.1, isIncremental: true },
+        ',': { setting: 'volume', adjustmentFactor: -10, isIncremental: true },
+        '.': { setting: 'volume', adjustmentFactor: 10, isIncremental: true },
+        '0': { setting: 'scheduleMultiplier', adjustmentFactor: 1, isIncremental: false }, // Reset value
+        'm': { setting: 'mute', adjustmentFactor: isMuted ? 0 : 1, isIncremental: false }, // Toggle mute
+        '{': { setting: 'playbackSpeed', adjustmentFactor: -0.1, isIncremental: true },
+        '}': { setting: 'playbackSpeed', adjustmentFactor: 0.1, isIncremental: true },
+        'Ctrl+Shift+{': { setting: 'playbackSpeed', adjustmentFactor: -1, isIncremental: true },
+        'Ctrl+Shift+}': { setting: 'playbackSpeed', adjustmentFactor: 1, isIncremental: true }
     };
+
+    if (keyChar in actionMap) {
+        const { setting, adjustmentFactor, isIncremental } = actionMap[keyChar];
+        updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental);
+
+        // Special case for mute toggle
+        if (keyChar === 'm') {
+            isMuted = !isMuted;
+        }
+    } else {
+        console.log(`No action defined for keyChar: ${keyChar}`);
+    }
+
 
     const messageType = actionMap[keyChar];
     let messageData = {};

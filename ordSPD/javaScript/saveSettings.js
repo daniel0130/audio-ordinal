@@ -8,10 +8,17 @@ export function exportIframeDetailsToJSON() {
     const iframeDetails = Object.keys(window.iframeSettings).map(id => {
         const settings = window.iframeSettings[id]; // Directly access the settings
 
-        // Remove the specified part of the URL and keep only the ID
-        const cleanedUrl = settings.url.replace("https://ordinals.com/content/", "");
+        // Check if settings.url exists before trying to replace, otherwise use a placeholder
+        const cleanedUrl = settings.url ? settings.url.replace("https://ordinals.com/content/", "") : "placeholder-url";
 
-        return { id: id, url: cleanedUrl, speed: settings.speed, action: settings.action, times: settings.times };
+        // Ensure other properties are checked or provided with default values
+        return {
+            id: id,
+            url: cleanedUrl,
+            speed: settings.speed || 1, // Assuming 1 as a default speed value
+            action: settings.action || 'none', // Assuming 'none' as a default action
+            times: settings.times || 0 // Assuming 0 as a default for times
+        };
     });
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
@@ -22,6 +29,7 @@ export function exportIframeDetailsToJSON() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 }
+
 
 document.getElementById('saveSettingsButton').addEventListener('click', function() {
     exportIframeDetailsToJSON(); // Use the updated function to export settings
