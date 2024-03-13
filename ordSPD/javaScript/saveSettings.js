@@ -24,20 +24,3 @@ document.getElementById('saveSettingsButton').addEventListener('click', function
     exportIframeDetailsToJSON(); // Call the function to export settings when the save button is clicked
 });
 
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    const fileReader = new FileReader();
-    fileReader.onload = function(event) {
-        try {
-            const iframeDetails = JSON.parse(event.target.result);
-            iframeDetails.forEach(detail => {
-                // Note: Assuming the detail structure includes an 'id' and a 'settings' property
-                const { id, settings } = detail;
-                iframeValueTracker.setGlobalSettings({ [id]: settings }); // Apply loaded settings
-            });
-            console.log("Iframe settings loaded successfully.");
-        } catch (e) {
-            console.error("Failed to load iframe settings:", e);
-        }
-    };
-    fileReader.readAsText(event.target.files[0]);
-}, false);

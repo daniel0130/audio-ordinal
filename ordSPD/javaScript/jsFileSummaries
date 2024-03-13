@@ -1,0 +1,97 @@
+SUMMARIES OF ALL JS FILES FOR THE ORDSPD
+
+ContentLoader.js
+This module is designed to handle the loading of content from URLs into iframes within the web application. It features functions to fetch HTML content from specified URLs and inject this content into iframes. Additionally, it preloads content from a set of predefined URLs to iframes and manages the visibility of loading buttons based on the content's loading status. It includes functionality for randomizing the play speed and schedule multipliers of content loaded into iframes, enhancing the interactive user experience. This script is pivotal in managing dynamic content loading, ensuring users have access to fresh and varied content from external sources.
+
+IframeManager.js
+This module leverages functionalities from ContentLoader.js to manage a collection of iframes within the application. It facilitates the creation, selection, and clearing of iframe content, enabling a robust interface for content management across multiple iframes. The script supports user interactions, allowing for the selection of individual or multiple iframes for content loading and manipulation. Additionally, it provides mechanisms for preloading content into iframes and clearing content as needed, enhancing the application's flexibility and user engagement.
+
+IframeSelectionManager.js
+This module defines a class responsible for managing the selection state of iframe wrappers within the application. It provides functionalities to toggle the selection state of individual pads, update the visual representation of selected pads, select multiple pads at once, and deselect all pads. The IframeSelectionManager class uses a Set to keep track of selected pads' IDs, ensuring efficient selection management. This component plays a crucial role in user interaction by enabling selective operations on a subset of iframe elements, enhancing the application's interactivity and usability.
+
+IframeValueTracker.js
+This script introduces a class designed to track and manage the state of various properties associated with each iframe, such as volume, playback speed, schedule multiplier, and content URL. It allows for the initialization of these states, adjustment of volume, schedule multiplier, and playback speed, as well as resetting schedule multipliers to default values. Furthermore, the class provides functionalities to retrieve the current state of an iframe and apply global settings across all iframes. It also supports updating iframe content URLs and applying settings through messaging, leveraging the postMessage API for communication between the main application and iframe contents. The IframeValueTracker class is instrumental in maintaining a consistent and responsive user experience by managing iframe properties dynamically.
+
+UIController.js
+This script serves as the central hub for initializing and controlling the user interface elements of the application. It imports functionality from IframeManager.js to create iframes upon document load and utilizes IframeSelectionManager.js for managing iframe selections. Key features include setting up event listeners for UI controls such as BPM settings and guide visibility toggles. The setGlobalBPM function broadcasts a BPM value to all iframes, demonstrating the application's capability to synchronize settings across content. This script ensures a cohesive user experience by managing the visibility of guides, handling global actions like clearing all iframes, and facilitating user interactions with the iframe content.
+
+iframeCommunication.js
+This module focuses on the communication layer between the main application and its iframes. It facilitates the posting of keyboard event-related messages to selected iframes, leveraging the postMessageToSelectedIframes function from IframeManager.js. The script maps key characters to specific actions such as volume control, schedule multiplier adjustments, and playback speed modifications. It utilizes IframeValueTracker.js to maintain and adjust the state of individual iframes based on user input, illustrating the dynamic interaction capabilities between the application's UI and its iframe contents. This modular approach enhances the application's interactivity, allowing for precise control over iframe properties through keyboard inputs.
+
+iframeSelectButton.js
+This script enhances the user interaction with iframe wrappers by allowing users to toggle their selection states through click events. Upon document load, it attaches click event listeners to all elements with the .iframe-wrapper class. Clicking a wrapper toggles its border color between black and green, providing visual feedback on its selection state. This functionality is crucial for applications requiring user input to select among multiple iframe elements, thereby improving the usability and interactive experience of the application.
+
+keySimulation.js
+This module is responsible for simulating key events within the application, specifically designed to trigger actions associated with iframes. It imports functionality from iframeCommunication.js to post messages based on simulated key events. The script defines a keyMap object that maps key characters to their corresponding keyboard event details, facilitating accurate simulation of key presses. Additionally, it includes a function to make guide elements interactive, allowing users to click on keyboard shortcuts displayed in the guide to simulate those key presses. This feature is particularly useful for demonstrating application functionalities or providing an interactive user guide.
+
+saveAndLoadSettings.js
+This module provides functionality to save and load iframe settings to and from a JSON file, facilitating persistent customization of user settings. It uses the iframeValueTracker class from IframeValueTracker.js to access and manipulate the settings of individual iframes. The exportIframeDetailsToJSON function compiles the current settings of all iframes into a JSON structure and triggers a download of this data, allowing users to save their configurations externally. Conversely, the module also handles file input changes to load settings from a user-selected JSON file, applying these settings across the iframes in the application. This dual functionality enhances the app's usability by enabling users to preserve and restore their environment configurations with ease.
+
+simulatedKeyPresses.js
+This script simulates the application of key presses across iframes, providing an additional layer of interactivity within the application. It listens for the DOMContentLoaded event to attach click event listeners to <kbd> elements within the user guide. Clicking these elements triggers simulated key presses, interpreted as specific actions (such as adjusting the schedule multiplier or toggling mute) across all iframes. This mechanism offers a user-friendly way to demonstrate and utilize the application's functionalities directly from the user guide, improving the learning curve and user engagement.
+
+
+
+    NOTES FROM THE OB1 MESSAGING AND SETTINGS FILES TO ANALYSE FOR OPTIMAL COMMUNICATION OF PRESET SETTINGS
+
+    The child iframe's messaging code is designed to handle various commands from the parent window, each altering the iframe's audio playback settings or fetching its current settings. Below is a document that clearly explains the messages the parent window must send to modify each setting within the child iframe. This guide will ensure the development team knows exactly how to construct messages for updating settings when loading new projects.
+
+Message Types and Their Effects
+Update BPM (Beats Per Minute)
+
+Type: updateBPM
+Data: { bpm: value }
+Behavior: Sets the BPM to the specified value within the range of 60 to 240. Values outside this range will be clamped to the nearest limit.
+Example: { type: "updateBPM", data: { bpm: 120 } }
+Mute Control
+
+Type: muteControl
+Data: { mute: true/false }
+Behavior: Mutes the audio if true is sent or restores the previous volume if false is sent, applying a volume fade over 0.03 seconds.
+Example: { type: "muteControl", data: { mute: true } }
+Increase Volume
+
+Type: increaseVolume
+Behavior: Increments the current volume. The exact increment value isn't specified but is internally defined by the child's increaseVolume function.
+Example: { type: "increaseVolume" }
+Decrease Volume
+
+Type: decreaseVolume
+Behavior: Decrements the current volume. The decrement value is similarly internally defined by the child's decreaseVolume function.
+Example: { type: "decreaseVolume" }
+Play Loop
+
+Type: playLoop
+Behavior: Initiates loop playback of the audio sample. If the loop is already playing, this command has no additional effect.
+Example: { type: "playLoop" }
+Play Once
+
+Type: playOnce
+Behavior: Plays the audio sample once from the beginning.
+Example: { type: "playOnce" }
+Play At Speed
+
+Type: playAtSpeed
+Data: { speed: value }
+Behavior: Adjusts the playback speed to the specified value. The expected range or effect of this value isn't explicitly defined in the provided script segment.
+Example: { type: "playAtSpeed", data: { speed: 1.0 } }
+Increase Schedule Multiplier
+
+Type: increaseScheduleMultiplier
+Behavior: Simulates a key press of the "=" key to increase the schedule multiplier. The multiplier increase step isn't directly provided but is inferred to be a predefined increment based on the child's handling of the "=" key press.
+Example: { type: "increaseScheduleMultiplier" }
+Decrease Schedule Multiplier
+
+Type: decreaseScheduleMultiplier
+Behavior: Simulates a key press of the "-" key to decrease the schedule multiplier. Similar to increase, the decrement step is predefined by the child's handling of the "-" key press.
+Example: { type: "decreaseScheduleMultiplier" }
+Request Current Settings
+
+Type: requestCurrentSettings
+Behavior: Triggers the child iframe to send its current settings (schedule multiplier and volume) to the parent.
+Example: { type: "requestCurrentSettings" }
+Incrementing/Decrementing and Multiplying/Dividing Values
+The messages for increasing/decreasing volume and schedule multipliers do not specify exact values for the adjustments. Instead, they rely on the child iframe's internal logic to determine how much to adjust these settings. For schedule multipliers, the increase/decrease commands simulate key presses, suggesting that the adjustment granularity is fixed and predefined by the child's response to these key simulations.
+
+Conclusion
+To update settings for loading new projects, the parent should send a series of these defined messages to each iframe. Given the absence of direct commands for setting specific numeric values for volume and multipliers, the parent may need to calculate the necessary number of increase/decrease commands to reach the desired settings from a baseline state.
