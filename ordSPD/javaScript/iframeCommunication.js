@@ -4,23 +4,23 @@ import { postMessageToSelectedIframes } from './IframeManager.js';
 
 let isMuted = false;
 
-function updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental) {
-    window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
+// function updateGlobalSettings(iframeId, setting, adjustmentFactor, isIncremental) {
+//     window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
 
-    // If resetting a value, set it directly
-    if (!isIncremental) {
-        window.iframeSettings[iframeId][setting] = adjustmentFactor;
-    } else {
-        // Apply increment or multiplication factor based on the adjustment type
-        window.iframeSettings[iframeId][setting] = window.iframeSettings[iframeId][setting] || 0;
-        window.iframeSettings[iframeId][setting] += adjustmentFactor;
-    }
+//     // If resetting a value, set it directly
+//     if (!isIncremental) {
+//         window.iframeSettings[iframeId][setting] = adjustmentFactor;
+//     } else {
+//         // Apply increment or multiplication factor based on the adjustment type
+//         window.iframeSettings[iframeId][setting] = window.iframeSettings[iframeId][setting] || 0;
+//         window.iframeSettings[iframeId][setting] += adjustmentFactor;
+//     }
 
-    // Now, apply this updated setting directly to the iframe as well
-    const messageData = {};
-    messageData[setting] = window.iframeSettings[iframeId][setting];
-    postMessageToSelectedIframes(setting, messageData, iframeId);
-}
+//     // Now, apply this updated setting directly to the iframe as well
+//     const messageData = {};
+//     messageData[setting] = window.iframeSettings[iframeId][setting];
+//     postMessageToSelectedIframes(setting, messageData, iframeId);
+// }
 
 export function postKeyEventToIframes(keyChar, iframeId) {
     const actionMap = {

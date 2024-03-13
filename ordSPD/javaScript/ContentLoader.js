@@ -29,27 +29,39 @@ export function preloadContent() {
   };
 
   // Initialize global settings object if it doesn't exist
-  // window.iframeSettings = window.iframeSettings || {};
+  window.iframeSettings = window.iframeSettings || {};
 
-  // Limit the iteration up to the number of URLs available
-  const urlsToLoad = Math.min(iframes.length, preloadUrls.length);
+  // Determine the number of iframes to initialize settings for (always 36 in this case)
+  const totalIframesToInitialize = 36;
 
-  for (let i = 0; i < urlsToLoad; i++) {
+  // Iterate through all iframes up to the defined total, not just the ones with URLs
+  for (let i = 0; i < totalIframesToInitialize; i++) {
       const iframe = iframes[i];
+      // If there's no corresponding iframe element (exceeds actual iframes in DOM), skip iteration
+      if (!iframe) continue;
+      
       const iframeId = iframe.id || `iframe-${i}`;
       iframe.id = iframeId;
 
       // Initialize iframe settings with default values
       window.iframeSettings[iframeId] = {...defaultSettings};
 
-      // Load each URL into the corresponding iframe
-      const urlToLoad = preloadUrls[i]; // Directly assign URLs without cycling
-      window.iframeSettings[iframeId].url = urlToLoad; // Update global settings with URL
+      // If there's a URL available for this iframe, load it
+      if (i < preloadUrls.length) {
+          const urlToLoad = preloadUrls[i]; // Directly assign URLs from the preloadUrls array
+          window.iframeSettings[iframeId].url = urlToLoad; // Update global settings with URL
 
-      // Load content into the iframe
-      manageContentLoading(iframe, urlToLoad, loadButtons[i]);
+          // Load content into the iframe
+          manageContentLoading(iframe, urlToLoad, loadButtons[i]);
+      }
+      // If there's no URL for this iframe index, leave the url entry in settings as undefined or set it to a placeholder
+      else {
+          // Option to set a placeholder or simply leave it undefined
+          // window.iframeSettings[iframeId].url = "placeholder-url"; // Placeholder, if needed
+      }
   }
 }
+
 
 // Function to manage content loading with visibility control for the load button
 function manageContentLoading(iframe, url, loadButton) {
