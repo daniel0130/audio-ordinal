@@ -1,4 +1,6 @@
 // IframeValueTracker.js
+import { postMessageToSelectedIframes } from './IframeManager.js';
+
 
 class IframeValueTracker {
     constructor() {
@@ -6,15 +8,24 @@ class IframeValueTracker {
         this.iframeStates = {};
     }
 
-    // Initialize or reset state for an iframe
-    initializeIframeState(iframeId) {
+    // Initialize or reset state for an iframe, now including URL
+    initializeIframeState(iframeId, url = '') { // Added URL parameter with default empty string
         if (!this.iframeStates[iframeId]) {
             this.iframeStates[iframeId] = {
-                volume: 50, // Assuming volume goes from 0 to 100
+                volume: 50, // Default volume
                 scheduleMultiplier: 1, // Default multiplier
                 playbackSpeed: 1, // Default playback speed
+                url: url // URL of the iframe content
             };
         }
+    }
+
+    // Method to update an iframe's URL
+    updateIframeURL(iframeId, url) {
+        if (!this.iframeStates[iframeId]) {
+            this.initializeIframeState(iframeId);
+        }
+        this.iframeStates[iframeId].url = url;
     }
 
     // Adjust volume for a specific iframe
@@ -52,8 +63,9 @@ class IframeValueTracker {
         return false;
     }
 
-    // Get the current state of an iframe
-    getIframeState(iframeId) {
+   // Get the current state of an iframe, including URL
+   getIframeState(iframeId) {
+        this.initializeIframeState(iframeId); // Ensure state is initialized even if just querying
         return this.iframeStates[iframeId];
     }
 
@@ -63,16 +75,44 @@ class IframeValueTracker {
         return this.iframeStates; // Returns the current state of all iframes
     }
 
-    // Method to set global settings from an object
+    // Method to set global settings from an object, including URL updates
     setGlobalSettings(settings) {
         Object.keys(settings).forEach(iframeId => {
             if (!this.iframeStates[iframeId]) {
                 this.initializeIframeState(iframeId);
             }
-            this.iframeStates[iframeId] = {...this.iframeStates[iframeId], ...settings[iframeId]};
+            this.iframeStates[iframeId] = { ...this.iframeStates[iframeId], ...settings[iframeId] };
+
+            // Update iframe src if URL is provided
+            const iframe = document.getElementById(iframeId);
+            if (iframe && settings[iframeId].url) {
+                iframe.src = settings[iframeId].url;
+            }
+
+            // Apply additional settings through messaging
+            // Assume that `postMessageToSelectedIframes` can target a specific iframe by ID
+            this.applySettingsThroughMessaging(iframeId, settings[iframeId]);
         });
     }
+
+    // New helper method to apply settings via messaging
+    applySettingsThroughMessaging(iframeId, settings) {
+        // Extract settings that need to be communicated
+        const { volume, playbackSpeed, scheduleMultiplier } = settings;
+
+        // Prepare message data for each setting
+        if (volume !== undefined) {
+            postMessageToSelectedIframes('adjustVolume', { volume }, iframeId);
+        }
+        if (playbackSpeed !== undefined) {
+            postMessageToSelectedIframes('adjustPlaybackSpeed', { speed: playbackSpeed }, iframeId);
+        }
+        if (scheduleMultiplier !== undefined) {
+            postMessageToSelectedIframes('adjustScheduleMultiplier', { scheduleMultiplier }, iframeId);
+        }
+    }
 }
+
 
 // Export an instance so it maintains state across the app
 export const iframeValueTracker = new IframeValueTracker();
