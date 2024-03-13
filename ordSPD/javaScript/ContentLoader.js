@@ -1,27 +1,4 @@
 // ContentLoader.js
-// Function to fetch and load content from a URL into an iframe
-function fetchAndLoadContent(iframe, url) {
-    fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-        return response.text();
-      })
-      .then(html => {
-        const blob = new Blob([html], { type: 'text/html' });
-        const blobUrl = URL.createObjectURL(blob);
-        iframe.src = blobUrl;
-        // The 'load' event will be used to clean up after the content is loaded
-        iframe.onload = () => URL.revokeObjectURL(blobUrl);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert("There was an issue loading the content.");
-      });
-  }
-
-
-
-
 
  // Array of URLs to preload
  const preloadUrls = [
@@ -63,24 +40,56 @@ function fetchAndLoadContent(iframe, url) {
     }
   }
 
-  
-  function randomizeSamplesAndLoad() {
-    const iframes = document.querySelectorAll('iframe');
-    if (iframes.length !== 36) {
-      console.error('Expected 36 iframes for sample placement.');
-      return;
-    }
-  
-    // Function to get a random sample mix
-    function getRandomSampleMix() {
-      let mix = [];
-      for (let i = 0; i < 36; i++) {
-        const randomIndex = Math.floor(Math.random() * preloadUrls.length);
-        mix.push(randomIndex);
+
+  export function loadContentFromURL(iframe, loadButton) {
+    const url = prompt("Please enter the URL:");
+    if (!url) return;
+
+    // Hide the load button initially, to be shown again in case of loading failure
+    loadButton.classList.add('hidden');
+
+    const jsonUrlPattern = /\.json$/; // Example pattern for JSON URLs
+
+    if (jsonUrlPattern.test(url)) {
+        // Delegate to JSON content handler
+        processJSONContent(url, iframe, loadButton);
+    } else {
+        // Delegate to HTML content handler
+        manageContentLoading(iframe, url, loadButton);
       }
-      return mix;
-    }
-  
+}
+
+
+  // Function to manage content loading with visibility control for the load button
+function manageContentLoading(iframe, url, loadButton) {
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+      return response.text();
+    })
+    .then(html => {
+      const blob = new Blob([html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      iframe.src = blobUrl;
+      iframe.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        // Hide the load button once content is successfully loaded
+        if (loadButton) {
+          loadButton.classList.add('hidden');
+        }
+      };
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert("There was an issue loading the content.");
+      // Show the load button again if content loading fails
+      if (loadButton) {
+        loadButton.classList.remove('hidden');
+      }
+    });
+}
+
+
     // Modified manageContentLoading to return a Promise
     function manageContentLoadingPromise(iframe, url, loadButton) {
       return new Promise((resolve, reject) => {
@@ -106,6 +115,72 @@ function fetchAndLoadContent(iframe, url) {
           });
       });
     }
+
+
+async function processJSONContent(url, iframe, loadButton) {
+  try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+      const jsonData = await response.json();
+
+      if (!isValidAudionalJSON(jsonData)) {
+          throw new Error("Invalid JSON format for audional content");
+      }
+
+      // Process and place the audio data directly into the pad
+      placeAudioData(jsonData.audioData, iframe);
+
+      // Optionally, process and place image data if exists
+      if (jsonData.imageData) {
+          placeImageData(jsonData.imageData, iframe);
+      }
+
+      console.log("JSON content processed successfully");
+      loadButton.classList.add('hidden'); // Hide load button upon successful loading
+  } catch (error) {
+      console.error('Error:', error);
+      alert("There was an issue loading the JSON content.");
+      loadButton.classList.remove('hidden'); // Show load button again upon failure
+  }
+}
+
+function isValidAudionalJSON(jsonData) {
+  return jsonData.protocol === "audional" && jsonData.operation === "deploy" && jsonData.audioData;
+}
+
+function placeAudioData(audioData, iframe) {
+  // Custom logic to place audio data into the pad
+  console.log("Placing audio data into the pad...");
+  // Example implementation might involve decoding the base64 audio data and attaching it to an audio element
+}
+
+function placeImageData(imageData, iframe) {
+  // Custom logic to place image data into the pad
+  console.log("Placing image data into the pad...");
+  // Example implementation might involve decoding the base64 image data and displaying it alongside the audio
+}
+   
+
+
+
+  
+  function randomizeSamplesAndLoad() {
+    const iframes = document.querySelectorAll('iframe');
+    if (iframes.length !== 36) {
+      console.error('Expected 36 iframes for sample placement.');
+      return;
+    }
+  
+    // Function to get a random sample mix
+    function getRandomSampleMix() {
+      let mix = [];
+      for (let i = 0; i < 36; i++) {
+        const randomIndex = Math.floor(Math.random() * preloadUrls.length);
+        mix.push(randomIndex);
+      }
+      return mix;
+    }
+  
   
     // Load the randomized samples into the iframes and wait for all to load
     const randomMix = getRandomSampleMix();
@@ -117,13 +192,15 @@ function fetchAndLoadContent(iframe, url) {
     });
   
     // Wait for all iframes to load their content, then randomize play speeds
+    // Wait for all iframes to load their content, then randomize play speeds and schedule multipliers
     Promise.all(loadPromises).then(() => {
-      console.log('All samples loaded, randomizing play speeds...');
+      console.log('All samples loaded, randomizing play speeds and schedule multipliers...');
       randomizePlaySpeeds();
-      randomizeScheduleMultipliers();
+      randomizeScheduleMultipliers(); // Ensure this function is called here
     }).catch(error => {
       console.error('An error occurred while loading samples:', error);
     });
+
   }
   
   // Attach this function to your random mix button's click event
@@ -193,108 +270,3 @@ function fetchAndLoadContent(iframe, url) {
   window.randomizeScheduleMultipliers = randomizeScheduleMultipliers;
   
 
-  export function loadContentFromURL(iframe, loadButton) {
-    const url = prompt("Please enter the URL:");
-    if (!url) return;
-
-    // Hide the load button initially, to be shown again in case of loading failure
-    loadButton.classList.add('hidden');
-
-    const jsonUrlPattern = /\.json$/; // Example pattern for JSON URLs
-
-    if (jsonUrlPattern.test(url)) {
-        // Delegate to JSON content handler
-        processJSONContent(url, iframe, loadButton);
-    } else {
-        // Delegate to HTML content handler
-        manageContentLoading(iframe, url, loadButton);
-      }
-}
-
-
-async function processJSONContent(url, iframe, loadButton) {
-  try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-      const jsonData = await response.json();
-
-      if (!isValidAudionalJSON(jsonData)) {
-          throw new Error("Invalid JSON format for audional content");
-      }
-
-      // Process and place the audio data directly into the pad
-      placeAudioData(jsonData.audioData, iframe);
-
-      // Optionally, process and place image data if exists
-      if (jsonData.imageData) {
-          placeImageData(jsonData.imageData, iframe);
-      }
-
-      console.log("JSON content processed successfully");
-      loadButton.classList.add('hidden'); // Hide load button upon successful loading
-  } catch (error) {
-      console.error('Error:', error);
-      alert("There was an issue loading the JSON content.");
-      loadButton.classList.remove('hidden'); // Show load button again upon failure
-  }
-}
-
-function isValidAudionalJSON(jsonData) {
-  return jsonData.protocol === "audional" && jsonData.operation === "deploy" && jsonData.audioData;
-}
-
-function placeAudioData(audioData, iframe) {
-  // Custom logic to place audio data into the pad
-  console.log("Placing audio data into the pad...");
-  // Example implementation might involve decoding the base64 audio data and attaching it to an audio element
-}
-
-function placeImageData(imageData, iframe) {
-  // Custom logic to place image data into the pad
-  console.log("Placing image data into the pad...");
-  // Example implementation might involve decoding the base64 image data and displaying it alongside the audio
-}
-
-
-function dataURLtoBlob(dataURL) {
-  const [metadata, content] = dataURL.split(',');
-  const byteString = atob(content);
-  const mimeString = metadata.split(':')[1].split(';')[0];
-  const ab = new ArrayBuffer(byteString.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-  }
-  return new Blob([ab], {type: mimeString});
-}
-
-   
-
-// Function to manage content loading with visibility control for the load button
-function manageContentLoading(iframe, url, loadButton) {
-  fetch(url)
-    .then(response => {
-      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-      return response.text();
-    })
-    .then(html => {
-      const blob = new Blob([html], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-      iframe.src = blobUrl;
-      iframe.onload = () => {
-        URL.revokeObjectURL(blobUrl);
-        // Hide the load button once content is successfully loaded
-        if (loadButton) {
-          loadButton.classList.add('hidden');
-        }
-      };
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert("There was an issue loading the content.");
-      // Show the load button again if content loading fails
-      if (loadButton) {
-        loadButton.classList.remove('hidden');
-      }
-    });
-}
