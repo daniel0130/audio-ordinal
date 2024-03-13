@@ -6,72 +6,85 @@ document.getElementById('fileInput').addEventListener('change', async function(e
     fileReader.onload = async function(event) {
         try {
             const fileContent = event.target.result;
+            
+            // Attempt to parse the JSON data and validate it
             const projectData = JSON.parse(fileContent);
-            const iframes = document.querySelectorAll('iframe');
+            if (!Array.isArray(projectData) || !projectData.every(detail => 'url' in detail && 'speed' in detail && 'action' in detail && 'times' in detail)) {
+                throw new Error("Invalid JSON format: Missing required properties");
+            }
 
-            // Store iframes in an array for performance
+            const iframes = document.querySelectorAll('iframe');
             const iframeArray = Array.from(iframes);
 
+            // Initialize window.iframeSettings if not already initialized
+            window.iframeSettings = window.iframeSettings || {};
+
             projectData.forEach((detail, index) => {
-                const iframeId = `iframe-${index}`;
-                const iframe = iframeArray[index];
-                
-                // Initialize window.iframeSettings for the current iframe
-                window.iframeSettings = window.iframeSettings || {};
-                window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
-
-                if (detail && iframe) {
-                    const src = `https://ordinals.com/content/${detail.url}`;
-                    iframe.src = src; // Trigger load
-
-                    // Update settings
-                    if (detail.speed !== undefined) {
-                        window.iframeSettings[iframeId].speed = detail.speed;
-                    }
-                    if (detail.action !== undefined && detail.times !== undefined) {
-                        window.iframeSettings[iframeId].action = detail.action;
-                        window.iframeSettings[iframeId].times = detail.times;
-                    }
+                if (index >= iframeArray.length) {
+                    console.warn(`No iframe available for index ${index}. Skipping settings application.`);
+                    return; // Skip if there are more settings than iframes
                 }
+
+                const iframe = iframeArray[index];
+                const iframeId = iframe.id || `iframe-${index}`;
+                iframe.id = iframeId; // Ensure iframe has an ID
+
+                window.iframeSettings[iframeId] = {
+                    url: `https://ordinals.com/content/${detail.url}`,
+                    speed: detail.speed,
+                    action: detail.action,
+                    times: detail.times
+                };
+
+                iframe.src = window.iframeSettings[iframeId].url; // Trigger iframe to load new content
             });
 
-            // Wait for all iframes to load before applying settings
-            await Promise.all(iframeArray.map(iframe => new Promise(resolve => iframe.onload = resolve)));
+            console.log("[loadSettings] Loading iframe content based on project data...");
 
-            // Apply settings
+            await Promise.all(iframeArray.slice(0, projectData.length).map(iframe => 
+                new Promise(resolve => {
+                    iframe.onload = () => {
+                        console.log(`[loadSettings] iframe ${iframe.id} loaded.`);
+                        resolve();
+                    };
+                    iframe.onerror = (error) => {
+                        console.error(`[loadSettings] Failed to load content for iframe ${iframe.id}:`, error);
+                        resolve(); // Resolve to continue despite the error
+                    };
+                })
+            ));
+
+            // Apply additional settings post-load
             iframeArray.forEach(iframe => {
                 const iframeId = iframe.id;
                 const settings = window.iframeSettings[iframeId];
-                if (!settings) return; // Skip if settings are not found
+                if (!settings) return;
 
-                // Apply play speed setting
                 if (settings.speed !== undefined) {
                     const speedMessage = { type: "playAtSpeed", data: { speed: settings.speed }};
                     iframe.contentWindow.postMessage(speedMessage, '*');
                 }
 
-                // Apply schedule multiplier adjustments based on the action and times
                 if (settings.action !== undefined && settings.times !== undefined) {
                     for (let i = 0; i < settings.times; i++) {
                         const messageData = { type: settings.action };
                         iframe.contentWindow.postMessage(messageData, '*');
                     }
-                    console.log(`[loadSettings] Applied URL for iframe-${iframe.id.split('-')[1]}:`, iframe.src);
+                    console.log(`[loadSettings] Applied settings for iframe-${iframe.id}: speed=${settings.speed}, action=${settings.action}, times=${settings.times}`);
                 }
-                console.log(`[loadSettings] DEBUG Applying settings for iframe ${iframe.id}:`, window.iframeSettings[iframe.id]);
-
             });
 
+            // After all settings have been applied successfully
             console.log("All settings loaded and applied successfully.");
+
+            // Additional log to show the current state of window.iframeSettings
+            console.log("[loadSettings] Final state of window.iframeSettings:", JSON.stringify(window.iframeSettings, null, 2));
 
         } catch (e) {
             console.error("Failed to load project data:", e);
         }
-        console.log("[loadSettings] DEBUG Settings loaded and applied from file:", window.iframeSettings);
-
     };
 
     fileReader.readAsText(event.target.files[0]);
-    console.log("[loadSettings] DEBUG After loading, iframeSettings:", JSON.stringify(window.iframeSettings));
-
 }, false);
+
