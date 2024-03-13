@@ -7,25 +7,42 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
             const projectData = JSON.parse(event.target.result);
             const iframes = document.querySelectorAll('iframe');
 
-            projectData.forEach((detail, index) => {
-                const iframe = iframes.length > index ? iframes[index] : null;
-                if (!iframe) return;
-
-                const fullURL = `https://ordinals.com/content/${detail.url}`;
-                iframe.onload = function() {
-                    const speed = parseFloat(detail.speed);
-                    const speedMessage = { type: "playAtSpeed", data: { speed } };
-                    iframe.contentWindow.postMessage(speedMessage, '*');
-
-                    // Handle schedule multiplier adjustments similarly, ensuring timing
-                    console.log(`Set playback speed for ${iframe.id} to ${speed}x.`);
-                };
-
-                // Trigger the iframe load event by setting src
-                iframe.src = fullURL;
+            // Wait for all iframes to load before applying settings
+            const loadPromises = Array.from(iframes).map((iframe, index) => {
+                return new Promise((resolve) => {
+                    iframe.onload = resolve;
+                    const detail = projectData.length > index ? projectData[index] : null;
+                    if (detail) {
+                        const src = `https://ordinals.com/content/${detail.url}`; // Reconstruct the full URL
+                        iframe.src = src; // Trigger load
+                    }
+                });
             });
 
-            console.log("URLs and settings loaded successfully.");
+            await Promise.all(loadPromises);
+
+            // After all iframes have loaded, apply play speed and schedule multiplier settings
+            projectData.forEach((detail, index) => {
+                const iframe = iframes[index];
+                if (!iframe || !detail) return;
+
+                // Apply play speed setting
+                const speed = parseFloat(detail.speed);
+                const speedMessage = { type: "playAtSpeed", data: { speed }};
+                iframe.contentWindow.postMessage(speedMessage, '*');
+
+                // Apply schedule multiplier adjustments
+                const actionType = detail.action; // "increaseScheduleMultiplier" or "decreaseScheduleMultiplier"
+                const repetitions = detail.times;
+                for (let i = 0; i < repetitions; i++) {
+                    const messageData = { type: actionType };
+                    iframe.contentWindow.postMessage(messageData, '*');
+                }
+
+                console.log(`Settings applied for ${iframe.id}: Speed set to ${speed}.`);
+            });
+
+            console.log("All settings loaded successfully.");
 
         } catch (e) {
             console.error("Failed to load project data:", e);
@@ -33,7 +50,6 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
     };
     fileReader.readAsText(event.target.files[0]);
 }, false);
-
 
 
 // // This function needs to be defined to simulate the adjustments based on the available commands
