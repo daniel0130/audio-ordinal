@@ -212,12 +212,13 @@ function randomizeSamplesAndLoad() {
     const iframe = iframes[iframeIndex];
     const loadButton = document.querySelectorAll('.load-button')[iframeIndex];
 
-    // Update the global iframeSettings object with the new URL
-    window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
-    window.iframeSettings[iframe.id].url = url; // Store the new URL in the global settings object
-
-    return manageContentLoadingPromise(iframe, url, loadButton);
-  });
+    // Move settings update to inside the promise resolution
+      return manageContentLoadingPromise(iframe, url, loadButton).then(() => {
+        // Now update the global iframeSettings object with the new URL
+        window.iframeSettings[iframe.id].url = url; // Store the new URL in the global settings object after successful load
+        console.log(`Content loaded and settings updated for ${iframe.id}`);
+      });
+    });
 
   // Wait for all iframes to load their content, then proceed with further randomization
   Promise.all(loadPromises).then(() => {
