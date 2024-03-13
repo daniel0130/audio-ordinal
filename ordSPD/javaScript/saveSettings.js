@@ -4,6 +4,8 @@ window.iframeSettings = window.iframeSettings || {};
 
 // Assuming iframeValueTracker is defined and available in the scope
 export function exportIframeDetailsToJSON() {
+    console.log("[saveSettings] Preparing to save settings:", window.iframeSettings);
+
     // Utilize the global iframeSettings for exporting
     const iframeDetails = Object.keys(window.iframeSettings).map(id => {
         const settings = window.iframeSettings[id]; // Directly access the settings
@@ -22,6 +24,9 @@ export function exportIframeDetailsToJSON() {
     });
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
+
+    console.log("[saveSettings] DEBUG JSON string of iframe settings:", dataStr);
+
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
     downloadAnchorNode.setAttribute("download", "iframeDetails.json");
@@ -32,8 +37,10 @@ export function exportIframeDetailsToJSON() {
 
 
 document.getElementById('saveSettingsButton').addEventListener('click', function() {
+    console.log("[saveSettings] Before saving again, iframeSettings:", JSON.stringify(window.iframeSettings));
     exportIframeDetailsToJSON(); // Use the updated function to export settings
 });
+
 
 
 

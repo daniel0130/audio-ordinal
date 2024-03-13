@@ -65,6 +65,7 @@ function deselectAllIframes() {
 }
 
 export function createIframes() {
+
     const container = document.querySelector('.grid-container');
 
     for (let i = 0; i < numberOfIframes; i++) {
@@ -76,6 +77,8 @@ export function createIframes() {
         wrapper.appendChild(loadButton);
         container.appendChild(wrapper);
     }
+    console.log("[IframeManager] DEBUG All iframes created. Initial settings:", window.iframeSettings);
+
     preloadContent(); // Preload content after creating iframes
 }
 

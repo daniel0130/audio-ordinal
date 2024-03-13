@@ -56,45 +56,22 @@ document.getElementById('fileInput').addEventListener('change', async function(e
                         const messageData = { type: settings.action };
                         iframe.contentWindow.postMessage(messageData, '*');
                     }
+                    console.log(`[loadSettings] Applied URL for iframe-${iframe.id.split('-')[1]}:`, iframe.src);
                 }
+                console.log(`[loadSettings] DEBUG Applying settings for iframe ${iframe.id}:`, window.iframeSettings[iframe.id]);
+
             });
 
             console.log("All settings loaded and applied successfully.");
+
         } catch (e) {
             console.error("Failed to load project data:", e);
         }
+        console.log("[loadSettings] DEBUG Settings loaded and applied from file:", window.iframeSettings);
+
     };
 
     fileReader.readAsText(event.target.files[0]);
+    console.log("[loadSettings] DEBUG After loading, iframeSettings:", JSON.stringify(window.iframeSettings));
+
 }, false);
-
-
-// // This function needs to be defined to simulate the adjustments based on the available commands
-// function adjustSettingsForIframe(iframe, settings, callback) {
-//     // Example of how you might simulate increasing the volume
-//     // This is a placeholder and needs to be replaced with actual logic
-//     // that sends the right messages to the iframe based on the settings
-//     console.log(`Adjusting settings for ${iframe.id}...`);
-    
-//     // Implement logic to send messages to iframe here
-//     // For example, to increase volume, send 'increaseVolume' messages as needed
-//     // Remember to use a delay between messages to give the iframe time to process each one
-
-//     // Call callback once all settings are adjusted
-//     // This is important for the sequential update process to continue
-//     setTimeout(callback, 1000); // Placeholder delay
-// }
-
-// function updateSettingsSequentially(index, projectData) {
-//     if (index >= iframes.length) return; // All iframes updated
-
-//     let iframe = iframes[index];
-//     let settings = projectData[index].settings;
-
-//     // Adjust settings for the iframe
-//     adjustSettingsForIframe(iframe, settings, () => {
-//         // Callback function after settings are adjusted
-//         console.log(`Settings applied for ${iframe.id}.`);
-//         updateSettingsSequentially(index + 1, projectData); // Proceed to next iframe
-//     });
-// }
