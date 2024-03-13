@@ -1,54 +1,57 @@
 // loadSettings.js
 
-document.getElementById('fileInput').addEventListener('change', function(event) {
+document.getElementById('fileInput').addEventListener('change', async function(event) {
     const fileReader = new FileReader();
+
     fileReader.onload = async function(event) {
         try {
-            const projectData = JSON.parse(event.target.result);
+            const fileContent = event.target.result;
+            const projectData = JSON.parse(fileContent);
             const iframes = document.querySelectorAll('iframe');
-            
-            // Initialize or update window.iframeSettings for each iframe based on the loaded project data
+
+            // Store iframes in an array for performance
+            const iframeArray = Array.from(iframes);
+
             projectData.forEach((detail, index) => {
-                const iframeId = `iframe-${index}`; // Assuming iframe IDs follow this pattern
+                const iframeId = `iframe-${index}`;
+                const iframe = iframeArray[index];
+                
+                // Initialize window.iframeSettings for the current iframe
                 window.iframeSettings = window.iframeSettings || {};
                 window.iframeSettings[iframeId] = window.iframeSettings[iframeId] || {};
 
-                // Update global settings object with loaded settings
-                if(detail.speed !== undefined) window.iframeSettings[iframeId].speed = detail.speed;
-                if(detail.action !== undefined && detail.times !== undefined) {
-                    window.iframeSettings[iframeId].action = detail.action;
-                    window.iframeSettings[iframeId].times = detail.times;
+                if (detail && iframe) {
+                    const src = `https://ordinals.com/content/${detail.url}`;
+                    iframe.src = src; // Trigger load
+
+                    // Update settings
+                    if (detail.speed !== undefined) {
+                        window.iframeSettings[iframeId].speed = detail.speed;
+                    }
+                    if (detail.action !== undefined && detail.times !== undefined) {
+                        window.iframeSettings[iframeId].action = detail.action;
+                        window.iframeSettings[iframeId].times = detail.times;
+                    }
                 }
             });
 
             // Wait for all iframes to load before applying settings
-            const loadPromises = Array.from(iframes).map((iframe, index) => {
-                return new Promise((resolve) => {
-                    iframe.onload = resolve;
-                    const detail = projectData.length > index ? projectData[index] : null;
-                    if (detail) {
-                        const src = `https://ordinals.com/content/${detail.url}`; // Assume the URL needs to be reconstructed
-                        iframe.src = src; // Trigger load
-                    }
-                });
-            });
+            await Promise.all(iframeArray.map(iframe => new Promise(resolve => iframe.onload = resolve)));
 
-            await Promise.all(loadPromises);
-
-            // Apply settings from window.iframeSettings now that iframes have loaded
-            Object.keys(window.iframeSettings).forEach(iframeId => {
-                const iframe = document.getElementById(iframeId);
-                if (!iframe) return; // Skip if iframe does not exist
-
+            // Apply settings
+            iframeArray.forEach(iframe => {
+                const iframeId = iframe.id;
                 const settings = window.iframeSettings[iframeId];
+                if (!settings) return; // Skip if settings are not found
+
                 // Apply play speed setting
-                if(settings.speed !== undefined) {
+                if (settings.speed !== undefined) {
                     const speedMessage = { type: "playAtSpeed", data: { speed: settings.speed }};
                     iframe.contentWindow.postMessage(speedMessage, '*');
                 }
 
                 // Apply schedule multiplier adjustments based on the action and times
-                if(settings.action !== undefined && settings.times !== undefined) {
+                if (settings.action !== undefined && settings.times !== undefined) {
                     for (let i = 0; i < settings.times; i++) {
                         const messageData = { type: settings.action };
                         iframe.contentWindow.postMessage(messageData, '*');
@@ -57,11 +60,11 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
             });
 
             console.log("All settings loaded and applied successfully.");
-
         } catch (e) {
             console.error("Failed to load project data:", e);
         }
     };
+
     fileReader.readAsText(event.target.files[0]);
 }, false);
 

@@ -29,7 +29,7 @@ export function preloadContent() {
   };
 
   // Initialize global settings object if it doesn't exist
-  window.iframeSettings = window.iframeSettings || {};
+  // window.iframeSettings = window.iframeSettings || {};
 
   // Limit the iteration up to the number of URLs available
   const urlsToLoad = Math.min(iframes.length, preloadUrls.length);
