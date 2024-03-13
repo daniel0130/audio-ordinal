@@ -82,25 +82,28 @@ function placeImageData(imageData, iframe) {
 }
 
 // Modified manageContentLoading to return a Promise for asynchronous operations
+// Modified manageContentLoading to return a Promise
 export function manageContentLoadingPromise(iframe, url, loadButton) {
     return new Promise((resolve, reject) => {
-        fetchWithRetry(url) // Use fetchWithRetry instead of direct fetch
-            .then(response => response.text())
-            .then(html => {
-                const blob = new Blob([html], { type: 'text/html' });
-                const blobUrl = URL.createObjectURL(blob);
-                iframe.src = blobUrl;
-                iframe.onload = () => {
-                    URL.revokeObjectURL(blobUrl);
-                    if (loadButton) loadButton.classList.add('hidden');
-                    resolve(); // Resolve the promise when content is successfully loaded
-                };
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if (loadButton) loadButton.classList.remove('hidden');
-                reject(error); // Reject the promise if loading fails
-            });
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+          return response.text();
+        })
+        .then(html => {
+          const blob = new Blob([html], { type: 'text/html' });
+          const blobUrl = URL.createObjectURL(blob);
+          iframe.src = blobUrl;
+          iframe.onload = () => {
+            URL.revokeObjectURL(blobUrl);
+            if (loadButton) loadButton.classList.add('hidden');
+            resolve(); // Resolve the promise when content is successfully loaded
+          };
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          if (loadButton) loadButton.classList.remove('hidden');
+          reject(error); // Reject the promise if loading fails
+        });
     });
-}
-
+  }

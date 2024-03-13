@@ -95,22 +95,22 @@ class IframeValueTracker {
         });
     }
 
-    // New helper method to apply settings via messaging
-    applySettingsThroughMessaging(iframeId, settings) {
-        // Extract settings that need to be communicated
-        const { volume, playbackSpeed, scheduleMultiplier } = settings;
+    // // New helper method to apply settings via messaging
+    // applySettingsThroughMessaging(iframeId, settings) {
+    //     // Extract settings that need to be communicated
+    //     const { volume, playbackSpeed, scheduleMultiplier } = settings;
 
-        // Prepare message data for each setting
-        if (volume !== undefined) {
-            postMessageToSelectedIframes('adjustVolume', { volume }, iframeId);
-        }
-        if (playbackSpeed !== undefined) {
-            postMessageToSelectedIframes('adjustPlaybackSpeed', { speed: playbackSpeed }, iframeId);
-        }
-        if (scheduleMultiplier !== undefined) {
-            postMessageToSelectedIframes('adjustScheduleMultiplier', { scheduleMultiplier }, iframeId);
-        }
-    }
+    //     // Prepare message data for each setting
+    //     if (volume !== undefined) {
+    //         postMessageToSelectedIframes('adjustVolume', { volume }, iframeId);
+    //     }
+    //     if (playbackSpeed !== undefined) {
+    //         postMessageToSelectedIframes('adjustPlaybackSpeed', { speed: playbackSpeed }, iframeId);
+    //     }
+    //     if (scheduleMultiplier !== undefined) {
+    //         postMessageToSelectedIframes('adjustScheduleMultiplier', { scheduleMultiplier }, iframeId);
+    //     }
+    // }
 }
 
 

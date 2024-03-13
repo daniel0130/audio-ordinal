@@ -60,61 +60,6 @@
 }
 
 
-  // Function to manage content loading with visibility control for the load button
-function manageContentLoading(iframe, url, loadButton) {
-  fetch(url)
-    .then(response => {
-      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-      return response.text();
-    })
-    .then(html => {
-      const blob = new Blob([html], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-      iframe.src = blobUrl;
-      iframe.onload = () => {
-        URL.revokeObjectURL(blobUrl);
-        // Hide the load button once content is successfully loaded
-        if (loadButton) {
-          loadButton.classList.add('hidden');
-        }
-      };
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert("There was an issue loading the content.");
-      // Show the load button again if content loading fails
-      if (loadButton) {
-        loadButton.classList.remove('hidden');
-      }
-    });
-}
-
-
-    // Modified manageContentLoading to return a Promise
-    function manageContentLoadingPromise(iframe, url, loadButton) {
-      return new Promise((resolve, reject) => {
-        fetch(url)
-          .then(response => {
-            if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-            return response.text();
-          })
-          .then(html => {
-            const blob = new Blob([html], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
-            iframe.src = blobUrl;
-            iframe.onload = () => {
-              URL.revokeObjectURL(blobUrl);
-              if (loadButton) loadButton.classList.add('hidden');
-              resolve(); // Resolve the promise when content is successfully loaded
-            };
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            if (loadButton) loadButton.classList.remove('hidden');
-            reject(error); // Reject the promise if loading fails
-          });
-      });
-    }
 
 
 async function processJSONContent(url, iframe, loadButton) {
@@ -230,6 +175,11 @@ function placeImageData(imageData, iframe) {
       }
   
       const messageData = { type: "playAtSpeed", data: { speed: randomSpeed } };
+
+      // Update global settings object
+      window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
+      window.iframeSettings[iframe.id].playSpeed = randomSpeed; // Record the playSpeed
+
   
       // Directly post the message to the iframe's contentWindow
       if (iframe.contentWindow) {
@@ -257,6 +207,12 @@ function placeImageData(imageData, iframe) {
       // Post the message the decided number of times
       for (let i = 0; i < repetitions; i++) {
         const messageData = { type: actionType };
+        // Since multiple messages might be posted, consider how to reflect this in settings.
+        // For simplicity, we'll record the actionType and repetitions.
+        window.iframeSettings[iframe.id] = window.iframeSettings[iframe.id] || {};
+        window.iframeSettings[iframe.id].scheduleMultiplierAction = actionType; // Example way to record
+        window.iframeSettings[iframe.id].scheduleMultiplierRepetitions = repetitions; // Record repetitions
+
   
         // Directly post the message to the iframe's contentWindow
         if (iframe.contentWindow) {
@@ -270,3 +226,59 @@ function placeImageData(imageData, iframe) {
   window.randomizeScheduleMultipliers = randomizeScheduleMultipliers;
   
 
+
+  // Function to manage content loading with visibility control for the load button
+  function manageContentLoading(iframe, url, loadButton) {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+        return response.text();
+      })
+      .then(html => {
+        const blob = new Blob([html], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        iframe.src = blobUrl;
+        iframe.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          // Hide the load button once content is successfully loaded
+          if (loadButton) {
+            loadButton.classList.add('hidden');
+          }
+        };
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("There was an issue loading the content.");
+        // Show the load button again if content loading fails
+        if (loadButton) {
+          loadButton.classList.remove('hidden');
+        }
+      });
+  }
+  
+  
+      // Modified manageContentLoading to return a Promise
+      function manageContentLoadingPromise(iframe, url, loadButton) {
+        return new Promise((resolve, reject) => {
+          fetch(url)
+            .then(response => {
+              if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+              return response.text();
+            })
+            .then(html => {
+              const blob = new Blob([html], { type: 'text/html' });
+              const blobUrl = URL.createObjectURL(blob);
+              iframe.src = blobUrl;
+              iframe.onload = () => {
+                URL.revokeObjectURL(blobUrl);
+                if (loadButton) loadButton.classList.add('hidden');
+                resolve(); // Resolve the promise when content is successfully loaded
+              };
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              if (loadButton) loadButton.classList.remove('hidden');
+              reject(error); // Reject the promise if loading fails
+            });
+        });
+      }
