@@ -7,7 +7,11 @@ export function exportIframeDetailsToJSON() {
     // Utilize the global iframeSettings for exporting
     const iframeDetails = Object.keys(window.iframeSettings).map(id => {
         const settings = window.iframeSettings[id]; // Directly access the settings
-        return { id: id, url: settings.url, speed: settings.speed, action: settings.action, times: settings.times };
+
+        // Remove the specified part of the URL and keep only the ID
+        const cleanedUrl = settings.url.replace("https://ordinals.com/content/", "");
+
+        return { id: id, url: cleanedUrl, speed: settings.speed, action: settings.action, times: settings.times };
     });
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
@@ -17,11 +21,12 @@ export function exportIframeDetailsToJSON() {
     document.body.appendChild(downloadAnchorNode); // Required for Firefox
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    }
-    
-    document.getElementById('saveSettingsButton').addEventListener('click', function() {
+}
+
+document.getElementById('saveSettingsButton').addEventListener('click', function() {
     exportIframeDetailsToJSON(); // Use the updated function to export settings
-    });
+});
+
 
 
 

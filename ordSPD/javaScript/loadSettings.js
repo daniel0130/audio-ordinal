@@ -2,22 +2,31 @@
 
 document.getElementById('fileInput').addEventListener('change', function(event) {
     const fileReader = new FileReader();
-    fileReader.onload = async function(event) { // Changed to async function
+    fileReader.onload = async function(event) {
         try {
             const projectData = JSON.parse(event.target.result);
-            // Load URLs into iframes
+            const iframes = document.querySelectorAll('iframe');
+
             projectData.forEach((detail, index) => {
-                iframes[index].src = detail.url;
+                const iframe = iframes.length > index ? iframes[index] : null;
+                if (!iframe) return;
+
+                const fullURL = `https://ordinals.com/content/${detail.url}`;
+                iframe.onload = function() {
+                    const speed = parseFloat(detail.speed);
+                    const speedMessage = { type: "playAtSpeed", data: { speed } };
+                    iframe.contentWindow.postMessage(speedMessage, '*');
+
+                    // Handle schedule multiplier adjustments similarly, ensuring timing
+                    console.log(`Set playback speed for ${iframe.id} to ${speed}x.`);
+                };
+
+                // Trigger the iframe load event by setting src
+                iframe.src = fullURL;
             });
 
-            console.log("URLs loaded successfully.");
+            console.log("URLs and settings loaded successfully.");
 
-            // Wait for URLs to load and then apply settings
-            await Promise.all(iframes.map(iframe => new Promise(resolve => iframe.onload = resolve)));
-            console.log("All iframes have loaded their content.");
-
-            // Sequentially update settings for each iframe
-            updateSettingsSequentially(0, projectData); // Pass projectData to the function
         } catch (e) {
             console.error("Failed to load project data:", e);
         }
@@ -25,32 +34,34 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
     fileReader.readAsText(event.target.files[0]);
 }, false);
 
-// This function needs to be defined to simulate the adjustments based on the available commands
-function adjustSettingsForIframe(iframe, settings, callback) {
-    // Example of how you might simulate increasing the volume
-    // This is a placeholder and needs to be replaced with actual logic
-    // that sends the right messages to the iframe based on the settings
-    console.log(`Adjusting settings for ${iframe.id}...`);
+
+
+// // This function needs to be defined to simulate the adjustments based on the available commands
+// function adjustSettingsForIframe(iframe, settings, callback) {
+//     // Example of how you might simulate increasing the volume
+//     // This is a placeholder and needs to be replaced with actual logic
+//     // that sends the right messages to the iframe based on the settings
+//     console.log(`Adjusting settings for ${iframe.id}...`);
     
-    // Implement logic to send messages to iframe here
-    // For example, to increase volume, send 'increaseVolume' messages as needed
-    // Remember to use a delay between messages to give the iframe time to process each one
+//     // Implement logic to send messages to iframe here
+//     // For example, to increase volume, send 'increaseVolume' messages as needed
+//     // Remember to use a delay between messages to give the iframe time to process each one
 
-    // Call callback once all settings are adjusted
-    // This is important for the sequential update process to continue
-    setTimeout(callback, 1000); // Placeholder delay
-}
+//     // Call callback once all settings are adjusted
+//     // This is important for the sequential update process to continue
+//     setTimeout(callback, 1000); // Placeholder delay
+// }
 
-function updateSettingsSequentially(index, projectData) {
-    if (index >= iframes.length) return; // All iframes updated
+// function updateSettingsSequentially(index, projectData) {
+//     if (index >= iframes.length) return; // All iframes updated
 
-    let iframe = iframes[index];
-    let settings = projectData[index].settings;
+//     let iframe = iframes[index];
+//     let settings = projectData[index].settings;
 
-    // Adjust settings for the iframe
-    adjustSettingsForIframe(iframe, settings, () => {
-        // Callback function after settings are adjusted
-        console.log(`Settings applied for ${iframe.id}.`);
-        updateSettingsSequentially(index + 1, projectData); // Proceed to next iframe
-    });
-}
+//     // Adjust settings for the iframe
+//     adjustSettingsForIframe(iframe, settings, () => {
+//         // Callback function after settings are adjusted
+//         console.log(`Settings applied for ${iframe.id}.`);
+//         updateSettingsSequentially(index + 1, projectData); // Proceed to next iframe
+//     });
+// }
