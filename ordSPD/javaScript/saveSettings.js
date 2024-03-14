@@ -18,8 +18,25 @@ function debounce(func, wait, immediate) {
     };
 }
 
+function isValidSettings(settings) {
+    // Check if 'speed' can be parsed to a number and is within a valid range
+    const speedAsNumber = parseFloat(settings.speed);
+    const isSpeedValid = !isNaN(speedAsNumber) && speedAsNumber > 0;
+
+    // Check if 'times' is an integer and greater than 0
+    const isTimesValid = Number.isInteger(settings.times) && settings.times >= 0;
+
+    // Check if 'action' is a non-empty string
+    const isActionValid = typeof settings.action === 'string' && settings.action.trim() !== '';
+
+    // Add any additional validation logic here for 'volume', 'playbackSpeed', and 'scheduleMultiplier' if needed
+
+    return isSpeedValid && isTimesValid && isActionValid;
+}
+
+
 export function exportIframeDetailsToJSON() {
-    // Check if iframeSettings is populated
+    // Check if iframeSettings is populated and valid
     if (Object.keys(window.iframeSettings).length === 0) {
         console.warn("[saveSettings] iframeSettings is empty or not fully loaded.");
         if (!confirm("iframeSettings appears to be empty. Do you still want to save?")) {
@@ -28,21 +45,30 @@ export function exportIframeDetailsToJSON() {
         }
     }
 
-    console.log("[saveSettings] Preparing to save settings:", window.iframeSettings);
+    console.log("[saveSettings] Preparing to save settings:", JSON.stringify(window.iframeSettings, null, 2));
 
+    const invalidSettings = [];
     const iframeDetails = Object.keys(window.iframeSettings).map(id => {
         const settings = window.iframeSettings[id];
-        const cleanedUrl = settings.url ? settings.url.replace("https://ordinals.com/content/", "") : "placeholder-url";
+        if (!isValidSettings(settings)) {
+            invalidSettings.push(id);
+            return null; // Skip invalid settings
+        }
+        const cleanedUrl = settings.url.replace("https://ordinals.com/content/", "");
         return {
             id: id,
             url: cleanedUrl,
-            speed: settings.speed || 1,
-            action: settings.action || 'none',
-            times: settings.times || 0
+            speed: settings.speed,
+            action: settings.action,
+            times: settings.times
         };
-    });
+    }).filter(Boolean); // Remove any nulls from invalid settings
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails));
+    if (invalidSettings.length > 0) {
+        console.warn("[saveSettings] Found invalid settings for iframes:", invalidSettings.join(", "));
+    }
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(iframeDetails, null, 2));
     console.log("[saveSettings] DEBUG JSON string of iframe settings:", dataStr);
 
     const downloadAnchorNode = document.createElement('a');
@@ -57,9 +83,10 @@ export function exportIframeDetailsToJSON() {
 const debouncedExportIframeDetailsToJSON = debounce(exportIframeDetailsToJSON, 300);
 
 document.getElementById('saveSettingsButton').addEventListener('click', function() {
-    console.log("[saveSettings] Before saving again, iframeSettings:", JSON.stringify(window.iframeSettings));
+    console.log("[saveSettings] Before saving again, iframeSettings:", JSON.stringify(window.iframeSettings, null, 2));
     debouncedExportIframeDetailsToJSON();
 });
+
 
 
     // // Function to update iframe settings in iframeValueTracker
