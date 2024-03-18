@@ -117,84 +117,72 @@
         console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
     
-    // Helper function to process URL
-    async function processURL(url, index, loadSampleButton) {
-        console.log("[HTML Debugging] [processURL] URL: ", url);
-    
-        // Fetch the URL content to check if it's HTML containing audio data
-        try {
-            const response = await fetch(url);
-            const contentType = response.headers.get("Content-Type");
-            console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
-    
-            if (contentType && contentType.includes("text/html")) {
-                console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
-                const htmlText = await response.text();
-                importHTMLSampleData(htmlText, index); // Now calling the updated importHTMLSampleData
-            } else {
-                console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
-                fetchAudio(url, index).catch((error) => {
-                    console.error(`[HTML Debugging] [processURL] fetchAudio encountered an error for channel ${index}:`, error);
-                
-            });
+   // Helper function to process URL
+async function processURL(url, index, loadSampleButton) {
+    console.log("[HTML Debugging] [processURL] URL: ", url);
 
-        }
-            
-        } catch (error) {
-            console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
-        }
-    
-        updateUIAfterLoading(index, loadSampleButton);
-    }
+    try {
+        const response = await fetch(url);
+        const contentType = response.headers.get("Content-Type");
+        console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
 
-    function importHTMLSampleData(htmlContent, index) {
-        console.log("[importHTMLSampleData] Entered function with index: ", index);
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            
-            // Assuming "Audional_Base64_Sample_Text" is a placeholder for a direct container like <div>
-            // and that actual HTML structure may vary. Directly target the <audio> element for robustness.
-            const audioElement = doc.querySelector('audio[data-audionalSampleName]');
-            
-            if (audioElement) {
-                const sourceElement = audioElement.querySelector('source');
-                if (sourceElement) {
-                    const base64AudioData = sourceElement.getAttribute('src');
-                    if (base64AudioData.startsWith('data:audio/wav;base64,')) {
-                        console.log("[importHTMLSampleData] Extracted base64 audio data.");
-                        
-                        // Decode and process the base64 audio data
-                        const audioData = base64ToArrayBuffer(base64AudioData.split(",")[1]); // Ensure to split correctly
-                        decodeAudioData(audioData, index);
-                    } else {
-                        console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.");
-                    }
-                } else {
-                    console.error("[importHTMLSampleData] Could not find the source element in the audio content.");
-                }
-            } else {
-                console.error("[importHTMLSampleData] Could not find the audio element in the HTML content.");
+        if (contentType && contentType.includes("text/html")) {
+            console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
+            const htmlText = await response.text();
+            // Wait for the importHTMLSampleData to process and return the direct audio URL (base64 data)
+            const audioURL = await importHTMLSampleData(htmlText, index);
+            // Process the extracted audio URL as if it was direct audio content
+            if (audioURL) {
+                fetchAudio(audioURL, index);
             }
-        } catch (error) {
-            console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
+        } else {
+            console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
+            fetchAudio(url, index);
         }
+    } catch (error) {
+        console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
     }
+}
+
+async function importHTMLSampleData(htmlContent, index) {
+    console.log("[importHTMLSampleData] Entered function with index: ", index);
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const sourceElement = doc.querySelector('audio[data-audionalSampleName] source');
+
+        if (sourceElement) {
+            const base64AudioData = sourceElement.getAttribute('src');
+            if (base64AudioData.startsWith('data:audio/wav;base64,')) {
+                console.log("[importHTMLSampleData] Extracted base64 audio data.");
+                // Directly return the base64 audio data URL
+                return base64AudioData;
+            } else {
+                console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.");
+            }
+        } else {
+            console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.");
+        }
+    } catch (error) {
+        console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
+    }
+    // Return null in case of errors or if audio data is not found
+    return null;
+}
+
     
 
-    
+    // // Extracted UI update functionalities to keep the code organized
+    // function updateUIAfterLoading(index, loadSampleButton) {
+    //     const channelContainer = document.querySelector(`.channel:nth-child(${index + 1}) .channel-container`);
+    //     if (channelContainer) {
+    //         channelContainer.classList.toggle('ordinal-loaded', true);
+    //         console.log(`[HTML Debugging] [handleLoad] Channel container class toggled for channel ${index}`);
+    //     }
 
-    // Extracted UI update functionalities to keep the code organized
-    function updateUIAfterLoading(index, loadSampleButton) {
-        const channelContainer = document.querySelector(`.channel:nth-child(${index + 1}) .channel-container`);
-        if (channelContainer) {
-            channelContainer.classList.toggle('ordinal-loaded', true);
-            console.log(`[HTML Debugging] [handleLoad] Channel container class toggled for channel ${index}`);
-        }
-
-        updateButtonAfterLoading(index, loadSampleButton);
-        console.log(`[HTML Debugging] [handleLoad] Button text updated for channel ${index}`);
-    }
+    //     updateButtonAfterLoading(index, loadSampleButton);
+    //     console.log(`[HTML Debugging] [handleLoad] Button text updated for channel ${index}`);
+    // }
 
     // Helper function to update button text after loading a sample
     function updateButtonAfterLoading(channelIndex, button) {
