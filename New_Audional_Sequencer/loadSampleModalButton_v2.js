@@ -133,9 +133,12 @@
                 importHTMLSampleData(htmlText, index); // Now calling the updated importHTMLSampleData
             } else {
                 console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
-                fetchAudio(url, index);
-                console.error(`[HTML Debugging] [processURL] fetchAudio encountered an error for channel ${index}:`, error);
-                }
+                fetchAudio(url, index).catch((error) => {
+                    console.error(`[HTML Debugging] [processURL] fetchAudio encountered an error for channel ${index}:`, error);
+                
+            });
+
+        }
             
         } catch (error) {
             console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
@@ -149,24 +152,35 @@
         try {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlContent, 'text/html');
-            // Directly select the <source> element within <Audional_Base64_Sample_Text>
-            const sourceElement = doc.querySelector('Audional_Base64_Sample_Text audio source');
             
-            if (sourceElement) {
-                const base64AudioData = sourceElement.getAttribute('src');
-                console.log("[importHTMLSampleData] Extracted base64 audio data.");
-                
-                // Decode and process the base64 audio data
-                const audioData = base64ToArrayBuffer(base64AudioData.split(",")[1]); // Split and decode base64
-                // Assuming decodeAudioData and other relevant audio processing functions are available
-                decodeAudioData(audioData, index);
+            // Assuming "Audional_Base64_Sample_Text" is a placeholder for a direct container like <div>
+            // and that actual HTML structure may vary. Directly target the <audio> element for robustness.
+            const audioElement = doc.querySelector('audio[data-audionalSampleName]');
+            
+            if (audioElement) {
+                const sourceElement = audioElement.querySelector('source');
+                if (sourceElement) {
+                    const base64AudioData = sourceElement.getAttribute('src');
+                    if (base64AudioData.startsWith('data:audio/wav;base64,')) {
+                        console.log("[importHTMLSampleData] Extracted base64 audio data.");
+                        
+                        // Decode and process the base64 audio data
+                        const audioData = base64ToArrayBuffer(base64AudioData.split(",")[1]); // Ensure to split correctly
+                        decodeAudioData(audioData, index);
+                    } else {
+                        console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.");
+                    }
+                } else {
+                    console.error("[importHTMLSampleData] Could not find the source element in the audio content.");
+                }
             } else {
-                console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.");
+                console.error("[importHTMLSampleData] Could not find the audio element in the HTML content.");
             }
         } catch (error) {
             console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
         }
     }
+    
 
     
 
