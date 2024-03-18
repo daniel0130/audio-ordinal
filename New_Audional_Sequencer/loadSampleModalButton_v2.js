@@ -95,44 +95,99 @@
     
 
     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
-
+        console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
         let url;
-        console.log(`handleLoad called with index: ${index}, url: ${url}`);
-
+    
         if (audionalInput.value) {
-            url = 'https://ordinals.com/content/' + getIDFromURL(audionalInput.value);
+            // Assume the value is an ordinal ID and construct the URL
+            url = 'https://ordinals.com/content/' + audionalInput.value;
+            console.log(`[handleLoad] Ordinal ID URL determined: ${url}`);
         } else if (ipfsInput.value) {
             url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+            console.log(`[handleLoad] IPFS URL determined: ${url}`);
+        } else {
+            console.log("[HTML Debugging] [handleLoad] No input value found.");
         }
     
         if (url) {
-            // Update the URL in the global settings object at the specific channel index
-            console.log("Before updateSetting:", window.unifiedSequencerSettings.settings.masterSettings.projectURLs);
-            window.unifiedSequencerSettings.updateSetting('projectURLs', url, index);
-            console.log("After updateSetting:", window.unifiedSequencerSettings.settings.masterSettings.projectURLs);
-            // Fetch and load the audio
-            fetchAudio(url, index, loadSampleButton);
-            console.log(`Fetched audio for channel ${index}`); // Debug log
-            // Update the class of the channel container
-            const channelContainer = document.querySelector(`.channel:nth-child(${index}) .channel-container`);
-            if (channelContainer) {
-                channelContainer.classList.toggle('ordinal-loaded', audionalInput.value !== undefined);
-                console.log(`Updated channelContainer class for channel ${index}`); // Debug log
-    
-                updateButtonAfterLoading(index, loadSampleButton); // Call the helper function
-                console.log(`Updated button text for channel ${index}`); // Debug log
-            }
+            processURL(url, index, loadSampleButton);
         }
+    
         document.body.removeChild(idModal);
-        console.log(`Removed modal for channel ${index}`); // Debug log
+        console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
     
+    // Helper function to process URL
+    async function processURL(url, index, loadSampleButton) {
+        console.log("[HTML Debugging] [processURL] URL: ", url);
+    
+        // Fetch the URL content to check if it's HTML containing audio data
+        try {
+            const response = await fetch(url);
+            const contentType = response.headers.get("Content-Type");
+            console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
+    
+            if (contentType && contentType.includes("text/html")) {
+                console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
+                const htmlText = await response.text();
+                importHTMLSampleData(htmlText, index); // Now calling the updated importHTMLSampleData
+            } else {
+                console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
+                fetchAudio(url, index);
+                console.error(`[HTML Debugging] [processURL] fetchAudio encountered an error for channel ${index}:`, error);
+                }
+            
+        } catch (error) {
+            console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
+        }
+    
+        updateUIAfterLoading(index, loadSampleButton);
+    }
+
+    function importHTMLSampleData(htmlContent, index) {
+        console.log("[importHTMLSampleData] Entered function with index: ", index);
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            // Directly select the <source> element within <Audional_Base64_Sample_Text>
+            const sourceElement = doc.querySelector('Audional_Base64_Sample_Text audio source');
+            
+            if (sourceElement) {
+                const base64AudioData = sourceElement.getAttribute('src');
+                console.log("[importHTMLSampleData] Extracted base64 audio data.");
+                
+                // Decode and process the base64 audio data
+                const audioData = base64ToArrayBuffer(base64AudioData.split(",")[1]); // Split and decode base64
+                // Assuming decodeAudioData and other relevant audio processing functions are available
+                decodeAudioData(audioData, index);
+            } else {
+                console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.");
+            }
+        } catch (error) {
+            console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
+        }
+    }
+
+    
+
+    // Extracted UI update functionalities to keep the code organized
+    function updateUIAfterLoading(index, loadSampleButton) {
+        const channelContainer = document.querySelector(`.channel:nth-child(${index + 1}) .channel-container`);
+        if (channelContainer) {
+            channelContainer.classList.toggle('ordinal-loaded', true);
+            console.log(`[HTML Debugging] [handleLoad] Channel container class toggled for channel ${index}`);
+        }
+
+        updateButtonAfterLoading(index, loadSampleButton);
+        console.log(`[HTML Debugging] [handleLoad] Button text updated for channel ${index}`);
+    }
+
     // Helper function to update button text after loading a sample
     function updateButtonAfterLoading(channelIndex, button) {
         if (window.unifiedSequencerSettings && typeof window.unifiedSequencerSettings.updateLoadSampleButtonText === 'function') {
             window.unifiedSequencerSettings.updateLoadSampleButtonText(channelIndex, button);
         }
-        console.log(`Updated button text for channel ${channelIndex}`); // Debug log
+        console.log(`[HTML Debugging] Updated button text for channel ${channelIndex}`); // Debug log
     }
 
 
