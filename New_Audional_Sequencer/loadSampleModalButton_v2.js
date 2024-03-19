@@ -153,7 +153,8 @@ async function importHTMLSampleData(htmlContent, index) {
 
         if (sourceElement) {
             const base64AudioData = sourceElement.getAttribute('src');
-            if (base64AudioData.startsWith('data:audio/wav;base64,')) {
+            // Convert the prefix to lowercase before checking
+            if (base64AudioData.toLowerCase().startsWith('data:audio/wav;base64,') || base64AudioData.toLowerCase().startsWith('data:audio/mp3;base64,')) {
                 console.log("[importHTMLSampleData] Extracted base64 audio data.");
                 // Directly return the base64 audio data URL
                 return base64AudioData;
@@ -169,6 +170,7 @@ async function importHTMLSampleData(htmlContent, index) {
     // Return null in case of errors or if audio data is not found
     return null;
 }
+
 
     
 
