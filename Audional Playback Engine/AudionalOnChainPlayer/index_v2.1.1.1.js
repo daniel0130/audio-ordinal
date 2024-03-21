@@ -106,33 +106,44 @@ const playAudio = async () => {
         customLog("No valid sequence data available. Cannot play audio.", true);
         return;
     }
-    const { projectURLs, projectSequences, projectBPM, trimSettings } = sequenceData;
-    BPM = projectBPM;
-    console.log(`Master Settings: BPM=${BPM}, Channels=${projectURLs.length}`);
+    BPM = sequenceData.projectBPM;
+
     stopAudio();
+    // Reset cumulativeOffset at the beginning of playAudio
     cumulativeOffset = 0;
 
-    const audioBuffers = await Promise.all(projectURLs.map(loadAudioFile));
+    const audioBuffers = await Promise.all(sequenceData.projectURLs.map(loadAudioFile));
     if (!audioBuffers.some(buffer => buffer)) {
         customLog("No valid audio data available for any channel. Cannot play audio.", true);
         return;
     }
 
-    Object.entries(projectSequences).forEach(([sequenceName, channels]) => {
+    let totalDuration = 0; // Initialize total duration of all sequences
+
+    Object.entries(sequenceData.projectSequences).forEach(([sequenceName, channels], sequenceIndex) => {
         const sequenceDuration = 64 * calculateStepTime();
+        totalDuration += sequenceDuration; // Accumulate total duration
 
         Object.entries(channels).forEach(([channelName, channelData], channelIndex) => {
-            const { steps } = channelData, audioBuffer = audioBuffers[channelIndex], trimSetting = trimSettings ? trimSettings[channelIndex] : undefined;
+            const { steps } = channelData, audioBuffer = audioBuffers[channelIndex], trimSetting = sequenceData.trimSettings ? sequenceData.trimSettings[channelIndex] : undefined;
             if (audioBuffer && steps) steps.forEach((active, stepIndex) => {
                 if (active) schedulePlaybackForStep(audioBuffer, trimSetting, stepIndex, channelIndex);
             });
         });
 
         cumulativeOffset += sequenceDuration;
+
+        // Adjust cumulativeOffset for looping at the end of the last sequence
+        if (sequenceIndex === Object.keys(sequenceData.projectSequences).length - 1) {
+            cumulativeOffset = -totalDuration;
+        }
     });
 
     isStoppedManually = false;
 };
+
+
+
 
 const stopAudio = () => {
     activeSources.forEach(source => {
