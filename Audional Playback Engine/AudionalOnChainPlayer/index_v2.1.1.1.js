@@ -98,6 +98,8 @@ const playAudio = async () => {
         customLog("No valid sequence data available. Cannot play audio.", true);
         return;
     }
+    isStoppedManually = false; // Ensure this flag is correctly managed in your logic
+    isLooping = true;
     BPM = sequenceData.projectBPM;
 
     // This time, we won't stop audio but rather allow sequences to overlap slightly during the loop transition
@@ -170,10 +172,11 @@ const stopAudio = () => {
         clearTimeout(loopTimeoutId); // Clear the loop scheduling timeout
         loopTimeoutId = null; // Reset the reference
     }
-    
+
     channelPlaybackBroadcast.postMessage({ action: "stop" });
 
     isStoppedManually = true; // Ensure this flag is correctly managed in your logic
+    isLooping = false;
     // Consider toggling isLooping as necessary based on your app's needs
 };
 
