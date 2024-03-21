@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f3f3;
+        }
+        .controls {
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #stopButton {
+            background-color: #f44336;
+        }
+        #stopButton:hover {
+            background-color: #e53935;
+        }
+        #fileInput {
+            margin: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="file" id="fileInput" accept=".json">
+        <br>
+        <button id="playButton">Play</button>
+        <button id="stopButton">Stop</button>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Assuming sequenceData is a global variable in your script
+                sequenceData = JSON.parse(e.target.result);
+                // You can call any function here to initialize audio after loading JSON
+            };
+            reader.readAsText(file);
+        });
+
+        // Your existing JavaScript code goes here...
+    </script>
+    <script src="loadJsonFromLocal.js"></script>
+    <script src="index_v2.1.1.1.js"></script>
+</body>
+</html>
