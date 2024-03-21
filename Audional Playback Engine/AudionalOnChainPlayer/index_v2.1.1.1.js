@@ -3,6 +3,8 @@
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 if (!audioContext) alert('Web Audio API is not supported in this browser');
 
+const channelPlaybackBroadcast = new BroadcastChannel('channel_playback');
+
 
 const activeTimeouts = new Set();
 let audioBuffersCache = []; // Cache for audio buffers
@@ -145,6 +147,7 @@ const schedulePlaybackForStep = (audioBuffer, trimSettings, playbackTime, channe
     const timeoutId = setTimeout(() => {
         console.log(`Playing sequence ${sequenceIndex} channel ${channelIndex} step ${stepIndex}`);
         document.dispatchEvent(new CustomEvent('channelPlaybackStarted', { detail: { sequenceIndex, channelIndex, stepIndex } }));
+        channelPlaybackBroadcast.postMessage({ sequenceIndex, channelIndex, stepIndex });
     }, delayUntilPlayback);
 
     activeTimeouts.add(timeoutId);
@@ -167,6 +170,8 @@ const stopAudio = () => {
         clearTimeout(loopTimeoutId); // Clear the loop scheduling timeout
         loopTimeoutId = null; // Reset the reference
     }
+    
+    channelPlaybackBroadcast.postMessage({ action: "stop" });
 
     isStoppedManually = true; // Ensure this flag is correctly managed in your logic
     // Consider toggling isLooping as necessary based on your app's needs
