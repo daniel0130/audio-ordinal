@@ -2,34 +2,15 @@
 
 const activeTimeouts = new Set();
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
+let audioBuffersCache = []; // Cache for audio buffers
+let isInitialPlay = true; // Flag to check if it's the initial play
 if (!audioContext) alert('Web Audio API is not supported in this browser');
 
 
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        // Assuming sequenceData is a global variable in your script
-        sequenceData = JSON.parse(e.target.result);
-
-        // New logic to log master settings as soon as the file is loaded
-        if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
-            console.error("No valid sequence data available. Cannot play audio.");
-            return;
-        }
-        const totalSequences = Object.keys(sequenceData.projectSequences).length;
-        console.log(`Master Settings: BPM=${sequenceData.projectBPM}, Channels=${sequenceData.projectURLs.length}, Total Sequences=${totalSequences}`);
-
-        // Initialize audio or validate sequence data here if needed
-    };
-    reader.readAsText(file);
-});
 
 
 let BPM, isLooping = true, isStoppedManually = false, cumulativeOffset = 0, sequenceData;
 const activeSources = new Set();
-const audioBuffersCache = {}; // Caching decoded audio buffers
 
 const customLog = (message, isError = false) => {
     console[isError ? 'error' : 'log'](message);
@@ -98,28 +79,13 @@ const createAndStartAudioSource = (audioBuffer, trimSettings, playbackTime, chan
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
-    source.start(audioContext.currentTime + playbackTime + cumulativeOffset, startTime, duration);
+    
+    // Adjust playbackTime to ensure seamless looping
+    const scheduledStartTime = audioContext.currentTime + playbackTime + cumulativeOffset;
+    source.start(scheduledStartTime, startTime, duration);
 
-    source.onended = () => {
-        activeSources.delete(source);
-        if (activeSources.size === 0 && isLooping && !isStoppedManually) {
-            playAudio();
-        }
-    };
-    activeSources.add(source);
-};
-
-const schedulePlaybackForStep = (audioBuffer, trimSettings, stepIndex, channelIndex) => {
-    const playbackTime = stepIndex * calculateStepTime();
-    createAndStartAudioSource(audioBuffer, trimSettings, playbackTime, channelIndex);
-    const delayUntilPlayback = (audioContext.currentTime + playbackTime + cumulativeOffset - audioContext.currentTime) * 1000;
-
-    const timeoutId = setTimeout(() => {
-        console.log(`Playing channel ${channelIndex} step ${stepIndex}`);
-        document.dispatchEvent(new CustomEvent('channelPlaybackStarted', { detail: { channelIndex, stepIndex } }));
-    }, delayUntilPlayback);
-
-    activeTimeouts.add(timeoutId);
+    // Store reference for potential future adjustments
+    activeSources.add({ source, scheduledEndTime: scheduledStartTime + duration });
 };
 
 const playAudio = async () => {
@@ -129,42 +95,63 @@ const playAudio = async () => {
     }
     BPM = sequenceData.projectBPM;
 
-    stopAudio();
-    // Reset cumulativeOffset at the beginning of playAudio
-    cumulativeOffset = 0;
+    // This time, we won't stop audio but rather allow sequences to overlap slightly during the loop transition
+    // stopAudio(); // Consider removing or reworking this call to fit the new seamless logic
 
-    const audioBuffers = await Promise.all(sequenceData.projectURLs.map(loadAudioFile));
-    if (!audioBuffers.some(buffer => buffer)) {
+    // Initial buffer loading logic remains unchanged
+    if (isInitialPlay) {
+        audioBuffersCache = await Promise.all(sequenceData.projectURLs.map(loadAudioFile));
+        isInitialPlay = false;
+    }
+
+    if (!audioBuffersCache.some(buffer => buffer)) {
         customLog("No valid audio data available for any channel. Cannot play audio.", true);
         return;
     }
 
-    let totalDuration = 0; // Initialize total duration of all sequences
+    let lastSequenceEndTime = audioContext.currentTime; // Continuously increment, never reset
 
     Object.entries(sequenceData.projectSequences).forEach(([sequenceName, channels], sequenceIndex) => {
         const sequenceDuration = 64 * calculateStepTime();
-        totalDuration += sequenceDuration; // Accumulate total duration
 
         Object.entries(channels).forEach(([channelName, channelData], channelIndex) => {
-            const { steps } = channelData, audioBuffer = audioBuffers[channelIndex], trimSetting = sequenceData.trimSettings ? sequenceData.trimSettings[channelIndex] : undefined;
+            const { steps } = channelData, audioBuffer = audioBuffersCache[channelIndex], trimSetting = sequenceData.trimSettings ? sequenceData.trimSettings[channelIndex] : undefined;
             if (audioBuffer && steps) steps.forEach((active, stepIndex) => {
-                if (active) schedulePlaybackForStep(audioBuffer, trimSetting, stepIndex, channelIndex);
+                if (active) {
+                    const playbackTime = lastSequenceEndTime + stepIndex * calculateStepTime() - audioContext.currentTime;
+                    schedulePlaybackForStep(audioBuffer, trimSetting, playbackTime, channelIndex, stepIndex, sequenceIndex);
+                }
             });
         });
 
-        cumulativeOffset += sequenceDuration;
-
-        // Adjust cumulativeOffset for looping at the end of the last sequence
-        if (sequenceIndex === Object.keys(sequenceData.projectSequences).length - 1) {
-            cumulativeOffset = -totalDuration;
-        }
+        lastSequenceEndTime += sequenceDuration;
     });
 
-    isStoppedManually = false;
+    // Seamlessly continue playback by scheduling the next play without resetting times
+    // Use `lastSequenceEndTime - audioContext.currentTime` to delay the next loop just right
+    if (isLooping && !isStoppedManually) {
+        const delayForNextLoop = Math.max(0, lastSequenceEndTime - audioContext.currentTime);
+        setTimeout(playAudio, delayForNextLoop * 1000); // Schedule the next loop to start right after the last sequence ends
+    }
 };
 
+const schedulePlaybackForStep = (audioBuffer, trimSettings, playbackTime, channelIndex, stepIndex, sequenceIndex) => {
+    createAndStartAudioSource(audioBuffer, trimSettings, playbackTime, channelIndex);
+    const delayUntilPlayback = playbackTime * 1000;
+
+    const timeoutId = setTimeout(() => {
+        console.log(`Playing sequence ${sequenceIndex} channel ${channelIndex} step ${stepIndex}`);
+        document.dispatchEvent(new CustomEvent('channelPlaybackStarted', { detail: { sequenceIndex, channelIndex, stepIndex } }));
+    }, delayUntilPlayback);
+
+    activeTimeouts.add(timeoutId);
+};
+
+
+// Adjust or remove stopAudio as needed, considering that activeSources are now managed differently
 const stopAudio = () => {
-    activeSources.forEach(source => {
+    activeSources.forEach(entry => {
+        const { source } = entry;
         source.stop();
         source.disconnect();
     });
@@ -174,6 +161,7 @@ const stopAudio = () => {
     activeTimeouts.clear();
 
     isStoppedManually = true;
+    // Possibly manage isLooping here to prevent new loops from starting
 };
 
 // Setup UI Handlers simplified by using optional chaining and removing redundant checks
@@ -207,5 +195,26 @@ const readFileAsJSON = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(JSON.parse(reader.result));
     reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+});
+
+
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Assuming sequenceData is a global variable in your script
+        sequenceData = JSON.parse(e.target.result);
+
+        // New logic to log master settings as soon as the file is loaded
+        if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
+            console.error("No valid sequence data available. Cannot play audio.");
+            return;
+        }
+        const totalSequences = Object.keys(sequenceData.projectSequences).length;
+        console.log(`Master Settings: BPM=${sequenceData.projectBPM}, Channels=${sequenceData.projectURLs.length}, Total Sequences=${totalSequences}`);
+
+        // Initialize audio or validate sequence data here if needed
+    };
     reader.readAsText(file);
 });
