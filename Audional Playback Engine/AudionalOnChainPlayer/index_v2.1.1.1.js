@@ -1,10 +1,13 @@
 // index_v2.1.1.1.js
 
-const activeTimeouts = new Set();
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+if (!audioContext) alert('Web Audio API is not supported in this browser');
+
+
+const activeTimeouts = new Set();
 let audioBuffersCache = []; // Cache for audio buffers
 let isInitialPlay = true; // Flag to check if it's the initial play
-if (!audioContext) alert('Web Audio API is not supported in this browser');
+let loopTimeoutId = null; // Global reference for the loop scheduling timeout
 
 
 
@@ -131,7 +134,7 @@ const playAudio = async () => {
     // Use `lastSequenceEndTime - audioContext.currentTime` to delay the next loop just right
     if (isLooping && !isStoppedManually) {
         const delayForNextLoop = Math.max(0, lastSequenceEndTime - audioContext.currentTime);
-        setTimeout(playAudio, delayForNextLoop * 1000); // Schedule the next loop to start right after the last sequence ends
+        loopTimeoutId = setTimeout(playAudio, delayForNextLoop * 1000); // Update to use global reference
     }
 };
 
@@ -160,8 +163,13 @@ const stopAudio = () => {
     activeTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
     activeTimeouts.clear();
 
-    isStoppedManually = true;
-    // Possibly manage isLooping here to prevent new loops from starting
+    if (loopTimeoutId !== null) {
+        clearTimeout(loopTimeoutId); // Clear the loop scheduling timeout
+        loopTimeoutId = null; // Reset the reference
+    }
+
+    isStoppedManually = true; // Ensure this flag is correctly managed in your logic
+    // Consider toggling isLooping as necessary based on your app's needs
 };
 
 // Setup UI Handlers simplified by using optional chaining and removing redundant checks
