@@ -2,12 +2,34 @@
 
 const activeTimeouts = new Set();
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
 if (!audioContext) alert('Web Audio API is not supported in this browser');
+
+
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Assuming sequenceData is a global variable in your script
+        sequenceData = JSON.parse(e.target.result);
+
+        // New logic to log master settings as soon as the file is loaded
+        if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
+            console.error("No valid sequence data available. Cannot play audio.");
+            return;
+        }
+        const totalSequences = Object.keys(sequenceData.projectSequences).length;
+        console.log(`Master Settings: BPM=${sequenceData.projectBPM}, Channels=${sequenceData.projectURLs.length}, Total Sequences=${totalSequences}`);
+
+        // Initialize audio or validate sequence data here if needed
+    };
+    reader.readAsText(file);
+});
+
 
 let BPM, isLooping = true, isStoppedManually = false, cumulativeOffset = 0, sequenceData;
 const activeSources = new Set();
 const audioBuffersCache = {}; // Caching decoded audio buffers
-
 
 const customLog = (message, isError = false) => {
     console[isError ? 'error' : 'log'](message);
@@ -56,7 +78,6 @@ const fetchAndDecodeAudio = async (url) => {
         return null;
     }
 };
-
 
 // Load audio file simplification assumes fetchAndDecodeAudio only throws for critical errors
 const loadAudioFile = url => url ? fetchAndDecodeAudio(url) : customLog('URL is invalid or missing', true);
@@ -141,9 +162,6 @@ const playAudio = async () => {
 
     isStoppedManually = false;
 };
-
-
-
 
 const stopAudio = () => {
     activeSources.forEach(source => {

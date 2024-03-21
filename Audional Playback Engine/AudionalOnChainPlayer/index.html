@@ -48,27 +48,7 @@
         <button id="stopButton">Stop</button>
     </div>
 
-    <script>
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Assuming sequenceData is a global variable in your script
-                sequenceData = JSON.parse(e.target.result);
-        
-                // New logic to log master settings as soon as the file is loaded
-                if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
-                    console.error("No valid sequence data available. Cannot play audio.");
-                    return;
-                }
-                const totalSequences = Object.keys(sequenceData.projectSequences).length;
-                console.log(`Master Settings: BPM=${sequenceData.projectBPM}, Channels=${sequenceData.projectURLs.length}, Total Sequences=${totalSequences}`);
-        
-                // Initialize audio or validate sequence data here if needed
-            };
-            reader.readAsText(file);
-        });
-        </script>
+   
         
     <script src="index_v2.1.1.1.js"></script>
 </body>
