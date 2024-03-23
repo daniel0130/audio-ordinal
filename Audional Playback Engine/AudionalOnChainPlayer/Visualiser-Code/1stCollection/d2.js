@@ -1,8 +1,6 @@
-// d.js
+// drawObject16.2.js
 
-console.log('d.js loaded');
-
-cp.drawObjectD1 = function(obj, tm) {
+cp.drawObject = function(obj, tm) {
     for (let f of obj.f) {
         let v = f.map((i) => obj.v[i]);
         let p = v.map((v) => ({ x: v.x, y: v.y }));
@@ -27,7 +25,7 @@ cp.drawObjectD1 = function(obj, tm) {
 };
 
 
-
+// drawObject16.1.js
 
 function d(tm) {
     cx.clearRect(0, 0, S, S);
@@ -42,9 +40,9 @@ function d(tm) {
     cp.rP(cp.c, a); // Adjust color patterns based on rotation
 
     // Pass `tm` to `cp.drawObject` for dynamic color changes
-    cp.drawObjectD1(cp.cy, tm);
-    cp.drawObjectD1(cp.sp1, tm);
-    cp.drawObjectD1(cp.sp2, tm);
+    cp.drawObject(cp.cy, tm);
+    cp.drawObject(cp.sp1, tm);
+    cp.drawObject(cp.sp2, tm);
     requestAnimationFrame(d);
 }
 
