@@ -9,6 +9,8 @@ class UnifiedSequencerSettings {
                 projectName: 'New Audx Project', // Set the project name placeholder
                 projectBPM: 120,
                 currentSequence: 0, // Initialize with a default value
+                channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
+
                 projectURLs: new Array(16).fill(''), 
                 trimSettings: Array.from({ length: 16 }, () => ({
                     startSliderValue: 0.01,
@@ -25,6 +27,17 @@ class UnifiedSequencerSettings {
         // Bind methods
             this.checkSettings = this.checkSettings.bind(this);
             this.clearMasterSettings = this.clearMasterSettings.bind(this);
+        }
+
+        // Method to add a URL to the channelURLs array
+        addChannelURL(index, url) {
+            if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+                console.log(`[addChannelURL] Adding URL to channel ${index}: ${url}`);
+                this.settings.masterSettings.channelURLs[index] = url;
+                this.notifyObservers(); // Notify observers about the change, if necessary
+            } else {
+                console.error(`[addChannelURL] Invalid channel index: ${index}`);
+            }
         }
 
         clearMasterSettings() {

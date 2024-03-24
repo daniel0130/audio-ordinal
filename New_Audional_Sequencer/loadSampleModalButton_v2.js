@@ -118,6 +118,9 @@
     }
     
    // Helper function to process URL
+// In loadSampleModalButton_v2.js
+
+// Helper function to process URL
 async function processURL(url, index, loadSampleButton) {
     console.log("[HTML Debugging] [processURL] URL: ", url);
 
@@ -134,15 +137,20 @@ async function processURL(url, index, loadSampleButton) {
             // Process the extracted audio URL as if it was direct audio content
             if (audioURL) {
                 fetchAudio(audioURL, index);
+                // Log and add the URL to the global settings
+                window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
             }
         } else {
             console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
             fetchAudio(url, index);
+            // Log and add the URL to the global settings
+            window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
         }
     } catch (error) {
         console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
     }
 }
+
 
 async function importHTMLSampleData(htmlContent, index) {
     console.log("[importHTMLSampleData] Entered function with index: ", index);
