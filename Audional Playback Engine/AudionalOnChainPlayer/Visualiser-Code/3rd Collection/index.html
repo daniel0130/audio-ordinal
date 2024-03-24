@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Shapes Animation</title>
+    <link rel="stylesheet" href="s.css">
+</head>
+<body>
+    <canvas id="cv" aria-label="Geometric Shapes Animation" role="img"></canvas>
+    <script src="g.js"></script>
+    <script src="c.js"></script> <!-- Ensure c.js is loaded before d.js -->
+    <script src="c2.js"></script> <!-- Ensure c2.js is loaded before d.js -->
+    <script src="d.js"></script>
+    <script>
+        // Initialization script for configuring global variables and setting up the animation
+        console.log('Initializing geometry animation...');
+        // Global variables needed across functions
+        let currentEffectIndex = 13; // Starting effect index for dynamic behavior
+        const initialEffectIndex = 1; // Initial effect index for reset
+        let seed = 64656777767; // Seed for pseudo-random effects, adjustable for different outcomes
+        const loggedIndices = new Set();
+
+        
+    </script>
+</body>
+</html>

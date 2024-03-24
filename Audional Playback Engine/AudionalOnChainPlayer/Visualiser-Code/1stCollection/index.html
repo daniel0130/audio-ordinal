@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<title>BOT 1t5</title>
+<link rel="stylesheet" href="s.css">
+<canvas id="cv"></canvas>
+<script src="g.js"></script>
+<script src="c.js"></script>
+<script src="c2.js"></script>
+<script src="d.js"></script>
+<script src="d2.js"></script>
+<script>
+    let cci2 = 13; // Initial CCI2 value
+    const initialCCI2 = 1; // Store initial value of cci2 to reset later
+    let seed = 64656777767; // Seed value, can be adjusted for production purposes
+
+    function randomWithSeed(seedValue) {
+        const x = Math.sin(seedValue) * 10000;
+        return x - Math.floor(x);
+    }
+
+
+    function calculateCCI2(channelIndex) {
+        const randomSeed = seed + channelIndex; // Combine seed with channelIndex
+        const randomMultiplier = randomWithSeed(randomSeed) * 141; // Generate [0, 100)
+        return Math.floor(randomMultiplier) + 1; // Ensure CCI2 is within 1-100
+    }
+
+    function applyEffectBasedOnCCI2() {
+        const effectDecision = Math.floor(randomWithSeed(seed + cci2) * 16); // For 16 unique effects
+        if (effectDecision < 8) { // Assume 8 effects in d.js and 8 in d2.js
+            console.log(`Applying effect from d.js, Effect Decision: ${effectDecision}, CCI2: ${cci2}`);
+            // Example: triggerEffectInD(effectDecision, cci2); Modify as needed
+        } else {
+            console.log(`Applying effect from d2.js, Effect Decision: ${effectDecision - 8}, CCI2: ${cci2}`);
+            // Example: triggerEffectInD2(effectDecision - 8, cci2); Modify as needed
+        }
+    }
+
+    const channelPlaybackListener = new BroadcastChannel('channel_playback');
+    channelPlaybackListener.onmessage = (event) => {
+        if (event.data.action === 'stop') {
+            cci2 = initialCCI2;
+            console.log('Effects stopped, CCI2 reset to', cci2);
+        } else {
+            const { channelIndex } = event.data;
+            cci2 = calculateCCI2(channelIndex);
+            console.log(`CCI2 updated to ${cci2}, applying effect based on this CCI2.`);
+            applyEffectBasedOnCCI2();
+        }
+    };
+</script>
