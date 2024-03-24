@@ -39,6 +39,7 @@ class UnifiedSequencerSettings {
                 console.error(`[addChannelURL] Invalid channel index: ${index}`);
             }
         }
+        
 
         clearMasterSettings() {
             console.log("[clearMasterSettings] Current masterSettings before clearing:", this.settings.masterSettings);
