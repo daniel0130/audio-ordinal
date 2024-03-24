@@ -1,5 +1,6 @@
 console.log('d.js loaded');
 
+
 // Function to draw an object with dynamic coloring based on time (`tm`)
 cp.drawObjectD1 = function(obj, tm) {
     // Loop through each face (`f`) of the object
@@ -58,3 +59,5 @@ function d(tm) {
 
 // Start the animation
 requestAnimationFrame(d);
+
+

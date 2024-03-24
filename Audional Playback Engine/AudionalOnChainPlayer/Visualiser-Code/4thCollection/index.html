@@ -12,8 +12,8 @@
 
 
     let cci2 = 13; // Initial CCI2 value
-    const initialCCI2 = 1; // Store initial value of cci2 to reset later
-    let seed = 64656777767; // Seed value, can be adjusted for production purposes
+    const initialCCI2 = 13; // Store initial value of cci2 to reset later
+    let seed = 63973449477; // Seed value, can be adjusted for production purposes
     let latestSelections = [];
 
     function randomWithSeed(seedValue) {
@@ -24,7 +24,7 @@
 
     function calculateCCI2(channelIndex) {
         const randomSeed = seed + channelIndex; // Combine seed with channelIndex
-        const randomMultiplier = randomWithSeed(randomSeed) * 141; // Generate [0, 100)
+        const randomMultiplier = randomWithSeed(randomSeed) * 250; // Generate [0, 100)
         return Math.floor(randomMultiplier) + 1; // Ensure CCI2 is within 1-100
     }
 
@@ -62,5 +62,7 @@
         // Assuming you have the latest selections:
         // colorLogger.log(latestSelections);
         colorLogger.record(latestSelections);
+
+
 
 </script>
