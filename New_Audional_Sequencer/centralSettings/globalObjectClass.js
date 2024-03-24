@@ -11,7 +11,7 @@ class UnifiedSequencerSettings {
                 currentSequence: 0, // Initialize with a default value
                 channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
 
-                projectURLs: new Array(16).fill(''), 
+                // projectURLs: new Array(16).fill(''), 
                 trimSettings: Array.from({ length: 16 }, () => ({
                     startSliderValue: 0.01,
                     endSliderValue: 100.00,
@@ -48,7 +48,9 @@ class UnifiedSequencerSettings {
                 projectName: '',
                 projectBPM: 120,
                 currentSequence: 0, // Initialize with a default value
-                projectURLs: new Array(16).fill(''),
+                channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
+
+                // projectURLs: new Array(16).fill(''),
                 trimSettings: Array.from({ length: 16 }, () => ({
                     startSliderValue: 0.01,
                     endSliderValue: 100.00,
@@ -420,9 +422,9 @@ class UnifiedSequencerSettings {
         console.log("updateLoadSampleButtonText entered");
         let buttonText = 'Load New Audional'; // Default text
     
-        // Accessing projectChannelNames and projectURLs from settings
+        // Accessing projectChannelNames and channelURLs from settings
         const channelName = this.settings.masterSettings.projectChannelNames[channelIndex];
-        const loadedUrl = this.settings.masterSettings.projectURLs[channelIndex];
+        const loadedUrl = this.settings.masterSettings.channelURLs[channelIndex];
     
         if (channelName) {
             buttonText = channelName;
