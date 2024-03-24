@@ -351,18 +351,24 @@
         function pasteOrdinalId(channelIndex) {
             navigator.clipboard.readText()
                 .then(fullUrl => {
-                    // Retrieve the current URLs
-                    let currentURLs = window.unifiedSequencerSettings.settings.masterSettings.projectURLs;
-                    
-                    // Update the URL for the specific channel
-                    currentURLs[channelIndex] = fullUrl;
+                    // Ensure only one URL is added and updated by the user
+                    if (isValidURL(fullUrl)) {
+                        // Retrieve the current URLs
+                        let currentURLs = [...window.unifiedSequencerSettings.settings.masterSettings.channelURLs];
 
-                    // Set the updated URLs
-                    window.unifiedSequencerSettings.setProjectURLs(currentURLs);
-                    console.log('Pasted full URL:', fullUrl);
+                        // Update the URL for the specific channel
+                        currentURLs[channelIndex] = fullUrl;
+
+                        // Set the updated URLs using the new method
+                        window.unifiedSequencerSettings.setChannelURLs(currentURLs);
+                        console.log('Pasted full URL:', fullUrl);
+                    } else {
+                        console.error('Invalid URL format.');
+                    }
                 })
                 .catch(err => console.error('Error pasting URL:', err));
         }
+
 
 
         // Function to paste the Channel Settings

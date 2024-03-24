@@ -310,10 +310,10 @@ class UnifiedSequencerSettings {
         return this.settings.masterSettings.projectURLs[channelIndex];
     }
 
-    setProjectURLs(urls) {
+    setChannelURLs(urls) {
         console.log("setProjectURLs entered");
-        this.settings.masterSettings.projectURLs = urls;
-        console.log(`[setProjectURLs] Project URLs set:`, urls);
+        this.settings.masterSettings.channelURLs = urls;
+        console.log(`[setChannelURLs] Channel URLs set:`, urls);
     
         // Correctly calling the method within the same class
         this.updateAllLoadSampleButtonTexts();
