@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     loadButton.addEventListener('click', () => {
+        console.log('[Save/Load debug] Load button clicked');
         if (!loadButtonClicked) {
             // Remove the "smooth-wave" class when the button is clicked for the first time
             loadButton.classList.remove('smooth-wave');
@@ -57,11 +58,14 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     loadJson.addEventListener('click', () => {
+        console.log('[Save/Load debug] loadJson clicked');
+
         loadFileInput.click();
         loadOptions.style.display = "none";
     });
 
     loadFileInput.addEventListener('change', () => {
+        console.log('[Save/Load debug] loadFileInput change event');
         let file = loadFileInput.files[0];
         let reader = new FileReader();
         reader.onload = async function(e) {
@@ -93,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     function loadPresetFromFile(filePath) {
+        console.log('[Save/Load Debug] loadPresetFromFile called');
         console.log(`[internalPresetDebug] Loading preset from: ${filePath}`);
         fetch(filePath)
             .then(response => response.json())
