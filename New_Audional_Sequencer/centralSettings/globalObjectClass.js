@@ -175,6 +175,21 @@ class UnifiedSequencerSettings {
         }));
     }
 
+    updateTrimSettingsUI(trimSettings) {
+        // Implement logic to update UI for trim settings
+        console.log("Trim settings UI entered and updated:", trimSettings);
+        // Example: Update each trim setting input field
+        trimSettings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+
+
     // Method to register an observer
     addObserver(observerFunction) {
      
@@ -500,19 +515,6 @@ class UnifiedSequencerSettings {
         });
     }
 
-    updateTrimSettingsUI(trimSettings) {
-        // Implement logic to update UI for trim settings
-        console.log("Trim settings UI entered and updated:", trimSettings);
-        // Example: Update each trim setting input field
-        trimSettings.forEach((setting, index) => {
-            const startSlider = document.getElementById(`start-slider-${index}`);
-            const endSlider = document.getElementById(`end-slider-${index}`);
-            if (startSlider && endSlider) {
-                startSlider.value = setting.start;
-                endSlider.value = setting.end;
-            }
-        });
-    }
 
     updateProjectChannelNamesUI(urlNames) {
         // Implement logic to update UI for project URL names
