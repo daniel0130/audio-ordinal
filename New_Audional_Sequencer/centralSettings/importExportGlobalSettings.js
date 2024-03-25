@@ -25,7 +25,7 @@ function importSettings(jsonSettings) {
     }
 
  // Call this function for each array when loading a project
- this.ensureArrayLength(this.settings.masterSettings.projectURLs, 16);
+ this.ensureArrayLength(this.settings.masterSettings.channelURLs, 16);
  this.ensureArrayLength(this.settings.masterSettings.trimSettings, 16);
  // ... and so on for other arrays
 }

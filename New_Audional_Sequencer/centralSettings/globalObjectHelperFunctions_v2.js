@@ -15,9 +15,9 @@ function updateProjectURLsUI(urls) {
 }
 
 // Helper function to get the project URL for a channel
-function getProjectUrlForChannel(channelIndex) {
+function getChannelURL(channelIndex) {
     cons
-    return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+    return window.unifiedSequencerSettings.channelURLs(channelIndex);
 }
 
 // 

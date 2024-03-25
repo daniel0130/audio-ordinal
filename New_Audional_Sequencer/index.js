@@ -280,7 +280,7 @@ function updateLoadSampleButtonText(channelIndex, button) {
     console.log('updateLoadSampleButtonText entered');
     console.log(`[updateLoadSampleButtonText] Called for channel index: ${channelIndex}`);
 
-    const loadedUrl = window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+    const loadedUrl = window.unifiedSequencerSettings.channelURLs(channelIndex);
     console.log(`[updateLoadSampleButtonText] Loaded URL for channel ${channelIndex}: ${loadedUrl}`);
 
     if (loadedUrl) {

@@ -369,6 +369,7 @@ class UnifiedSequencerSettings {
             // Update the masterSettings with the parsed settings
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+            this.settings.masterSettings.channelURLs = parsedSettings.channelURLs;
             this.settings.masterSettings.projectURLs = parsedSettings.projectURLs;
             this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
             this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
