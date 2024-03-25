@@ -125,38 +125,42 @@ function bufferToBase64(buffer) {
 function playSound(currentSequence, channel, currentStep) {
   console.log('playSound entered');
   const channelIndex = getChannelIndex(channel);
-  console.log(`[HTML Debugging] [playSound] Processing channel index: ${channelIndex}`);
+  console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
 
   const stepState = getStepState(currentSequence, channelIndex, currentStep);
-  console.log(`[HTML Debugging] [playSound] setting stepState using getStepState to: ${stepState}`);
+  console.log(`[playSound Debugging] [playSound] setting stepState using getStepState to: ${stepState}`);
   if (!stepState) {
-      console.log("[HTML Debugging] [playSound] Current step is not selected. Skipping playback.");
+      console.log("[playSound Debugging] [playSound] Current step is not selected. Skipping playback.");
       return;
   }
 
   const url = getAudioUrl(channelIndex);
+  console.log("[playSound Debugging] [playSound] Audio URL:", url);
   const audioBuffer = getAudioBuffer(url);
   if (!audioBuffer) {
-      console.log("[HTML Debugging] [playSound] No audio buffer found for URL:", url);
+      console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
       return;
   }
+  
+  console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
 
   playTrimmedAudio(channelIndex, audioBuffer, url);
 }
+
 
 function getChannelIndex(channel) {
   return parseInt(channel.dataset.id.split('-')[1]);
 }
 
 function getStepState(currentSequence, channelIndex, currentStep) {
-  console.log(`[HTML Debugging] [getStepState called] currentSequence: ${currentSequence}, channelIndex: ${channelIndex}, currentStep: ${currentStep}`);
+  console.log(`[playSound Debugging] [getStepState called] currentSequence: ${currentSequence}, channelIndex: ${channelIndex}, currentStep: ${currentStep}`);
   return window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
 }
 
 function getAudioUrl(channelIndex) {
   // Example check to ensure URL exists for the given channel index
   if (typeof window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex) === 'undefined') {
-    console.error(`[getAudioUrl] URL not found for channel index: ${channelIndex}`);
+    console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${channelIndex}`);
     return 'defaultURL'; // Provide a default URL or handle the error appropriately
   }
   return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
