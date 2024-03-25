@@ -4,157 +4,167 @@ const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 if (!audioContext) alert('Web Audio API is not supported in this browser');
 
 const channelPlaybackBroadcast = new BroadcastChannel('channel_playback');
-
-
 const activeTimeouts = new Set();
-let audioBuffersCache = []; // Cache for audio buffers
-let isInitialPlay = true; // Flag to check if it's the initial play
-let loopTimeoutId = null; // Global reference for the loop scheduling timeout
-
-
-
-
-let BPM, isLooping = true, isStoppedManually = false, cumulativeOffset = 0, sequenceData;
+let audioBuffersCache = new Map(); // Changed from array to Map for efficient lookup
+let isInitialPlay = true, loopTimeoutId = null, BPM, isLooping = true, isStoppedManually = false, cumulativeOffset = 0, sequenceData;
 const activeSources = new Set();
 
-const customLog = (message, isError = false) => {
-    console[isError ? 'error' : 'log'](message);
-};
+// Simplified logging function
+const customLog = (message, isError = false) => console[isError ? 'error' : 'log'](message);
+const base64ToArrayBuffer = base64 => Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
 
-const base64ToArrayBuffer = base64 => {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
-};
-
-// Updated function with caching mechanism
 const fetchAndDecodeAudio = async (url) => {
-    if (audioBuffersCache[url]) {
-        return audioBuffersCache[url]; // Use cached buffer if available
+    // Check if the buffer already exists in the cache
+    if (audioBuffersCache.has(url)) {
+        console.log(`[Player Debugging] Buffer already cached for URL: ${url}`);
+        return audioBuffersCache.get(url);
     }
+
     try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const contentType = response.headers.get('content-type');
-        let arrayBuffer;
-        if (contentType && contentType.includes('audio/')) {
-            arrayBuffer = await response.arrayBuffer(); // Directly use ArrayBuffer for audio content
-        } else {
-            // Additional content-type checks and conversions to ArrayBuffer
-            const text = await response.text();
-            if (contentType && contentType.includes('application/json')) {
-                const base64String = JSON.parse(text).audioData.split(',')[1];
-                arrayBuffer = base64ToArrayBuffer(base64String);
-            } else if (contentType && contentType.includes('text/html')) {
-                // Extract base64 audio data from HTML and convert
-                const doc = new DOMParser().parseFromString(text, 'text/html');
-                const audioDataElement = doc.querySelector('audio[data-base64]');
-                if (!audioDataElement) throw new Error('Audio data not found in HTML');
-                const base64String = audioDataElement.getAttribute('data-base64').split(',')[1];
-                arrayBuffer = base64ToArrayBuffer(base64String);
-            } else {
-                throw new Error(`Unsupported content type: ${contentType}`);
+        const fullUrl = formatURL(url); // Ensure URL formatting for consistency
+        console.log('[Player Debugging] fetchAndDecodeAudio entered. URL:', fullUrl);
+
+        const response = await fetch(fullUrl);
+        const contentType = response.headers.get('Content-Type');
+        let audioData;
+
+        // Handle HTML content that may contain embedded audio data
+        if (contentType && contentType.includes('text/html')) {
+            console.log('[Player Debugging] HTML content detected, extracting audio data...');
+            const htmlText = await response.text();
+            const extractedAudioData = await importHTMLAudioData(htmlText);
+            if (!extractedAudioData) {
+                console.log('[Player Debugging] No audio data extracted from HTML content.');
+                return null;
             }
+
+            audioData = extractedAudioData.startsWith('data:') ?
+                base64ToArrayBuffer(extractedAudioData.split(',')[1]) :
+                await fetch(extractedAudioData).then(res => res.arrayBuffer());
+        } else {
+            // Directly handle audio file content
+            audioData = await response.arrayBuffer();
         }
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        audioBuffersCache[url] = audioBuffer; // Cache the decoded buffer
-        return audioBuffer;
+
+        // Decode the audio data and add it to the cache upon success
+        return new Promise((resolve, reject) => {
+            audioContext.decodeAudioData(audioData, buffer => {
+                console.log('[Player Debugging] Audio data decoded successfully. URL:', fullUrl);
+                audioBuffersCache.set(fullUrl, buffer);
+                resolve(buffer);
+            }, error => {
+                console.error('[Player Debugging] Failed to decode audio data:', error);
+                reject(error);
+            });
+        });
     } catch (error) {
-        customLog(`Error loading audio file: ${error}`, true);
+        console.error('[Player Debugging] Error fetching or processing audio data:', error);
         return null;
     }
 };
 
-// Load audio file simplification assumes fetchAndDecodeAudio only throws for critical errors
-const loadAudioFile = url => url ? fetchAndDecodeAudio(url) : customLog('URL is invalid or missing', true);
 
+// Simplified loadAudioFile, removed redundant checks
+const loadAudioFile = url => fetchAndDecodeAudio(url);
 
-const calculateTrimTimes = (trimSettings, totalDuration) => {
-    const startTime = Math.max(0, (trimSettings.startSliderValue / 100) * totalDuration),
-        endTime = (trimSettings.endSliderValue / 100) * totalDuration;
-    return { startTime, duration: Math.max(0, endTime - startTime) };
-};
+const calculateTrimTimes = (trimSettings, totalDuration) => ({
+    startTime: Math.max(0, (trimSettings.start / 100) * totalDuration),
+    duration: Math.max(0, (trimSettings.end / 100) * totalDuration - Math.max(0, (trimSettings.start / 100) * totalDuration))
+});
 
 const calculateStepTime = () => 60 / BPM / 4;
 
 const createAndStartAudioSource = (audioBuffer, trimSettings, playbackTime, channelIndex) => {
-    if (!audioBuffer) return;
-
     const { startTime, duration } = calculateTrimTimes(trimSettings, audioBuffer.duration);
+    console.log(`Channel ${channelIndex}: Scheduled to start at ${scheduledStartTime} with duration ${duration}`);
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
-    
-    // Adjust playbackTime to ensure seamless looping
     const scheduledStartTime = audioContext.currentTime + playbackTime + cumulativeOffset;
     source.start(scheduledStartTime, startTime, duration);
-
-    // Store reference for potential future adjustments
     activeSources.add({ source, scheduledEndTime: scheduledStartTime + duration });
 };
 
-const playAudio = async () => {
-    if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
-        customLog("No valid sequence data available. Cannot play audio.", true);
+// In the part of the code where you initiate playback
+const initiatePlayback = async () => {
+    if (audioContext.state !== 'running') {
+        console.log('[Player Debugging] Attempting to resume AudioContext');
+        await audioContext.resume();
+    }
+
+    // Fetch and decode audio for each URL and store the promises in an array
+    const bufferPromises = sequenceData.channelURLs.map(url => fetchAndDecodeAudio(url));
+
+    Promise.all(bufferPromises)
+        .then(buffers => {
+            console.log('[Player Debugging] All audio buffers loaded successfully.');
+            playAudio(); // Assuming playAudio does not need the buffers directly passed but uses a globally accessible cache
+        })
+        .catch(error => {
+            console.error('[Player Debugging] Error loading one or more audio buffers:', error);
+        });
+};
+
+
+// Function to start audio playback, assuming buffers are passed and ready for use
+const playAudio = () => {
+    console.log('[Player Debugging] Starting playback with loaded buffers...');
+
+    if (!sequenceData || !sequenceData.channelURLs || !sequenceData.projectSequences) {
+        console.log("No valid sequence data available. Cannot play audio.", true);
         return;
     }
-    isStoppedManually = false; // Ensure this flag is correctly managed in your logic
+
+    isStoppedManually = false;
     isLooping = true;
     BPM = sequenceData.projectBPM;
+    let lastSequenceEndTime = audioContext.currentTime; // Continuous increment, never reset
 
-    // This time, we won't stop audio but rather allow sequences to overlap slightly during the loop transition
-    // stopAudio(); // Consider removing or reworking this call to fit the new seamless logic
-
-    // Initial buffer loading logic remains unchanged
-    if (isInitialPlay) {
-        audioBuffersCache = await Promise.all(sequenceData.projectURLs.map(loadAudioFile));
-        isInitialPlay = false;
-    }
-
-    if (!audioBuffersCache.some(buffer => buffer)) {
-        customLog("No valid audio data available for any channel. Cannot play audio.", true);
-        return;
-    }
-
-    let lastSequenceEndTime = audioContext.currentTime; // Continuously increment, never reset
-
-    Object.entries(sequenceData.projectSequences).forEach(([sequenceName, channels], sequenceIndex) => {
+    // Iterate through each sequence and channel for playback
+    Object.entries(sequenceData.projectSequences).forEach(([sequenceName, channels]) => {
         const sequenceDuration = 64 * calculateStepTime();
-
+        
         Object.entries(channels).forEach(([channelName, channelData], channelIndex) => {
-            const { steps } = channelData, audioBuffer = audioBuffersCache[channelIndex], trimSetting = sequenceData.trimSettings ? sequenceData.trimSettings[channelIndex] : undefined;
-            if (audioBuffer && steps) steps.forEach((active, stepIndex) => {
-                if (active) {
-                    const playbackTime = lastSequenceEndTime + stepIndex * calculateStepTime() - audioContext.currentTime;
-                    schedulePlaybackForStep(audioBuffer, trimSetting, playbackTime, channelIndex, stepIndex, sequenceIndex);
-                }
-            });
+            const audioBuffer = audioBuffersCache.get(sequenceData.channelURLs[channelIndex]);
+            const trimSettings = sequenceData.trimSettings[channelIndex] || { start: 0, end: 100 }; // Fallback to default trim settings if none provided
+
+            if (audioBuffer) {
+                channelData.steps.forEach((isActive, stepIndex) => {
+                    if (isActive) {
+                        const playbackTime = lastSequenceEndTime + stepIndex * calculateStepTime();
+                        createAndStartAudioSource(audioBuffer, trimSettings, playbackTime, channelIndex);
+                    }
+                });
+            }
         });
 
         lastSequenceEndTime += sequenceDuration;
     });
 
-    // Seamlessly continue playback by scheduling the next play without resetting times
-    // Use `lastSequenceEndTime - audioContext.currentTime` to delay the next loop just right
+    // Schedule the next play without resetting times for seamless looping
     if (isLooping && !isStoppedManually) {
         const delayForNextLoop = Math.max(0, lastSequenceEndTime - audioContext.currentTime);
-        loopTimeoutId = setTimeout(playAudio, delayForNextLoop * 1000); // Update to use global reference
+        loopTimeoutId = setTimeout(playAudio, delayForNextLoop * 1000); // Convert to milliseconds
     }
 };
 
+
 const schedulePlaybackForStep = (audioBuffer, trimSettings, playbackTime, channelIndex, stepIndex, sequenceIndex) => {
-    createAndStartAudioSource(audioBuffer, trimSettings, playbackTime, channelIndex);
-    const delayUntilPlayback = playbackTime * 1000;
-
-    const timeoutId = setTimeout(() => {
-        console.log(`Playing sequence ${sequenceIndex} channel ${channelIndex} step ${stepIndex}`);
-        document.dispatchEvent(new CustomEvent('channelPlaybackStarted', { detail: { sequenceIndex, channelIndex, stepIndex } }));
-        channelPlaybackBroadcast.postMessage({ sequenceIndex, channelIndex, stepIndex });
-    }, delayUntilPlayback);
-
-    activeTimeouts.add(timeoutId);
-};
-
+    const createAndStartAudioSource = (audioBuffer, trimSettings, playbackTime, channelIndex) => {
+        if (!audioBuffer) {
+            console.log(`No audioBuffer for channel index: ${channelIndex}`);
+            return;
+        }
+        const { startTime, duration } = calculateTrimTimes(trimSettings, audioBuffer.duration);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        const scheduledStartTime = audioContext.currentTime + playbackTime + cumulativeOffset;
+        source.start(scheduledStartTime, startTime, duration);
+        console.log(`Audio source started for channel index: ${channelIndex} at ${scheduledStartTime}, duration: ${duration}`);
+        activeSources.add({ source, scheduledEndTime: scheduledStartTime + duration });
+    };
+}
 
 // Adjust or remove stopAudio as needed, considering that activeSources are now managed differently
 const stopAudio = () => {
@@ -180,32 +190,62 @@ const stopAudio = () => {
     // Consider toggling isLooping as necessary based on your app's needs
 };
 
-// Setup UI Handlers simplified by using optional chaining and removing redundant checks
-const setupUIHandlers = () => {
-    document.getElementById('playButton')?.addEventListener('click', () => { isLooping = true; playAudio(); });
-    document.getElementById('stopButton')?.addEventListener('click', stopAudio);
+document.addEventListener('DOMContentLoaded', () => {
+    const playButton = document.getElementById('playButton');
+    const stopButton = document.getElementById('stopButton');
+    const fileInput = document.getElementById('fileInput');
 
-    document.getElementById('fileInput')?.addEventListener('change', async (event) => {
-        try {
-            const file = event.target.files[0];
-            if (!file) throw new Error('No file selected');
-            sequenceData = JSON.parse(await file.text());
-            validateAudioData(sequenceData);
-            document.getElementById('playButton').disabled = false;
-        } catch (err) {
-            document.getElementById('playButton').disabled = true;
-            customLog(`Error processing sequence data: ${err}`, true);
+    playButton.addEventListener('click', async () => {
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume();
         }
+
+        if (!audioBuffersCache.size || Array.from(audioBuffersCache.values()).every(buffer => !buffer)) {
+            customLog("No audio buffers available for playback.", true);
+            return;
+        }
+
+        console.log("Audio buffers ready for playback:", Array.from(audioBuffersCache.entries()));
+
+        isLooping = true; 
+        playAudio();
     });
-};
 
-setupUIHandlers();
+    stopButton.addEventListener('click', stopAudio);
 
-const validateAudioData = (data) => {
-    if (!data.trimSettings || !data.projectSequences?.Sequence0?.ch0?.steps || data.projectSequences.Sequence0.ch0.steps.length !== 64 || !data.projectBPM) {
-        throw new Error('Invalid or missing data in JSON');
+    fileInput.addEventListener('change', handleFileInputChange);
+});
+
+async function handleFileInputChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+        try {
+            const text = await readFileAsJSON(file);
+            processAndValidateSequenceData(text);
+            document.getElementById('playButton').disabled = false;
+        } catch (error) {
+            console.error(`Error processing sequence data: ${error}`);
+            document.getElementById('playButton').disabled = true;
+        }
+    } else {
+        customLog('No file selected or an error occurred.', true);
+        document.getElementById('playButton').disabled = true;
     }
-};
+}
+
+function processAndValidateSequenceData(data) {
+    if (!data.projectSequences || Object.values(data.projectSequences).some(sequence => 
+        Object.values(sequence).some(channel => 
+            !channel.steps || !Array.isArray(channel.steps) || channel.steps.some(step => typeof step !== 'number')))) {
+        throw new Error('Invalid or missing data in sequence steps');
+    }
+    // Initialize sequenceData object if not already initialized
+    sequenceData = sequenceData || {};
+    // Assign properties from the input data
+    sequenceData.projectURLs = data.channelURLs ? data.channelURLs.map(url => formatURL(url)) : [];
+    sequenceData.projectBPM = data.projectBPM;
+    sequenceData.trimSettings = data.trimSettings;
+}
 
 const readFileAsJSON = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -214,23 +254,70 @@ const readFileAsJSON = file => new Promise((resolve, reject) => {
     reader.readAsText(file);
 });
 
+const BASE_ORDINALS_URL = 'https://ordinals.com/content/';
 
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        // Assuming sequenceData is a global variable in your script
-        sequenceData = JSON.parse(e.target.result);
+function isValidOrdinalsUrl(url) {
+    const regex = new RegExp(`^${BASE_ORDINALS_URL}[a-f0-9]{64}i\\d+$`);
+    return regex.test(url);
+}
 
-        // New logic to log master settings as soon as the file is loaded
-        if (!sequenceData || !sequenceData.projectURLs || !sequenceData.projectSequences) {
-            console.error("No valid sequence data available. Cannot play audio.");
-            return;
+function formatId(id) {
+    const regex = new RegExp(`^[a-f0-9]{64}i\\d+$`);
+    if (!regex.test(id)) {
+        console.error("Invalid ID format:", id);
+        return null;
+    }
+    return id;
+}
+
+function formatURL(url) {
+    if (url.startsWith(BASE_ORDINALS_URL)) {
+        return url;
+    }
+    const regexPattern = new RegExp(`^${BASE_ORDINALS_URL}${BASE_ORDINALS_URL}(.+)`);
+    const match = url.match(regexPattern);
+    if (match && match[1]) {
+        return BASE_ORDINALS_URL + match[1];
+    }
+    if (url.match(/^[a-f0-9]{64}i\d+$/)) {
+        return BASE_ORDINALS_URL + url;
+    }
+    return url;
+}
+
+function toFullUrl(id) {
+    if (!id) return null;
+    return BASE_ORDINALS_URL + formatId(id);
+}
+
+function extractIdFromUrl(url) {
+    if (!isValidOrdinalsUrl(url)) {
+        console.error("Invalid Ordinals URL:", url);
+        return null;
+    }
+    return url.replace(BASE_ORDINALS_URL, '');
+}
+
+async function importHTMLAudioData(htmlContent, index) {
+    console.log("[importHTMLSampleData] Entered function with index: ", index);
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const sourceElement = doc.querySelector('audio[data-audionalSampleName] source');
+  
+        if (sourceElement) {
+            const base64AudioData = sourceElement.getAttribute('src');
+            if (base64AudioData.toLowerCase().startsWith('data:audio/wav;base64,') || base64AudioData.toLowerCase().startsWith('data:audio/mp3;base64,')) {
+                console.log("[importHTMLSampleData] Extracted base64 audio data.");
+                return base64AudioData;
+            } else {
+                console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.");
+            }
+        } else {
+            console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.");
         }
-        const totalSequences = Object.keys(sequenceData.projectSequences).length;
-        console.log(`Master Settings: BPM=${sequenceData.projectBPM}, Channels=${sequenceData.projectURLs.length}, Total Sequences=${totalSequences}`);
-
-        // Initialize audio or validate sequence data here if needed
-    };
-    reader.readAsText(file);
-});
+    } catch (error) {
+        console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
+    }
+    return null;
+}
