@@ -1,20 +1,20 @@
 // importExportGlobalSettings.js
 
-function exportSettings() {
-    const settings = window.unifiedSequencerSettings.exportSettings();
+// function exportSettings() {
+//     const settings = window.unifiedSequencerSettings.exportSettings();
 
-    // Check if settings contain trimSettings and process them
-    if (settings.masterSettings && settings.masterSettings.trimSettings) {
-        settings.masterSettings.trimSettings = settings.masterSettings.trimSettings.map(setting => ({
-            s: parseFloat(setting.startSliderValue.toFixed(2)), // Shorten and reduce precision
-            e: parseFloat(setting.endSliderValue.toFixed(2)),   // Shorten and reduce precision
-            l: parseFloat(setting.totalSampleDuration.toFixed(3)) // Shorten and reduce precision
-        }));
-    }
+//     // Check if settings contain trimSettings and process them
+//     if (settings.masterSettings && settings.masterSettings.trimSettings) {
+//         settings.masterSettings.trimSettings = settings.masterSettings.trimSettings.map(setting => ({
+//             s: parseFloat(setting.startSliderValue.toFixed(2)), // Shorten and reduce precision
+//             e: parseFloat(setting.endSliderValue.toFixed(2)),   // Shorten and reduce precision
+//             l: parseFloat(setting.totalSampleDuration.toFixed(3)) // Shorten and reduce precision
+//         }));
+//     }
 
-    // Return the modified settings as a JSON string
-    return JSON.stringify(settings);
-}
+//     // Return the modified settings as a JSON string
+//     return JSON.stringify(settings);
+// }
 
 
 
