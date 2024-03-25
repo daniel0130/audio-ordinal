@@ -216,16 +216,13 @@ if (playButton && stopButton) {
 
 
         const loadPreset = (preset) => {
-            console.log('index.js loadPresetentered');
+            console.log('index.js loadPreset entered');
             console.log(`index.js loadPreset: Loading preset: ${preset}`);
             const presetData = presets[preset];
             if (!presetData) {
                 console.error('Preset not found:', preset);
                 return;
             }
-        
-            // Retrieve the URLs from global settings
-            const projectURLs = window.unifiedSequencerSettings.getSettings('projectURLs');
         
             channels.forEach((channel, index) => {
                 const channelData = presetData.channels[index];
@@ -234,8 +231,8 @@ if (playButton && stopButton) {
                     return;
                 }
         
-                // Use the URL from the global settings instead of the preset
-                const url = projectURLs[index];
+                // Use getChannelURL to retrieve the URL for each channel
+                const url = window.unifiedSequencerSettings.getChannelURL(index);
                 const { steps, mute } = channelData;
         
                 if (url) {
@@ -248,7 +245,7 @@ if (playButton && stopButton) {
                                 const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
                                 audioTrimmer.setStartSliderValue(startSliderValue);
                                 audioTrimmer.setEndSliderValue(endSliderValue);
-                
+        
                                 window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
                                 updateLoadSampleButtonText(index, loadSampleButton);
                             });

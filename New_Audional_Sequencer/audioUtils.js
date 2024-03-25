@@ -46,40 +46,32 @@ const decodeAudioData = (audioData) => {
 // Function to fetch and process audio data
 
 const fetchAudio = async (url, channelIndex) => {
-  // Adjust the URL if it's not already a full URL
-  const fullUrl = url.includes(BASE_ORDINALS_URL) ? url : BASE_ORDINALS_URL + url;
-
+  const fullUrl = formatURL(url);
   console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', fullUrl, 'Channel Index:', channelIndex);
+
   try {
-    console.log(`[HTML Debugging] [fetchAudio] Fetching URL: ${fullUrl}`);
     const response = await fetch(fullUrl);
     const contentType = response.headers.get('Content-Type');
-    console.log('[HTML Debugging] [fetchAudio] Response Content-Type:', contentType);
-
     let audioData;
-    let filename;
-    
-    // Check if the content is HTML and process accordingly
+
     if (contentType && contentType.includes('text/html')) {
-      console.log("[HTML Debugging] [fetchAudio] HTML content detected. Extracting audio data...");
+      // Handle HTML content
       const htmlText = await response.text();
-      // Extract and process the audio data from the HTML content
       const extractedAudioData = await importHTMLAudioData(htmlText, channelIndex);
-      if (!extractedAudioData) return; // Exit if no audio data found in HTML
-      // Convert base64/URL audio data to ArrayBuffer for further processing
-      audioData = await fetch(extractedAudioData).then(res => res.arrayBuffer());
-      filename = extractedAudioData.split('/').pop();
+      if (!extractedAudioData) return;
+
+      audioData = extractedAudioData.startsWith('data:') ?
+        base64ToArrayBuffer(extractedAudioData.split(',')[1]) : // Convert base64 to ArrayBuffer directly here
+        await fetch(extractedAudioData).then(res => res.arrayBuffer());
     } else {
-      // Process non-HTML content (JSON or direct audio file)
+      // Handle direct audio file
       audioData = await response.arrayBuffer();
-      filename = fullUrl.split('/').pop();
     }
 
-    // Decode and process the audio data
+    // Decode and process the audio data uniformly
     const audioBuffer = await decodeAudioData(audioData);
-    audioBuffers.set(fullUrl, audioBuffer); // Assuming audioBuffers is a Map to store audio buffers
-    console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored. Duration: ${audioBuffer.duration} seconds. Filename: ${filename}`);
-    
+    audioBuffers.set(fullUrl, audioBuffer);
+    console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored.`);
   } catch (error) {
     console.error('[HTML Debugging] [fetchAudio] Error:', error);
   }
@@ -128,6 +120,7 @@ function bufferToBase64(buffer) {
   console.log(`[HTML Debugging] [bufferToBase64] Converted to base64, length: ${base64.length}`);
   return base64;
 }
+
 // Function to play sound
 function playSound(currentSequence, channel, currentStep) {
   console.log('playSound entered');
@@ -201,11 +194,12 @@ function calculateTrimValues(channelIndex, audioBuffer) {
 
 
 
-
 async function playAuditionedSample(url) {
   console.log('playAuditionedSample entered');
   try {
-    const response = await fetch(url);
+   // Ensure the URL is correctly formatted
+    const correctlyFormattedURL = formatURL(url);
+    const response = await fetch(correctlyFormattedURL);
     const data = await response.json();
 
     // Check if the expected audioData field is present
@@ -232,6 +226,7 @@ async function playAuditionedSample(url) {
     console.error('Error playing auditioned sample:', error);
   }
 };
+
 
 
 

@@ -40,6 +40,18 @@ class UnifiedSequencerSettings {
             }
         }
 
+        // Helper function to retrieve a URL from the channelURLs array
+        getChannelURL(index) {
+            if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+                console.log(`[getChannelURL] Retrieving URL from channel ${index}: ${this.settings.masterSettings.channelURLs[index]}`);
+                return this.settings.masterSettings.channelURLs[index];
+            } else {
+                console.error(`[getChannelURL] Invalid channel index: ${index}`);
+                return null; // or throw an error as per your application's requirements
+            }
+        }
+
+
 
     getprojectUrlforChannel(channelIndex) {
         console.log("getprojectUrlforChannel entered");
@@ -68,31 +80,24 @@ class UnifiedSequencerSettings {
             const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
             console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
     
-            // Define base URL for the content
-            const baseOrdinalsURL = 'https://ordinals.com/content/';
+            // Use the formatURL function from formattingHelpers.js for URL formatting
+            // Ensure formatURL is accessible here, either by importing or defining it in the same scope
     
-            // Check if channelURLs exist and map them to full URLs
-            const fullURLs = parsedSettings.channelURLs ?
-                parsedSettings.channelURLs.map(id => baseOrdinalsURL + id) : [];
+            // Process channelURLs and projectURLs with proper URL formatting
+            this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ?
+                parsedSettings.channelURLs.map(url => formatURL(url)) : [];
     
-            // Since channelURLs are directly used in various functionalities, they need to be updated with full URLs
-            // Update channelURLs in masterSettings directly with full URLs
-            this.settings.masterSettings.channelURLs = fullURLs;
-    
-            // Update other settings directly from parsedSettings
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
     
-            // Assuming projectURLs should be treated the same way as channelURLs, update them with full URLs if they exist
             this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
-                parsedSettings.projectURLs.map(id => baseOrdinalsURL + id) : [];
+                parsedSettings.projectURLs.map(url => formatURL(url)) : [];
     
             this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
             this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
     
             console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
     
-            // Update projectSequences if available
             if (parsedSettings.projectSequences) {
                 console.log("[internalPresetDebug] Updating project sequences");
                 this.settings.masterSettings.projectSequences = parsedSettings.projectSequences;
@@ -100,10 +105,7 @@ class UnifiedSequencerSettings {
     
             console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
     
-            // Assuming there's a function to update the UI elements like loadSampleButton with the new URLs
             this.updateAllLoadSampleButtonTexts();
-    
-            // Notify all observers about the settings change
             this.notifyObservers();
     
         } catch (error) {
