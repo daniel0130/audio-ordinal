@@ -2,8 +2,8 @@
 
     function setupLoadSampleModalButton(channel, index) {
         const loadSampleButton = channel.querySelector('.load-sample-button');
-        // Update the button text with the corresponding URL from projectURLs array
-        loadSampleButton.textContent = window.unifiedSequencerSettings.settings.masterSettings.projectURLs[index];
+        // Update the button text with the corresponding URL from channelURLs array
+        loadSampleButton.textContent = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index];
         // Add event listener to open the modal
         // loadSampleButton.addEventListener('click', () => 
         openModal(index, loadSampleButton);
