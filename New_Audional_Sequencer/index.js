@@ -35,7 +35,6 @@ let channelMutes = []; // Declare the channelMutes array as a global variable
 let muteState = false
 let volumeStates = Array(16).fill(1); // Start with full volume for all channels
 let soloedChannels = Array(16).fill(false); // Assuming you have 16 channels
-const audioBuffers = new Map();
 let channels = document.querySelectorAll('.channel[id^="channel-"]');
 let activeChannels = 16;// new Set();
 let clearClickedOnce = Array(channels.length).fill(false);

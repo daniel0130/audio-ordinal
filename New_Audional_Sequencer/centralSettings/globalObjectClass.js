@@ -39,6 +39,78 @@ class UnifiedSequencerSettings {
                 console.error(`[addChannelURL] Invalid channel index: ${index}`);
             }
         }
+
+
+    getprojectUrlforChannel(channelIndex) {
+        console.log("getprojectUrlforChannel entered");
+        return this.settings.masterSettings.projectURLs[channelIndex];
+    }
+
+    setChannelURLs(urls) {
+        console.log("setProjectURLs entered");
+        this.settings.masterSettings.channelURLs = urls;
+        console.log(`[setChannelURLs] Channel URLs set:`, urls);
+    
+        // Correctly calling the method within the same class
+        this.updateAllLoadSampleButtonTexts();
+    }
+
+    setProjectName(name) {
+        console.log("setProjectName entered");
+        this.settings.masterSettings.projectName = name;
+        console.log(`[setProjectName] Project name set to: ${name}`);
+    }
+
+    loadSettings(jsonSettings) {
+        console.log("[internalPresetDebug] loadSettings entered");
+        try {
+            console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
+            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
+            console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
+    
+            // Define base URL for the content
+            const baseOrdinalsURL = 'https://ordinals.com/content/';
+    
+            // Check if channelURLs exist and map them to full URLs
+            const fullURLs = parsedSettings.channelURLs ?
+                parsedSettings.channelURLs.map(id => baseOrdinalsURL + id) : [];
+    
+            // Since channelURLs are directly used in various functionalities, they need to be updated with full URLs
+            // Update channelURLs in masterSettings directly with full URLs
+            this.settings.masterSettings.channelURLs = fullURLs;
+    
+            // Update other settings directly from parsedSettings
+            this.settings.masterSettings.projectName = parsedSettings.projectName;
+            this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+    
+            // Assuming projectURLs should be treated the same way as channelURLs, update them with full URLs if they exist
+            this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
+                parsedSettings.projectURLs.map(id => baseOrdinalsURL + id) : [];
+    
+            this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
+            this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
+    
+            console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
+    
+            // Update projectSequences if available
+            if (parsedSettings.projectSequences) {
+                console.log("[internalPresetDebug] Updating project sequences");
+                this.settings.masterSettings.projectSequences = parsedSettings.projectSequences;
+            }
+    
+            console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
+    
+            // Assuming there's a function to update the UI elements like loadSampleButton with the new URLs
+            this.updateAllLoadSampleButtonTexts();
+    
+            // Notify all observers about the settings change
+            this.notifyObservers();
+    
+        } catch (error) {
+            console.error('[internalPresetDebug] Error loading settings:', error);
+        }
+    }
+    
         
 
         clearMasterSettings() {
@@ -307,26 +379,6 @@ class UnifiedSequencerSettings {
     
    
 
-    getprojectUrlforChannel(channelIndex) {
-        console.log("getprojectUrlforChannel entered");
-        return this.settings.masterSettings.projectURLs[channelIndex];
-    }
-
-    setChannelURLs(urls) {
-        console.log("setProjectURLs entered");
-        this.settings.masterSettings.channelURLs = urls;
-        console.log(`[setChannelURLs] Channel URLs set:`, urls);
-    
-        // Correctly calling the method within the same class
-        this.updateAllLoadSampleButtonTexts();
-    }
-
-    setProjectName(name) {
-        console.log("setProjectName entered");
-        this.settings.masterSettings.projectName = name;
-        console.log(`[setProjectName] Project name set to: ${name}`);
-    }
-
     
     
 
@@ -359,40 +411,7 @@ class UnifiedSequencerSettings {
     }
 
 
-    loadSettings(jsonSettings) {
-        console.log("[internalPresetDebug] loadSettings entered");
-        try {
-            console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
-            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-            console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
-    
-            // Update the masterSettings with the parsed settings
-            this.settings.masterSettings.projectName = parsedSettings.projectName;
-            this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
-            this.settings.masterSettings.channelURLs = parsedSettings.channelURLs;
-            this.settings.masterSettings.projectURLs = parsedSettings.projectURLs;
-            this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
-            this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
-            console.log("[internalPresetDebug] Updated masterSettings:", this.settings.masterSettings);
-    
-            // Update projectSequences
-            if (parsedSettings.projectSequences) {
-                console.log("[internalPresetDebug] Updating project sequences");
-                this.setProjectSequences(parsedSettings.projectSequences);
-            }
-    
-            console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
-    
-            // Update the text of each loadSampleButton with the loaded URL
-            this.updateAllLoadSampleButtonTexts();
-        } catch (error) {
-            console.error('[internalPresetDebug] Error loading settings:', error);
-        }
-        // Notify all observers about the change
-        this.notifyObservers();
-    }
-    
-    
+  
     
         
         // Helper function to ensure array length

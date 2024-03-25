@@ -153,7 +153,7 @@ async function processURL(url, index, loadSampleButton) {
 
 
 async function importHTMLSampleData(htmlContent, index) {
-    console.log("[importHTMLSampleData] Entered function with index: ", index);
+    console.log("[html debugging] [importHTMLSampleData] Entered function with index: ", index);
     try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, 'text/html');
@@ -163,17 +163,17 @@ async function importHTMLSampleData(htmlContent, index) {
             const base64AudioData = sourceElement.getAttribute('src');
             // Convert the prefix to lowercase before checking
             if (base64AudioData.toLowerCase().startsWith('data:audio/wav;base64,') || base64AudioData.toLowerCase().startsWith('data:audio/mp3;base64,')) {
-                console.log("[importHTMLSampleData] Extracted base64 audio data.");
+                console.log("[html debugging] [importHTMLSampleData] Extracted base64 audio data.");
                 // Directly return the base64 audio data URL
                 return base64AudioData;
             } else {
-                console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.");
+                console.error("[html debugging][importHTMLSampleData] Audio data does not start with expected base64 prefix.");
             }
         } else {
-            console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.");
+            console.error("[html debugging][importHTMLSampleData] Could not find the audio source element in the HTML content.");
         }
     } catch (error) {
-        console.error("[importHTMLSampleData] Error parsing HTML content: ", error);
+        console.error("[html debugging][importHTMLSampleData] Error parsing HTML content: ", error);
     }
     // Return null in case of errors or if audio data is not found
     return null;

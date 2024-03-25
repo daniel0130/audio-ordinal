@@ -1,5 +1,7 @@
 // audioUtils.js
 
+const audioBuffers = new Map();
+
 
 // Function to get the ID from a URL
 function getIDFromURL(url) {
@@ -21,9 +23,11 @@ function base64ToArrayBuffer(base64) {
   return bytes.buffer;
 }
 
+
+
 // Function to decode audio data
 const decodeAudioData = (audioData) => {
-  
+
   let byteArray = new Uint8Array(audioData.slice(0, 20));
   console.log('[HTML Debugging] [decodeAudioData] ArrayBuffer first 20 bytes:', byteArray.join(', '));
     return new Promise((resolve, reject) => {
@@ -31,65 +35,51 @@ const decodeAudioData = (audioData) => {
           console.log('[HTML Debugging] [decodeAudioData] Audio data decoded successfully.');
           resolve(decodedData);
       }, (error) => {
-          console.error('[HTML Debugging] [decodeAudioData] Error decoding audio data:', error);
-          reject(error);
+        console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
+
+        reject(error);
       });
   });
 };
 
-// Function to fetch and parse the HTML to find the content type
-async function fetchAndParseContentType(url) {
-  console.log('[HTML Debugging] fetchAndParseContentType entered');
-  try {
-      const response = await fetch(url);
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const contentTypeElement = doc.querySelector('dt:contains("content type") + dd');
-      if (contentTypeElement) {
-        console.log('[HTML Debugging] [fetchAndParseContentType] Found content type:', contentTypeElement.textContent);
-          return contentTypeElement.textContent;
-      } else {
-        console.log('[HTML Debugging] [fetchAndParseContentType] Content type not found.');
-          throw new Error('Content type not found');
-      }
-  } catch (error) {
-    console.error('[HTML Debugging] [fetchAndParseContentType] Error fetching or parsing HTML:', error);
-  }
-}
 
 // Function to fetch and process audio data
+
 const fetchAudio = async (url, channelIndex) => {
-  console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', url, 'Channel Index:', channelIndex);
+  // Adjust the URL if it's not already a full URL
+  const fullUrl = url.includes(BASE_ORDINALS_URL) ? url : BASE_ORDINALS_URL + url;
+
+  console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', fullUrl, 'Channel Index:', channelIndex);
   try {
-    const response = await fetch(url);
+    console.log(`[HTML Debugging] [fetchAudio] Fetching URL: ${fullUrl}`);
+    const response = await fetch(fullUrl);
     const contentType = response.headers.get('Content-Type');
     console.log('[HTML Debugging] [fetchAudio] Response Content-Type:', contentType);
 
     let audioData;
     let filename;
-
+    
     // Check if the content is HTML and process accordingly
     if (contentType && contentType.includes('text/html')) {
       console.log("[HTML Debugging] [fetchAudio] HTML content detected. Extracting audio data...");
       const htmlText = await response.text();
       // Extract and process the audio data from the HTML content
-      const audioURL = await importHTMLAudioData(htmlText, channelIndex);
-      if (!audioURL) return; // Exit if no audio data found in HTML
+      const extractedAudioData = await importHTMLAudioData(htmlText, channelIndex);
+      if (!extractedAudioData) return; // Exit if no audio data found in HTML
       // Convert base64/URL audio data to ArrayBuffer for further processing
-      audioData = await fetch(audioURL).then(res => res.arrayBuffer());
-      filename = audioURL.split('/').pop();
+      audioData = await fetch(extractedAudioData).then(res => res.arrayBuffer());
+      filename = extractedAudioData.split('/').pop();
     } else {
       // Process non-HTML content (JSON or direct audio file)
-      audioData = await response.clone().json().then(data => base64ToArrayBuffer(data.audioData.split(',')[1])).catch(() => response.arrayBuffer());
-      filename = url.split('/').pop();
+      audioData = await response.arrayBuffer();
+      filename = fullUrl.split('/').pop();
     }
 
     // Decode and process the audio data
     const audioBuffer = await decodeAudioData(audioData);
-    audioBuffers.set(url, audioBuffer); // Assuming audioBuffers is a Map to store audio buffers
-
+    audioBuffers.set(fullUrl, audioBuffer); // Assuming audioBuffers is a Map to store audio buffers
     console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored. Duration: ${audioBuffer.duration} seconds. Filename: ${filename}`);
+    
   } catch (error) {
     console.error('[HTML Debugging] [fetchAudio] Error:', error);
   }
@@ -123,93 +113,6 @@ async function importHTMLAudioData(htmlContent, index) {
   // Return null in case of errors or if audio data is not found
   return null;
 }
-
-// // Function to fetch audio data
-// const fetchAudio = async (url, channelIndex,) => {
-//   console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', url, 'Channel Index:', channelIndex);
-//   try {
-//       const response = await fetch(url);
-//       console.log('[HTML Debugging] [fetchAudio] Response Content-Type:', response.headers.get('Content-Type'));
-
-//       let audioData;
-//       let filename;
-
-//       console.log('[HTML Debugging] [fetchAudio] Response received from URL.');
-
-
-//       // Clone the response for a second read attempt if the first one fails
-//       const clonedResponse = response.clone();
-
-//       try {
-//           // Try to read the response as JSON
-//           const data = await response.json();
-//           console.log('[HTML Debugging] [fetchAudio] Response successfully read as JSON.');
-//           audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
-//           filename = data.filename || data.fileName;
-//       } catch (e) {
-//         console.log("[fetchAudio] Response is not JSON, trying to read as arrayBuffer");
-//         try {
-//               audioData = await clonedResponse.arrayBuffer();
-//               filename = url.split('/').pop();
-//               console.log('[HTML Debugging] [fetchAudio] Fallback to arrayBuffer successful. Filename:', filename);
-//           } catch (e) {
-//               console.error("Response could not be processed as JSON or as an ArrayBuffer.", e);
-//               return;
-//           }
-//       }
-
-//       // Proceed with audio data processing
-//       console.log('[HTML Debugging] [fetchAudio] Proceeding with audio data processing.');
-//       const audioBuffer = await decodeAudioData(audioData);
-//       console.log('[HTML Debugging] [fetchAudio] Audio data decoded.');
-//       // Assuming audioBuffers is a Map to store audio buffers
-//       audioBuffers.set(url, audioBuffer);
-
-//       // Update the global object with the new URL and audio data
-//       window.unifiedSequencerSettings.updateSetting('projectURLs', url, channelIndex);
-//       window.unifiedSequencerSettings.updateSampleDuration(audioBuffer.duration, channelIndex);
-//       window.unifiedSequencerSettings.updateAllLoadSampleButtonTexts();
-//       console.log(`[HTML Debugging] [fetchAudio] Updated global object with URL: ${url} and duration: ${audioBuffer.duration} for channel index: ${channelIndex}`);
-
-//       console.log(`[HTML Debugging] [fetchAudio] Audio buffer duration: ${audioBuffer.duration} seconds.`);
-//     } catch (error) {
-//         console.error('[HTML Debugging] [fetchAudio] Error fetching audio:', error);
-//     }
-//   };
-
-//   // Helper function to process URL
-// async function processHtmlUrls(url, index, loadSampleButton) {
-//   console.log("[HTML Debugging] [processURL] URL: ", url);
-
-//   try {
-//       const response = await fetch(url);
-//       const contentType = response.headers.get("Content-Type");
-//       console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
-
-//       if (contentType && contentType.includes("text/html")) {
-//           console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
-//           const htmlText = await response.text();
-//           // Wait for the importHTMLSampleData to process and return the direct audio URL (base64 data)
-//           const audioURL = await importHTMLAudioData(htmlText, index);
-//           // Process the extracted audio URL as if it was direct audio content
-//           if (audioURL) {
-//               fetchAudio(audioURL, index);
-//               // Log and add the URL to the global settings
-//               window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
-//           }
-//       } else {
-//           console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
-//           fetchAudio(url, index);
-//           // Log and add the URL to the global settings
-//           window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
-//       }
-//   } catch (error) {
-//       console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
-//   }
-// }
-
-
-
 
 // Helper function to convert an ArrayBuffer to a Base64 string
 function bufferToBase64(buffer) {
@@ -369,9 +272,6 @@ function updateMuteState(channel, isMuted) {
   // console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${isMuted}`);
 }
 
-
-  
-
 // Function to handle manual toggle of the mute button
 function toggleMute(channelElement) {
   console.log('toggleMute entered');
@@ -380,3 +280,112 @@ function toggleMute(channelElement) {
   updateMuteState(channelElement, !isMuted, channelIndex);
   console.log('Mute has been toggled by the toggleMute function');
 }
+
+
+
+// // Function to fetch and parse the HTML to find the content type
+// async function fetchAndParseContentType(url) {
+//   console.log('[HTML Debugging] fetchAndParseContentType entered');
+//   try {
+//       const response = await fetch(url);
+//       const html = await response.text();
+//       const parser = new DOMParser();
+//       const doc = parser.parseFromString(html, 'text/html');
+//       const contentTypeElement = doc.querySelector('dt:contains("content type") + dd');
+//       if (contentTypeElement) {
+//         console.log('[HTML Debugging] [fetchAndParseContentType] Found content type:', contentTypeElement.textContent);
+//           return contentTypeElement.textContent;
+//       } else {
+//         console.log('[HTML Debugging] [fetchAndParseContentType] Content type not found.');
+//           throw new Error('Content type not found');
+//       }
+//   } catch (error) {
+//     console.error('[HTML Debugging] [fetchAndParseContentType] Error fetching or parsing HTML:', error);
+//   }
+// }
+
+// // Function to fetch audio data
+// const fetchAudio = async (url, channelIndex,) => {
+//   console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', url, 'Channel Index:', channelIndex);
+//   try {
+//       const response = await fetch(url);
+//       console.log('[HTML Debugging] [fetchAudio] Response Content-Type:', response.headers.get('Content-Type'));
+
+//       let audioData;
+//       let filename;
+
+//       console.log('[HTML Debugging] [fetchAudio] Response received from URL.');
+
+
+//       // Clone the response for a second read attempt if the first one fails
+//       const clonedResponse = response.clone();
+
+//       try {
+//           // Try to read the response as JSON
+//           const data = await response.json();
+//           console.log('[HTML Debugging] [fetchAudio] Response successfully read as JSON.');
+//           audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
+//           filename = data.filename || data.fileName;
+//       } catch (e) {
+//         console.log("[fetchAudio] Response is not JSON, trying to read as arrayBuffer");
+//         try {
+//               audioData = await clonedResponse.arrayBuffer();
+//               filename = url.split('/').pop();
+//               console.log('[HTML Debugging] [fetchAudio] Fallback to arrayBuffer successful. Filename:', filename);
+//           } catch (e) {
+//               console.error("Response could not be processed as JSON or as an ArrayBuffer.", e);
+//               return;
+//           }
+//       }
+
+//       // Proceed with audio data processing
+//       console.log('[HTML Debugging] [fetchAudio] Proceeding with audio data processing.');
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log('[HTML Debugging] [fetchAudio] Audio data decoded.');
+//       // Assuming audioBuffers is a Map to store audio buffers
+//       audioBuffers.set(url, audioBuffer);
+
+//       // Update the global object with the new URL and audio data
+//       window.unifiedSequencerSettings.updateSetting('projectURLs', url, channelIndex);
+//       window.unifiedSequencerSettings.updateSampleDuration(audioBuffer.duration, channelIndex);
+//       window.unifiedSequencerSettings.updateAllLoadSampleButtonTexts();
+//       console.log(`[HTML Debugging] [fetchAudio] Updated global object with URL: ${url} and duration: ${audioBuffer.duration} for channel index: ${channelIndex}`);
+
+//       console.log(`[HTML Debugging] [fetchAudio] Audio buffer duration: ${audioBuffer.duration} seconds.`);
+//     } catch (error) {
+//         console.error('[HTML Debugging] [fetchAudio] Error fetching audio:', error);
+//     }
+//   };
+
+//   // Helper function to process URL
+// async function processHtmlUrls(url, index, loadSampleButton) {
+//   console.log("[HTML Debugging] [processURL] URL: ", url);
+
+//   try {
+//       const response = await fetch(url);
+//       const contentType = response.headers.get("Content-Type");
+//       console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
+
+//       if (contentType && contentType.includes("text/html")) {
+//           console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
+//           const htmlText = await response.text();
+//           // Wait for the importHTMLSampleData to process and return the direct audio URL (base64 data)
+//           const audioURL = await importHTMLAudioData(htmlText, index);
+//           // Process the extracted audio URL as if it was direct audio content
+//           if (audioURL) {
+//               fetchAudio(audioURL, index);
+//               // Log and add the URL to the global settings
+//               window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
+//           }
+//       } else {
+//           console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
+//           fetchAudio(url, index);
+//           // Log and add the URL to the global settings
+//           window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
+//       }
+//   } catch (error) {
+//       console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
+//   }
+// }
+
+
