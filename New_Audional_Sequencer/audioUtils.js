@@ -1,5 +1,7 @@
 // audioUtils.js
 
+const audioBuffers = new Map();
+
 
 // Function to get the ID from a URL
 function getIDFromURL(url) {
@@ -21,9 +23,11 @@ function base64ToArrayBuffer(base64) {
   return bytes.buffer;
 }
 
+
+
 // Function to decode audio data
 const decodeAudioData = (audioData) => {
-  
+
   let byteArray = new Uint8Array(audioData.slice(0, 20));
   console.log('[HTML Debugging] [decodeAudioData] ArrayBuffer first 20 bytes:', byteArray.join(', '));
     return new Promise((resolve, reject) => {
@@ -31,65 +35,43 @@ const decodeAudioData = (audioData) => {
           console.log('[HTML Debugging] [decodeAudioData] Audio data decoded successfully.');
           resolve(decodedData);
       }, (error) => {
-          console.error('[HTML Debugging] [decodeAudioData] Error decoding audio data:', error);
-          reject(error);
+        console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
+
+        reject(error);
       });
   });
 };
 
-// Function to fetch and parse the HTML to find the content type
-async function fetchAndParseContentType(url) {
-  console.log('[HTML Debugging] fetchAndParseContentType entered');
-  try {
-      const response = await fetch(url);
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const contentTypeElement = doc.querySelector('dt:contains("content type") + dd');
-      if (contentTypeElement) {
-        console.log('[HTML Debugging] [fetchAndParseContentType] Found content type:', contentTypeElement.textContent);
-          return contentTypeElement.textContent;
-      } else {
-        console.log('[HTML Debugging] [fetchAndParseContentType] Content type not found.');
-          throw new Error('Content type not found');
-      }
-  } catch (error) {
-    console.error('[HTML Debugging] [fetchAndParseContentType] Error fetching or parsing HTML:', error);
-  }
-}
 
 // Function to fetch and process audio data
+
 const fetchAudio = async (url, channelIndex) => {
-  console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', url, 'Channel Index:', channelIndex);
+  const fullUrl = formatURL(url);
+  console.log('[HTML Debugging] [fetchAudio] Entered function. URL:', fullUrl, 'Channel Index:', channelIndex);
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(fullUrl);
     const contentType = response.headers.get('Content-Type');
-    console.log('[HTML Debugging] [fetchAudio] Response Content-Type:', contentType);
-
     let audioData;
-    let filename;
 
-    // Check if the content is HTML and process accordingly
     if (contentType && contentType.includes('text/html')) {
-      console.log("[HTML Debugging] [fetchAudio] HTML content detected. Extracting audio data...");
+      // Handle HTML content
       const htmlText = await response.text();
-      // Extract and process the audio data from the HTML content
-      const audioURL = await importHTMLAudioData(htmlText, channelIndex);
-      if (!audioURL) return; // Exit if no audio data found in HTML
-      // Convert base64/URL audio data to ArrayBuffer for further processing
-      audioData = await fetch(audioURL).then(res => res.arrayBuffer());
-      filename = audioURL.split('/').pop();
+      const extractedAudioData = await importHTMLAudioData(htmlText, channelIndex);
+      if (!extractedAudioData) return;
+
+      audioData = extractedAudioData.startsWith('data:') ?
+        base64ToArrayBuffer(extractedAudioData.split(',')[1]) : // Convert base64 to ArrayBuffer directly here
+        await fetch(extractedAudioData).then(res => res.arrayBuffer());
     } else {
-      // Process non-HTML content (JSON or direct audio file)
-      audioData = await response.clone().json().then(data => base64ToArrayBuffer(data.audioData.split(',')[1])).catch(() => response.arrayBuffer());
-      filename = url.split('/').pop();
+      // Handle direct audio file
+      audioData = await response.arrayBuffer();
     }
 
-    // Decode and process the audio data
+    // Decode and process the audio data uniformly
     const audioBuffer = await decodeAudioData(audioData);
-    audioBuffers.set(url, audioBuffer); // Assuming audioBuffers is a Map to store audio buffers
-
-    console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored. Duration: ${audioBuffer.duration} seconds. Filename: ${filename}`);
+    audioBuffers.set(fullUrl, audioBuffer);
+    console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored.`);
   } catch (error) {
     console.error('[HTML Debugging] [fetchAudio] Error:', error);
   }
@@ -123,6 +105,208 @@ async function importHTMLAudioData(htmlContent, index) {
   // Return null in case of errors or if audio data is not found
   return null;
 }
+
+// Helper function to convert an ArrayBuffer to a Base64 string
+function bufferToBase64(buffer) {
+  console.log('bufferToBase64 entered');
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  console.log(`[HTML Debugging] [bufferToBase64] Buffer length: ${len}`);
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = window.btoa(binary);
+  console.log(`[HTML Debugging] [bufferToBase64] Converted to base64, length: ${base64.length}`);
+  return base64;
+}
+
+// Function to play sound
+function playSound(currentSequence, channel, currentStep) {
+  console.log('playSound entered');
+  const channelIndex = getChannelIndex(channel);
+  console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
+
+  const stepState = getStepState(currentSequence, channelIndex, currentStep);
+  console.log(`[playSound Debugging] [playSound] setting stepState using getStepState to: ${stepState}`);
+  if (!stepState) {
+      console.log("[playSound Debugging] [playSound] Current step is not selected. Skipping playback.");
+      return;
+  }
+
+  const url = getAudioUrl(channelIndex);
+  console.log("[playSound Debugging] [playSound] Audio URL:", url);
+  const audioBuffer = getAudioBuffer(url);
+  if (!audioBuffer) {
+      console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
+      return;
+  }
+  
+  console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
+
+  playTrimmedAudio(channelIndex, audioBuffer, url);
+}
+
+
+function getChannelIndex(channel) {
+  return parseInt(channel.dataset.id.split('-')[1]);
+}
+
+function getStepState(currentSequence, channelIndex, currentStep) {
+  console.log(`[playSound Debugging] [getStepState called] currentSequence: ${currentSequence}, channelIndex: ${channelIndex}, currentStep: ${currentStep}`);
+  return window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
+}
+
+function getAudioUrl(channelIndex) {
+  // Example check to ensure URL exists for the given channel index
+  if (typeof window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex) === 'undefined') {
+    console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${channelIndex}`);
+    return 'defaultURL'; // Provide a default URL or handle the error appropriately
+  }
+  return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+}
+
+function getAudioBuffer(url) {
+  return audioBuffers.get(url);
+}
+
+function playTrimmedAudio(channelIndex, audioBuffer, url) {
+  console.log('playTrimmedAudio entered');
+  console.log("[playTrimmedAudio] Audio buffer found for URL:", url);
+
+  const source = audioContext.createBufferSource();
+  source.buffer = audioBuffer;
+
+  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer);
+  source.connect(gainNodes[channelIndex]);
+  gainNodes[channelIndex].connect(audioContext.destination);
+
+  
+  console.log(`[debug - playSound] Playing audio from URL: ${url} for channel index: ${channelIndex} at trimStart: ${trimStart} and duration: ${duration}`);
+
+  source.start(0, trimStart, duration);
+}
+
+function calculateTrimValues(channelIndex, audioBuffer) {
+  const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
+  let trimStart = (trimSettings.startSliderValue / 100) * audioBuffer.duration;
+  let trimEnd = (trimSettings.endSliderValue / 100) * audioBuffer.duration;
+
+  trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
+  trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
+
+  return {
+      trimStart: trimStart,
+      duration: trimEnd - trimStart
+  };
+}
+
+
+
+async function playAuditionedSample(url) {
+  console.log('playAuditionedSample entered');
+  try {
+   // Ensure the URL is correctly formatted
+    const correctlyFormattedURL = formatURL(url);
+    const response = await fetch(correctlyFormattedURL);
+    const data = await response.json();
+
+    // Check if the expected audioData field is present
+    if (data.audioData) {
+      const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
+
+      if (!audioContext) {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+      }
+
+      const audioBuffer = await decodeAudioData(audioData);
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+    } else {
+      console.log("Audional data not found in response, attempting to fetch and parse content type.");
+      const contentType = await fetchAndParseContentType(url);
+      console.log(`Content type found: ${contentType}`);
+      // Additional logic to handle the content type will be added here
+    }
+  } catch (error) {
+    console.error('Error playing auditioned sample:', error);
+  }
+};
+
+
+
+
+// Function to toggle the play state
+function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
+  console.log('togglePlayState entered');
+  if (!isPlaying) {
+    isPlaying = true;
+    startStopFunction();
+    firstButton.classList.add('selected');
+    secondButton.classList.remove('selected');
+  }
+}
+
+// Function to update the mute state in a single function
+function updateMuteState(channel, isMuted) {
+  console.log('updateMuteState entered');
+  console.log("updateMuteState - isMuted: " + isMuted);
+  const channelIndex = parseInt(channel.dataset.id.split('-')[1]);
+  channel.dataset.muted = isMuted ? 'true' : 'false';
+  const muteButton = channel.querySelector('.mute-button');
+
+  muteButton.classList.toggle('selected', isMuted);
+  channelMutes[channelIndex] = isMuted;
+
+  // Mute or unmute using gain node
+  if (isMuted) {
+      gainNodes[channelIndex].gain.value = 0; // Mute the channel
+      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Muted");
+  } else {
+      gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
+      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Unmuted");
+  }
+
+  // Update the dim state of the channel
+  updateDimState(channel, channelIndex);
+
+  // console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${isMuted}`);
+}
+
+// Function to handle manual toggle of the mute button
+function toggleMute(channelElement) {
+  console.log('toggleMute entered');
+  const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]);
+  const isMuted = channelMutes[channelIndex];
+  updateMuteState(channelElement, !isMuted, channelIndex);
+  console.log('Mute has been toggled by the toggleMute function');
+}
+
+
+
+// // Function to fetch and parse the HTML to find the content type
+// async function fetchAndParseContentType(url) {
+//   console.log('[HTML Debugging] fetchAndParseContentType entered');
+//   try {
+//       const response = await fetch(url);
+//       const html = await response.text();
+//       const parser = new DOMParser();
+//       const doc = parser.parseFromString(html, 'text/html');
+//       const contentTypeElement = doc.querySelector('dt:contains("content type") + dd');
+//       if (contentTypeElement) {
+//         console.log('[HTML Debugging] [fetchAndParseContentType] Found content type:', contentTypeElement.textContent);
+//           return contentTypeElement.textContent;
+//       } else {
+//         console.log('[HTML Debugging] [fetchAndParseContentType] Content type not found.');
+//           throw new Error('Content type not found');
+//       }
+//   } catch (error) {
+//     console.error('[HTML Debugging] [fetchAndParseContentType] Error fetching or parsing HTML:', error);
+//   }
+// }
 
 // // Function to fetch audio data
 // const fetchAudio = async (url, channelIndex,) => {
@@ -209,174 +393,3 @@ async function importHTMLAudioData(htmlContent, index) {
 // }
 
 
-
-
-// Helper function to convert an ArrayBuffer to a Base64 string
-function bufferToBase64(buffer) {
-  console.log('bufferToBase64 entered');
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  console.log(`[HTML Debugging] [bufferToBase64] Buffer length: ${len}`);
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  const base64 = window.btoa(binary);
-  console.log(`[HTML Debugging] [bufferToBase64] Converted to base64, length: ${base64.length}`);
-  return base64;
-}
-// Function to play sound
-function playSound(currentSequence, channel, currentStep) {
-  console.log('playSound entered');
-  const channelIndex = getChannelIndex(channel);
-  console.log(`[HTML Debugging] [playSound] Processing channel index: ${channelIndex}`);
-
-  const stepState = getStepState(currentSequence, channelIndex, currentStep);
-  console.log(`[HTML Debugging] [playSound] setting stepState using getStepState to: ${stepState}`);
-  if (!stepState) {
-      console.log("[HTML Debugging] [playSound] Current step is not selected. Skipping playback.");
-      return;
-  }
-
-  const url = getAudioUrl(channelIndex);
-  const audioBuffer = getAudioBuffer(url);
-  if (!audioBuffer) {
-      console.log("[HTML Debugging] [playSound] No audio buffer found for URL:", url);
-      return;
-  }
-
-  playTrimmedAudio(channelIndex, audioBuffer, url);
-}
-
-function getChannelIndex(channel) {
-  return parseInt(channel.dataset.id.split('-')[1]);
-}
-
-function getStepState(currentSequence, channelIndex, currentStep) {
-  console.log(`[HTML Debugging] [getStepState called] currentSequence: ${currentSequence}, channelIndex: ${channelIndex}, currentStep: ${currentStep}`);
-  return window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
-}
-
-function getAudioUrl(channelIndex) {
-  return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
-}
-
-function getAudioBuffer(url) {
-  return audioBuffers.get(url);
-}
-
-function playTrimmedAudio(channelIndex, audioBuffer, url) {
-  console.log('playTrimmedAudio entered');
-  console.log("[playTrimmedAudio] Audio buffer found for URL:", url);
-
-  const source = audioContext.createBufferSource();
-  source.buffer = audioBuffer;
-
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer);
-  source.connect(gainNodes[channelIndex]);
-  gainNodes[channelIndex].connect(audioContext.destination);
-
-  
-  console.log(`[debug - playSound] Playing audio from URL: ${url} for channel index: ${channelIndex} at trimStart: ${trimStart} and duration: ${duration}`);
-
-  source.start(0, trimStart, duration);
-}
-
-function calculateTrimValues(channelIndex, audioBuffer) {
-  const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
-  let trimStart = (trimSettings.startSliderValue / 100) * audioBuffer.duration;
-  let trimEnd = (trimSettings.endSliderValue / 100) * audioBuffer.duration;
-
-  trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
-  trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
-
-  return {
-      trimStart: trimStart,
-      duration: trimEnd - trimStart
-  };
-}
-
-
-
-
-async function playAuditionedSample(url) {
-  console.log('playAuditionedSample entered');
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    // Check if the expected audioData field is present
-    if (data.audioData) {
-      const audioData = base64ToArrayBuffer(data.audioData.split(',')[1]);
-
-      if (!audioContext) {
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioContext = new AudioContext();
-      }
-
-      const audioBuffer = await decodeAudioData(audioData);
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-      source.start();
-    } else {
-      console.log("Audional data not found in response, attempting to fetch and parse content type.");
-      const contentType = await fetchAndParseContentType(url);
-      console.log(`Content type found: ${contentType}`);
-      // Additional logic to handle the content type will be added here
-    }
-  } catch (error) {
-    console.error('Error playing auditioned sample:', error);
-  }
-};
-
-
-
-// Function to toggle the play state
-function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
-  console.log('togglePlayState entered');
-  if (!isPlaying) {
-    isPlaying = true;
-    startStopFunction();
-    firstButton.classList.add('selected');
-    secondButton.classList.remove('selected');
-  }
-}
-
-// Function to update the mute state in a single function
-function updateMuteState(channel, isMuted) {
-  console.log('updateMuteState entered');
-  console.log("updateMuteState - isMuted: " + isMuted);
-  const channelIndex = parseInt(channel.dataset.id.split('-')[1]);
-  channel.dataset.muted = isMuted ? 'true' : 'false';
-  const muteButton = channel.querySelector('.mute-button');
-
-  muteButton.classList.toggle('selected', isMuted);
-  channelMutes[channelIndex] = isMuted;
-
-  // Mute or unmute using gain node
-  if (isMuted) {
-      gainNodes[channelIndex].gain.value = 0; // Mute the channel
-      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Muted");
-  } else {
-      gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
-      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Unmuted");
-  }
-
-  // Update the dim state of the channel
-  updateDimState(channel, channelIndex);
-
-  // console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${isMuted}`);
-}
-
-
-  
-
-// Function to handle manual toggle of the mute button
-function toggleMute(channelElement) {
-  console.log('toggleMute entered');
-  const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]);
-  const isMuted = channelMutes[channelIndex];
-  updateMuteState(channelElement, !isMuted, channelIndex);
-  console.log('Mute has been toggled by the toggleMute function');
-}
