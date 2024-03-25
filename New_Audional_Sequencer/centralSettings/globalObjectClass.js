@@ -13,9 +13,9 @@ class UnifiedSequencerSettings {
 
                 // projectURLs: new Array(16).fill(''), 
                 trimSettings: Array.from({ length: 16 }, () => ({
-                    startSliderValue: 0.01,
-                    endSliderValue: 100.00,
-                    totalSampleDuration: 0
+                    start: 0.01,
+                    end: 100.00,
+                    length: 0
                 })),
                 projectChannelNames: new Array(16).fill(''), // Placeholder for channel names
                 projectSequences: this.initializeSequences(16, 16, 64) // Adjust dimensions as needed
@@ -126,9 +126,9 @@ class UnifiedSequencerSettings {
 
                 // projectURLs: new Array(16).fill(''),
                 trimSettings: Array.from({ length: 16 }, () => ({
-                    startSliderValue: 0.01,
-                    endSliderValue: 100.00,
-                    totalSampleDuration: 0
+                    start: 0.01,
+                    end: 100.00,
+                    length: 0
                 })),
                 projectChannelNames: new Array(16).fill(''),
                 projectSequences: this.initializeSequences(16, 16, 64)
@@ -169,9 +169,9 @@ class UnifiedSequencerSettings {
         console.log("initializeTrimSettings", numSettings);
         }
         return Array.from({ length: numSettings }, () => ({
-            startSliderValue: 0,
-            endSliderValue: 100,
-            totalSampleDuration: 0
+            start: 0,
+            end: 100,
+            length: 0
         }));
     }
 
@@ -191,15 +191,15 @@ class UnifiedSequencerSettings {
         this.observers.forEach(observerFunction => observerFunction(this.settings));
     }
 
-    setTrimSettings(channelIndex, startSliderValue, endSliderValue) {
+    setTrimSettings(channelIndex, start, end) {
         console.log("setTrimSettings entered");
         if (channelIndex < 1) {
-            console.log("setTrimSettings", channelIndex, startSliderValue, endSliderValue);
+            console.log("setTrimSettings", channelIndex, start, end);
         }
         if (this.isValidIndex(channelIndex)) {
             const currentSettings = this.settings.masterSettings.trimSettings[channelIndex];
             if (currentSettings) {
-                Object.assign(currentSettings, { startSliderValue, endSliderValue });
+                Object.assign(currentSettings, { start, end });
             } else {
                 console.error(`Trim settings not found for channel index: ${channelIndex}`);
             }
@@ -214,7 +214,7 @@ class UnifiedSequencerSettings {
         console.log("getTrimSettings", channelIndex);
         }
         const trimSettings = this.settings.masterSettings.trimSettings[channelIndex];
-        return trimSettings || { startSliderValue: 0.01, endSliderValue: 100.00 };
+        return trimSettings || { start: 0.01, end: 100.00 };
     }
 
     updateTrimSettingsUI(trimSettings) {
@@ -226,8 +226,8 @@ class UnifiedSequencerSettings {
             const startSlider = document.getElementById(`start-slider-${index}`);
             const endSlider = document.getElementById(`end-slider-${index}`);
             if (startSlider && endSlider) {
-                startSlider.value = setting.startSliderValue;
-                endSlider.value = setting.endSliderValue;
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
             }
         });
     }
@@ -364,7 +364,7 @@ class UnifiedSequencerSettings {
             console.log(`[updateSampleDuration] Called with duration: ${duration}, channelIndex: ${channelIndex}`);
         }
         if (this.isValidIndex(channelIndex)) {
-            this.settings.masterSettings.trimSettings[channelIndex].totalSampleDuration = duration;
+            this.settings.masterSettings.trimSettings[channelIndex].length = duration;
         } else {
             console.error(`Invalid channel index: ${channelIndex}`);
         }
@@ -508,8 +508,8 @@ class UnifiedSequencerSettings {
             const startSlider = document.getElementById(`start-slider-${index}`);
             const endSlider = document.getElementById(`end-slider-${index}`);
             if (startSlider && endSlider) {
-                startSlider.value = setting.startSliderValue;
-                endSlider.value = setting.endSliderValue;
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
             }
         });
     }
@@ -535,7 +535,7 @@ class UnifiedSequencerSettings {
     getDefaultArrayElement() {
         // Return the default element structure
         // For example, for trimSettings:
-        return { startSliderValue: 0.01, endSliderValue: 100.00, totalSampleDuration: 0 };
+        return { start: 0.01, end: 100.00, length: 0 };
     }
     
    
