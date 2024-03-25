@@ -55,7 +55,7 @@ class UnifiedSequencerSettings {
 
     getprojectUrlforChannel(channelIndex) {
         console.log("getprojectUrlforChannel entered");
-        return this.settings.masterSettings.projectURLs[channelIndex];
+        return this.settings.masterSettings.channelURLs[channelIndex];
     }
 
     setChannelURLs(urls) {
@@ -90,8 +90,8 @@ class UnifiedSequencerSettings {
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
     
-            this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
-                parsedSettings.projectURLs.map(url => formatURL(url)) : [];
+            // this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
+            //     parsedSettings.projectURLs.map(url => formatURL(url)) : [];
     
             this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
             this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;

@@ -154,6 +154,11 @@ function getStepState(currentSequence, channelIndex, currentStep) {
 }
 
 function getAudioUrl(channelIndex) {
+  // Example check to ensure URL exists for the given channel index
+  if (typeof window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex) === 'undefined') {
+    console.error(`[getAudioUrl] URL not found for channel index: ${channelIndex}`);
+    return 'defaultURL'; // Provide a default URL or handle the error appropriately
+  }
   return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
 }
 

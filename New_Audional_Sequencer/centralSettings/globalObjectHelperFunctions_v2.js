@@ -1,18 +1,18 @@
 // globalObjectHelperFunctions_v2.js
 
-function updateProjectURLsUI(urls) {
-    console.log("debugGlobalObjectToUI - entered");
-    console.log("{debugGlobalObjectToUI} updateProjectURLsUI: updating with URLs", urls);
+// function updateProjectURLsUI(urls) {
+//     console.log("debugGlobalObjectToUI - entered");
+//     console.log("{debugGlobalObjectToUI} updateProjectURLsUI: updating with URLs", urls);
 
-    urls.forEach((url, index) => {
-        const urlButton = document.getElementById(`load-sample-button-${index}`);
-        if (urlButton) {
-            urlButton.textContent = url || 'Load New Audional'; // Default text if URL is empty
-        }
-    });
+//     urls.forEach((url, index) => {
+//         const urlButton = document.getElementById(`load-sample-button-${index}`);
+//         if (urlButton) {
+//             urlButton.textContent = url || 'Load New Audional'; // Default text if URL is empty
+//         }
+//     });
 
-    console.log("Project URLs UI updated:", urls);
-}
+//     console.log("Project URLs UI updated:", urls);
+// }
 
 // Helper function to get the project URL for a channel
 function getChannelURL(channelIndex) {
