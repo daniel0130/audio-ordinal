@@ -98,12 +98,27 @@ class UnifiedSequencerSettings {
     
             console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
     
+            // Deserialize projectSequences step settings
             if (parsedSettings.projectSequences) {
-                console.log("[internalPresetDebug] Updating project sequences");
-                this.settings.masterSettings.projectSequences = parsedSettings.projectSequences;
+                for (let sequenceKey in parsedSettings.projectSequences) {
+                    let sequence = parsedSettings.projectSequences[sequenceKey];
+                    for (let channelKey in sequence) {
+                        let channel = sequence[channelKey];
+                        let steps = new Array(64).fill(false); // Assuming 64 steps per channel
+                        channel.steps.forEach(stepIndex => {
+                            if (stepIndex >= 1 && stepIndex <= 64) {
+                                steps[stepIndex - 1] = true;
+                            }
+                        });
+                        channel.steps = steps;
+                    }
+                }
             }
-    
+
+            this.settings.masterSettings = parsedSettings;
+
             console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
+
     
             this.updateAllLoadSampleButtonTexts();
             this.notifyObservers();
@@ -471,13 +486,43 @@ class UnifiedSequencerSettings {
         button.textContent = buttonText;
     }
     
-    exportSettings() {
-        console.log("exportSettings entered");
-        const exportedSettings = JSON.stringify(this.settings.masterSettings);
-        console.log("[exportSettings] Exported Settings:", exportedSettings);
-        return exportedSettings;
-    }
+    // exportSettings() {
+    //     console.log("exportSettings entered");
+    //     const exportedSettings = JSON.stringify(this.settings.masterSettings);
+    //     console.log("[exportSettings] Exported Settings:", exportedSettings);
+    //     return exportedSettings;
+    // }
   
+exportSettings() {
+    console.log("exportSettings entered");
+
+    // Clone the masterSettings to avoid mutating the original object
+    const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
+
+    // Serialize step settings
+    for (let sequenceKey in settingsClone.projectSequences) {
+        const sequence = settingsClone.projectSequences[sequenceKey];
+        for (let channelKey in sequence) {
+            const channel = sequence[channelKey];
+            const stepIndexes = [];
+            channel.steps.forEach((step, index) => {
+                if (step) {
+                    // Store index + 1 to match 1-64 numbering, instead of 0-63
+                    stepIndexes.push(index + 1);
+                }
+            });
+            // Replace steps array with just the indexes of 'true' values
+            channel.steps = stepIndexes;
+        }
+    }
+
+    // Convert the modified settings to a JSON string for export
+    const exportedSettings = JSON.stringify(settingsClone);
+    console.log("[exportSettings] Exported Settings:", exportedSettings);
+    return exportedSettings;
+}
+
+
     isValidIndex(index) {
             console.log("isValidIndex entered");
         return index >= 0 && index < 16; // Directly checking against 16
