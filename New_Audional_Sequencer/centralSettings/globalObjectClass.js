@@ -379,11 +379,6 @@ class UnifiedSequencerSettings {
     }
 
     
-   
-
-    
-    
-
     // setTrimSettings(settings) {
     //     this.settings.masterSettings.trimSettings = settings;
     //     console.log(`[setTrimSettings] Trim settings set:`, settings);
