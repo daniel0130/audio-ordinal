@@ -91,65 +91,115 @@
     
         return container;
     }
-    
-    
 
     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
         console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
         let url;
     
+        // Format and validate URLs directly using existing helper functions
         if (audionalInput.value) {
-            // Assume the value is an ordinal ID and construct the URL
             url = 'https://ordinals.com/content/' + audionalInput.value;
-            console.log(`[handleLoad] Ordinal ID URL determined: ${url}`);
         } else if (ipfsInput.value) {
             url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
-            console.log(`[handleLoad] IPFS URL determined: ${url}`);
         } else {
             console.log("[HTML Debugging] [handleLoad] No input value found.");
+            return; // Exit early if no input value is provided
         }
     
-        if (url) {
-            processURL(url, index, loadSampleButton);
-        }
+        // Ensure URL formatting is consistent with application expectations
+        url = formatURL(url);
     
+        // Directly call fetchAudio to process and load the sample
+        fetchAudio(url, index).then(() => {
+            console.log(`[HTML Debugging] [handleLoad] Audio loaded for channel ${index}: ${url}`);
+            // Update the channel URL in global settings after successful audio loading
+            window.unifiedSequencerSettings.addChannelURL(index, url);
+        }).catch(error => {
+            console.error(`[HTML Debugging] [handleLoad] Error loading audio for URL ${url}:`, error);
+        });
+    
+        // Close the modal
         document.body.removeChild(idModal);
         console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
     
-   // Helper function to process URL
-// In loadSampleModalButton_v2.js
+    
+    
 
-// Helper function to process URL
-async function processURL(url, index, loadSampleButton) {
-    console.log("[HTML Debugging] [processURL] URL: ", url);
+//     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
+//         console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
+//         let url;
+    
+//         if (audionalInput.value) {
+//             url = formatURL('https://ordinals.com/content/' + audionalInput.value);
+//         } else if (ipfsInput.value) {
+//             url = formatURL('https://ipfs.io/ipfs/' + ipfsInput.value);
+//         } else {
+//             console.log("[HTML Debugging] [handleLoad] No input value found.");
+//         }
+    
+//         if (url) {
+//             processURL(url, index, loadSampleButton);
+//         }
+    
+//         document.body.removeChild(idModal);
+//         console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
+//     }
+    
+//    // Helper function to process URL
+// // In loadSampleModalButton_v2.js
 
-    try {
-        const response = await fetch(url);
-        const contentType = response.headers.get("Content-Type");
-        console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
+// // Helper function to process URL
+// async function processURL(url, index, loadSampleButton) {
+//     console.log("[HTML Debugging] [processURL] URL: ", url);
 
-        if (contentType && contentType.includes("text/html")) {
-            console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
-            const htmlText = await response.text();
-            // Wait for the importHTMLSampleData to process and return the direct audio URL (base64 data)
-            const audioURL = await importHTMLSampleData(htmlText, index);
-            // Process the extracted audio URL as if it was direct audio content
-            if (audioURL) {
-                fetchAudio(audioURL, index);
-                // Log and add the URL to the global settings
-                window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
-            }
-        } else {
-            console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
-            fetchAudio(url, index);
-            // Log and add the URL to the global settings
-            window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
-        }
-    } catch (error) {
-        console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
-    }
-}
+//     try {
+//         const response = await fetch(url);
+//         const contentType = response.headers.get("Content-Type");
+//         console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
+
+//         if (contentType && !contentType.includes("text/html")) {
+//             console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
+//             fetchAudio(url, index);
+//             // Log and add the URL to the global settings
+//             window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
+//         }
+//     } catch (error) {
+//         console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
+//     }
+// }
+
+
+// // Helper function to process URL
+// async function processURL(url, index, loadSampleButton) {
+//     console.log("[HTML Debugging] [processURL] URL: ", url);
+
+//     try {
+//         const response = await fetch(url);
+//         const contentType = response.headers.get("Content-Type");
+//         console.log("[HTML Debugging] [processURL] Content-Type: ", contentType);
+
+//         if (contentType && contentType.includes("text/html")) {
+//             console.log("[HTML Debugging] [processURL] HTML content detected. Extracting audio data...");
+//             const htmlText = await response.text();
+//             // Wait for the importHTMLSampleData to process and return the direct audio URL (base64 data)
+//             const audioURL = await importHTMLSampleData(htmlText, index);
+//             // Process the extracted audio URL as if it was direct audio content
+//             if (audioURL) {
+//                 fetchAudio(audioURL, index);
+//                 // Log and add the URL to the global settings
+//                 window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
+//             }
+//         } else {
+//             console.log("[HTML Debugging] [processURL] Non-HTML content. Processing as direct audio URL...");
+//             fetchAudio(url, index);
+//             // Log and add the URL to the global settings
+//             window.unifiedSequencerSettings.addChannelURL(index, url); // This is the new part
+//         }
+//     } catch (error) {
+//         console.error(`[HTML Debugging] [processURL] Error fetching URL content: `, error);
+//     }
+// }
 
 
 async function importHTMLSampleData(htmlContent, index) {
