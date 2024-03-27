@@ -9,43 +9,59 @@
 
     <div id="controls">
         <input type="file" id="loadFile" accept=".json">
-        <button id="play">Play</button>
-        <button id="stop" disabled>Stop</button>
+        <button id="playButton">Play</button>
+        <button id="stopButton" disabled>Stop</button>
     </div>
 
+    <!-- Correctly include the script files based on the functionality they provide -->
     <script src="audioUtils.js"></script>
-    <script src="globalObjectClass.js"></script>
-    <script src="playbackEngine.js"></script>
-    <script>
-        // Example of setting up listeners within the HTML file
+    <script src="centralSettings/formattingHelpers.js"></script>
+    <script src="centralSettings/globalObjectClass.js"></script>
+    <script src="audioTrimModuleHelperFunctions.js"></script>
+    <script src="audioTrimModule_v2.js"></script>       
+    <script src="centralSettings/globalObjectHelperFunctions_v2.js"></script>
+    <script src="centralSettings/importExportGlobalSettings.js"></script>
+    <script src="channelSettings.js"></script>
+    <!-- <script type="module" src="channelsForEach.js"></script> -->
+    <script src="index.js"></script>
+    <script src="observers.js"></script>
+    <script src="sequenceChannelSettings.js"></script>
+    <script src="sequenceChannelSettings_Part2.js"></script>
+    <script src="stepHandling.js"></script>
+    <script src="stepSchedulers.js"></script>
+    <script src="timingMessages.js"></script>
 
-        // Listener for file load
+    <script>
         document.getElementById('loadFile').addEventListener('change', function(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(fileLoadedEvent) {
+                const jsonContent = JSON.parse(fileLoadedEvent.target.result);
+                window.unifiedSequencerSettings.loadSettings(jsonContent);
+                // Implement any necessary UI update logic here, 
+                // e.g., window.unifiedSequencerSettings.updateAllLoadSampleButtonTexts();
+            };
+
             const file = event.target.files[0];
             if (file) {
-                // Assuming playbackEngine.js exports a function named 'loadSequenceFromFile'
-                loadSequenceFromFile(file);
+                fileReader.readAsText(file);
             }
         });
 
-        // Listener for play button
-        document.getElementById('play').addEventListener('click', function() {
-            // Assuming playbackEngine.js exports a function named 'playSequence'
-            playSequence();
-            document.getElementById('play').disabled = true;
-            document.getElementById('stop').disabled = false;
+        // Play button listener
+        document.getElementById('playButton').addEventListener('click', function() {
+            // Assuming a function exists to start playback
+            startScheduler(); // Correct function name based on your actual implementation
+            document.getElementById('playButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
         });
 
-        // Listener for stop button
-        document.getElementById('stop').addEventListener('click', function() {
-            // Assuming playbackEngine.js exports a function named 'stopSequence'
-            stopSequence();
-            document.getElementById('play').disabled = false;
-            document.getElementById('stop').disabled = true;
+        // Stop button listener
+        document.getElementById('stopButton').addEventListener('click', function() {
+            // Assuming a function exists to stop playback
+            stopScheduler(); // Correct function name based on your actual implementation
+            document.getElementById('playButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
         });
-
-        // Make sure to define 'loadSequenceFromFile', 'playSequence', and 'stopSequence'
-        // functions in your playbackEngine.js, or adjust the names as needed.
     </script>
 </body>
 </html>

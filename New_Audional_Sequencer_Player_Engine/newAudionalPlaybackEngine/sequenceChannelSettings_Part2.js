@@ -4,14 +4,14 @@ let totalSequenceCount = 16;
 
 let isContinuousPlay = true;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const continuousPlayButton = document.getElementById('continuous-play');
-    continuousPlayButton.addEventListener('click', () => {
-        isContinuousPlay = !isContinuousPlay;  // Toggle the continuous play mode
-        continuousPlayButton.classList.toggle('selected', isContinuousPlay);
-        // Other logic that needs to be executed when the mode changes
-    });
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     const continuousPlayButton = document.getElementById('continuous-play');
+//     continuousPlayButton.addEventListener('click', () => {
+//         isContinuousPlay = !isContinuousPlay;  // Toggle the continuous play mode
+//         continuousPlayButton.classList.toggle('selected', isContinuousPlay);
+//         // Other logic that needs to be executed when the mode changes
+//     });
+// });
 
 function initializeNewSequence(currentSequence) {
     console.log('initializeNewSequence entered');
@@ -187,34 +187,34 @@ window.addEventListener('setupComplete', function() {
     loadAndDisplaySequence(0);
 });
 
-// Use loadNextSequence inside the event listener
-document.getElementById('next-sequence').addEventListener('click', function() {
-    console.log("Next sequence button clicked.");
-    loadNextSequence();
-});
+// // Use loadNextSequence inside the event listener
+// document.getElementById('next-sequence').addEventListener('click', function() {
+//     console.log("Next sequence button clicked.");
+//     loadNextSequence();
+// });
 
-document.getElementById('prev-sequence').addEventListener('click', function() {
-    console.log("Previous sequence button clicked.");
+// document.getElementById('prev-sequence').addEventListener('click', function() {
+//     console.log("Previous sequence button clicked.");
 
-    let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-    console.log(`Current sequence before decrement: ${currentSequence}`);
+//     let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+//     console.log(`Current sequence before decrement: ${currentSequence}`);
 
-    if (currentSequence > 0) {
-        // Calculate the new sequence number
-        const newSequence = currentSequence - 1;
+//     if (currentSequence > 0) {
+//         // Calculate the new sequence number
+//         const newSequence = currentSequence - 1;
 
-         // Before each handleSequenceTransition call
-         console.log(`[SeqDebug] Calling handleSequenceTransition with sequence: ${newSequence}`);
+//          // Before each handleSequenceTransition call
+//          console.log(`[SeqDebug] Calling handleSequenceTransition with sequence: ${newSequence}`);
 
-         // Use the handleSequenceTransition function to change the sequence
-         handleSequenceTransition(newSequence);
+//          // Use the handleSequenceTransition function to change the sequence
+//          handleSequenceTransition(newSequence);
 
-        // Update the displayed number and UI
-        updateSequenceDisplay(newSequence);
-    } else {
-        console.warn("You're already on the first sequence.");
-    }
-});
+//         // Update the displayed number and UI
+//         updateSequenceDisplay(newSequence);
+//     } else {
+//         console.warn("You're already on the first sequence.");
+//     }
+// });
 
 
 

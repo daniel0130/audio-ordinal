@@ -19,8 +19,8 @@ let timeoutId;
 let isPaused = false; // a flag to indicate if the sequencer is paused
 let pauseTime = 0;  // tracks the total paused time
 let stopClickCount = 0;
-let playButton = document.getElementById('play');
-let stopButton = document.getElementById('stop');
+let playButton = document.getElementById('playButton');
+let stopButton = document.getElementById('stopButton');
 let saveButton = document.getElementById('save-button');
 // let loadButton = document.getElementById('new-load-button');
 // let bpm ;
@@ -122,8 +122,10 @@ if (playButton && stopButton) {
     let isPaused = false;  // Add this line to declare the isPaused flag
 
     function checkContinuousPlay() {
-        const continuousPlayCheckbox = document.getElementById('continuous-play');
-        let isContinuousPlay = continuousPlayCheckbox.checked;
+        // const continuousPlayCheckbox = document.getElementById('continuous-play');
+        // let isContinuousPlay = continuousPlayCheckbox.checked;
+        let isContinuousPlay = true;
+
 
         if (isContinuousPlay && totalStepCount >= allSequencesLength) {
             // Reset counters for the next sequence
@@ -151,8 +153,10 @@ if (playButton && stopButton) {
         // }
         
         // Inside your playButton event listener, after the play logic
-        playButton.addEventListener('click', () => {            const continuousPlayCheckbox = document.getElementById('continuous-play');
-            let isContinuousPlay = continuousPlayCheckbox.checked;
+        playButton.addEventListener('click', () => {            
+            // const continuousPlayCheckbox = document.getElementById('continuous-play');
+            // let isContinuousPlay = continuousPlayCheckbox.checked;
+            let isContinuousPlay = true;
 
             if (!isPlaying) {
                 startScheduler();
