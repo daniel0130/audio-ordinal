@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audional Playback Engine</title>
+</head>
+<body>
+
+    <div id="controls">
+        <input type="file" id="loadFile" accept=".json">
+        <button id="play">Play</button>
+        <button id="stop" disabled>Stop</button>
+    </div>
+
+    <script src="audioUtils.js"></script>
+    <script src="globalObjectClass.js"></script>
+    <script src="playbackEngine.js"></script>
+    <script>
+        // Example of setting up listeners within the HTML file
+
+        // Listener for file load
+        document.getElementById('loadFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Assuming playbackEngine.js exports a function named 'loadSequenceFromFile'
+                loadSequenceFromFile(file);
+            }
+        });
+
+        // Listener for play button
+        document.getElementById('play').addEventListener('click', function() {
+            // Assuming playbackEngine.js exports a function named 'playSequence'
+            playSequence();
+            document.getElementById('play').disabled = true;
+            document.getElementById('stop').disabled = false;
+        });
+
+        // Listener for stop button
+        document.getElementById('stop').addEventListener('click', function() {
+            // Assuming playbackEngine.js exports a function named 'stopSequence'
+            stopSequence();
+            document.getElementById('play').disabled = false;
+            document.getElementById('stop').disabled = true;
+        });
+
+        // Make sure to define 'loadSequenceFromFile', 'playSequence', and 'stopSequence'
+        // functions in your playbackEngine.js, or adjust the names as needed.
+    </script>
+</body>
+</html>
