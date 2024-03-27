@@ -38,8 +38,9 @@ function playStep() {
     console.log("[stepHandling][playStep] Function entered");
 
     // Current sequence number and preset data
-    const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-    const presetData = presets.preset1;
+    const currentSequenceIndex = window.unifiedSequencerSettings.getCurrentSequence();
+    const sequenceData = window.unifiedSequencerSettings.getSettings('projectSequences')[`Sequence${currentSequenceIndex}`];
+    
 
     // Iterate over all channels
     for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
@@ -47,7 +48,7 @@ function playStep() {
 
         const channel = channels[channelIndex];
         const buttons = channel.querySelectorAll('.step-button');
-        let channelData = presetData.channels[channelIndex];
+        const channelData = sequenceData[`ch${channelIndex}`]; // Adjust based on actual structure
 
         // If no channelData is found for the current channel, use a default set of values
         if (!channelData) {
