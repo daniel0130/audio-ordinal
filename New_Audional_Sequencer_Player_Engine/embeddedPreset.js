@@ -1,9 +1,5 @@
 // embeddedPreset.js
 
-
-
-
-
 const presets = {
   preset1: {
     "name": "Preset 1",

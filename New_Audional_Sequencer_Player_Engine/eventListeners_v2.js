@@ -13,34 +13,34 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadButton = document.getElementById('new-load-button');
     let loadOptions = document.getElementById('loadOptions');
     let loadJson = document.getElementById('loadJson');
-    let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
-    let loadInternalPreset2 = document.getElementById('loadInternalPreset2');
-    let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
-    let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
-    let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
+    // let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
+    // let loadInternalPreset2 = document.getElementById('loadInternalPreset2');
+    // let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
+    // let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
+    // let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
 
     let loadButtonClicked = false; // Flag to track if the load button is clicked
 
     
 
-    saveButton.addEventListener('click', () => {
-        let settings = window.unifiedSequencerSettings.exportSettings();
+    // saveButton.addEventListener('click', () => {
+    //     let settings = window.unifiedSequencerSettings.exportSettings();
     
-        // Create a Blob with the settings
-        let blob = new Blob([settings], { type: 'application/json' });
+    //     // Create a Blob with the settings
+    //     let blob = new Blob([settings], { type: 'application/json' });
     
-        // Create a download link for the Blob
-        let url = URL.createObjectURL(blob);
-        let downloadLink = document.createElement('a');
-        downloadLink.href = url;
+    //     // Create a download link for the Blob
+    //     let url = URL.createObjectURL(blob);
+    //     let downloadLink = document.createElement('a');
+    //     downloadLink.href = url;
     
-        // Use projectName from the settings for the file name
-        let projectName = window.unifiedSequencerSettings.settings.masterSettings.projectName;
-        downloadLink.download = `AUDX - Seq Settings - ${projectName}.json`;
+    //     // Use projectName from the settings for the file name
+    //     let projectName = window.unifiedSequencerSettings.settings.masterSettings.projectName;
+    //     downloadLink.download = `AUDX - Seq Settings - ${projectName}.json`;
     
-        // Trigger a click on the download link
-        downloadLink.click();
-    });
+    //     // Trigger a click on the download link
+    //     downloadLink.click();
+    // });
 
     loadButton.addEventListener('click', () => {
         console.log('[Save/Load debug] Load button clicked');
@@ -122,12 +122,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     
-    
-    loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Vitalik Ordinals Remix.json'));
-    loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto Strings.json'));
-    loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Drums and Beats.json'));
-    // loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset4.json'));
-    // loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto2.json'));
 });
 
 // Message event listener handling load, play, stop, pause commands
