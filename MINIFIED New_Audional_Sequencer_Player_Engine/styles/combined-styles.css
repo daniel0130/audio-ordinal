@@ -1,0 +1,961 @@
+/* --- Animations --- */
+@keyframes flash {
+    0%   { background-color: var(--primary-color); }
+    50%  { background-color: #00ff00; }
+    100% { background-color: var(--primary-color); }
+}
+
+@keyframes flashingYellow {
+    0% { background-color: rgb(153, 153, 2); }
+    50% { background-color: rgb(255, 255, 0); }
+    100% { background-color: rgb(153, 153, 2); }
+}
+
+.clear-button.flashing {
+    animation: flashingYellow 0.5s infinite; /* Will make it blink twice per second */
+}
+
+
+/* --- Channel Elements --- */
+.channel {
+    display: flex;
+}
+
+.ordinal-loaded {
+    border: 2px solid #f7931a;
+}
+
+/* --- Button Specific Styles --- */
+
+/* Styles for play and stop buttons */
+#play, #stop {
+    /* Define styles specific to play and stop buttons */
+    /* Example: flex-grow, flex-shrink, and flex-basis properties */
+    flex: 1; 
+    width: 50px; /* Fixed width */
+    height: 50px; /* Fixed height */
+    /* Add other common styles for play and stop buttons here */
+}
+
+/* Styles for clear, mute, and solo buttons */
+.clear-button, .mute-button, .solo-button {
+    flex: 1; /* Flex grow and shrink equally */
+    min-width: 18px; /* Minimum width */
+    max-width: 18px; /* Maximum width */
+    /* Add other common styles for clear, mute, and solo buttons here */
+}
+
+.letter {
+    z-index: 1;
+    font-size: 16px;
+    position: relative; /* Add this to enable positioning */
+    left: -5px; /* Move the letters 5 pixels to the left */
+    top: -3px;
+    color: rgb(0, 0, 0); /* Change the letter color to white */
+}
+
+#play {
+    animation: flash 2s infinite ease-in-out;
+}
+
+#play.selected,
+#stop.selected ~ #play {
+    animation: none;
+}
+
+#stop.selected ~ #play,
+.mute-button.selected,
+.solo-button.selected {
+    background-color: var(--accent-color);
+}
+
+/* Style the letter inside the active button */
+#play.selected .letter,
+#stop.selected ~ #play .letter,
+.step-button.selected .letter,
+.mute-button.selected .letter,
+.solo-button.selected .letter {
+    color: white; /* Change the letter color to white */
+}
+
+.clear-button, .mute-button, .solo-button {
+    aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio */
+    /* Other styles */
+}
+
+
+.clear-button {
+    background-color: rgb(153, 153, 2);
+}
+
+.mute-button {
+    background-color: #800;
+}
+
+.solo-button {
+    background-color: rgb(177, 105, 33);
+}
+
+.solo-button.selected {
+    background-color: rgb(255, 128, 0);
+}
+
+.step-button {
+    position: relative;
+    min-width: 0; /* Allow buttons to shrink beyond their content width */
+    aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio (square button) */
+    background-color: #555; /* Default grey color */
+    color: #fff;
+    max-width: 20px;
+    max-height: 20px;
+}
+
+
+/* Dynamic color classes - Increased specificity to override other styles */
+.color-FF0000 .step-button.selected { background-color: #FF0000; }
+.color-00FF00 .step-button.selected { background-color: #00FF00; }
+.color-0000FF .step-button.selected { background-color: #0000FF; }
+.color-FFFF00 .step-button.selected { background-color: #FFFF00; }
+.color-00FFFF .step-button.selected { background-color: #00FFFF; }
+.color-FF00FF .step-button.selected { background-color: #FF00FF; }
+.color-808080 .step-button.selected { background-color: #808080; }
+.color-FFFFFF .step-button.selected { background-color: #FFFFFF; }
+.color-FFA500 .step-button.selected { background-color: #FFA500; }
+.color-800080 .step-button.selected { background-color: #800080; }
+.color-008080 .step-button.selected { background-color: #008080; }
+.color-000080 .step-button.selected { background-color: #000080; }
+.color-800000 .step-button.selected { background-color: #800000; }
+.color-008000 .step-button.selected { background-color: #008000; }
+.color-FFC0CB .step-button.selected { background-color: #FFC0CB; }
+.color-D2691E .step-button.selected { background-color: #D2691E; }
+
+/* Default color for non-selected step buttons */
+
+ 
+ .step-button:nth-child(4n+1):not(:nth-child(16n+1)) {
+     background-color: #add8e6; /* light blue */
+ }
+ 
+ .step-button:nth-child(16n+1) {
+     background-color: #ffff00; /* yellow */
+ }
+ 
+ /* Increase specificity for selected state to override nth colors */
+ .step-button.selected,
+ .step-button.selected:nth-child(4n+1):not(:nth-child(16n+1)),
+ .step-button.selected:nth-child(16n+1) {
+     background-color: var(--accent-color);
+ }
+
+ /* Fallback for selected step buttons if no color class is set */
+.step-button.selected {
+    background-color: var(--accent-color); /* Default to red */
+}
+ 
+ .step-button.playing {
+     box-shadow: 0 0 10px rgb(150, 150, 150) inset;
+ }
+ 
+ .step-button.playing.selected {
+     box-shadow: 0 0 10px rgb(150, 1, 1) inset;
+ }
+ 
+ .step-button.dimmed {
+     opacity: 0.5; /* You can adjust this value as needed */
+ }
+ 
+.load-sample-button {
+    flex: 1; /* Flex grow and shrink */
+    overflow: auto;
+    text-overflow: ellipsis;
+    font-size: 0.8em; /* Consider making this responsive as well */
+    height: 20px;
+    max-width: 15%;
+    min-width: 10%; /* Example of a responsive width */
+    padding: 1px;
+    font-weight: bold;
+}
+
+
+
+.load-sample-button:hover::after {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--primary-color);
+    color: var(--main-bg-color);
+    z-index: 1;
+}
+
+/* Color classes for the loadSampleButton and step-buttons */
+.color-FF0000 .color-FF0000 .step-button.selected { background-color: #FF0000; }
+.color-00FF00 .color-FF0000 .step-button.selected { background-color: #00FF00; }
+.color-0000FF .color-FF0000 .step-button.selected { background-color: #0000FF; }
+.color-FFFF00 .color-FF0000 .step-button.selected { background-color: #FFFF00; }
+.color-00FFFF .color-FF0000 .step-button.selected { background-color: #00FFFF; }
+.color-FF00FF .color-FF0000 .step-button.selected { background-color: #FF00FF; }
+.color-808080 .color-FF0000 .step-button.selected { background-color: #808080; }
+.color-FFFFFF .color-FF0000 .step-button.selected { background-color: #FFFFFF; }
+.color-FFA500 .color-FF0000 .step-button.selected { background-color: #FFA500; }
+.color-800080 .color-FF0000 .step-button.selected { background-color: #800080; }
+.color-008080 .color-FF0000 .step-button.selected { background-color: #008080; }
+.color-000080 .color-FF0000 .step-button.selected { background-color: #000080; }
+.color-800000 .color-FF0000 .step-button.selected { background-color: #800000; }
+.color-008000 .color-FF0000 .step-button.selected { background-color: #008000; }
+.color-FFC0CB .color-FF0000 .step-button.selected { background-color: #FFC0CB; }
+.color-D2691E .color-FF0000 .step-button.selected { background-color: #D2691E; }
+
+
+/* --- Buttons & Controls --- */
+.button, h1 .button {
+    border: none;
+    background-color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: var(--box-shadow-style);
+    color: var(--main-bg-color);
+    font-size: 1em;
+}
+
+.control-button {
+    width: var(--control-button-dimension);
+    height: var(--control-button-dimension);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: 0;
+    position: relative;
+}
+
+.play-button, .stop-button {
+    position: relative;
+    width: 30px; /* Smaller width */
+    height: 30px; /* Smaller height */
+    font-size: 14px; /* Adjust font size if needed */
+    padding: 5px; /* Adjust padding if needed */
+}
+
+#play.selected {
+    background-color: #00ff00;
+}
+
+.stop-button {
+    background-color: var(--accent-color);
+}
+
+.button-label.stop {
+    color: #ff0000;
+}
+
+div[idModalContent] div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+div[idModalContent] div button {
+    margin-right: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+div[idModalContent] div button:hover {
+    background-color: #ddd;
+}
+
+div[idModalContent] div a {
+    text-decoration: none;
+    display: flex;
+    color: black;
+    transition: color 0.3s ease;
+}
+
+div[idModalContent] div a:hover {
+    color: #666;
+}
+
+
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+.action-button {
+    border: none;
+    color: white; /* White text */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.action-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+/* --- Tooltip Styles --- */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden; /* Keep this as hidden */
+    max-width: 150px; /* Reduce the width */
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: calc(100% + 5px); /* Adjust the position to be just below the button */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.7; /* Reduced opacity to make it semi-transparent */
+    transition: opacity 0.3s;
+    font-size: 12px; /* Reduce the font size */
+    pointer-events: none; /* Prevent the tooltip from intercepting clicks */
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible; /* Set this to visible */
+    opacity: 0.7; /* Maintain the reduced opacity even on hover */
+}
+
+/* --- Mode Switcher Styles --- */
+.mode-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 50px;
+}
+
+.mode-switcher label {
+    margin-right: 10px;
+}
+
+.mode-switcher input[type="checkbox"] {
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+}
+
+.mode-switcher input[type="checkbox"]:checked {
+    background-color: #2196f3;
+}
+
+.mode-switcher input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 18px;
+    height: 18px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.mode-switcher input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+}
+
+
+
+/* custom-menus.css */
+
+.custom-context-menu {
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 5px;
+    z-index: 1000; /* Ensure it appears above other elements */
+    /* Add more styling as needed */
+}
+
+
+
+/* --- Global Styles --- */
+body {
+    background-color: var(--main-bg-color);
+    color: var(--primary-color);
+    font: normal normal normal 100%/1 var(--default-font);
+}
+
+/* --- Drum Machine Container --- */
+#drum-machine {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    background-color: var(--secondary-bg-color);
+    box-sizing: border-box;
+}
+
+/* --- Headers & Text Elements --- */
+h1 {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+h3 .subtext {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+h3:hover .subtext {
+    font-size: 1em;
+    opacity: 0.5;
+}
+
+.title {
+    font-size: 40px;
+}
+
+.small-text, .smaller-text {
+    font-size: 20px;
+}
+
+.larger-text {
+    font-size: 1.5em;
+}
+
+.centered, .centered-text {
+    display: block;
+    text-align: center;
+}
+
+.bright-orange {
+    color: #f7931a;
+}
+
+
+
+
+/* --- Containers & Layout --- */
+
+.drum-machine-container {
+    width: 95%;
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 20px; /* Add some padding for spacing */
+}
+/* Hide all step containers by default */
+.steps-container {
+    display: none;
+}
+
+/* Show only the step containers that are inside the drum machine container */
+.drum-machine-container .steps-container {
+    display: grid;
+    grid-template-columns: repeat(64, minmax(10px, 1fr)); /* 64 columns */
+    gap: 0px;
+    overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
+}
+
+/* Adjust the breakpoints as needed based on the total width of 64 buttons */
+@media screen and (max-width: 1280px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(32, minmax(10px, 1fr)); /* Adjust to 32 columns */
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+.controls-container {
+    flex: 1; /* Takes up 1 part of the available space */
+    /* Add more styling as needed */
+}
+
+.controls-container{
+    margin: 5px;
+    border: 1px solid #ccc; /* Example border */
+    border-radius: 5px; /* Rounded corners */
+    overflow: auto; /* In case content overflows */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.steps-container {
+    display: none;
+    grid-template-columns: repeat(64, minmax(10px, 1fr)); /* 64 columns */
+    gap: 0px;
+    overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
+}
+
+/* Adjust the breakpoints as needed based on the total width of 64 buttons */
+@media screen and (max-width: 1280px) { /* Example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(32, minmax(10px, 1fr)); /* Adjust to 48 columns */
+    }
+}
+
+@media screen and (max-width: 1024px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 32 columns */
+    }
+}
+
+@media screen and (max-width: 768px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+
+
+
+.channel-controls {
+    margin-top: 0px;
+}
+
+/* --- Steps and Sequence Light Styles --- */
+#sequence-lights {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+    margin-left: 10%;
+}
+
+.sequence-light {
+    grid-column: span 1;
+    height: 15px;
+    background-color: grey;
+}
+
+.sequence-light.on {
+    background-color: greenyellow;
+}
+
+/* --- LOWER Button and Container Styles --- */
+
+
+.quickplay-button-container {
+    width: 90%;
+    margin: 0 auto; /* Center the container horizontally */
+    display: flex; /* Use flexbox for horizontal alignment */
+    align-items: center; /* Center items vertically */
+    justify-content: center; /* Center items horizontally */
+}
+
+.quick-play-button {
+    width: 30px; /* Set a fixed width */
+    height: 30px; /* Set the same value for height to make it square */
+    padding: 5px; /* Adjust padding as needed */
+    margin: 0 5px; /* Adjust margin for spacing between buttons */
+    display: flex;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    background-color: #4CAF50; /* Example background color */
+    color: white; /* Text color */
+    cursor: pointer; /* Add pointer cursor to indicate interactivity */
+    /* Add other styles as needed */
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+    .quick-play-button {
+        width: 30px; /* Smaller size for smaller screens */
+        height: 30px; /* Keep the square shape */
+        padding: 3px; /* Adjust padding for smaller screens */
+    }
+}
+
+.quick-play-button strong {
+    display: block; /* Ensure the <strong> element takes full width */
+    font-weight: bold;
+}
+
+.quick-play-button.active {
+    background-color: limegreen; /* Change to bright green when active */
+}
+
+/* Styles for other buttons */
+#prev-sequence,
+#next-sequence,
+button[for="mode-switcher"] {
+    font-size: 12.5px; /* Adjust the font size as needed */
+    padding: 5px 10px; /* Adjust the padding as needed */
+    font-weight: bold; /* Make the text bold */
+}
+
+
+/* modal-styles.css */
+.loadSampleModalButton {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loadSampleModalButton-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Text Paragraph Styles */
+.loadSampleModalButton-text {
+    color: black;
+    margin-bottom: 10px; /* Space between text and input field */
+}
+
+/* Input Field Styles */
+.loadSampleModalButton-input {
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Button Styles */
+.loadSampleModalButton button {
+    margin-top: 10px; /* Space above the button */
+    padding: 10px 15px; /* Padding inside the button */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.loadSampleModalButton button:hover {
+    background-color: #f6ff00; /* Darker shade for hover effect */
+    color: black;
+}
+
+/* Additional styles for specific buttons can be added as needed */
+.channel-naming-modal {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    /* Add more styling as needed */
+}
+
+.channel-name-input {
+    width: 100%;
+    margin-bottom: 10px;
+    /* Add more styling as needed */
+}
+
+.loadSampleModalButton-link {
+    padding: 10px;
+    margin-top: 10px;
+    color: white;
+    background-color: #bb00ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.loadSampleModalButton-link:hover {
+    background-color: #bb00ff;
+}
+
+.loadButton {
+    background-color: #28a745; /* Green */
+    /* Other styles... */
+}
+
+.cancelButton {
+    background-color: #dc3545; /* Red */
+    /* Other styles... */
+}
+
+.searchButton {
+    background-color: #bb00ff; /* Purple */
+    /* Other styles... */
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 100%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+/* Show the tooltip text when you hover over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+/* --- Popups and Modal Styles --- */
+
+.load-popup {
+    display: none;
+    position: absolute;
+    bottom: 30px; /* Adjust this to position the popup above the "Load" button */
+    right: 0;
+    border: 1px solid #aaa;
+    background-color: #f9f9f9;
+    z-index: 1000; /* Ensure it's on top of other UI elements */
+}
+
+.load-popup button {
+    display: block;
+    padding: 10px;
+    border: none;
+    width: 50%;
+    text-align: left;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.load-popup button:hover {
+    background-color: #ddd;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+
+
+
+#save-button, #new-load-button {
+    margin-left: 2px; /* Add some space between buttons */
+    right: 0px;
+  }
+  
+
+/* Apply the smooth wave effect directly to the Load button */
+#new-load-button {
+    margin-left: 2px; /* Add some space between buttons */
+    right: 0px;
+    background-color: rgb(255, 255, 255); /* Initial background color */
+    color: black; /* Initial text color */
+    animation: smooth-wave 4s linear infinite;
+}
+
+@keyframes smooth-wave {
+    0% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+    25% {
+        background-color: #fd6f6f; /* Change to your desired yellow color */
+        color: black;
+    }
+    50% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+    75% {
+        background-color: #ff6f6f; /* Change to your desired yellow color */
+        color: black;
+    }
+    100% {
+        background-color: rgb(255, 255, 255);
+        color: black;
+    }
+}
+
+
+/* Specific styles for the copy button */
+.copy-button {
+    background-color: #2196F3; /* Blue background */
+}
+
+.copy-button:hover {
+    background-color: #0b7dda; /* Darker blue on hover */
+}
+
+/* Specific styles for the paste button */
+.paste-button {
+    background-color: #FFC107; /* Amber background */
+}
+
+.paste-button:hover {
+    background-color: #ffb300; /* Darker amber on hover */
+}
+
+
+/* --- variables-media-queries.css --- */
+:root {
+    --scale-factor: 1vw; /* This can be adjusted to scale with viewport width */
+    --main-bg-color: #000;
+    --secondary-bg-color: #333;
+    --primary-color: #fff;
+    --accent-color: #f00;
+    --button-dimension: 5vw; /* Using viewport width for relative sizing */
+    --control-button-dimension: 18px; /* Fixed size */
+    --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;
+    --default-font: Arial, sans-serif;
+}
+
+.channel {
+    width: 100%; /* Full width on small screens */
+}
+
+
+/* --- Media Queries for Responsive Design --- */
+/* @media (max-width: 1200px) {
+    :root {
+        --button-dimension: 4.5vw;
+        --control-button-dimension: 1.6vw;
+        --step-button-max-width: 1.5vw;
+        --step-button-max-height: 1.5vw;
+    }
+
+    #main-container {
+        transform: scale(0.9);
+    }
+}
+
+@media (max-width: 1000px) {
+    :root {
+        --button-dimension: 4vw;
+        --control-button-dimension: 1.4vw;
+        --step-button-max-width: 1.2vw;
+        --step-button-max-height: 1.2vw;
+    }
+
+    #main-container {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 800px) {
+    :root {
+        --button-dimension: 3.5vw;
+        --control-button-dimension: 1.2vw;
+        --step-button-max-width: 1vw;
+        --step-button-max-height: 1vw;
+    }
+
+    #main-container {
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --button-dimension: 3vw;
+        --control-button-dimension: 1vw;
+        --step-button-max-width: 0.8vw;
+        --step-button-max-height: 0.8vw;
+    }
+
+    /* Add media queries for smaller screens */
+/* @media (max-width: 600px) {
+    .load-sample-button {
+        font-size: 0.7em; /* Smaller font size for smaller screens */
+/*        min-width: 15%; /* Adjust min-width for smaller screens */
+/*     }
+/* }
+/* 
+/*     #main-container {
+/*         transform: scale(0.6);
+/*     }*/
+ 
+   
+ 
+
