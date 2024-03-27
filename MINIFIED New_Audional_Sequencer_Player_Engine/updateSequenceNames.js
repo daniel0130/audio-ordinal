@@ -1,0 +1,1 @@
+function updateSequenceNamesInHTML(e){const n=document.getElementById("sequence-names");n.innerHTML="",e.forEach((e=>{const t=document.createElement("li");t.textContent=e,n.appendChild(t)}))}
