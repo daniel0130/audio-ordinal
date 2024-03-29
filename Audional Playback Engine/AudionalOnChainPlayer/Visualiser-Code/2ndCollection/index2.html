@@ -8,7 +8,7 @@
 <script>
     let cci2 = 18; // Initial CCI2 value
     const initialCCI2 = 21; // Store the initial value of cci2 to reset later
-    let seed = 94435676856756; // Seed value, can be adjusted for production purposes
+    let seed = 9429384736768576; // Seed value, can be adjusted for production purposes
     let isChannel11Active = false; // Flag to track if channel 11 effect is active
 
 
@@ -38,12 +38,12 @@
         }
     };
 
-    document.addEventListener('click', () => {
-    // Construct the message
-    const message = JSON.stringify({ command: 'play' });
+//     document.addEventListener('click', () => {
+//     // Construct the message
+//     const message = JSON.stringify({ command: 'play' });
     
-    // Notify parent window, which should relay to the sequencer iframe
-    window.parent.postMessage(message, '*'); // Again, replace '*' with the parent's origin in production
-});
+//     // Notify parent window, which should relay to the sequencer iframe
+//     window.parent.postMessage(message, '*'); // Again, replace '*' with the parent's origin in production
+// });
 
 </script>

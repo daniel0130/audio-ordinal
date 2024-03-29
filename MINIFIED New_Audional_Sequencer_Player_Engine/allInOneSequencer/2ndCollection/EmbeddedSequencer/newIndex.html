@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Sequencer Integration</title>
+    <style>
+        /* Hide all elements except the play button */
+        body > *:not(#playButton) {
+            display: none !important;
+        }
+    </style>
+    <script src="allInOneSequencer.js"></script>
+</head>
+<body>
+    <div class="drum-machine-container">
+        <div id="drum-machine">
+            <!-- Original structure replicated here, hidden by default -->
+            <div class="tooltip button button-round"><div class="button play-button" id="play"></div></div>
+            <div class="tooltip button button-round"><div class="button stop-button" id="stop"></div></div>
+            <div class="tooltip bpm-container"><input id="bpm-slider" type="range" value="105"></div>
+            <div class="utility-buttons">
+                <button id="save-button">Save</button>
+                <button id="new-load-button">Load</button>
+                <button id="copy-sequence-settings">Copy</button>
+                <button id="paste-button">Paste</button>
+                <input id="project-name" class="project-name">
+            </div>
+            <div id="app" role="main">
+                <div class="channel-template" style="display: none;">
+                    <div class="channel">
+                        <button class="load-sample-button">Load New Audional</button>
+                        <button class="control-button open-audio-trimmer"></button>
+                        <button class="control-button clear-button"></button>
+                        <button class="control-button mute-button"></button>
+                        <button class="control-button solo-button"></button>
+                    </div>
+                </div>
+            </main>
+            <div class="quickplay-button-container">
+                <button id="prev-sequence">Previous Sequence</button>
+                <span id="current-sequence-display">Sequence 0</span>
+                <button id="next-sequence">Next Sequence</button>
+                <input id="continuous-play" type="checkbox" checked>
+            </div>
+            <div class="modal" id="audio-trimmer-modal" hidden>
+                <div class="modal-content">
+                    <span class="close-button">×</span>
+                    <div id="audio-trimmer-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="playButton" style="display:block;">Play</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const playButton = document.getElementById('playButton');
+
+            // Function to fetch and load song settings into the sequencer
+            async function loadSongSettings() {
+                try {
+                    const response = await fetch('BasedSong1.json');
+                    const songSettings = await response.json();
+                    window.unifiedSequencerSettings.loadSettings(JSON.stringify(songSettings));
+                } catch (error) {
+                    console.error("Error loading settings:", error);
+                }
+            }
+
+            // Load the song settings on page load
+            await loadSongSettings();
+
+            // Event listener for the play button
+            playButton.addEventListener('click', () => {
+                const originalPlayButton = document.getElementById('play');
+                if (originalPlayButton) {
+                    originalPlayButton.click();
+                } else {
+                    console.error('Original play button not found.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,41 @@
-<!DOCTYPE html>
-<title>BOT 1t5</title>
-<link rel="stylesheet" href="s.css">
+!DOCTYPE html>
+<html style="height: 100%; margin: 0; padding: 0;">
+<head>
+    <title>BOT 1t5</title>
+    <link rel="stylesheet" href="s.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #cv {
+            width: 100%;
+            height: 100%;
+        }
+        #sequencer-iframe {
+            position: fixed; /* Changed from absolute to fixed to ensure it covers the whole page */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            opacity: 0; /* Invisible but still clickable */
+            z-index: 2; /* Ensure it's above the canvas */
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
 <canvas id="cv"></canvas>
+<iframe id="sequencer-iframe" src="EmbeddedSequencer/smallIndex.html"></iframe>
+
 <script src="g2.js"></script>
 <script src="c2.js"></script>
 <script src="d2.js"></script>
