@@ -419,6 +419,7 @@ if (!audioContext) {
 function updateVolume(e,t){if(console.log("updateVolume entered"),soloedChannels.some((e=>e)))gainNodes[t].gain.value=soloedChannels[t]?1:0;else{const n=e.querySelector(".mute-button").classList.contains("selected");gainNodes[t].gain.value=n?0:1}}function updateDimState(e,t){console.log("updateDimState entered"),console.log(`updateDimState called for channel ${t}`);const n=window.unifiedSequencerSettings.getCurrentSequence(),o=e.querySelectorAll(`.step-button[id^="Sequence${n}-ch${t}"]`);0===gainNodes[t].gain.value?o.forEach((e=>e.classList.add("dimmed"))):o.forEach((e=>e.classList.remove("dimmed")))}if(document.addEventListener("click",(()=>{channels.forEach(((e,t)=>{if(clearClickedOnce[t]){e.querySelector(".clear-confirm").style.display="none",clearTimeout(clearConfirmTimeout[t]),clearClickedOnce[t]=!1}}))})),playButton&&stopButton){const t=document.querySelector("#channel-0 .step-button:nth-child(4n)");t&&t.classList.add("selected");const n=document.querySelector("#channel-1 .step-button:nth-child(1)");n&&n.classList.add("selected");const o=document.querySelector("#channel-1 .step-button:nth-child(6)");o&&o.classList.add("selected");let l=!1;function checkContinuousPlay()
 {document.getElementById("continuous-play").checked&&totalStepCount>=4096&&(beatCount=0,barCount=0,currentStep=0,totalStepCount=0,document.getElementById("next-sequence").click())}
 
+   
 
 playButton.addEventListener("click", async () => {
     console.log("[playbackDebug] Play button clicked. State of audioContext:", audioContext.state);
@@ -578,48 +579,48 @@ newLoadButton.addEventListener("click", async () => {
 
 
     // Event listener for the "New/Load" button
-    // newLoadButton.addEventListener("click", () => {
-    //     console.log("[Save/Load debug] Load button clicked");
-    //     // If load button was not clicked before, remove animation
-    //     if (!loadClicked) {
-    //         newLoadButton.classList.remove("smooth-wave");
-    //         newLoadButton.style.animation = "none";
-    //         loadClicked = true;
-    //     }
-    //     // Toggle display of load options
-    //     loadOptions.style.display = loadOptions.style.display === "none" || loadOptions.style.display === "" ? "block" : "none";
-    // });
+    newLoadButton.addEventListener("click", () => {
+        console.log("[Save/Load debug] Load button clicked");
+        // If load button was not clicked before, remove animation
+        if (!loadClicked) {
+            newLoadButton.classList.remove("smooth-wave");
+            newLoadButton.style.animation = "none";
+            loadClicked = true;
+        }
+        // Toggle display of load options
+        loadOptions.style.display = loadOptions.style.display === "none" || loadOptions.style.display === "" ? "block" : "none";
+    });
 
-    // // Event listener for the "Load JSON" button
-    // loadJson.addEventListener("click", () => {
-    //     console.log("[Save/Load debug] loadJson clicked");
-    //     // Simulate click on the file input element
-    //     loadFileInput.click();
-    //     // Hide load options
-    //     loadOptions.style.display = "none";
-    // });
+    // Event listener for the "Load JSON" button
+    loadJson.addEventListener("click", () => {
+        console.log("[Save/Load debug] loadJson clicked");
+        // Simulate click on the file input element
+        loadFileInput.click();
+        // Hide load options
+        loadOptions.style.display = "none";
+    });
 
-//     // Event listener for the change event on the file input
-//     loadFileInput.addEventListener("change", async () => {
-//         console.log("[Save/Load debug] loadFileInput change event");
-//         // Get the selected file
-//         let file = loadFileInput.files[0];
-//         let reader = new FileReader();
-//         reader.onload = async function (event) {
-//             console.log("File read start");
-//             // Parse the JSON content of the file
-//             let data = JSON.parse(event.target.result);
-//             console.log("[loadFileInput] File content:", data);
-//             // Load settings from the parsed JSON
-//             window.unifiedSequencerSettings.loadSettings(data);
-//             // If channel URLs are present, process each URL
-//             if (data.channelURLs && Array.isArray(data.channelURLs)) {
-//                 await processChannelURLs(data.channelURLs);
-//             }
-//         };
-//         // Read the file as text
-//         reader.readAsText(file);
-//     });
+    // Event listener for the change event on the file input
+    loadFileInput.addEventListener("change", async () => {
+        console.log("[Save/Load debug] loadFileInput change event");
+        // Get the selected file
+        let file = loadFileInput.files[0];
+        let reader = new FileReader();
+        reader.onload = async function (event) {
+            console.log("File read start");
+            // Parse the JSON content of the file
+            let data = JSON.parse(event.target.result);
+            console.log("[loadFileInput] File content:", data);
+            // Load settings from the parsed JSON
+            window.unifiedSequencerSettings.loadSettings(data);
+            // If channel URLs are present, process each URL
+            if (data.channelURLs && Array.isArray(data.channelURLs)) {
+                await processChannelURLs(data.channelURLs);
+            }
+        };
+        // Read the file as text
+        reader.readAsText(file);
+    });
 });
 
 // Dedicated function to process channel URLs
