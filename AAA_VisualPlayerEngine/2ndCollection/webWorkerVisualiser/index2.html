@@ -2,104 +2,12 @@
 <title>BOT 1t5</title>
 <link rel="stylesheet" href="s.css">
 <canvas id="cv"></canvas>
-<iframe id="sequencer-iframe" src="EmbeddedSequencer/smallIndex.html"></iframe>
+<!-- <iframe id="sequencer-iframe" src="EmbeddedSequencer/smallIndex.html"></iframe> -->
 
 
-<script>
-
-const sequencerWebWorker = new Worker('EmbeddedSequencer/allInOneSequencer.js');
-
-    // Global declaration of the AudioContext
-    var audioCtx; // Use var to ensure it's accessible globally
+<>
 
 
-
-    function getOrCreateAudioContext() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            console.log("AudioContext initialized.");
-        }
-        return audioCtx;
-    }
-
-    // Initialize or get the existing AudioContext as soon as possible
-    getOrCreateAudioContext();
-
-    var playSignalReceived = false; // Flag to track play signal receipt
-
-    let cci2 = 18; // Initial CCI2 value
-    const initialCCI2 = 18; // Store the initial value of cci2 to reset later
-    let seed = 9484736768571345; // Seed value, can be adjusted for production purposes
-
-    // Enhanced randomization function using a seed
-    function randomWithSeed(seedValue) {
-        const x = Math.sin(seedValue) * 10000;
-        return x - Math.floor(x);
-    }
-
-    // Function to calculate cci2 based on channelIndex and seed, now with enhanced randomness
-    function calculateCCI2(channelIndex) {
-        if (channelIndex === undefined) {
-            console.log("Warning: channelIndex is undefined. Unable to calculate CCI2.");
-            return initialCCI2; // Return a safe value or handle the case appropriately
-        }
-        const randomSeed = seed + channelIndex;
-        const randomMultiplier = randomWithSeed(randomSeed) * 100;
-        return Math.floor(randomMultiplier) + 1;
-    }
-
-
-    const channelPlaybackListener = new BroadcastChannel('channel_playback');
-    channelPlaybackListener.onmessage = (event) => {
-        if (event.data.action === 'stop') {
-            resetToInitialState(); // Reset everything to its initial state when stop is received
-        } else if (event.data.type === 'play') {
-            handlePlay(); // Handle play separately
-        } else {
-            // Handle all other actions, including calculating cci2 based on channelIndex
-            const { channelIndex } = event.data;
-            cci2 = calculateCCI2(channelIndex);
-            console.log(`Received channel playback: Channel ${channelIndex}. CCI2 updated to ${cci2} based on seed ${seed}.`);
-        }
-    };
-
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const visualizerUI = document.getElementById('cv'); // Assuming the canvas is your visualizer UI
-        var isPlaying = false; // Tracks the playback state
-        
-        visualizerUI.addEventListener('click', () => {
-            const action = isPlaying ? 'stop' : 'start'; // Correct 'start' to align with worker
-            sequencerWebWorker.postMessage({ action: isPlaying ? 'stop' : 'start' });
-            isPlaying = !isPlaying; // Toggle the playback state
-            console.log(`Visualizer action: ${action}`); // Debugging
-        });
-
-    });
-
-   // Existing resetToInitialState function
-    function resetToInitialState() {
-        cci2 = 18; // Reset to initial cci2 value
-        console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}.`);
-        // Trigger a visual update to reflect the reset cci2 value
-        requestAnimationFrame(() => d(new Date().getTime())); // Force redraw with updated cci2
-    }
-
-
-    function handlePlay() {
-        if (!audioCtx) {
-            audioCtx = getOrCreateAudioContext();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-                console.log("AudioContext resumed successfully.");
-                // Initialize or synchronize visual playback
-            });
-        }
-        playSignalReceived = true; // Indicate that play signal has been received
-    }
-
-    
-</script>
 
 
 <script src="g2.js"></script>
