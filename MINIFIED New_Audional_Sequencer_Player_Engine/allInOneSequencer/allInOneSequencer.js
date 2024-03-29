@@ -103,49 +103,38 @@ let playStepLogged = false;
 
 
 function playStep() {
-    
-    // Check if playStep has been logged
-    if (!playStepLogged) {
-        console.log("[stepHandling][playStep] Function entered and logged for the first time");
-        playStepLogged = true; // Set flag to true after first log
-    }
-    
     const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
     console.log(`[playStep] Current sequence: ${currentSequence}`);
 
-    // Confirm audio context state
+    // Assuming audioContext and channels are properly defined and accessible
     console.log(`[playStep] AudioContext State: ${audioContext.state}`);
 
+    // Broadcast channel for communication with the visualizer
+    const playbackChannel = new BroadcastChannel('channel_playback');
+
     for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
-        console.log(`[playStep] Processing channel index: ${channelIndex}`);
-        const channel = channels[channelIndex];
-        const stepButtons = channel.querySelectorAll(".step-button");
-
-        // Get the sequence settings for the current channel
-        const sequenceSettings = window.unifiedSequencerSettings.getSequenceSettings(currentSequence);
-        console.log(`[playStep] Sequence settings for sequence ${currentSequence}:`, sequenceSettings);
-
-        const channelSettings = sequenceSettings ? sequenceSettings[`ch${channelIndex}`] : null;
+        const channelSettings = window.unifiedSequencerSettings.getSequenceSettings(currentSequence)[`ch${channelIndex}`];
 
         if (!channelSettings) {
             console.warn(`[playStep] No sequence settings data for channel index: ${channelIndex}`);
             continue;
         }
 
-        // Highlight the current step in the UI
-        renderPlayhead(stepButtons, currentStep);
-
-        // Check mute state and URL presence
         const isMuted = channelSettings.mute;
         const channelURL = window.unifiedSequencerSettings.getChannelURL(channelIndex);
-        console.log(`[playStep] Channel ${channelIndex}: URL: ${channelURL}, Muted: ${isMuted}`);
 
-        // Only attempt to play sound if the step is active and not muted
         if (channelSettings.steps[currentStep] && !isMuted) {
             if (audioBuffers.has(channelURL)) {
                 const audioBuffer = audioBuffers.get(channelURL);
-                console.log(`[playStep] Playing sound for sequence: ${currentSequence}, channel index: ${channelIndex}, step: ${currentStep}`);
                 playTrimmedAudio(channelIndex, audioBuffer, channelURL);
+
+                // Broadcasting a message to the visualizer with the channel index
+                playbackChannel.postMessage({
+                    action: 'play',
+                    channelIndex: channelIndex
+                });
+
+                console.log(`[playStep] Broadcasting play for channel index: ${channelIndex}`);
             } else {
                 console.error(`[playStep] No audio buffer found for URL: ${channelURL}`);
             }
@@ -154,10 +143,8 @@ function playStep() {
         }
     }
 
-    // Proceed with the next step
     incrementStepCounters();
     
-    // Handle continuous play mode and sequence transition
     if (document.getElementById("continuous-play").checked && currentStep === 0) {
         handleSequenceTransition((currentSequence + 1) % totalNumberOfSequences);
     }
