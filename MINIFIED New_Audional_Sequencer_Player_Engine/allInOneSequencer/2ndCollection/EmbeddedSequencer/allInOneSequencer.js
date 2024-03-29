@@ -2,8 +2,436 @@
 
 const BASE_ORDINALS_URL="https://ordinals.com/content/";function isValidOrdinalsUrl(n){return new RegExp(`^${BASE_ORDINALS_URL}[a-f0-9]{64}i\\d+$`).test(n)}function formatId(n){return new RegExp("^[a-f0-9]{64}i\\d+$").test(n)?n:(console.error("Invalid ID format:",n),null)}function formatURL(n){if(n.startsWith(BASE_ORDINALS_URL))return n;const r=new RegExp(`^${BASE_ORDINALS_URL}${BASE_ORDINALS_URL}(.+)`),t=n.match(r);return t&&t[1]?BASE_ORDINALS_URL+t[1]:n.match(/^[a-f0-9]{64}i\d+$/)?BASE_ORDINALS_URL+n:n}function toFullUrl(n){return n?BASE_ORDINALS_URL+formatId(n):null}function extractIdFromUrl(n){return isValidOrdinalsUrl(n)?n.replace(BASE_ORDINALS_URL,""):(console.error("Invalid Ordinals URL:",n),null)}
 
-class UnifiedSequencerSettings{constructor(){this.observers=[],this.settings={masterSettings:{projectName:"New Audx Project",projectBPM:120,currentSequence:0,channelURLs:new Array(16).fill(""),trimSettings:Array.from({length:16},(()=>({start:.01,end:100,length:0}))),projectChannelNames:new Array(16).fill(""),projectSequences:this.initializeSequences(16,16,64)}},this.checkSettings=this.checkSettings.bind(this),this.clearMasterSettings=this.clearMasterSettings.bind(this)}exportSettings(){console.log("exportSettings entered");const e=JSON.parse(JSON.stringify(this.settings.masterSettings));for(let t in e.projectSequences){const n=e.projectSequences[t];for(let e in n){const t=n[e],s=[];t.steps.forEach(((e,t)=>{e&&s.push(t+1)})),t.steps=s}}const t=JSON.stringify(e);return console.log("[exportSettings] Exported Settings:",t),t}isValidIndex(e){return console.log("isValidIndex entered"),e>=0&&e<16}loadSettings(e){console.log("[internalPresetDebug] loadSettings entered[loadSettings] URL storage after loading:", this.settings.masterSettings.channelURLs);try{console.log("[internalPresetDebug] Received JSON Settings:",e);const t="string"==typeof e?JSON.parse(e):e;if(console.log("[internalPresetDebug] Parsed Settings:",t),this.settings.masterSettings.channelURLs=t.channelURLs?t.channelURLs.map((e=>formatURL(e))):[],this.settings.masterSettings.projectName=t.projectName,this.settings.masterSettings.projectBPM=t.projectBPM,this.settings.masterSettings.trimSettings=t.trimSettings,this.settings.masterSettings.projectChannelNames=t.projectChannelNames,console.log("[internalPresetDebug] Updated masterSettings with full URLs:",this.settings.masterSettings),t.projectSequences)for(let e in t.projectSequences){let n=t.projectSequences[e];for(let e in n){let t=n[e],s=new Array(64).fill(!1);t.steps.forEach((e=>{e>=1&&e<=64&&(s[e-1]=!0)})),t.steps=s}}this.settings.masterSettings=t,console.log("[internalPresetDebug] Master settings after update:",this.settings.masterSettings),this.updateAllLoadSampleButtonTexts(),this.notifyObservers()}catch(e){console.error("[internalPresetDebug] Error loading settings:",e)}}addChannelURL(e,t){e>=0&&e<this.settings.masterSettings.channelURLs.length?(console.log(`[addChannelURL] Adding URL to channel ${e}: ${t}`),this.settings.masterSettings.channelURLs[e]=t,this.notifyObservers()):console.error(`[addChannelURL] Invalid channel index: ${e}`)}getChannelURL(e){return e>=0&&e<this.settings.masterSettings.channelURLs.length?(console.log(`[getChannelURL] Retrieving URL from channel ${e}: ${this.settings.masterSettings.channelURLs[e]}`),this.settings.masterSettings.channelURLs[e]):(console.error(`[getChannelURL] Invalid channel index: ${e}`),null)}getprojectUrlforChannel(e){return console.log("getprojectUrlforChannel entered"),this.settings.masterSettings.channelURLs[e]}setChannelURLs(e){console.log("setProjectURLs entered"),this.settings.masterSettings.channelURLs=e,console.log("[setChannelURLs] Channel URLs set:",e),this.updateAllLoadSampleButtonTexts()}setProjectName(e){console.log("setProjectName entered"),this.settings.masterSettings.projectName=e,console.log(`[setProjectName] Project name set to: ${e}`)}clearMasterSettings(){console.log("[clearMasterSettings] Current masterSettings before clearing:",this.settings.masterSettings),this.settings.masterSettings={projectName:"",projectBPM:120,currentSequence:0,channelURLs:new Array(16).fill(""),trimSettings:Array.from({length:16},(()=>({start:.01,end:100,length:0}))),projectChannelNames:new Array(16).fill(""),projectSequences:this.initializeSequences(16,16,64)},console.log("[clearMasterSettings] Master settings cleared.")}initializeSequences(e,t,n){console.log("initializeSequences entered",e,t,n);let s={};for(let r=0;r<e;r++)s[`Sequence${r}`]=this.initializeChannels(t,n);return s}initializeChannels(e,t){console.log("initializeChannels entered",e,t);let n={};for(let s=0;s<e;s++)n[`ch${s}`]={steps:new Array(t).fill(!1),mute:!1,url:""};return n}initializeTrimSettings(e){return console.log("initializeTrimSettings entered"),channelIndex<1&&console.log("initializeTrimSettings",e),Array.from({length:e},(()=>({start:0,end:100,length:0})))}updateTrimSettingsUI(e){console.log("Trim settings UI entered and updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`start-slider-${t}`),s=document.getElementById(`end-slider-${t}`);n&&s&&(n.value=e.start,s.value=e.end)}))}addObserver(e){console.log("addObserver",e),this.observers.push(e)}notifyObservers(){console.log("notifyObservers"),this.observers.forEach((e=>e(this.settings)))}setTrimSettings(e,t,n){if(console.log("setTrimSettings entered"),e<1&&console.log("setTrimSettings",e,t,n),this.isValidIndex(e)){const s=this.settings.masterSettings.trimSettings[e];s?Object.assign(s,{start:t,end:n}):console.error(`Trim settings not found for channel index: ${e}`)}else console.error(`Invalid channel index: ${e}`)}
-getTrimSettings(e){console.log("getTrimSettings entered"),e<1&&console.log("getTrimSettings",e);return this.settings.masterSettings.trimSettings[e]||{start:.01,end:100}}updateTrimSettingsUI(e){console.log("updateTrimSettingsUI entered",e),console.log("Trim settings UI updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`start-slider-${t}`),s=document.getElementById(`end-slider-${t}`);n&&s&&(n.value=e.start,s.value=e.end)}))}setProjectName(e,t){console.log("setProjectName entered"),e<1&&console.log("setProjectName",e,t),this.settings.masterSettings.projectName[e]=t,this.notifyObservers()}setCurrentSequence(e){console.log("[SeqDebug] setCurrentSequence entered with: ",e),this.settings.masterSettings.currentSequence=e,console.log(`[SeqDebug] [setCurrentSequence] currentSequence set to: ${e}`),console.log(`[SeqDebug] [setCurrentSequence] Object currentSequence set to: ${this.settings.masterSettings.currentSequence}`)}getCurrentSequence(){return console.log("getCurrentSequence entered"),this.settings.masterSettings.currentSequence}getSequenceSettings(e){console.log("getSequenceSettings entered");const t=`Sequence${e}`;return this.settings.masterSettings.projectSequences[t]}setSequenceSettings(e,t){console.log("setSequenceSettings entered");const n=`Sequence${e}`;this.settings.masterSettings.projectSequences[n]=t}getSettings(e){if(console.log("getSettings entered",e),"masterSettings"===e)return console.log("[getSettings] Retrieved all masterSettings:",this.settings.masterSettings),this.settings.masterSettings;if(e){const t=this.settings.masterSettings[e];return console.log(`[getSettings] Retrieved setting for key '${e}':`,t),t}return console.log("[getSettings] Retrieved all settings:",this.settings),this.settings}checkSettings(){return console.log("checkSettings entered"),console.log("[checkSettings] Current masterSettings:",this.settings.masterSettings),this.settings.masterSettings}updateProjectSequencesUI(){console.log("updateProjectSequencesUI entered"),channelIndex<1&&console.log("updateProjectSequencesUI");this.getSettings("projectSequences").forEach(((e,t)=>{updateSequenceUI(t,e)}))}updateStepState(e,t,n,s){console.log("updateStepState entered"),t<1&&console.log(`[updateStepState] Called with Sequence: ${e}, Channel: ${t}, Step: ${n}, State: ${s}`);const r=this.settings.masterSettings.projectSequences[`Sequence${e}`],o=r&&r[`ch${t}`];o&&n<o.steps.length?o.steps[n]=s:console.error("Invalid sequence, channel, or step index in updateStepState")}getStepState(e,t,n){console.log("getStepState entered"),t<1&&console.log(`[getStepState] Called with Sequence: ${e}, Channel: ${t}, Step: ${n}`);const s=this.settings.masterSettings.projectSequences[`Sequence${e}`],r=s&&s[`ch${t}`];return r&&n<r.steps.length?r.steps[n]:(console.error("Invalid sequence, channel, or step index in getStepState"),null)}updateSetting(e,t,n=null){console.log("updateSetting entered"),n<1&&console.log(`[updateSetting] Called with key: ${e}, value: ${t}, channelIndex: ${n}`),null!==n&&Array.isArray(this.settings.masterSettings[e])?this.settings.masterSettings[e][n]=t:e in this.settings.masterSettings?this.settings.masterSettings[e]=t:console.error(`Setting ${e} does not exist in masterSettings`)}updateSampleDuration(e,t){console.log("updateSampleDuration entered"),t<1&&console.log(`[updateSampleDuration] Called with duration: ${e}, channelIndex: ${t}`),this.isValidIndex(t)?this.settings.masterSettings.trimSettings[t].length=e:console.error(`Invalid channel index: ${t}`)}getBPM(){return this.settings.masterSettings.projectBPM}setBPM(e){this.settings.masterSettings.projectBPM=e}setProjectChannelName(e,t){console.log("setProjectChannelName entered"),this.isValidIndex(e)?this.settings.masterSettings.projectChannelNames[e]!==t&&(this.settings.masterSettings.projectChannelNames[e]=t,console.log(`[setChannelName] Channel ${e} name set to: ${t}`),this.notifyObservers()):console.error(`[setChannelName] Invalid channel index: ${e}`)}setProjectSequences(e){console.log("setProjectSequences entered"),this.settings.masterSettings.projectSequences=e,console.log("[setProjectSequences] Project sequences set:",e),console.log("[setProjectSequences] currentSequence set to:",this.settings.masterSettings.currentSequence)}ensureArrayLength(e,t,n){for(console.log("ensureArrayLength entered");e.length<t;)e.push(n)}updateAllLoadSampleButtonTexts(){console.log("updateAllLoadSampleButtonTexts entered");document.querySelectorAll(".channel").forEach(((e,t)=>{const n=e.querySelector(".load-sample-button");n&&(()=>{this.updateLoadSampleButtonText(t,n)})()}))}updateLoadSampleButtonText(e,t){console.log("updateLoadSampleButtonText entered");let n="Load New Audional";const s=this.settings.masterSettings.projectChannelNames[e],r=this.settings.masterSettings.channelURLs[e];if(s)n=s;else if(r){const e=r.split("/");n=e[e.length-1]}t.textContent=n}updateProjectNameUI(e){console.log("Project name UI entered and updated:",e);const t=document.getElementById("project-name");t&&(t.value=e||"AUDX Project",console.log("Project name UI updated:",e))}updateBPMUI(e){const t=document.getElementById("bpm-slider"),n=document.getElementById("bpm-display");t&&n&&(t.value=e,n.textContent=e,console.log("BPM UI updated:",e))}updateProjectURLsUI(e){console.log("Project URLs UI entered and updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`url-input-${t}`);n&&(n.value=e)}))}updateProjectChannelNamesUI(e){console.log("Project URL names UI entered and updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`url-name-${t}`);n&&(n.textContent=e)}))}ensureArrayLength(e,t){for(;e.length<t;)e.push(this.getDefaultArrayElement())}getDefaultArrayElement(){return{start:.01,end:100,length:0}}}window.unifiedSequencerSettings=new UnifiedSequencerSettings;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class UnifiedSequencerSettings {
+    constructor() {
+        this.observers = [];
+        this.settings = {
+            masterSettings: {
+                projectName: "New Audx Project",
+                projectBPM: 120,
+                currentSequence: 0,
+                channelURLs: new Array(16).fill(""),
+                trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100, length: 0 })),
+                projectChannelNames: new Array(16).fill(""),
+                projectSequences: this.initializeSequences(16, 16, 64)
+            }
+        };
+        this.checkSettings = this.checkSettings.bind(this);
+        this.clearMasterSettings = this.clearMasterSettings.bind(this);
+    }
+
+    exportSettings() {
+        console.log("exportSettings entered");
+        const exportedSettings = JSON.parse(JSON.stringify(this.settings.masterSettings));
+        for (let sequenceKey in exportedSettings.projectSequences) {
+            const sequence = exportedSettings.projectSequences[sequenceKey];
+            for (let channelKey in sequence) {
+                const channel = sequence[channelKey];
+                const activeSteps = [];
+                channel.steps.forEach((step, index) => {
+                    if (step) activeSteps.push(index + 1);
+                });
+                channel.steps = activeSteps;
+            }
+        }
+        const jsonString = JSON.stringify(exportedSettings);
+        console.log("[exportSettings] Exported Settings:", jsonString);
+        return jsonString;
+    }
+
+    isValidIndex(index) {
+        console.log("isValidIndex entered");
+        return index >= 0 && index < 16;
+    }
+
+    loadSettings(settings) {
+        console.log("[internalPresetDebug] loadSettings entered[loadSettings] URL storage after loading:", this.settings.masterSettings.channelURLs);
+        try {
+            console.log("[internalPresetDebug] Received JSON Settings:", settings);
+            const parsedSettings = typeof settings === "string" ? JSON.parse(settings) : settings;
+            console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
+            this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ? parsedSettings.channelURLs.map((url) => formatURL(url)) : [];
+            this.settings.masterSettings.projectName = parsedSettings.projectName;
+            this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+            this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
+            this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
+            console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
+            if (parsedSettings.projectSequences) {
+                for (let sequenceKey in parsedSettings.projectSequences) {
+                    let sequence = parsedSettings.projectSequences[sequenceKey];
+                    for (let channelKey in sequence) {
+                        let channel = sequence[channelKey];
+                        const steps = new Array(64).fill(false);
+                        channel.steps.forEach(step => {
+                            if (step >= 1 && step <= 64) steps[step - 1] = true;
+                        });
+                        channel.steps = steps;
+                    }
+                }
+            }
+            this.settings.masterSettings = parsedSettings;
+            console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
+            this.updateAllLoadSampleButtonTexts();
+            this.notifyObservers();
+        } catch (error) {
+            console.error("[internalPresetDebug] Error loading settings:", error);
+        }
+    }
+
+    addChannelURL(index, url) {
+        if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+            console.log(`[addChannelURL] Adding URL to channel ${index}: ${url}`);
+            this.settings.masterSettings.channelURLs[index] = url;
+            this.notifyObservers();
+        } else {
+            console.error(`[addChannelURL] Invalid channel index: ${index}`);
+        }
+    }
+
+    getChannelURL(index) {
+        if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+            console.log(`[getChannelURL] Retrieving URL from channel ${index}: ${this.settings.masterSettings.channelURLs[index]}`);
+            return this.settings.masterSettings.channelURLs[index];
+        } else {
+            console.error(`[getChannelURL] Invalid channel index: ${index}`);
+            return null;
+        }
+    }
+
+    getProjectUrlforChannel(index) {
+        console.log("getProjectUrlforChannel entered");
+        return this.settings.masterSettings.channelURLs[index];
+    }
+
+    setChannelURLs(urls) {
+        console.log("setProjectURLs entered");
+        this.settings.masterSettings.channelURLs = urls;
+        console.log("[setChannelURLs] Channel URLs set:", urls);
+        this.updateAllLoadSampleButtonTexts();
+    }
+
+    setProjectName(name) {
+        console.log("setProjectName entered");
+        this.settings.masterSettings.projectName = name;
+        console.log(`[setProjectName] Project name set to: ${name}`);
+    }
+
+    clearMasterSettings() {
+        console.log("[clearMasterSettings] Current masterSettings before clearing:", this.settings.masterSettings);
+        this.settings.masterSettings = {
+            projectName: "",
+            projectBPM: 120,
+            currentSequence: 0,
+            channelURLs: new Array(16).fill(""),
+            trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100, length: 0 })),
+            projectChannelNames: new Array(16).fill(""),
+            projectSequences: this.initializeSequences(16, 16, 64)
+        };
+        console.log("[clearMasterSettings] Master settings cleared.");
+    }
+
+    initializeSequences(numSequences, numChannels, numSteps) {
+        console.log("initializeSequences entered", numSequences, numChannels, numSteps);
+        let sequences = {};
+        for (let i = 0; i < numSequences; i++) {
+            sequences[`Sequence${i}`] = this.initializeChannels(numChannels, numSteps);
+        }
+        return sequences;
+    }
+
+    initializeChannels(numChannels, numSteps) {
+        console.log("initializeChannels entered", numChannels, numSteps);
+        let channels = {};
+        for (let i = 0; i < numChannels; i++) {
+            channels[`ch${i}`] = {
+                steps: new Array(numSteps).fill(false),
+                mute: false,
+                url: ""
+            };
+        }
+        return channels;
+    }
+
+    initializeTrimSettings(numChannels) {
+        console.log("initializeTrimSettings entered");
+        if (channelIndex < 1) console.log("initializeTrimSettings", numChannels);
+        return Array.from({ length: numChannels }, () => ({ start: 0, end: 100, length: 0 }));
+    }
+
+    updateTrimSettingsUI(settings) {
+        console.log("Trim settings UI entered and updated:", settings);
+        settings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+
+    addObserver(observer) {
+        console.log("addObserver", observer);
+        this.observers.push(observer);
+    }
+
+    notifyObservers() {
+        console.log("notifyObservers");
+        this.observers.forEach(observer => observer(this.settings));
+    }
+
+    setTrimSettings(index, start, end) {
+        console.log("setTrimSettings entered");
+        if (index < 1) console.log("setTrimSettings", index, start, end);
+        if (this.isValidIndex(index)) {
+            const trimSetting = this.settings.masterSettings.trimSettings[index];
+            if (trimSetting) {
+                Object.assign(trimSetting, { start: start, end: end });
+            } else {
+                console.error(`Trim settings not found for channel index: ${index}`);
+            }
+        } else {
+            console.error(`Invalid channel index: ${index}`);
+        }
+    }
+
+    getTrimSettings(index) {
+        console.log("getTrimSettings entered");
+        if (index < 1) console.log("getTrimSettings", index);
+        return this.settings.masterSettings.trimSettings[index] || { start: 0.01, end: 100 };
+    }
+    
+    updateTrimSettingsUI(settings) {
+        console.log("updateTrimSettingsUI entered", settings);
+        console.log("Trim settings UI updated:", settings);
+        settings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+    
+    setProjectName(index, name) {
+        console.log("setProjectName entered");
+        if (index < 1) console.log("setProjectName", index, name);
+        this.settings.masterSettings.projectName[index] = name;
+        this.notifyObservers();
+    }
+    
+    setCurrentSequence(sequence) {
+        console.log("[SeqDebug] setCurrentSequence entered with: ", sequence);
+        this.settings.masterSettings.currentSequence = sequence;
+        console.log(`[SeqDebug] [setCurrentSequence] currentSequence set to: ${sequence}`);
+        console.log(`[SeqDebug] [setCurrentSequence] Object currentSequence set to: ${this.settings.masterSettings.currentSequence}`);
+    }
+    getCurrentSequence() {
+        console.log("getCurrentSequence entered");
+        return this.settings.masterSettings.currentSequence;
+    }
+    
+    getSequenceSettings(sequenceIndex) {
+        console.log("getSequenceSettings entered");
+        const sequenceKey = `Sequence${sequenceIndex}`;
+        return this.settings.masterSettings.projectSequences[sequenceKey];
+    }
+    
+    setSequenceSettings(sequenceIndex, settings) {
+        console.log("setSequenceSettings entered");
+        const sequenceKey = `Sequence${sequenceIndex}`;
+        this.settings.masterSettings.projectSequences[sequenceKey] = settings;
+    }
+    
+    getSettings(key) {
+        console.log("getSettings entered", key);
+        if (key === "masterSettings") {
+            console.log("[getSettings] Retrieved all masterSettings:", this.settings.masterSettings);
+            return this.settings.masterSettings;
+        }
+        if (key) {
+            const value = this.settings.masterSettings[key];
+            console.log(`[getSettings] Retrieved setting for key '${key}':`, value);
+            return value;
+        }
+        console.log("[getSettings] Retrieved all settings:", this.settings);
+        return this.settings;
+    }
+    
+    checkSettings() {
+        console.log("checkSettings entered");
+        console.log("[checkSettings] Current masterSettings:", this.settings.masterSettings);
+        return this.settings.masterSettings;
+    }
+    updateProjectSequencesUI() {
+        console.log("updateProjectSequencesUI entered");
+        channelIndex < 1 && console.log("updateProjectSequencesUI");
+        this.getSettings("projectSequences").forEach((sequence, index) => {
+            updateSequenceUI(index, sequence);
+        });
+    }
+    
+    updateStepState(sequenceIndex, channelIndex, stepIndex, state) {
+        console.log("updateStepState entered");
+        if (channelIndex < 1) console.log(`[updateStepState] Called with Sequence: ${sequenceIndex}, Channel: ${channelIndex}, Step: ${stepIndex}, State: ${state}`);
+        const sequence = this.settings.masterSettings.projectSequences[`Sequence${sequenceIndex}`];
+        const channel = sequence && sequence[`ch${channelIndex}`];
+        if (channel && stepIndex < channel.steps.length) {
+            channel.steps[stepIndex] = state;
+        } else {
+            console.error("Invalid sequence, channel, or step index in updateStepState");
+        }
+    }
+    
+    getStepState(sequenceIndex, channelIndex, stepIndex) {
+        console.log("getStepState entered");
+        if (channelIndex < 1) console.log(`[getStepState] Called with Sequence: ${sequenceIndex}, Channel: ${channelIndex}, Step: ${stepIndex}`);
+        const sequence = this.settings.masterSettings.projectSequences[`Sequence${sequenceIndex}`];
+        const channel = sequence && sequence[`ch${channelIndex}`];
+        return channel && stepIndex < channel.steps.length ? channel.steps[stepIndex] : (console.error("Invalid sequence, channel, or step index in getStepState"), null);
+    }
+    
+    updateSetting(key, value, channelIndex = null) {
+        console.log("updateSetting entered");
+        if (channelIndex < 1) console.log(`[updateSetting] Called with key: ${key}, value: ${value}, channelIndex: ${channelIndex}`);
+        if (channelIndex !== null && Array.isArray(this.settings.masterSettings[key])) {
+            this.settings.masterSettings[key][channelIndex] = value;
+        } else if (key in this.settings.masterSettings) {
+            this.settings.masterSettings[key] = value;
+        } else {
+            console.error(`Setting ${key} does not exist in masterSettings`);
+        }
+    }
+    
+    updateSampleDuration(duration, channelIndex) {
+        console.log("updateSampleDuration entered");
+        if (channelIndex < 1) console.log(`[updateSampleDuration] Called with duration: ${duration}, channelIndex: ${channelIndex}`);
+        if (this.isValidIndex(channelIndex)) {
+            this.settings.masterSettings.trimSettings[channelIndex].length = duration;
+        } else {
+            console.error(`Invalid channel index: ${channelIndex}`);
+        }
+    }
+    
+    getBPM() {
+        return this.settings.masterSettings.projectBPM;
+    }
+    
+    setBPM(bpm) {
+        this.settings.masterSettings.projectBPM = bpm;
+    }
+
+    setProjectChannelName(channelIndex, name) {
+        console.log("setProjectChannelName entered");
+        if (this.isValidIndex(channelIndex)) {
+            if (this.settings.masterSettings.projectChannelNames[channelIndex] !== name) {
+                this.settings.masterSettings.projectChannelNames[channelIndex] = name;
+                console.log(`[setChannelName] Channel ${channelIndex} name set to: ${name}`);
+                this.notifyObservers();
+            }
+        } else {
+            console.error(`[setChannelName] Invalid channel index: ${channelIndex}`);
+        }
+    }
+    
+    setProjectSequences(sequences) {
+        console.log("setProjectSequences entered");
+        this.settings.masterSettings.projectSequences = sequences;
+        console.log("[setProjectSequences] Project sequences set:", sequences);
+        console.log("[setProjectSequences] currentSequence set to:", this.settings.masterSettings.currentSequence);
+    }
+
+    ensureArrayLength(array, desiredLength, defaultValue) {
+        console.log("ensureArrayLength entered");
+        for (; array.length < desiredLength;) {
+            array.push(defaultValue);
+        }
+    }
+    
+    updateAllLoadSampleButtonTexts() {
+        console.log("updateAllLoadSampleButtonTexts entered");
+        document.querySelectorAll(".channel").forEach((element, index) => {
+            const loadSampleButton = element.querySelector(".load-sample-button");
+            if (loadSampleButton) {
+                this.updateLoadSampleButtonText(index, loadSampleButton);
+            }
+        });
+    }
+    
+    updateLoadSampleButtonText(channelIndex, buttonElement) {
+        console.log("updateLoadSampleButtonText entered");
+        let buttonText = "Load New Audional";
+        const channelName = this.settings.masterSettings.projectChannelNames[channelIndex];
+        const channelURL = this.settings.masterSettings.channelURLs[channelIndex];
+        if (channelName) {
+            buttonText = channelName;
+        } else if (channelURL) {
+            const parts = channelURL.split("/");
+            buttonText = parts[parts.length - 1];
+        }
+        buttonElement.textContent = buttonText;
+    }
+    updateProjectNameUI(projectName) {
+        console.log("Project name UI entered and updated:", projectName);
+        const projectNameElement = document.getElementById("project-name");
+        if (projectNameElement) {
+            projectNameElement.value = projectName || "AUDX Project";
+            console.log("Project name UI updated:", projectName);
+        }
+    }
+    
+    updateBPMUI(bpm) {
+        const bpmSlider = document.getElementById("bpm-slider");
+        const bpmDisplay = document.getElementById("bpm-display");
+        if (bpmSlider && bpmDisplay) {
+            bpmSlider.value = bpm;
+            bpmDisplay.textContent = bpm;
+            console.log("BPM UI updated:", bpm);
+        }
+    }
+    updateProjectURLsUI(urls) {
+        console.log("Project URLs UI entered and updated:", urls);
+        urls.forEach((url, index) => {
+            const urlInputElement = document.getElementById(`url-input-${index}`);
+            if (urlInputElement) {
+                urlInputElement.value = url;
+            }
+        });
+    }
+    
+    updateProjectChannelNamesUI(names) {
+        console.log("Project URL names UI entered and updated:", names);
+        names.forEach((name, index) => {
+            const urlNameElement = document.getElementById(`url-name-${index}`);
+            if (urlNameElement) {
+                urlNameElement.textContent = name;
+            }
+        });
+    }
+    ensureArrayLength(array, desiredLength) {
+        for (; array.length < desiredLength;) {
+            array.push(this.getDefaultArrayElement());
+        }
+    }
+    
+    getDefaultArrayElement() {
+        return {
+            start: 0.01,
+            end: 100,
+            length: 0
+        };
+    }
+}
+
+window.unifiedSequencerSettings=new UnifiedSequencerSettings;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 let currentTrimmerInstance=null,currentTrimmerChannelIndex=null;function updateAudioTrimmerWithBufferHelper(e,r){if(console.log("updateAudioTrimmerWithBufferHelper entered"),audioBuffers.has(e)){updateAudioTrimmerWithBuffer(audioBuffers.get(e),r)}else console.error(`Audio buffer not found for URL: ${e}`)}function updateAudioTrimmerWithBuffer(e){console.log("updateAudioTrimmerWithBuffer entered"),currentTrimmerInstance&&(currentTrimmerInstance.setAudioBuffer(e),currentTrimmerInstance.drawWaveform(),console.log(" updateDimmedAreas method called from updateaudioTrimmerWithBuffer"),currentTrimmerInstance.updateSliderValues(),currentTrimmerInstance.updateDimmedAreas())}function playTrimmedAudioForChannel(e){console.log("playTrimmedAudioForChannel entered"),currentTrimmerInstance&&currentTrimmerChannelIndex===e?currentTrimmerInstance.playTrimmedAudio():console.error("No active trimmer instance for the channel or channel index mismatch")}function stopAudioForChannel(e){currentTrimmerInstance&&currentTrimmerInstance.channelIndex===e?currentTrimmerInstance.stopAudio():console.error("No active trimmer instance for the channel or channel index mismatch")}document.addEventListener("DOMContentLoaded",(function(){}));
 class AudioTrimmer{constructor(t){console.log("[Class Functions] constructor",{channelIndex:t}),this.channelIndex=t,this.audioContext=new(window.AudioContext||window.webkitAudioContext),this.audioBuffer=null,this.isPlaying=!1,this.isLooping=!1,this.initializeSliderTrack(t);const e=getTrimSettings(this.channelIndex);console.log("getSettings read into trimSettings in AudioTrimmer class constructor",e),this.startSliderValue=e.startSliderValue,this.endSliderValue=e.endSliderValue,console.log("startSliderValue and endSliderValue in AudioTrimmer class constructor",this.startSliderValue,this.endSliderValue),this.displayTimeout=null}initializeSliderTrack(){this.sliderTrack=document.querySelector(".slider-track"),this.sliderTrack||console.error("Slider track not found")}updateTrimmedSampleDuration(){const t=this.startSliderValue,e=this.endSliderValue;this.trimmedSampleDuration=Math.max(0,e-t),this.debounceDisplayValues()}getStartSliderValue(){return this.startSliderValue}getEndSliderValue(){return this.endSliderValue}sliderValueToTimecode(t,e){return t/100*e}debounceDisplayValues(){this.displayTimeout&&clearTimeout(this.displayTimeout),this.displayTimeout=setTimeout((()=>this.displayValues()),300)}displayValues(){console.log("Start Slider Value:",this.startSliderValue),console.log("End Slider Value:",this.endSliderValue),console.log("Trimmed Sample Duration:",this.trimmedSampleDuration)}setAudioBuffer(t){console.log("[Class Functions] setAudioBuffer",{audioBuffer:t}),this.audioBuffer=t,this.drawWaveform(),console.log(" updateDimmedAreas method called from setAudioBuffer"),this.updateDimmedAreas(),this.updateSliderValues()}drawWaveform(){if(console.log("[Class Functions] drawWaveform"),!this.audioBuffer)return void console.log("[Class Functions] drawWaveform - No audio buffer");const t=this.waveformCanvas.width,e=this.waveformCanvas.height,i=this.audioBuffer.getChannelData(0),s=Math.ceil(i.length/t),o=e/2;this.ctx.clearRect(0,0,t,e),this.ctx.beginPath();for(let e=0;e<t;e++){const{min:t,max:a}=this.getMinMax(i,e*s,s);this.ctx.moveTo(e,o*(1+t)),this.ctx.lineTo(e,o*(1+a))}this.ctx.stroke()}async initialize(){console.log("[Class Functions] initialize");let t=!0;["ordinalIdInput","loadSampleButton","waveformCanvas","playbackCanvas","trimmerPlayButton","trimmerStopButton","loopButton","startDimmed","endDimmed","startSlider","endSlider"].forEach((e=>{this[e]=document.getElementById(e),this[e]||(console.error(`[Class Functions] initialize - Element not found: ${e}`),t=!1)})),t?(this.ctx=this.waveformCanvas.getContext("2d"),this.addEventListeners(),console.log(" updateDimmedAreas method called from initialize"),this.updateDimmedAreas(),this.updateSliderValues()):(console.log("[Class Functions] initialize - Waiting for elements to be available"),setTimeout((()=>this.initialize()),500));const e=getTrimSettings(this.channelIndex);this.startSlider.value=e.startSliderValue,this.endSlider.value=e.endSliderValue,this.isLooping=e.isLooping,this.updateLoopButtonState(),this.updateDimmedAreas(),this.updateSliderValues(),this.playbackCtx=this.playbackCanvas.getContext("2d"),this.playbackCtx.fillStyle="red"}updateSliderValues(){const t=this.startSliderValue/100*this.sliderTrack.offsetWidth,e=this.endSliderValue/100*this.sliderTrack.offsetWidth;this.startSlider.style.left=`${t}px`,this.endSlider.style.left=`${e}px`,this.updateDimmedAreas(),console.log("updateDimmedAreas method called from updateSliderValues"),this.updateTrimmedSampleDuration(),this.debounceDisplayValues()}updateDimmedAreas(){console.log("[Class Functions] updateDimmedAreas function entered into");const t=this.startSliderValue,e=this.endSliderValue,i=`${t}%`,s=100-e+"%";this.startDimmed.style.width=i,this.startDimmed.style.left="0",this.endDimmed.style.width=s,this.endDimmed.style.left=`${e}%`}addEventListeners(){console.log("[Class Functions] addEventListeners"),this.boundPlayTrimmedAudio=this.playTrimmedAudio.bind(this),this.boundStopAudio=this.stopAudio.bind(this),this.trimmerPlayButton.removeEventListener("click",this.boundPlayTrimmedAudio),this.trimmerStopButton.removeEventListener("click",this.boundStopAudio),this.trimmerPlayButton.addEventListener("click",this.boundPlayTrimmedAudio),this.trimmerStopButton.addEventListener("click",this.boundStopAudio),this.loopButton.addEventListener("click",this.toggleLoop.bind(this));const t=(t,e)=>{const i=e?this.startSlider:this.endSlider;if(console.log("[Slider Mouse Down] Slider: "+(e?"Start":"End")),!i)return void console.error("Slider element is undefined");const s=t.clientX-i.getBoundingClientRect().left;document.onmousemove=t=>{if(!this.sliderTrack)return void console.error("Slider track is undefined");let o=t.clientX-s-this.sliderTrack.getBoundingClientRect().left;if(o=Math.max(0,Math.min(o,this.sliderTrack.offsetWidth-i.offsetWidth)),e){const t=this.endSlider.getBoundingClientRect().left-this.sliderTrack.getBoundingClientRect().left;o=Math.min(o,t)}else{const t=this.startSlider.getBoundingClientRect().right-this.sliderTrack.getBoundingClientRect().left;o=Math.max(o,t)}i.style.left=`${o}px`;const a=o/this.sliderTrack.offsetWidth*100;e?this.startSliderValue=a:this.endSliderValue=a;let n=unifiedSequencerSettings.settings.masterSettings.trimSettings;n[this.channelIndex]={...n[this.channelIndex],startSliderValue:this.startSliderValue,endSliderValue:this.endSliderValue},updateTrimSettingsUI(n),this.updateSliderValues()},document.onmouseup=()=>{document.onmousemove=document.onmouseup=null}};this.startSlider.addEventListener("mousedown",(e=>t(e,!0))),this.endSlider.addEventListener("mousedown",(e=>t(e,!1)))}async loadSample(){if(console.log("[Class Functions] loadSample"),this.ordinalIdInput.value)try{this.audioBuffer=await fetchAudio(`https://ordinals.com/content/${this.ordinalIdInput.value}`),this.trimSettings=getTrimSettings(this.channelIndex),this.drawWaveform(),console.log(" updateDimmedAreas method called from loadSample"),this.updateSliderValues(),this.updateDimmedAreas()}catch(t){console.error("Error loading audio:",t)}}getMinMax(t,e,i){let s=1,o=-1;for(let a=0;a<i;a++){const i=t[e+a];i<s&&(s=i),i>o&&(o=i)}return{min:s,max:o}}getIsLooping(){return this.isLooping}setIsLooping(t){this.isLooping=t,this.updateLoopButtonState()}updateLoopButtonState(){console.log(`[updateLoopButtonState] isLooping: ${this.isLooping}`),this.loopButton&&(this.isLooping?(this.loopButton.classList.add("on"),this.loopButton.classList.remove("off")):(this.loopButton.classList.add("off"),this.loopButton.classList.remove("on")))}playTrimmedAudio(){if(console.log("[playTrimmedAudio] [Class Functions] playTrimmedAudio"),this.isPlaying)return void console.log("[playTrimmedAudio] Audio is already playing, not starting new playback");if(!this.audioBuffer)return void console.error("[playTrimmedAudio] No audio buffer loaded");this.isPlaying=!0,console.log("[playTrimmedAudio] isPlaying set to true, starting new playback");const t=this.sliderValueToTimecode(this.startSliderValue,this.audioBuffer.duration);this.startTime=this.audioContext.currentTime-t;const e=this.sliderValueToTimecode(this.startSliderValue,this.audioBuffer.duration),i=this.sliderValueToTimecode(this.endSliderValue,this.audioBuffer.duration);this.sourceNode&&this.sourceNode.disconnect(),this.sourceNode=this.audioContext.createBufferSource(),this.sourceNode.buffer=this.audioBuffer,this.sourceNode.connect(this.audioContext.destination),this.sourceNode.loop=this.isLooping,this.isLooping&&(this.sourceNode.loopStart=e,this.sourceNode.loopEnd=i),this.sourceNode.start(0,e,i-e),console.log("[playTrimmedAudio] Playback started"),this.animatePlayback(),this.sourceNode.onended=()=>{this.isPlaying=!1,this.isLooping?this.playTrimmedAudio():(console.log("[playTrimmedAudio] Playback ended, isPlaying set to false"),this.animationFrameRequest&&cancelAnimationFrame(this.animationFrameRequest))}}stopAudio(){console.log("[Class Functions] stopAudio"),this.setIsLooping(!1),this.isPlaying&&this.sourceNode&&(this.sourceNode.stop(),this.sourceNode.disconnect(),this.sourceNode=null,this.isPlaying=!1),this.animationFrameRequest&&cancelAnimationFrame(this.animationFrameRequest)}toggleLoop(){console.log("[Class Functions] toggleLoop"),this.isLooping=!this.isLooping,this.updateLoopButtonState(),this.isPlaying&&this.playTrimmedAudio()}getCurrentPlaybackPosition(){if(!this.isPlaying)return 0;const t=this.sliderValueToTimecode(this.startSliderValue,this.audioBuffer.duration);return(this.audioContext.currentTime-this.startTime)%this.audioBuffer.duration+t}updatePlaybackCanvas(){const t=this.audioContext.currentTime-this.startTime,e=this.sliderValueToTimecode(this.startSliderValue,this.audioBuffer.duration),i=this.sliderValueToTimecode(this.endSliderValue,this.audioBuffer.duration)-e,s=(t-e)%i;if(s<0||s>i)return;const o=this.playbackCanvas.width,a=this.playbackCanvas.height,n=this.startSliderValue/100*o,l=n+s/i*(this.endSliderValue/100*o-n);this.playbackCtx.clearRect(0,0,o,a),this.playbackCtx.beginPath(),this.playbackCtx.moveTo(l,0),this.playbackCtx.lineTo(l,a),this.playbackCtx.strokeStyle="#FF0000",this.playbackCtx.lineWidth=2,this.playbackCtx.stroke()}animatePlayback(){this.isPlaying?(console.log("[animatePlayback] Animation frame requested."),this.updatePlaybackCanvas(),this.animationFrameRequest=requestAnimationFrame((()=>this.animatePlayback()))):console.log("[animatePlayback] Animation stopped. 'isPlaying' is false.")}}
