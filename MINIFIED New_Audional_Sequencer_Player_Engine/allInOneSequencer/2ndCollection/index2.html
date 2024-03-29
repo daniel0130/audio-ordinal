@@ -8,9 +8,7 @@
 <script>
     let cci2 = 18; // Initial CCI2 value
     const initialCCI2 = 21; // Store the initial value of cci2 to reset later
-    let seed = 94435676856756; // Seed value, can be adjusted for production purposes
-    let isChannel11Active = false; // Flag to track if channel 11 effect is active
-
+    let seed = 9; // Seed value, can be adjusted for production purposes
 
     // Enhanced randomization function using a seed
     function randomWithSeed(seedValue) {
@@ -29,7 +27,6 @@
     channelPlaybackListener.onmessage = (event) => {
         if (event.data.action === 'stop') {
             cci2 = initialCCI2; // Reset to initial cci2 value when stop is received
-            isChannel11Active = false; // Reset channel 11 active flag
             console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}`);
         } else {
             const { channelIndex } = event.data;
