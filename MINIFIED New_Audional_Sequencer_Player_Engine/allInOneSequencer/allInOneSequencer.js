@@ -122,6 +122,11 @@ function playStep() {
 
         const isMuted = channelSettings.mute;
         const channelURL = window.unifiedSequencerSettings.getChannelURL(channelIndex);
+        // Assuming steps are represented by buttons with class .step-button in your HTML
+        const stepButtons = document.querySelectorAll(`#channel-${channelIndex} .step-button`);
+            
+        // Update the playhead position
+        renderPlayhead(stepButtons, currentStep);
 
         if (channelSettings.steps[currentStep] && !isMuted) {
             if (audioBuffers.has(channelURL)) {
@@ -543,39 +548,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadJson = document.getElementById("loadJson");
     let loadClicked = false;
 
-    // Adjusting the "New/Load" button event listener for direct load and play
-newLoadButton.addEventListener("click", async () => {
-    console.log("[Load Process] Load button clicked, loading 'BasedSong1.json'");
+//     // Adjusting the "New/Load" button event listener for direct load and play
+// newLoadButton.addEventListener("click", async () => {
+//     console.log("[Load Process] Load button clicked, loading 'BasedSong1.json'");
 
-    try {
-        const response = await fetch('BasedSong1.json'); // Adjust the path as needed
-        const json = await response.json();
-        console.log("[Load Process] Settings loaded:", json);
+//     try {
+//         const response = await fetch('BasedSong1.json'); // Adjust the path as needed
+//         const json = await response.json();
+//         console.log("[Load Process] Settings loaded:", json);
 
-        // Assuming window.unifiedSequencerSettings exists and is ready to use
-        window.unifiedSequencerSettings.loadSettings(json);
-        console.log("[Load Process] Settings applied to the sequencer");
+//         // Assuming window.unifiedSequencerSettings exists and is ready to use
+//         window.unifiedSequencerSettings.loadSettings(json);
+//         console.log("[Load Process] Settings applied to the sequencer");
 
-        // Process channel URLs for audio loading
-        if (json.channelURLs && Array.isArray(json.channelURLs)) {
-            await processChannelURLs(json.channelURLs);
-        }
+//         // Process channel URLs for audio loading
+//         if (json.channelURLs && Array.isArray(json.channelURLs)) {
+//             await processChannelURLs(json.channelURLs);
+//         }
 
-        // Resume AudioContext if needed
-        if (audioContext && audioContext.state === 'suspended') {
-            await audioContext.resume();
-            console.log("[Load Process] AudioContext resumed.");
-        }
+//         // Resume AudioContext if needed
+//         if (audioContext && audioContext.state === 'suspended') {
+//             await audioContext.resume();
+//             console.log("[Load Process] AudioContext resumed.");
+//         }
 
-        // Start the scheduler for playback, assuming `startScheduler` is already defined and properly sets up playback.
-        // Ensure this function exists and is designed to start playback in your application context.
-        startScheduler(); // This directly initiates playback according to your sequencer's scheduling logic.
+//         // Start the scheduler for playback, assuming `startScheduler` is already defined and properly sets up playback.
+//         // Ensure this function exists and is designed to start playback in your application context.
+//         startScheduler(); // This directly initiates playback according to your sequencer's scheduling logic.
 
-        console.log("[Load Process] Playback started via startScheduler.");
-    } catch (error) {
-        console.error("[Load Process] Error loading or applying settings:", error);
-    }
-});
+//         console.log("[Load Process] Playback started via startScheduler.");
+//     } catch (error) {
+//         console.error("[Load Process] Error loading or applying settings:", error);
+//     }
+// });
 
 
     // Event listener for the "New/Load" button
