@@ -18,16 +18,84 @@ function getChannelURL(index) {
         return null; // Or handle the error as needed
     }
 }
+
 function updateTrimSettingsUI(e){console.log("debugGlobalObjectToUI - entered"),console.log("{debugGlobalObjectToUI} updateTrimSettingsUI: updating with trimSettings",e),console.log("Trim settings UI updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`start-slider-${t}`),o=document.getElementById(`end-slider-${t}`);n&&o&&(n.value=e.startSliderValue,o.value=e.endSliderValue)}))}function updateProjectChannelNamesUI(e){console.log("debugGlobalObjectToUI - entered"),console.log("{debugGlobalObjectToUI} updateProjectChannelNamesUI: updating with URL names",e),console.log("Project URL names UI updated:",e),e.forEach(((e,t)=>{const n=document.getElementById(`url-name-${t}`);n&&(n.textContent=e)}))}function updateBPMUI(e){console.log("debugGlobalObjectToUI - entered");const t=document.getElementById("bpm-slider"),n=document.getElementById("bpm-display");t&&n&&(t.value=e,n.textContent=e)}function updateProjectNameUI(e){console.log("debugGlobalObjectToUI - entered");const t=document.getElementById("project-name");t&&(t.value=e)}function updateSpecificStepUI(e,t,n){console.log("debugGlobalObjectToUI - entered");const o=`Sequence${e}-ch${t}-step-${n}`;console.log(`Looking for step button with ID: ${o}`);const c=document.getElementById(o);if(c){let s=window.unifiedSequencerSettings.getStepState(e,t,n);console.log(`[updateSpecificStepUI] Step button found: Sequence ${e}, Channel ${t}, Step ${n}, Current State: ${s}`),s?(c.classList.add("selected"),console.log(`[updateSpecificStepUI] Added 'selected' class to step button with ID: ${o}`)):(c.classList.remove("selected"),console.log(`[updateSpecificStepUI] Removed 'selected' class from step button with ID: ${o}`))}else console.error(`Step button not found for the given IDs: ${o}`)}function getProjectSequences(){console.log("debugGlobalObjectToUI - entered");window.unifiedSequencerSettings;return window.unifiedSequencerSettings.getSettings("projectSequences")}function setGlobalProjectURLs(e){console.log("debugGlobalObjectToUI - entered"),window.unifiedSequencerSettings.setProjectURLs(e),console.log("[setGlobalProjectURLs] Project URLs updated:",e)}function setTrimSettings(e,t,n){"number"==typeof t&&"number"==typeof n?(window.unifiedSequencerSettings.setTrimSettings(e,t,n),console.log(`[setGlobalTrimSettings] Trim settings updated for channel ${e}: Start Slider Value = ${t}, End Slider Value = ${n}`)):console.error("Invalid trim settings values")}function updateProjectSequencesUI(e){console.log("debugGlobalObjectToUI - entered"),console.log("{debugGlobalObjectToUI} [updateProjectSequencesUI] updateProjectSequencesUI: updating with sequences",e),console.log(`[updateProjectSequencesUI] Total sequences to process: ${Object.keys(e).length}`),Object.keys(e).forEach((t=>{const n=e[t];console.log(`[updateProjectSequencesUI] Processing sequence: ${t}`),Object.keys(n).forEach((e=>{const o=n[e].steps;Array.isArray(o)?o.forEach(((n,o)=>{const c=`${t}-${e}-step-${o}`,s=document.getElementById(c);s&&(!0===n?s.classList.contains("selected")||s.classList.add("selected"):s.classList.contains("selected")&&(console.log(`[updateProjectSequencesUI] Removing 'selected' class from stepControl: ${c}`),s.classList.remove("selected")))})):console.log(`[updateProjectSequencesUI] Steps data for channel ${e} in sequence ${t} is not an array`)}))}))}function getTrimSettings(e){return console.log("debugGlobalObjectToUI - entered"),window.unifiedSequencerSettings.getTrimSettings(e)}document.addEventListener("DOMContentLoaded",(()=>{for(let e=0;e<16;e++)for(let t=0;t<16;t++){let n=document.querySelector(`#channel-${t}-steps-container`);n||(n=document.createElement("div"),n.id=`channel-${t}-steps-container`,n.classList.add("steps-container"),document.body.appendChild(n)),n.innerHTML="";for(let o=0;o<64;o++){const c=document.createElement("button");c.classList.add("step-button"),c.id=`Sequence${e}-ch${t}-step-${o}`,c.addEventListener("click",(()=>{let n=window.unifiedSequencerSettings.getStepState(e,t,o);console.log(`[updateSpecificStepUI] [getStepState applied] Step button clicked: Sequence ${e}, Channel ${t}, Step ${o}, Current State: ${n}`),window.unifiedSequencerSettings.updateStepState(e,t,o,!n),console.log(`[updateSpecificStepUI] Step button clicked: Sequence ${e}, Channel ${t}, Step ${o}, New State: ${!n}`),updateSpecificStepUI(e,t,o)})),n.appendChild(c)}}}));
 const mainContainer=document.getElementById("app"),channelTemplateContainer=document.querySelector(".channel-template"),channelTemplate=channelTemplateContainer.querySelector(".channel"),quickPlayButtons=[];let currentActiveIndex=null;const quickPlayContainer=document.createElement("div");function setActiveSequence(e){null!==currentActiveIndex&&currentActiveIndex!==e&&(console.log(`Deactivating previously active sequence ${currentActiveIndex}`),quickPlayButtons[currentActiveIndex].classList.add("inactive")),quickPlayButtons[e].classList.remove("inactive"),quickPlayButtons.forEach((t=>{t!==quickPlayButtons[e]&&t.classList.add("inactive")})),currentActiveIndex=e}function updateActiveQuickPlayButton(){quickPlayButtons.forEach((e=>{e.classList.remove("active")}));quickPlayButtons[currentSequence].classList.add("active")}function insertQuickPlayButtons(){const e=document.getElementById("continuous-play"),t=document.getElementById("quick-play-button");if(e&&t)for(let n=0;n<16;n++){const c=createQuickPlayButton(n);e.parentNode.insertBefore(c,t)}else console.log("QUICKPLAY BUTTONS TEMPORARILY REMOVED UNTIL THEY CAN BE FIXED")}function loadAndDisplaySequence(e){currentSequence=e,console.log(`[loadAndDisplaySequence] currentSequence updated to:  ${e}`),loadSequence(e),document.getElementById("current-sequence-display").textContent=`Sequence ${currentSequence}`,updateActiveQuickPlayButton()}function createQuickPlayButton(e){const t=document.createElement("div");t.classList.add("quick-play-button","tooltip"),t.dataset.sequenceIndex=e,t.innerHTML=e;const n=document.createElement("span");return n.classList.add("tooltiptext"),n.innerHTML=`Quick Load Sequence ${e}<br><br>Right click to change button colour.`,t.appendChild(n),quickPlayButtons.push(t),t.addEventListener("click",(function(){setActiveSequence(e)})),t.addEventListener("contextmenu",(function(e){e.preventDefault(),showColorPicker(e,t)})),t}quickPlayContainer.id="quickplay-container",quickPlayContainer.style.display="flex",quickPlayContainer.style.justifyContent="center",quickPlayContainer.style.marginBottom="20px",insertQuickPlayButtons(),quickPlayButtons.forEach((e=>{e.addEventListener("click",(()=>{loadAndDisplaySequence(parseInt(e.dataset.sequenceIndex,10))}))})),quickPlayButtons.forEach((e=>e.classList.add("inactive")));for(let e=0;e<=15;e++){let t=channelTemplate.cloneNode(!0);t.id=`channel-${e}`,mainContainer.appendChild(t)}channelTemplateContainer.remove();const setupCompleteEvent=new Event("setupComplete");window.dispatchEvent(setupCompleteEvent);
 let isCopyPasteEvent=!1,copiedData=null;function validateAndUpdateUI(e){isValidSequence(window.unifiedSequencerSettings.getSequenceSettings(e))?(updateUIForSequence(e),console.log(`[copyPasteDebug] UI updated for sequence index: ${e}`)):console.error(`[copyPasteDebug] Invalid sequence settings for sequence index: ${e}`)}function isValidSequence(e){if(!e||"object"!=typeof e)return console.log("[copyPasteDebug] Sequence is not an object."),!1;for(let t in e){if(!isValidChannel(e[t]))return console.log(`[copyPasteDebug] Invalid channel data in sequence: ${t}`),!1}return console.log("[copyPasteDebug] Sequence is valid for paste."),!0}function isValidChannel(e){return e&&Array.isArray(e.steps)&&"boolean"==typeof e.mute&&"string"==typeof e.url}function showConfirmationTooltip(e){const t=document.createElement("div");t.innerText=e,t.style.position="absolute",t.style.background="#333",t.style.color="white",t.style.padding="5px",t.style.borderRadius="5px",t.style.top="50%",t.style.left="50%",t.style.transform="translate(-50%, -50%)",t.style.zIndex="1000",document.body.appendChild(t),setTimeout((()=>{t.remove()}),3e3)}document.addEventListener("DOMContentLoaded",(function(){const e=document.getElementById("copy-sequence-settings"),t=document.getElementById("paste-button");e&&(console.log("[copyPasteDebug] Copy button clicked."),e.addEventListener("click",(function(){const e=window.unifiedSequencerSettings.getCurrentSequence(),n=window.unifiedSequencerSettings.getSequenceSettings(e);copiedData={type:"sequence",sequenceSettings:JSON.parse(JSON.stringify(n))},console.log("[copyPasteDebug] Sequence settings copied:",copiedData),t&&t.classList.add("flashing"),showConfirmationTooltip("[copyPasteDebug] Copied sequence settings. Select another sequence to paste to.")}))),t&&t.addEventListener("click",(function(){if(console.log("[copyPasteDebug] pasteButton clicked"),!copiedData||"sequence"!==copiedData.type)return void alert("No sequence data copied to paste!");const e=window.unifiedSequencerSettings.getCurrentSequence();console.log(`[copyPasteDebug] Current sequence index: ${e}`),window.unifiedSequencerSettings.setSequenceSettings(e,copiedData.sequenceSettings),console.log(`[copyPasteDebug] Sequence settings pasted to sequence index ${e}: ${JSON.stringify(copiedData)}`),updateUIForSequence(e),console.log(`[copyPasteDebug] updateUIForSequence called with sequence index: ${e}`),console.log(`[copyPasteDebug] Current sequence index according to the global object is now: ${window.unifiedSequencerSettings.getCurrentSequence()}`),this.classList.remove("flashing"),validateAndUpdateUI(e)}))}));
 let totalSequenceCount=16,isContinuousPlay=!0;function initializeNewSequence(e){console.log("initializeNewSequence entered"),console.log(`[initializeNewSequence] Initializing new sequence. Current sequence: ${e}`);let n=Array(16).fill().map((()=>[null].concat(Array(64).fill(!1)))),t=e+1;console.log(`[initializeNewSequence] New sequence: ${e}`),window.unifiedSequencerSettings.setCurrentSequence(t,n),console.log(`[SeqDebug] [initializeNewSequence] newSequenceCreated ${e} ${n}`)}function loadSequence(e){console.log("loadSequence entered");let n=window.unifiedSequencerSettings.getSettings("projectSequences")[`Sequence${e}`];console.log(`[loadSequence] Loading sequence ${e}...`),"object"==typeof n?(updateUIForSequence(e),Object.entries(n).forEach((([n,t])=>{const o=parseInt(n.replace("ch",""),10);updateChannelUI(e,o,t.steps)}))):console.error(`Sequence ${e} is not an object.`,n)}function loadNextSequence(){console.log("loadNextSequence entered");let e=window.unifiedSequencerSettings.getCurrentSequence();if(e<totalSequenceCount-1){const n=e+1;console.log(`[SeqDebug] Calling handleSequenceTransition with sequence: ${n}`),handleSequenceTransition(n),updateSequenceDisplay(n)}else console.warn("You've reached the last sequence.")}function updateChannelUI(e,n,t){console.log("updateChannelUI entered"),console.log(`[SeqDebug] [updateChannelUI] Updating UI for sequence ${e} channel ${n}`);const o=document.querySelector(`.channel[data-id="Channel-${n}"]`);if(!o)return void console.error(`Channel element not found for index: ${n}`);o.querySelectorAll(`.step-button[id^="Sequence${e}-ch${n}"]`).forEach(((e,n)=>{t[n]?e.classList.add("selected"):e.classList.remove("selected")}))}function updateSequenceDisplay(e){const n=document.getElementById("current-sequence-display");n&&(n.textContent="Sequence "+e),updateActiveQuickPlayButton()}function updateUIForSequence(e){console.log("updateUIForSequence entered"),console.log(`[SeqDebug] [updateUIForSequence] Updating UI for Sequence ${e}`);const n=window.unifiedSequencerSettings.getSettings("masterSettings").projectSequences[`Sequence${e}`];console.log(`[SeqDebug] [debugging Step Button IDs] Sequence Settings for Sequence ${e}:`,n),e>=0&&e<64?channels.forEach(((t,o)=>{const c=t.querySelectorAll(".step-button"),u=t.querySelectorAll(".toggle-mute");console.log(`[SeqDebug] [debugging Step Button IDs][updateUIForSequence] Processing Channel: ${o}, Step Buttons Found: ${c.length}`),n&&n[`ch${o}`]&&n[`ch${o}`].steps?(c.forEach((e=>e.classList.remove("selected"))),u.forEach((e=>e.classList.remove("toggle-mute"))),n[`ch${o}`].steps.forEach(((e,n)=>{console.log(`[SeqDebug][debugging Step Button IDs] [updateUIForSequence] Channel: ${o}, Position: ${n}, Step State: ${e}`),e&&(c[n]?(c[n].classList.add("selected"),console.log(`[SeqDebug][debugging Step Button IDs][updateUIForSequence] Adding 'selected' class to Step Button at Position: ${n} in Channel: ${o}`)):console.error(`[SeqDebug][debugging Step Button IDs][updateUIForSequence] Step Button not found at Position: ${n} in Channel: ${o}`))}))):console.error(`[SeqDebug][debugging Step Button IDs][updateUIForSequence] Missing step data for Channel: ${o} in Sequence: ${e}`)})):console.error("[SeqDebug][debugging Step Button IDs] [updateUIForSequence] Invalid sequence number:",e)}function changeSequence(e){console.log("changeSequence entered"),currentSequence=e,onSequenceOrDataChange()}function updateStep(e,n,t){console.log("updateStep entered"),channelSettings[e][n]=t,window.unifiedSequencerSettings.updateStepState(currentSequence,e,n,t),console.log(`updateStepState called with sequence: ${currentSequence}, channelIndex: ${e}, stepIndex: ${n}, state: ${t}`)}document.addEventListener("DOMContentLoaded",(()=>{const e=document.getElementById("continuous-play");e.addEventListener("click",(()=>{isContinuousPlay=!isContinuousPlay,e.classList.toggle("selected",isContinuousPlay)}))})),window.addEventListener("setupComplete",(function(){loadAndDisplaySequence(0)})),document.getElementById("next-sequence").addEventListener("click",(function(){console.log("Next sequence button clicked."),loadNextSequence()})),document.getElementById("prev-sequence").addEventListener("click",(function(){console.log("Previous sequence button clicked.");let e=window.unifiedSequencerSettings.getCurrentSequence();if(console.log(`Current sequence before decrement: ${e}`),e>0){const n=e-1;console.log(`[SeqDebug] Calling handleSequenceTransition with sequence: ${n}`),handleSequenceTransition(n),updateSequenceDisplay(n)}else console.warn("You're already on the first sequence.")})),console.log("Initial channel settings:",window.unifiedSequencerSettings.getSettings("projectSequences"));
-const sequencerChannel=new BroadcastChannel("sequencerChannel");function emitMessage(e,t){sequencerChannel.postMessage({type:e,data:t})}function emitBar(e){emitMessage("bar",{bar:e})}function emitBeat(e,t){emitMessage("beat",{beat:e,bar:t})}function emitPause(){emitMessage("pause",{})}function emitResume(){emitMessage("resume",{})}function emitStop(){emitMessage("stop",{})}function emitPlay(){emitMessage("play",{}),emitMessage("beat",{beat:beatCount,bar:barCount})}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+const channelPlaybackBroadcast = new BroadcastChannel('channel_playback');
+
+function emitMessage(type, data) {
+    channelPlaybackBroadcast.postMessage({ type: type, data: data });
+}
+
+function emitBar(bar) {
+    emitMessage("bar", { bar: bar });
+}
+
+function emitBeat(beat, bar) {
+    emitMessage("beat", { beat: beat, bar: bar });
+}
+
+function emitPause() {
+    emitMessage("pause", {});
+}
+
+function emitResume() {
+    emitMessage("resume", {});
+}
+
+function emitStop() {
+    emitMessage("stop", {});
+}
+
+function emitPlay() {
+    emitMessage("play", {});
+    emitMessage("beat", { beat: beatCount, bar: barCount });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
 function setChannelVolume(e,n){console.log("{channelSettings.js} setChannelVolume: channelIndex:",e,"volume:",n);const a=document.querySelector(`.channel[data-id="Channel-${e}"]`);a.dataset.volume=n,updateChannelVolume(a)}function updateChannelVolume(e){console.log("{channelSettings.js} updateChannelVolume: channel:",e);const n=parseFloat(e.dataset.volume);gainNodes[parseInt(e.dataset.id.split("-")[1])].gain.value=n}
 function setupLoadSampleModalButton(e,t){const n=e.querySelector(".load-sample-button");n.textContent=window.unifiedSequencerSettings.settings.masterSettings.channelURLs[t],updateModalButtonText(n,t),openModal(t,n)}function openModal(e,t){const n=createModal(),o=createModalContent();n.appendChild(o),o.appendChild(createTextParagraph("Enter an Ordinal ID to load a Bitcoin Audional:"));const a=createInputField("Enter ORD ID:");o.appendChild(a),o.appendChild(createTextParagraph("Or, enter an IPFS ID for an off-chain Audional:"));const d=createInputField("Enter IPFS ID:");o.appendChild(d),addInputListeners(a,d),o.appendChild(createButton("Load Sample ID",(()=>handleLoad(e,a,d,n,t)),"loadButton","Load Audio from ID")),o.appendChild(createButton("Cancel",(()=>document.body.removeChild(n)),"cancelButton","Close this window"));const l=createExternalLinkButton("Search Ordinal Audio Files","https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc","searchButton","Search for audio files (Copy and paste the Ordinal ID to load a sample");o.appendChild(l),document.body.appendChild(n)}function createModal(){const e=document.createElement("div");return e.className="loadSampleModalButton",e}function createModalContent(){const e=document.createElement("div");return e.className="loadSampleModalButton-content",e}function updateModalButtonText(e,t){const n=window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[t];e.textContent=n||`Load new audience (${t})`}function createTextParagraph(e){const t=document.createElement("p");return t.textContent=e,t.className="loadSampleModalButton-text",t}function createInputField(e){const t=document.createElement("input");return t.type="text",t.placeholder=e,t.className="loadSampleModalButton-input",t}function addInputListeners(e,t){e.addEventListener("input",(()=>{t.disabled=!!e.value})),t.addEventListener("input",(()=>{e.disabled=!!t.value}))}function createButton(e,t,n,o){const a=document.createElement("div");a.className="tooltip";const d=document.createElement("button");d.textContent=e,d.addEventListener("click",t),d.className=n,a.appendChild(d);const l=document.createElement("span");return l.className="tooltiptext",l.textContent=o,a.appendChild(l),a}function handleLoad(e,t,n,o,a){let d;if(console.log(`[HTML Debugging] [handleLoad] Called with index: ${e}`),t.value)d="https://ordinals.com/content/"+t.value;else{if(!n.value)return void console.log("[HTML Debugging] [handleLoad] No input value found.");d="https://ipfs.io/ipfs/"+n.value}d=formatURL(d),fetchAudio(d,e).then((()=>{console.log(`[HTML Debugging] [handleLoad] Audio loaded for channel ${e}: ${d}`),window.unifiedSequencerSettings.addChannelURL(e,d)})).catch((e=>{console.error(`[HTML Debugging] [handleLoad] Error loading audio for URL ${d}:`,e)})),document.body.removeChild(o),console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${e}`)}function createExternalLinkButton(e,t,n,o){const a=document.createElement("div");a.className="tooltip";const d=document.createElement("button");d.textContent=e,d.className=n,d.addEventListener("click",(()=>window.open(t,"_blank"))),a.appendChild(d);const l=document.createElement("span");return l.className="tooltiptext",l.textContent=o,a.appendChild(l),a}
 window.addEventListener("DOMContentLoaded",(e=>{console.log("channelsForeach.js entered"),channels.forEach(((e,t)=>{e.dataset.id=`Channel-${t}`;const n=audioContext.createGain();n.gain.value=1,n.connect(audioContext.destination),gainNodes[t]=n;const o=e.querySelector(".mute-button");o.addEventListener("click",(()=>{console.log(`Mute button clicked for Channel-${t}`);const n=o.classList.toggle("selected");updateMuteState(e,n),updateDimState(e,t)}));const c=e.querySelector(".solo-button");c.addEventListener("click",(()=>{soloedChannels[t]=!soloedChannels[t],c.classList.toggle("selected",soloedChannels[t]),channels.forEach(((e,n)=>{t===n?updateMuteState(e,!1):updateMuteState(e,soloedChannels[t]),updateDimState(e,n)}))}));const l=e.querySelector(".clear-button");let a;e.querySelector(".clear-confirm"),l.addEventListener("click",(n=>{if(n.stopPropagation(),l.classList.contains("flashing")){e.querySelectorAll(".step-button").forEach((e=>{e.classList.remove("selected")}));let n=Array(64).fill(!1);for(let e=0;e<n.length;e++)window.unifiedSequencerSettings.updateStepState(currentSequence,t,e,n[e]);clearTimeout(a),l.classList.remove("flashing")}else l.classList.add("flashing"),a=setTimeout((()=>{l.classList.remove("flashing")}),2e3)})),document.addEventListener("click",(e=>{!l.contains(e.target)&&l.classList.contains("flashing")&&(clearTimeout(a),l.classList.remove("flashing"))}));const s=e.querySelector(".load-sample-button");function i(e){const t=document.querySelector(".custom-context-menu");t&&!t.contains(e.target)&&r()}function d(e,t){const n=document.createElement("div");return n.textContent=e,Object.assign(n.style,{padding:"5px 10px",cursor:"pointer"}),n.addEventListener("mouseenter",(()=>n.style.backgroundColor="#f0f0f0")),n.addEventListener("mouseleave",(()=>n.style.backgroundColor="lightgray")),n.addEventListener("click",t),n}function r(){const e=document.querySelector(".custom-context-menu");e&&e.remove()}function u(){const e=document.querySelector(".channel-naming-modal");e&&document.body.removeChild(e)}s.addEventListener("click",(()=>{setupLoadSampleModalButton(e,t)})),s.addEventListener("contextmenu",(e=>{console.log("Right-click on loadSampleButton"),e.preventDefault(),function(e,t,n,o,c){console.log("Creating custom context menu"),r();const l=function(e,t){const n=document.createElement("div");return n.className="custom-context-menu",Object.assign(n.style,{position:"absolute",top:`${t}px`,left:`${e}px`,backgroundColor:"lightgray",color:"black",padding:"10px",border:"1px solid #ddd",borderRadius:"5px",boxShadow:"0px 2px 5px rgba(0,0,0,0.2)"}),n}(t,n),a=d("Add User Channel Name",(()=>{!function(e){u();const t=document.createElement("div");t.className="channel-naming-modal";const n=document.createElement("input");n.type="text",n.placeholder="Give this channel a name",n.className="channel-name-input";const o=document.createElement("button");o.textContent="Submit",o.onclick=()=>{n.value&&window.unifiedSequencerSettings.setProjectChannelName(e,n.value),u()};const c=document.createElement("button");c.textContent="Cancel",c.onclick=u,t.appendChild(n),t.appendChild(o),t.appendChild(c),document.body.appendChild(t),document.addEventListener("click",(e=>{t.contains(e.target)||e.target.matches(".load-sample-button")||u()}),{capture:!0,once:!0})}(o),r()})),s=d("Copy Ordinal ID",(()=>{!function(e){const t=window.unifiedSequencerSettings.channelURLs(e);t?navigator.clipboard.writeText(t).then((()=>console.log("Full URL copied:",t))).catch((e=>console.error("Error copying URL:",e))):console.log("No URL found for channel:",e)}(o),console.log("Copy Ordinal ID clicked"),r()})),p=d("Copy Channel Settings (coming soon)",(()=>{console.log("Copy Channel Settings clicked"),r()})),g=d("Set Channel Colour",(()=>{console.log("Set Channel Colour option selected"),function(e,t){console.log("showColorPicker function called inside channelsForEach.js");const n=["#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF","#FF00FF","#808080","#FFFFFF","#FFA500","#800080","#008080","#000080","#800000","#008000","#FFC0CB","#D2691E"],o=document.createElement("div");o.style.position="absolute",o.style.display="grid",o.style.gridTemplateColumns="repeat(4, 1fr)",o.style.gap="1px";const c=n.length/4*20,l=e.clientY-c,a=e.clientX;console.log(`Color picker position - Top: ${l}px, Left: ${a}px`),o.style.top=l+"px",o.style.left=a+"px",n.forEach((e=>{const n=document.createElement("div");n.style.width="20px",n.style.height="20px",n.style.backgroundColor=e,n.addEventListener("click",(function(){console.log(`Color selected: ${e}`),t.style.backgroundColor=e,t.className=t.className.replace(/\bcolor-[^ ]+/g,""),t.classList.add(`color-${e.replace("#","")}`),o.remove()})),o.appendChild(n)})),document.body.appendChild(o),console.log("Color picker appended to the body. Check if it is visible in the DOM."),o.addEventListener("click",(function(e){e.stopPropagation()})),setTimeout((()=>{document.addEventListener("click",(function e(){console.log("Global click detected. Removing color picker."),o.remove(),document.removeEventListener("click",e)}))}),0),setTimeout((()=>{console.log("Removing color picker after 2 seconds."),o.remove()}),5e3)}(e,c),r()})),m=d("Paste Ordinal ID",(()=>{!function(e){navigator.clipboard.readText().then((t=>{if(isValidURL(t)){let n=[...window.unifiedSequencerSettings.settings.masterSettings.channelURLs];n[e]=t,window.unifiedSequencerSettings.setChannelURLs(n),console.log("Pasted full URL:",t)}else console.error("Invalid URL format.")})).catch((e=>console.error("Error pasting URL:",e)))}(o),r()})),h=d("Paste Channel Settings (coming soon)",(()=>{!function(e){navigator.clipboard.readText().then((t=>{let n=JSON.parse(t);window.unifiedSequencerSettings.setChannelSettings(e,n),console.log("Pasted Channel Settings:",n)})).catch((e=>console.error("Error pasting Channel Settings:",e)))}(o),r()}));l.appendChild(a),l.appendChild(g),l.appendChild(s),l.appendChild(m),l.appendChild(p),l.appendChild(h),document.body.appendChild(l),setTimeout((()=>{document.addEventListener("click",i,{capture:!0,once:!0})}),0)}(e,e.pageX,e.pageY,t,s)}))})),console.log("channelsForeach.js entered"),channels.forEach(((e,t)=>{}))}));
 function createStepButtonsForSequence(){console.log("[createStepButtonsForSequence] [SeqDebug] entered"),channels.forEach(((e,t)=>{const n=e.querySelector(".steps-container");n.innerHTML="";let s=window.unifiedSequencerSettings.settings.masterSettings.currentSequence;for(let c=0;c<64;c++){const o=document.createElement("button");o.classList.add("step-button"),o.id=`Sequence${s}-ch${t}-step-${c}`,o.addEventListener("click",(()=>{let n=window.unifiedSequencerSettings.getStepState(s,t,c);if(window.unifiedSequencerSettings.updateStepState(s,t,c,!n),o.classList.toggle("selected")){const t=e.querySelector(".load-sample-button").className.match(/\bcolor-[^ ]+/);t?o.classList.add(t[0]):o.style.backgroundColor="var(--accent-color)"}else o.classList.remove(...o.classList),o.classList.add("step-button"),o.style.backgroundColor="";updateSpecificStepUI(s,t,c)})),n.appendChild(o)}console.log(`[createStepButtonsForSequence] Completed creating step buttons for Channel ${t} in Sequence ${s}.`)}))}document.addEventListener("DOMContentLoaded",createStepButtonsForSequence);
-let totalNumberOfSequences=16;function handleStep(e,t,n){console.log("handleStep entered");let o="true"===e.dataset.muted;return t.toggleMuteSteps.includes(n)&&(o=!o,e.dataset.muted=o?"true":"false",updateMuteState(e,o),console.log("Mute toggled by the handleStep function")),o}function renderPlayhead(e,t){console.log("renderPlayhead entered"),e.forEach(((e,n)=>{e.classList.remove("playing"),e.classList.remove("triggered"),n===t&&e.classList.add("playing"),e.classList.contains("selected")&&e.classList.add("triggered")}))}
+let totalNumberOfSequences=16;
+
+
+
+function handleStep(element, controller, step) {
+    console.log("handleStep entered");
+    let isMuted = "true" === element.dataset.muted;
+    if (controller.toggleMuteSteps.includes(step)) {
+        isMuted = !isMuted;
+        element.dataset.muted = isMuted ? "true" : "false";
+        updateMuteState(element, isMuted);
+        console.log("Mute toggled by the handleStep function");
+    }
+    return isMuted;
+}
+
+function renderPlayhead(elements, currentStep) {
+    console.log("renderPlayhead entered");
+    elements.forEach((element, index) => {
+        element.classList.remove("playing");
+        element.classList.remove("triggered");
+        if (index === currentStep) {
+            element.classList.add("playing");
+        }
+        if (element.classList.contains("selected")) {
+            element.classList.add("triggered");
+        }
+    });
+}
 
 
 // Global flag to track if playStep has been logged
@@ -98,6 +166,8 @@ function playStep() {
 
 function incrementStepCounters(){currentStep=(currentStep+1)%64,totalStepCount+=1,nextStepTime+=stepDuration,currentStep%4==0&&(beatCount++,emitBeat(beatCount)),currentStep%16==0&&(barCount+=1,emitBar(barCount)),currentStep%64==0&&(sequenceCount++,console.log(`[playStep-count] Sequence count: ${sequenceCount}`)),console.log(`[SeqDebug][playStep-count] Next step time: ${nextStepTime}`)}function handleSequenceTransition(e){console.log("[SeqDebug][stepHandling] handleSequenceTransition entered"),console.log(`[SeqDebug] handleSequenceTransition called with sequence: ${e}`),window.unifiedSequencerSettings.setCurrentSequence(e),console.log(`[SeqDebug][stepHandling] Sequence set to ${e} at ${(new Date).toLocaleTimeString()}`);const t=document.getElementById("current-sequence-display");t&&(t.innerHTML=`Sequence: ${e}`),resetCountersForNewSequence(),createStepButtonsForSequence(),setTimeout((()=>{updateUIForSequence(e),console.log(`[SeqDebug][handleSequenceTransition][stepHandling] UI updated for sequence ${e} at ${(new Date).toLocaleTimeString()}`)}),100)}function resetCountersForNewSequence(){beatCount=0,barCount=0,currentStep=0,totalStepCount=0}
 function startScheduler() {
+
+    channelPlaybackBroadcast.postMessage({ action: 'start' });
     // Assuming `channels` is a collection of DOM elements representing each channel
     channels.forEach((channel) => {
         const channelIndex = parseInt(channel.dataset.id.split("-")[1]);
@@ -118,9 +188,36 @@ function startScheduler() {
 
     scheduleNextStep();
 }
-function pauseScheduler(){clearTimeout(timeoutId),audioContext.suspend(),pauseTime=audioContext.currentTime,isPaused=!0}function resumeScheduler(){isPaused&&(audioContext.resume(),nextStepTime=audioContext.currentTime,isPaused=!1),scheduleNextStep()}function scheduleNextStep(){console.log("[scheduleNextStep] Attempting to play sound for Channel:","Step:",currentStep);const e=window.unifiedSequencerSettings.getBPM()||105;console.log(`[scheduleNextStep] Current BPM: ${e}`),stepDuration=60/e/4,console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`),timeoutId=setTimeout((()=>{playStep(),scheduleNextStep()}),1e3*(nextStepTime-audioContext.currentTime))}
+function pauseScheduler() {
+    clearTimeout(timeoutId); // Stop any scheduled steps.
+    if (audioContext.state !== 'suspended') {
+        audioContext.suspend().then(() => {
+            console.log("AudioContext suspended.");
+        });
+    }
+    isPaused = true; // Mark the sequencer as paused.
+}
+
+function resumeScheduler() {
+    if (isPaused && audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log("AudioContext resumed.");
+            // Calculate the time to the next step based on the current time.
+            let timeSinceLastStep = audioContext.currentTime - pauseTime;
+            let timeToNextStep = stepDuration - (timeSinceLastStep % stepDuration);
+            nextStepTime = audioContext.currentTime + timeToNextStep;
+            
+            isPaused = false;
+            // Ensure scheduling resumes from the next calculated step time.
+            scheduleNextStep();
+        });
+    }
+}
+function scheduleNextStep(){console.log("[scheduleNextStep] Attempting to play sound for Channel:","Step:",currentStep);const e=window.unifiedSequencerSettings.getBPM()||105;console.log(`[scheduleNextStep] Current BPM: ${e}`),stepDuration=60/e/4,console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`),timeoutId=setTimeout((()=>{playStep(),scheduleNextStep()}),1e3*(nextStepTime-audioContext.currentTime))}
+
 function stopScheduler() {
     console.log("Stop pressed. Scheduler stopping...");
+    channelPlaybackBroadcast.postMessage({ action: 'stop' });
 
     // Assuming there's a typo in your provided code snippet (consolechannels),
     // it should probably be channels.forEach
@@ -154,7 +251,150 @@ const presets={preset1:{name:"Preset 1",bpm:"105",channels:[{triggers:[],mute:!1
 const audioBuffers=new Map;function getIDFromURL(e){console.log("[HTML Debugging] getIDFromURL entered");const t=e.split("/");return t[t.length-1]}function base64ToArrayBuffer(e){console.log("[HTML Debugging] [base64ToArrayBuffer] Entered function. Base64 sample:",e.substring(0,100));const t=atob(e),o=t.length,n=new Uint8Array(o);for(let e=0;e<o;e++)n[e]=t.charCodeAt(e);return console.log(`[HTML Debugging] [base64ToArrayBuffer] Generated Uint8Array length: ${n.length}`),n.buffer}const decodeAudioData=e=>{let t=new Uint8Array(e.slice(0,20));return console.log("[HTML Debugging] [decodeAudioData] ArrayBuffer first 20 bytes:",t.join(", ")),new Promise(((t,o)=>{audioContext.decodeAudioData(e,(e=>{console.log("[HTML Debugging] [decodeAudioData] Audio data decoded successfully."),t(e)}),(e=>{console.error("[HTML Debugging] [decodeAudioData] Detailed Error:",{message:e.message,code:e.code}),o(e)}))}))};
 
 async function importHTMLAudioData(e,t){console.log("[importHTMLSampleData] Entered function with index: ",t);try{const t=new DOMParser,o=t.parseFromString(e,"text/html").querySelector("audio[data-audionalSampleName] source");if(o){const e=o.getAttribute("src");if(e.toLowerCase().startsWith("data:audio/wav;base64,")||e.toLowerCase().startsWith("data:audio/mp3;base64,"))return console.log("[importHTMLSampleData] Extracted base64 audio data."),e;console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.")}else console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.")}catch(e){console.error("[importHTMLSampleData] Error parsing HTML content: ",e)}return null}
-function bufferToBase64(e){console.log("bufferToBase64 entered");let t="";const o=new Uint8Array(e),n=o.byteLength;console.log(`[HTML Debugging] [bufferToBase64] Buffer length: ${n}`);for(let e=0;e<n;e++)t+=String.fromCharCode(o[e]);const a=window.btoa(t);return console.log(`[HTML Debugging] [bufferToBase64] Converted to base64, length: ${a.length}`),a}function playSound(e,t,o){console.log("playSound entered");const n=getChannelIndex(t);console.log(`[playSound Debugging] [playSound] Processing channel index: ${n}`);const a=getStepState(e,n,o);if(console.log(`[playSound Debugging] [playSound] setting stepState using getStepState to: ${a}`),!a)return void console.log("[playSound Debugging] [playSound] Current step is not selected. Skipping playback.");const r=getAudioUrl(n);console.log("[playSound Debugging] [playSound] Audio URL:",r);const i=getAudioBuffer(r);i?(console.log("[playSound Debugging] [playSound] Audio buffer:",i),playTrimmedAudio(n,i,r)):console.log("[playSound Debugging] [playSound] No audio buffer found for URL:",r)}function getChannelIndex(e){return parseInt(e.dataset.id.split("-")[1])}function getStepState(e,t,o){return console.log(`[playSound Debugging] [getStepState called] currentSequence: ${e}, channelIndex: ${t}, currentStep: ${o}`),window.unifiedSequencerSettings.getStepState(e,t,o)}function getAudioUrl(e){return void 0===window.unifiedSequencerSettings.getprojectUrlforChannel(e)?(console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${e}`),"defaultURL"):window.unifiedSequencerSettings.getprojectUrlforChannel(e)}function getAudioBuffer(e){return audioBuffers.get(e)}function playTrimmedAudio(e,t,o){console.log("playTrimmedAudio entered"),console.log("[playTrimmedAudio] Audio buffer found for URL:",o);const n=audioContext.createBufferSource();n.buffer=t;const{trimStart:a,duration:r}=calculateTrimValues(e,t);n.connect(gainNodes[e]),gainNodes[e].connect(audioContext.destination),console.log(`[debug - playSound] Playing audio from URL: ${o} for channel index: ${e} at trimStart: ${a} and duration: ${r}`),n.start(0,a,r)}function calculateTrimValues(e,t){const o=window.unifiedSequencerSettings.getTrimSettings(e);let n=o.startSliderValue/100*t.duration,a=o.endSliderValue/100*t.duration;return n=Math.max(0,Math.min(n,t.duration)),a=Math.max(n,Math.min(a,t.duration)),{trimStart:n,duration:a-n}}async function playAuditionedSample(e){console.log("playAuditionedSample entered");try{const t=formatURL(e),o=await fetch(t),n=await o.json();if(n.audioData){const e=base64ToArrayBuffer(n.audioData.split(",")[1]);audioContext||(window.AudioContext=window.AudioContext||window.webkitAudioContext,audioContext=new AudioContext);const t=await decodeAudioData(e),o=audioContext.createBufferSource();o.buffer=t,o.connect(audioContext.destination),o.start()}else{console.log("Audional data not found in response, attempting to fetch and parse content type.");const t=await fetchAndParseContentType(e);console.log(`Content type found: ${t}`)}}catch(e){console.error("Error playing auditioned sample:",e)}}function togglePlayState(e,t,o,n){console.log("togglePlayState entered"),e||(e=!0,t(),o.classList.add("selected"),n.classList.remove("selected"))}function updateMuteState(e,t){console.log("updateMuteState entered"),console.log("updateMuteState - isMuted: "+t);const o=parseInt(e.dataset.id.split("-")[1]);e.dataset.muted=t?"true":"false";e.querySelector(".mute-button").classList.toggle("selected",t),channelMutes[o]=t,gainNodes[o].gain.value=t?0:1,updateDimState(e,o)}function toggleMute(e){console.log("toggleMute entered");const t=parseInt(e.dataset.id.split("-")[1]);updateMuteState(e,!channelMutes[t],t),console.log("Mute has been toggled by the toggleMute function")}
+
+
+////////////////////////////////////////////////////////////////////////
+
+function bufferToBase64(buffer) {
+    console.log("bufferToBase64 entered");
+    let base64String = "";
+    const uint8Array = new Uint8Array(buffer);
+    const byteLength = uint8Array.byteLength;
+    console.log(`[HTML Debugging] [bufferToBase64] Buffer length: ${byteLength}`);
+    for (let i = 0; i < byteLength; i++) {
+        base64String += String.fromCharCode(uint8Array[i]);
+    }
+    const base64Encoded = window.btoa(base64String);
+    console.log(`[HTML Debugging] [bufferToBase64] Converted to base64, length: ${base64Encoded.length}`);
+    return base64Encoded;
+}
+
+function playSound(sequence, element, step) {
+    console.log("playSound entered");
+    const channelIndex = getChannelIndex(element);
+    console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
+    const stepState = getStepState(sequence, channelIndex, step);
+    console.log(`[playSound Debugging] [playSound] setting stepState using getStepState to: ${stepState}`);
+    if (!stepState) {
+        console.log("[playSound Debugging] [playSound] Current step is not selected. Skipping playback.");
+        return;
+    }
+    const audioUrl = getAudioUrl(channelIndex);
+    console.log("[playSound Debugging] [playSound] Audio URL:", audioUrl);
+    const audioBuffer = getAudioBuffer(audioUrl);
+    if (audioBuffer) {
+        console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
+        playTrimmedAudio(channelIndex, audioBuffer, audioUrl);
+    } else {
+        console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", audioUrl);
+    }
+}
+
+function getChannelIndex(element) {
+    return parseInt(element.dataset.id.split("-")[1]);
+}
+
+function getStepState(sequence, channelIndex, step) {
+    console.log(`[playSound Debugging] [getStepState called] currentSequence: ${sequence}, channelIndex: ${channelIndex}, currentStep: ${step}`);
+    return window.unifiedSequencerSettings.getStepState(sequence, channelIndex, step);
+}
+
+function getAudioUrl(channelIndex) {
+    return typeof window.unifiedSequencerSettings.getprojectUrlforChannel === "undefined" ?
+        (console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${channelIndex}`), "defaultURL") :
+        window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+}
+
+function getAudioBuffer(url) {
+    return audioBuffers.get(url);
+}
+
+function playTrimmedAudio(channelIndex, audioBuffer, url) {
+    console.log("playTrimmedAudio entered");
+    console.log("[playTrimmedAudio] Audio buffer found for URL:", url);
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer);
+    source.connect(gainNodes[channelIndex]);
+    gainNodes[channelIndex].connect(audioContext.destination);
+    console.log(`[debug - playSound] Playing audio from URL: ${url} for channel index: ${channelIndex} at trimStart: ${trimStart} and duration: ${duration}`);
+    source.start(0, trimStart, duration);
+}
+
+function calculateTrimValues(channelIndex, audioBuffer) {
+    const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
+    let trimStart = trimSettings.startSliderValue / 100 * audioBuffer.duration;
+    let trimEnd = trimSettings.endSliderValue / 100 * audioBuffer.duration;
+    trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
+    trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
+    const duration = trimEnd - trimStart;
+    return { trimStart, duration };
+}
+
+async function playAuditionedSample(url) {
+    console.log("playAuditionedSample entered");
+    try {
+        const formattedURL = formatURL(url);
+        const response = await fetch(formattedURL);
+        const data = await response.json();
+        if (data.audioData) {
+            const arrayBuffer = base64ToArrayBuffer(data.audioData.split(",")[1]);
+            if (!audioContext) {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+            }
+            const audioBuffer = await decodeAudioData(arrayBuffer);
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start();
+        } else {
+            console.log("Audional data not found in response, attempting to fetch and parse content type.");
+            const contentType = await fetchAndParseContentType(url);
+            console.log(`Content type found: ${contentType}`);
+        }
+    } catch (error) {
+        console.error("Error playing auditioned sample:", error);
+    }
+}
+
+function togglePlayState(isPlaying, play, pauseButton, playButton) {
+    console.log("togglePlayState entered");
+    if (!isPlaying) {
+        isPlaying = true;
+        play();
+        pauseButton.classList.add("selected");
+        playButton.classList.remove("selected");
+    } else {
+        isPlaying = false;
+        pauseButton.classList.remove("selected");
+        playButton.classList.add("selected");
+    }
+}
+
+function updateMuteState(element, isMuted) {
+    console.log("updateMuteState entered");
+    console.log("updateMuteState - isMuted: " + isMuted);
+    const channelIndex = parseInt(element.dataset.id.split("-")[1]);
+    element.dataset.muted = isMuted ? "true" : "false";
+    element.querySelector(".mute-button").classList.toggle("selected", isMuted);
+    channelMutes[channelIndex] = isMuted;
+    gainNodes[channelIndex].gain.value = isMuted ? 0 : 1;
+    updateDimState(element, channelIndex);
+}
+
+function toggleMute(element) {
+    console.log("toggleMute entered");
+    const channelIndex = parseInt(element.dataset.id.split("-")[1]);
+    updateMuteState(element, !channelMutes[channelIndex], channelIndex);
+    console.log("Mute has been toggled by the toggleMute function");
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+
 function updateProjectNameObserver(e){console.log("[observers] updateProjectNameObserver called with:",e),e&&e.masterSettings&&e.masterSettings.projectName&&(console.log("[observers] Updating Project Name UI:",e.masterSettings.projectName),updateProjectNameUI(e.masterSettings.projectName))}function updateBPMObserver(e){console.log("[observers] updateBPMObserver called with:",e),e&&e.masterSettings&&e.masterSettings.projectBPM&&(console.log("Updating BPM UI:",e.masterSettings.projectBPM),updateBPMUI(e.masterSettings.projectBPM))}function updateProjectURLsObserver(e){console.log("[observers] updateProjectURLsObserver called with:",e),e&&e.masterSettings&&e.masterSettings.projectURLs&&(console.log("Updating Project URLs UI:",e.masterSettings.projectURLs),unifiedSequencerSettings.updateAllLoadSampleButtonTexts(),updateProjectURLsUI(e.masterSettings.projectURLs))}function updateTrimSettingsObserver(e){console.log("[observers] updateTrimSettingsObserver called with:",e),e&&e.masterSettings&&e.masterSettings.trimSettings&&(console.log("Updating Trim Settings UI:",e.masterSettings.trimSettings),updateTrimSettingsUI(e.masterSettings.trimSettings))}function updateProjectChannelNamesObserver(e){console.log("[observers] updateProjectChannelNamesObserver called with:",e),e&&e.masterSettings&&e.masterSettings.projectChannelNames&&(console.log("Updating Project channel Names UI:",e.masterSettings.projectChannelNames),e.masterSettings.projectChannelNames.forEach(((e,t)=>{const r=document.querySelector(`#channel-name-${t}`);r&&(r.textContent=e||"Default Channel Name")})))}function updateProjectSequencesObserver(e){console.log("[observers] updateProjectSequencesObserver called with:",e),e&&e.masterSettings&&e.masterSettings.projectSequences&&(console.log("Updating Project Sequences UI:",e.masterSettings.projectSequences),updateProjectSequencesUI(e.masterSettings.projectSequences))}function registerObservers(){console.log("[observers] registerObservers called"),window.unifiedSequencerSettings?(window.unifiedSequencerSettings.addObserver(updateProjectNameObserver),window.unifiedSequencerSettings.addObserver(updateBPMObserver),window.unifiedSequencerSettings.addObserver(updateProjectURLsObserver),window.unifiedSequencerSettings.addObserver(updateTrimSettingsObserver),window.unifiedSequencerSettings.addObserver(updateProjectChannelNamesObserver),window.unifiedSequencerSettings.addObserver(updateProjectSequencesObserver),window.unifiedSequencerSettings.addObserver(updateCurrentSequenceObserver),window.unifiedSequencerSettings.addObserver(updateTotalSequencesObserver)):console.error("UnifiedSequencerSettings instance not found.")}function updateCurrentSequenceObserver(e){console.log("[Observer] updateCurrentSequenceObserver called with:",e),e&&e.masterSettings&&"number"==typeof e.masterSettings.currentSequence&&console.log("[Observer] Current Sequence changed:",e.masterSettings.currentSequence)}function updateTotalSequencesObserver(e){console.log("[Observer] updateTotalSequencesObserver called with:",e),e&&e.masterSettings&&Array.isArray(e.masterSettings.projectSequences)&&console.log("[Observer] Total number of Sequences changed:",e.masterSettings.projectSequences.length)}registerObservers();
 let isPlaying=!1,currentStep=0,totalStepCount=0,beatCount=1,barCount=1,sequenceCount=1,currentSequence=0;const sequenceLength=64,maxSequenceCount=64,allSequencesLength=4096,collectedURLs=Array(16).fill("");let timeoutId,audioContext,currentStepTime,startTime,nextStepTime,stepDuration,isPaused=!1,pauseTime=0,stopClickCount=0;
 // Get DOM elements
@@ -217,7 +457,7 @@ playButton.addEventListener("click", async () => {
 
         // Start the scheduler for playback, assuming `startScheduler` is already defined and properly sets up playback.
         // Ensure this function exists and is designed to start playback in your application context.
-        // startScheduler(); // This directly initiates playback according to your sequencer's scheduling logic.
+        startScheduler(); // This directly initiates playback according to your sequencer's scheduling logic.
 
         console.log("[Load Process] Playback started via startScheduler.");
     } catch (error) {
@@ -482,136 +722,44 @@ window.onclick = (event) => {
             projectNameInput.value = "Default Project Name";
         }
     });
-// Initialize the UnifiedSequencerSettings instance
-// let sequencerSettings = new UnifiedSequencerSettings();
-
-// // Function to fetch and load sequencer settings from a JSON file
-// async function loadSequencerSettings() {
-//     console.log("Loading sequencer settings...");
-//     try {
-//         const response = await fetch('BasedSong1.json'); // Adjust the path as needed
-//         const json = await response.json();
-//         sequencerSettings.loadSettings(json);
-
-//         // Process channel URLs
-//         if (json && Array.isArray(json.channelURLs)) {
-//             await processChannelURLs(json.channelURLs);
-//         } else {
-//             console.error("Settings loaded do not contain 'channelURLs'.");
-//         }
-
-//         // UI updates or further processing
-//         // updateUIAfterSettingsLoad(); // Ensure this function encapsulates necessary UI updates
-//     } catch (error) {
-//         console.error('Error loading sequencer settings:', error);
-//     }
-// }
-
- // Resume audio context state on any click within the iframe
- // This is critical for web audio API to work after user interaction
-//  document.body.addEventListener('click', function() {
-//      audioContext.resume().then(() => {
-//          console.log("Playback resumed successfully");
-//      });
-//  });
 
 
- // Ensure the window.onload does not override other onload events
- // Especially if you're using multiple scripts that rely on window.onload
-//  window.addEventListener('load', loadSequencerSettings);
- 
-// window.addEventListener('message', (event) => {
-//     console.log('[loadDebug] Received message:', event);
+window.addEventListener('message', (event) => {
+    console.log('Received message:', event);
+    // WARNING: Setting allowedOrigins to '*' accepts messages from any origin.
+    // This can be a security risk. Use with caution and ensure that your application
+    // validates the content of the messages and acts upon them securely.
+    const allowedOrigins = '*';
 
-//     let data;
-//     try {
-//         data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-//     } catch (error) {
-//         console.error('Error parsing message data:', error);
-//         return;
-//     }
+    // The check against allowedOrigins is redundant when accepting all origins,
+    // but left here for demonstration. In practice, if using '*', you'd remove this check.
+    if (allowedOrigins !== '*' && !allowedOrigins.includes(event.origin)) {
+        console.error('Received message from unauthorized origin:', event.origin);
+        return;
+    }
 
-//     if (data.command === 'load' && data.settings) {
-//         console.log('[loadDebug] Loading settings via observers:', data.settings);
+    // Attempt to parse the message data
+    let data;
+    try {
+        data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    } catch (error) {
+        console.error('Error parsing message data:', error);
+        return;
+    }
 
-//         // Load the settings into the global settings object
-//         window.unifiedSequencerSettings.loadSettings(data.settings);
+    // Handle commands such as "load" or "play" based on the parsed data
+    if (data.command === 'load' && data.settings) {
+        console.log('Loading settings:', data.settings);
+        sequencerSettings.loadSettings(data.settings); // Correct usage
+    }
 
-//         // After loading settings, ensure channel URLs are correctly accessible
-//         for(let i = 0; i < window.unifiedSequencerSettings.settings.masterSettings.channelURLs.length; i++) {
-//             let url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[i];
-//             console.log(`[loadDebug] Channel ${i} URL: ${url}`);
-//             // This log should confirm if URLs are now correctly being set and accessible
-//         }
-
-//         // Ensure the structure of data.settings aligns with observers' expectations
-//         // Example check - adjust according to actual expected structure
-//         if (!data.settings.masterSettings || !data.settings.masterSettings.channelURLs) {
-//             console.error('Incorrect settings structure for URLs:', data.settings);
-//             return;
-//         }
-
-//         // Simulating correct structure adjustment if necessary
-//         const correctedSettings = {
-//             ...data.settings,
-//             masterSettings: {
-//                 ...data.settings.masterSettings,
-//                 projectURLs: data.settings.masterSettings.channelURLs // Ensure this matches observer expectations
-//             }
-//         };
-
-//         // Directly call observer functions with the corrected settings
-//         updateProjectNameObserver(correctedSettings);
-//         updateBPMObserver(correctedSettings);
-//         updateProjectURLsObserver(correctedSettings); // Ensure this observer can correctly process the structure
-//         updateTrimSettingsObserver(correctedSettings);
-//         updateProjectChannelNamesObserver(correctedSettings);
-//         updateProjectSequencesObserver(correctedSettings);
-//         // Log after updating to confirm URLs are set
-//         console.log("URLs updated in observers:", correctedSettings.masterSettings.projectURLs);
-//     }
-// });
-
-
-// Note: Ensure your loadSettings and startScheduler (or equivalent) functions
-// are designed to handle the settings and playback initiation as needed.
-
-// window.addEventListener('message', (event) => {
-//     console.log('Received message:', event);
-//     // WARNING: Setting allowedOrigins to '*' accepts messages from any origin.
-//     // This can be a security risk. Use with caution and ensure that your application
-//     // validates the content of the messages and acts upon them securely.
-//     const allowedOrigins = '*';
-
-//     // The check against allowedOrigins is redundant when accepting all origins,
-//     // but left here for demonstration. In practice, if using '*', you'd remove this check.
-//     if (allowedOrigins !== '*' && !allowedOrigins.includes(event.origin)) {
-//         console.error('Received message from unauthorized origin:', event.origin);
-//         return;
-//     }
-
-//     // Attempt to parse the message data
-//     let data;
-//     try {
-//         data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-//     } catch (error) {
-//         console.error('Error parsing message data:', error);
-//         return;
-//     }
-
-//     // Handle commands such as "load" or "play" based on the parsed data
-//     if (data.command === 'load' && data.settings) {
-//         console.log('Loading settings:', data.settings);
-//         sequencerSettings.loadSettings(data.settings); // Correct usage
-//     }
-
-//     if (data.command === 'play') {
-//         console.log('Playing the loaded settings');
-//         if (!sequencerSettings.isPlaying) {
-//             // Assuming startScheduler and emitPlay are methods of sequencerSettings
-//             sequencerSettings.startScheduler();
-//             sequencerSettings.emitPlay();
-//             sequencerSettings.isPlaying = true;
-//         }
-//     }
-// });
+    if (data.command === 'play') {
+        console.log('Playing the loaded settings');
+        if (!sequencerSettings.isPlaying) {
+            // Assuming startScheduler and emitPlay are methods of sequencerSettings
+            sequencerSettings.startScheduler();
+            sequencerSettings.emitPlay();
+            sequencerSettings.isPlaying = true;
+        }
+    }
+});
