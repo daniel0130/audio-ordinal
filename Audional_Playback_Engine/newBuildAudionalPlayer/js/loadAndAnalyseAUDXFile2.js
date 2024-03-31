@@ -238,6 +238,62 @@ function extractBase64FromHTML(htmlText) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUDIO BUFFERS HAVE BEEN FETCHED AND PROCESSED //
 
+// Function to play audio for a specific channel
+// This needs to be implemented according to your application's audio handling logic
+function playAudioForChannel(channelNumber) {
+    console.log('Playing audio for channel:', channelNumber);
+    // Implementation for playing audio
+}
+
+// Key to channel mapping
+const keyChannelMap = {
+    '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
+    '6': 6, '7': 7, '8': 8, '9': 9, '0': 10,
+    'q': 11, 'w': 12, 'e': 13, 'r': 14, 't': 15, 'y': 16
+};
+
+// Attach keydown event listener to the document
+document.addEventListener('keydown', function(event) {
+    const key = event.key.toLowerCase(); // Normalize key to lowercase to match the map
+    if (keyChannelMap.hasOwnProperty(key)) {
+        const channel = keyChannelMap[key];
+        playAudioForChannel(channel);
+    }
+});
+
+
+// Assuming globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
+// and audioCtx is an instance of AudioContext
+// Initialize the AudioContext at a scope accessible by playAudioForChannel
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Assuming globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
+function playAudioForChannel(channelNumber) {
+    console.log('Playing audio for channel:', channelNumber);
+
+    // Find the audio buffer for the given channel number
+    const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === `Channel ${channelNumber}`);
+    if (audioBufferObj && audioBufferObj.buffer) {
+        // Create an AudioBufferSourceNode from the AudioContext
+        const source = audioCtx.createBufferSource();
+        // Set the buffer in the source
+        source.buffer = audioBufferObj.buffer;
+        // Connect the source to the context's destination (the speakers)
+        source.connect(audioCtx.destination);
+        // Start playing the sound
+        source.start(0);
+    } else {
+        console.error('No audio buffer found for channel:', channelNumber);
+    }
+}
+
+// The rest of your code for key mapping and event listener remains unchanged
+
+
+
+
+
+
 function schedulePlayback(playbackData, audioBuffers) {
     if (!window.AudioContext) return; // Ensure the AudioContext is supported
     const audioCtx = new AudioContext();
