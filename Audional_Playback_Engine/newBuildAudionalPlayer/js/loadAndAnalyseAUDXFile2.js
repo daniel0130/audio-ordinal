@@ -287,38 +287,6 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
     }));
 }
 
-const togglePlayback = async () => {
-    console.log('[togglePlayback] Called');
-    
-    if (audioCtx.state === 'suspended') {
-        console.log('[togglePlayback] AudioContext is suspended, resuming...');
-        await audioCtx.resume();
-        console.log('[togglePlayback] AudioContext resumed.');
-    }
-
-    if (!isPlaying) {
-        if (!globalJsonData) {
-            console.error('No JSON data loaded.');
-            return;
-        }
-
-        console.log('[togglePlayback] Initiating playback...');
-        const playbackData = transformSequencesForPlayback(globalJsonData.projectSequences, globalTrimTimes, globalJsonData.projectBPM);
-        scheduleSequencePlayback(playbackData, globalAudioBuffers, audioCtx);
-        console.log('[togglePlayback] Playback initiated.');
-        isPlaying = true;
-    } else {
-        console.log('[togglePlayback] Stopping playback, suspending AudioContext...');
-        await audioCtx.suspend();
-        activeSources.forEach(source => source.stop());
-        activeSources = [];
-        console.log('[togglePlayback] Playback stopped and AudioContext suspended.');
-        isPlaying = false;
-    }
-};
-
-
-
 const scheduleSequencePlayback = (playbackData, audioBuffers, audioCtx) => {
     console.log('[scheduleSequencePlayback] Scheduling playback for sequences...');
     playbackData.forEach(({channels}) => channels.forEach(channelData => {
@@ -349,6 +317,37 @@ const scheduleSequencePlayback = (playbackData, audioBuffers, audioCtx) => {
             source.start(audioCtx.currentTime + timing, startTime, endTime - startTime);
         });
     }));
+};
+
+
+const togglePlayback = async () => {
+    console.log('[togglePlayback] Called');
+    
+    if (audioCtx.state === 'suspended') {
+        console.log('[togglePlayback] AudioContext is suspended, resuming...');
+        await audioCtx.resume();
+        console.log('[togglePlayback] AudioContext resumed.');
+    }
+
+    if (!isPlaying) {
+        if (!globalJsonData) {
+            console.error('No JSON data loaded.');
+            return;
+        }
+
+        console.log('[togglePlayback] Initiating playback...');
+        const playbackData = transformSequencesForPlayback(globalJsonData.projectSequences, globalTrimTimes, globalJsonData.projectBPM);
+        scheduleSequencePlayback(playbackData, globalAudioBuffers, audioCtx);
+        console.log('[togglePlayback] Playback initiated.');
+        isPlaying = true;
+    } else {
+        console.log('[togglePlayback] Stopping playback, suspending AudioContext...');
+        await audioCtx.suspend();
+        activeSources.forEach(source => source.stop());
+        activeSources = [];
+        console.log('[togglePlayback] Playback stopped and AudioContext suspended.');
+        isPlaying = false;
+    }
 };
 
 
