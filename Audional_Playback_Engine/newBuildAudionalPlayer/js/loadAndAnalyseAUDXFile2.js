@@ -9,7 +9,9 @@ let activeSources = []; // Keeps track of active source nodes for stopping them
 var globalAudioBuffers = [];
 var globalTrimTimes = {}; // This will hold trim times for each channel
 let currentStep = 0; // Tracks the current step within the sequence
-let currentSequenceIndex = 0; // New variable to track the index of the current sequence
+let beatCount = 0; // Assuming you have a way to count beats
+let barCount = 0; // Assuming you have a way to count bars
+let currentSequence = 0; // New variable to track the index of the current sequence
 let isPlaying = false; // Tracks playback state
 let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
 
@@ -246,62 +248,66 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
 const playSequenceStep = () => {
     if (!globalJsonData || !globalJsonData.projectSequences) {
         console.error("Global sequence data is not available.");
+        AudionalPlayerMessages.postMessage({ type: "error", data: "Sequence data not available" });
         return;
     }
 
     const sequenceKeys = Object.keys(globalJsonData.projectSequences);
     if (sequenceKeys.length === 0) {
         console.error("No sequences available for playback.");
+        AudionalPlayerMessages.postMessage({ type: "error", data: "No sequences available for playback" });
         return;
     }
 
-    if (currentSequenceIndex >= sequenceKeys.length) {
+    if (currentSequence >= sequenceKeys.length) {
         console.log("All sequences have been played.");
-        // Loop back to the first sequence at the end of the last sequence
-        currentSequenceIndex = 0; // Loop back to the first sequence
+        currentSequence = 0; // Reset to loop back to the first sequence
+        AudionalPlayerMessages.postMessage({ type: "info", data: "Looping back to first sequence" });
     }
 
-    const sequenceKey = sequenceKeys[currentSequenceIndex];
+    const sequenceKey = sequenceKeys[currentSequence];
     const sequence = globalJsonData.projectSequences[sequenceKey];
-    const channels = Object.keys(sequence);
 
     console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
-
-    channels.forEach(channelKey => {
-        const channelIndex = parseInt(channelKey.replace('ch', '')); // Convert 'chX' to a zero-based index
-        const channel = sequence[channelKey];
+    
+    Object.entries(sequence).forEach(([channelKey, channel]) => {
+        const channelIndex = parseInt(channelKey.replace('ch', ''), 10); // Adjusted to correctly process indexes
+        const bufferKey = `Channel ${channelIndex + 1}`; // Ensuring correct mapping to channel numbers
 
         if (channel.steps.includes(currentStep) && !channel.mute) {
-            const bufferKey = `Channel ${channelIndex + 1}`; // Map 'ch0' to 'Channel 1', etc.
             const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
-            const trimTimes = globalTrimTimes[bufferKey]; // Fetching the trim times for this channel
+            const trimTimes = globalTrimTimes[bufferKey]; // Accessing the correct trim times
 
             if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
                 const source = audioCtx.createBufferSource();
                 source.buffer = audioBufferObj.buffer;
                 source.connect(audioCtx.destination);
 
-                // Apply the trim times to calculate the correct start and duration
+                // Precise handling of trim times based on buffer duration
+                const duration = (trimTimes.endTrim - trimTimes.startTrim) * source.buffer.duration;
                 const startTime = trimTimes.startTrim * source.buffer.duration;
-                const endTime = trimTimes.endTrim * source.buffer.duration;
-                const playDuration = endTime - startTime;
 
-                console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${playDuration}`);
-                source.start(audioCtx.currentTime, startTime, playDuration);
+                console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${duration}`);
+                source.start(audioCtx.currentTime, startTime, duration);
+
+                // Broadcasting the correct message with bufferKey instead of channel index
+                AudionalPlayerMessages.postMessage({
+                    type: "activeStep", 
+                    data: { channel: bufferKey, step: currentStep }
+                });
             } else {
-                console.error(`No audio buffer or trim times found for channel ${bufferKey}`);
+                console.error(`No audio buffer or trim times found for ${bufferKey}`);
             }
         }
     });
 
-    // Check if we've reached the end of the current sequence
-    if (currentStep >= 63) { 
-        currentStep = 0; 
-        currentSequenceIndex++;
-    } else {
-        currentStep++; // Increment step within the current sequence
+    // Handling sequence and step incrementation
+    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence
+    if (currentStep === 0 && currentSequence < sequenceKeys.length - 1) {
+        currentSequence++; // Move to the next sequence after the current one
     }
 };
+
 
 const togglePlayback = async () => {
     console.log('[togglePlayback] Called');
@@ -328,7 +334,7 @@ const togglePlayback = async () => {
         console.log('[togglePlayback] Playback stopped.');
 
         // Reset sequence number and step number
-        currentSequenceIndex = 0;
+        currentSequence = 0;
         currentStep = 0;
     }
 };
@@ -363,6 +369,41 @@ document.addEventListener('keydown', async function(event) {
 });
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUDIONAL PLAYER BROADCAST MESSAGE MODULE //
+
+const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
+
+function emitMessage(type, data) {
+    AudionalPlayerMessages.postMessage({ type: type, data: data });
+}
+
+function emitBar(bar) {
+    emitMessage("bar", { bar: bar });
+}
+
+function emitBeat(beat, bar) {
+    emitMessage("beat", { beat: beat, bar: bar });
+}
+
+function emitPause() {
+    emitMessage("pause", {});
+}
+
+function emitResume() {
+    emitMessage("resume", {});
+}
+
+function emitStop() {
+    emitMessage("stop", {});
+}
+
+function emitPlay() {
+    emitMessage("play", {});
+    emitMessage("beat", { beat: beatCount, bar: barCount });
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // KEY MAPPING AND USER CONTROLLED PLAYBACK FUNCTIONS //
 
@@ -373,39 +414,88 @@ const keyChannelMap = {
     'q': 11, 'w': 12, 'e': 13, 'r': 14, 't': 15, 'y': 16
 };
 
+
+
+let isReversePlay = false; // Flag to indicate if reverse play is enabled
+
 // Attach keydown event listener to the document
 document.addEventListener('keydown', function(event) {
     const key = event.key.toLowerCase(); // Normalize key to lowercase to match the map
+    if (event.shiftKey && key === 'r') {
+        // Toggle reverse play flag on Shift + 'R' key press
+        isReversePlay = !isReversePlay;
+        console.log('Reverse play is now:', isReversePlay ? 'enabled' : 'disabled');
+        return; // Exit the event listener to prevent playing audio for the Shift + 'R' key combination
+    }
+
     if (keyChannelMap.hasOwnProperty(key)) {
         const channel = keyChannelMap[key];
         playAudioForChannel(channel);
     }
 });
 
+
 //  globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
 // and audioCtx is an instance of AudioContext
 
+function reverseAudioBuffer(audioBuffer) {
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    let reversedBuffer = audioCtx.createBuffer(numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+        const inputChannelData = audioBuffer.getChannelData(channel);
+        const reversedChannelData = reversedBuffer.getChannelData(channel);
+
+        for (let i = 0; i < audioBuffer.length; i++) {
+            reversedChannelData[i] = inputChannelData[audioBuffer.length - 1 - i];
+        }
+    }
+
+    return reversedBuffer;
+}
+
 function playAudioForChannel(channelNumber) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume(); // Ensure the AudioContext is active
+    }
     console.log('Playing audio for channel:', channelNumber);
 
     const channelName = `Channel ${channelNumber}`;
     const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === channelName);
-    const trimTimes = globalTrimTimes[channelName];
 
-    if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
+    if (audioBufferObj && audioBufferObj.buffer) {
         const source = audioCtx.createBufferSource();
-        source.buffer = audioBufferObj.buffer;
-
-        const duration = source.buffer.duration;
-        const startTime = duration * trimTimes.startTrim;
-        const endTime = duration * trimTimes.endTrim;
-        const playDuration = endTime - startTime;
-
-        source.connect(audioCtx.destination);
-
-        // Start playing the sound at the calculated start time and for the calculated duration
-        source.start(0, startTime, playDuration);
+        
+        // Check if reverse play is enabled and reverse the buffer if so
+        if (isReversePlay) {
+            source.buffer = reverseAudioBuffer(audioBufferObj.buffer);
+            // Start and end times should consider the entire buffer, as it's already reversed
+            source.connect(audioCtx.destination);
+            source.start(0, 0, source.buffer.duration);
+        } else {
+            const trimTimes = globalTrimTimes[channelName]; // Access trim times
+            if (trimTimes) {
+                const duration = audioBufferObj.buffer.duration;
+                let startTime = duration * trimTimes.startTrim;
+                let endTime = duration * trimTimes.endTrim;
+                const playDuration = endTime - startTime;
+                
+                source.buffer = audioBufferObj.buffer;
+                source.connect(audioCtx.destination);
+                // Start playing the sound at the calculated start time for the calculated duration
+                source.start(0, startTime, playDuration);
+            }
+        }
     } else {
         console.error('No audio buffer or trim times found for channel:', channelNumber);
     }
 }
+
+// // Attach keydown event listener to the document
+// document.addEventListener('keydown', function(event) {
+//     const key = event.key.toLowerCase(); // Normalize key to lowercase to match the map
+//     if (keyChannelMap.hasOwnProperty(key)) {
+//         const channel = keyChannelMap[key];
+//         playAudioForChannel(channel);
+//     }
+// });
