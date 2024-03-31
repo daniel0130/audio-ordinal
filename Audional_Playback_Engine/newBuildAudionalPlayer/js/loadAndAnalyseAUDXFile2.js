@@ -8,6 +8,7 @@ var globalTrimTimes = {}; // This will hold trim times for each channel
 let isPlaying = false; // Tracks playback state
 let activeSources = []; // Keeps track of active source nodes for stopping them
 var globalJsonData = null;
+let bpm = 0;
 
 // Initialize the AudioContext at a scope accessible by playAudioForChannel
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -77,6 +78,9 @@ const incrementTypeCount = (types, type) => {
 
 function prepareForPlayback(json, stats) {
     const { channelURLs, trimSettings, projectSequences, projectName, projectBPM } = json;
+
+    // Update the global bpm variable with the projectBPM from the JSON
+    bpm = projectBPM; // Ensure this is done before any use of bpm in your scheduling
 
     const trimTimes = trimSettings.map((trim, index) => ({
         channel: `Channel ${index + 1}`,
@@ -270,7 +274,7 @@ function playAudioForChannel(channelNumber) {
 // AUTOMATIC SEQUENCE PLAYBACK FUNCTIONS //
 
 const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
-    const beatDuration = 60 / bpm; // Duration of a beat in seconds
+    const beatDuration = 60 / bpm; 
 
     return Object.entries(sequences).map(([sequenceKey, sequenceValue]) => ({
         sequenceKey,
@@ -279,45 +283,73 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
             .map(([channelKey, channel]) => ({
                 channelKey,
                 steps: channel.steps.map(step => ({
-                    step, // This could be a step number or timing information
-                    timing: step * beatDuration // Timing calculation example
+                    step, 
+                    timing: step * beatDuration // 
                 })),
                 trim: trimTimes[`Channel ${channelKey}`]
             }))
     }));
 }
 
-const scheduleSequencePlayback = (playbackData, audioBuffers, audioCtx) => {
-    console.log('[scheduleSequencePlayback] Scheduling playback for sequences...');
-    playbackData.forEach(({channels}) => channels.forEach(channelData => {
-        // Parse the channel key to extract the numeric part, adjusting for JSON's 0-based indexing
-        let channelNumber = parseInt(channelData.channelKey.replace('ch', '')) + 1;
-        let channelName = `Channel ${channelNumber}`;  // This matches the naming convention used in the manual playback
-        
-        console.log(`[scheduleSequencePlayback] Accessing buffer for ${channelName}`);
-        const audioBufferObj = audioBuffers.find(obj => obj.channel === channelName);
-        
-        if (!audioBufferObj) {
-            console.error(`[scheduleSequencePlayback] No audio buffer found for ${channelName}.`);
-            return;
+let currentStep = 0; // Tracks the current step within the sequence
+
+const playSequenceStep = () => {
+    if (!globalJsonData || !globalJsonData.projectSequences) {
+        console.error("Global sequence data is not available.");
+        return;
+    }
+
+    // Assuming the sequence to play is dynamically determined; using the first sequence as an example
+    const sequenceKey = Object.keys(globalJsonData.projectSequences)[0];
+    const sequence = globalJsonData.projectSequences[sequenceKey];
+    const channels = Object.keys(sequence);
+
+    console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
+
+    channels.forEach(channelKey => {
+        const channelIndex = parseInt(channelKey.replace('ch', '')); // Convert 'chX' to a zero-based index
+        const channel = sequence[channelKey];
+
+        if (channel.steps.includes(currentStep) && !channel.mute) {
+            // Correctly map the zero-based index to the expected buffer key format
+            const bufferKey = `Channel ${channelIndex + 1}`; // Map 'ch0' to 'Channel 1', etc.
+            const audioBuffer = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+
+            if (audioBuffer) {
+                const source = audioCtx.createBufferSource();
+                source.buffer = audioBuffer.buffer;
+                source.connect(audioCtx.destination);
+                source.start(); // Consider timing adjustments for actual use
+
+                console.log(`Channel ${bufferKey}: Playing step ${currentStep}`);
+            } else {
+                console.error(`No audio buffer found for channel ${bufferKey}`);
+            }
         }
+    });
 
-        console.log(`[scheduleSequencePlayback] Playing ${channelName} with buffer`, audioBufferObj.buffer);
-        
-        channelData.steps.forEach(({timing}) => {
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBufferObj.buffer;
-            console.log(`[scheduleSequencePlayback] Scheduling ${channelName} at timing: ${timing}`);
-            source.connect(audioCtx.destination);
-
-            // Apply trim times if available, otherwise start at 0
-            const trim = globalTrimTimes[channelName] || {startTrim: 0, endTrim: source.buffer.duration};
-            const startTime = trim.startTrim * source.buffer.duration;
-            const endTime = trim.endTrim * source.buffer.duration;
-            source.start(audioCtx.currentTime + timing, startTime, endTime - startTime);
-        });
-    }));
+    // Increment the currentStep, wrapping back to 0 after the last step
+    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence for this example
 };
+
+
+// Example of how to trigger playback, could be adapted based on the application's structure
+const startPlaybackLoop = () => {
+    const bpm = globalJsonData ? globalJsonData.projectBPM : 120; // Default to 120 BPM if not specified
+    const stepDuration = 60 / bpm / 4; // Duration of a sixteenth note given the BPM
+
+    const playLoop = () => {
+        playSequenceStep();
+        setTimeout(playLoop, stepDuration * 1000); // Convert seconds to milliseconds
+    };
+
+    playLoop();
+};
+
+// Example trigger
+// startPlaybackLoop();
+
+
 
 
 const togglePlayback = async () => {
@@ -337,7 +369,7 @@ const togglePlayback = async () => {
 
         console.log('[togglePlayback] Initiating playback...');
         const playbackData = transformSequencesForPlayback(globalJsonData.projectSequences, globalTrimTimes, globalJsonData.projectBPM);
-        scheduleSequencePlayback(playbackData, globalAudioBuffers, audioCtx);
+        startPlaybackLoop(playbackData, globalAudioBuffers, audioCtx);
         console.log('[togglePlayback] Playback initiated.');
         isPlaying = true;
     } else {
