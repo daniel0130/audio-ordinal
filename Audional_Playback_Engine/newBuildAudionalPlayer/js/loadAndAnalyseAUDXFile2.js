@@ -2,6 +2,8 @@
 
 var globalPlaybackData = null;
 var globalAudioBuffers = [];
+var globalTrimTimes = {}; // This will hold trim times for each channel
+
 
 
 document.getElementById('jsonInput').addEventListener('change', function(event) {
@@ -82,6 +84,15 @@ function prepareForPlayback(json, stats) {
     var formattedTrimTimes = trimTimes.map(function(trim) {
         return trim.channel + ': StartTrim=' + trim.startTrim + ', EndTrim=' + trim.endTrim;
     });
+    // Populate globalTrimTimes with start and end trim times
+        json.trimSettings.forEach(function(trim, index) {
+            const channel = 'Channel ' + (index + 1);
+            globalTrimTimes[channel] = {
+                startTrim: parseFloat(trim.startSliderValue) / 100, // Convert to percentage
+                endTrim: parseFloat(trim.endSliderValue) / 100 // Convert to percentage
+            };
+        });
+
 
     var formattedSequences = {};
     for (var sequenceKey in json.projectSequences) {
@@ -238,12 +249,6 @@ function extractBase64FromHTML(htmlText) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUDIO BUFFERS HAVE BEEN FETCHED AND PROCESSED //
 
-// Function to play audio for a specific channel
-// This needs to be implemented according to your application's audio handling logic
-function playAudioForChannel(channelNumber) {
-    console.log('Playing audio for channel:', channelNumber);
-    // Implementation for playing audio
-}
 
 // Key to channel mapping
 const keyChannelMap = {
@@ -271,21 +276,28 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playAudioForChannel(channelNumber) {
     console.log('Playing audio for channel:', channelNumber);
 
-    // Find the audio buffer for the given channel number
-    const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === `Channel ${channelNumber}`);
-    if (audioBufferObj && audioBufferObj.buffer) {
-        // Create an AudioBufferSourceNode from the AudioContext
+    const channelName = `Channel ${channelNumber}`;
+    const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === channelName);
+    const trimTimes = globalTrimTimes[channelName];
+
+    if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
         const source = audioCtx.createBufferSource();
-        // Set the buffer in the source
         source.buffer = audioBufferObj.buffer;
-        // Connect the source to the context's destination (the speakers)
+
+        const duration = source.buffer.duration;
+        const startTime = duration * trimTimes.startTrim;
+        const endTime = duration * trimTimes.endTrim;
+        const playDuration = endTime - startTime;
+
         source.connect(audioCtx.destination);
-        // Start playing the sound
-        source.start(0);
+
+        // Start playing the sound at the calculated start time and for the calculated duration
+        source.start(0, startTime, playDuration);
     } else {
-        console.error('No audio buffer found for channel:', channelNumber);
+        console.error('No audio buffer or trim times found for channel:', channelNumber);
     }
 }
+
 
 // The rest of your code for key mapping and event listener remains unchanged
 
