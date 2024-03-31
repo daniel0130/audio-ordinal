@@ -299,7 +299,7 @@ const playSequenceStep = () => {
         return;
     }
 
-    // Assuming the sequence to play is dynamically determined; using the first sequence as an example
+    // Dynamically determined sequence
     const sequenceKey = Object.keys(globalJsonData.projectSequences)[0];
     const sequence = globalJsonData.projectSequences[sequenceKey];
     const channels = Object.keys(sequence);
@@ -311,26 +311,32 @@ const playSequenceStep = () => {
         const channel = sequence[channelKey];
 
         if (channel.steps.includes(currentStep) && !channel.mute) {
-            // Correctly map the zero-based index to the expected buffer key format
             const bufferKey = `Channel ${channelIndex + 1}`; // Map 'ch0' to 'Channel 1', etc.
-            const audioBuffer = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+            const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+            const trimTimes = globalTrimTimes[bufferKey]; // Fetching the trim times for this channel
 
-            if (audioBuffer) {
+            if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
                 const source = audioCtx.createBufferSource();
-                source.buffer = audioBuffer.buffer;
+                source.buffer = audioBufferObj.buffer;
                 source.connect(audioCtx.destination);
-                source.start(); // Consider timing adjustments for actual use
 
-                console.log(`Channel ${bufferKey}: Playing step ${currentStep}`);
+                // Apply the trim times to calculate the correct start and duration
+                const startTime = trimTimes.startTrim * source.buffer.duration;
+                const endTime = trimTimes.endTrim * source.buffer.duration;
+                const playDuration = endTime - startTime;
+
+                console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${playDuration}`);
+                source.start(audioCtx.currentTime, startTime, playDuration);
             } else {
-                console.error(`No audio buffer found for channel ${bufferKey}`);
+                console.error(`No audio buffer or trim times found for channel ${bufferKey}`);
             }
         }
     });
 
-    // Increment the currentStep, wrapping back to 0 after the last step
-    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence for this example
+    // Increment and wrap the current step for the next iteration
+    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence
 };
+
 
 
 // Example of how to trigger playback, could be adapted based on the application's structure
