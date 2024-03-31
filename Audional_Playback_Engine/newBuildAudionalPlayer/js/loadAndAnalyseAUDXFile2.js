@@ -9,6 +9,9 @@ let isPlaying = false; // Tracks playback state
 let activeSources = []; // Keeps track of active source nodes for stopping them
 var globalJsonData = null;
 let bpm = 0;
+let currentStep = 0; // Tracks the current step within the sequence
+let currentSequenceIndex = 0; // New variable to track the index of the current sequence
+
 
 // Initialize the AudioContext at a scope accessible by playAudioForChannel
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -291,7 +294,6 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
     }));
 }
 
-let currentStep = 0; // Tracks the current step within the sequence
 
 const playSequenceStep = () => {
     if (!globalJsonData || !globalJsonData.projectSequences) {
@@ -299,8 +301,19 @@ const playSequenceStep = () => {
         return;
     }
 
-    // Dynamically determined sequence
-    const sequenceKey = Object.keys(globalJsonData.projectSequences)[0];
+    const sequenceKeys = Object.keys(globalJsonData.projectSequences);
+    if (sequenceKeys.length === 0) {
+        console.error("No sequences available for playback.");
+        return;
+    }
+
+    if (currentSequenceIndex >= sequenceKeys.length) {
+        console.log("All sequences have been played.");
+        // Optionally loop back to the first sequence or stop playback here
+        currentSequenceIndex = 0; // Loop back to the first sequence
+    }
+
+    const sequenceKey = sequenceKeys[currentSequenceIndex];
     const sequence = globalJsonData.projectSequences[sequenceKey];
     const channels = Object.keys(sequence);
 
@@ -333,10 +346,14 @@ const playSequenceStep = () => {
         }
     });
 
-    // Increment and wrap the current step for the next iteration
-    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence
+    // Check if we've reached the end of the current sequence
+    if (currentStep >= 63) { // Assuming 64 steps per sequence, adjust if needed
+        currentStep = 0; // Reset step for the next sequence
+        currentSequenceIndex++; // Move to the next sequence
+    } else {
+        currentStep++; // Increment step within the current sequence
+    }
 };
-
 
 
 // Example of how to trigger playback, could be adapted based on the application's structure
