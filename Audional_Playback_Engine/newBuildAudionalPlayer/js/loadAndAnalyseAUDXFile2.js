@@ -1,20 +1,32 @@
 // loadAndAnalyseAUDXFile2.js
 
-var globalPlaybackData = null;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GLOBAL VARIABLES //
+
 var globalAudioBuffers = [];
 var globalTrimTimes = {}; // This will hold trim times for each channel
+let isPlaying = false; // Tracks playback state
+let activeSources = []; // Keeps track of active source nodes for stopping them
+var globalJsonData = null;
+
+// Initialize the AudioContext at a scope accessible by playAudioForChannel
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// JSON FILE LOADING AND ANALYSIS //
 
-document.getElementById('jsonInput').addEventListener('change', function(event) {
-    var file = event.target.files[0];
+// Updated JSON file loading and analysis to set globalJsonData
+document.getElementById('jsonInput').addEventListener('change', ({target}) => {
+    const {files} = target;
+    const file = files[0];
     if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var json = JSON.parse(e.target.result);
+        const reader = new FileReader();
+        reader.onload = ({target}) => {
+            // Parse and store JSON data in global scope
+            globalJsonData = JSON.parse(target.result);
 
-            // Initialize stats here
-            var stats = {
+            const stats = {
                 channelsWithUrls: 0,
                 sequencesCount: 0,
                 activeStepsPerSequence: {},
@@ -22,94 +34,80 @@ document.getElementById('jsonInput').addEventListener('change', function(event) 
                 types: {}
             };
 
-            analyzeJsonStructure(json, '', stats);
-
-            var playbackData = prepareForPlayback(json, stats);
+            analyzeJsonStructure(globalJsonData, '', stats);
+            const playbackData = prepareForPlayback(globalJsonData, stats);
             displayOutput(playbackData);
-            fetchAndProcessAudioData(playbackData.channelURLs); // Add this line to fetch and process audio data
+            fetchAndProcessAudioData(playbackData.channelURLs); // Process audio data
         };
         reader.readAsText(file);
     }
 });
 
-function analyzeJsonStructure(json, parentKey, stats, path) {
-    path = path || '';
+const analyzeJsonStructure = (json, parentKey, stats, path = '') => {
     if (json.projectSequences && typeof json.projectSequences === 'object') {
-        for (var seqKey in json.projectSequences) {
-            if (json.projectSequences.hasOwnProperty(seqKey)) {
-                var sequence = json.projectSequences[seqKey];
-                stats.activeStepsPerSequence[seqKey] = 0;
-                stats.activeChannelsPerSequence[seqKey] = [];
-
-                for (var chKey in sequence) {
-                    if (sequence.hasOwnProperty(chKey)) {
-                        var channel = sequence[chKey];
-                        if (channel.steps && Array.isArray(channel.steps) && channel.steps.length > 0) {
-                            stats.activeStepsPerSequence[seqKey] += channel.steps.length;
-                            stats.activeChannelsPerSequence[seqKey].push(chKey);
-                        }
-                    }
+        Object.entries(json.projectSequences).forEach(([seqKey, sequence]) => {
+            stats.activeStepsPerSequence[seqKey] = 0;
+            stats.activeChannelsPerSequence[seqKey] = [];
+            Object.entries(sequence).forEach(([chKey, channel]) => {
+                if (channel.steps && Array.isArray(channel.steps) && channel.steps.length > 0) {
+                    stats.activeStepsPerSequence[seqKey] += channel.steps.length;
+                    stats.activeChannelsPerSequence[seqKey].push(chKey);
                 }
-            }
-        }
+            });
+        });
     }
 
-    for (var key in json) {
-        if (json.hasOwnProperty(key) && key !== 'projectSequences') {
-            var value = json[key];
-            var type = Array.isArray(value) ? 'array' : typeof value;
+    Object.entries(json).forEach(([key, value]) => {
+        if (key !== 'projectSequences') {
+            const type = Array.isArray(value) ? 'array' : typeof value;
             incrementTypeCount(stats.types, type);
-
             if (type === 'object' || type === 'array') {
-                analyzeJsonStructure(value, key, stats, path ? path + '.' + key : key);
+                analyzeJsonStructure(value, key, stats, path ? `${path}.${key}` : key);
             }
         }
-    }
-}
+    });
+};
 
-function incrementTypeCount(types, type) {
+const incrementTypeCount = (types, type) => {
     types[type] = (types[type] || 0) + 1;
-}
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// JSON FILE PREPARATION FOR PLAYBACK //
 
 function prepareForPlayback(json, stats) {
-    var urls = json.channelURLs;
-    var trimTimes = json.trimSettings.map(function(trim, index) {
-        return {
-            channel: 'Channel ' + (index + 1),
-            startTrim: parseFloat(trim.startSliderValue),
-            endTrim: parseFloat(trim.endSliderValue)
+    const { channelURLs, trimSettings, projectSequences, projectName, projectBPM } = json;
+
+    const trimTimes = trimSettings.map((trim, index) => ({
+        channel: `Channel ${index + 1}`,
+        startTrim: parseFloat(trim.startSliderValue),
+        endTrim: parseFloat(trim.endSliderValue)
+    }));
+
+    const formattedTrimTimes = trimTimes.map(trim => `${trim.channel}: StartTrim=${trim.startTrim}, EndTrim=${trim.endTrim}`);
+
+    // Populate globalTrimTimes with start and end trim times
+    trimSettings.forEach((trim, index) => {
+        const channel = `Channel ${index + 1}`;
+        globalTrimTimes[channel] = {
+            startTrim: parseFloat(trim.startSliderValue) / 100, // Convert to percentage
+            endTrim: parseFloat(trim.endSliderValue) / 100 // Convert to percentage
         };
     });
 
-    var formattedTrimTimes = trimTimes.map(function(trim) {
-        return trim.channel + ': StartTrim=' + trim.startTrim + ', EndTrim=' + trim.endTrim;
-    });
-    // Populate globalTrimTimes with start and end trim times
-        json.trimSettings.forEach(function(trim, index) {
-            const channel = 'Channel ' + (index + 1);
-            globalTrimTimes[channel] = {
-                startTrim: parseFloat(trim.startSliderValue) / 100, // Convert to percentage
-                endTrim: parseFloat(trim.endSliderValue) / 100 // Convert to percentage
-            };
+    const formattedSequences = Object.entries(projectSequences).reduce((acc, [sequenceKey, sequenceValue]) => {
+        acc[sequenceKey] = Object.entries(sequenceValue).map(([channelKey, channel]) => {
+            const activeSteps = channel.steps.length > 0 ? channel.steps.join(', ') : 'No active steps';
+            return `${channelKey}: [${activeSteps}]`;
         });
-
-
-    var formattedSequences = {};
-    for (var sequenceKey in json.projectSequences) {
-        if (json.projectSequences.hasOwnProperty(sequenceKey)) {
-            formattedSequences[sequenceKey] = Object.keys(json.projectSequences[sequenceKey]).map(function(channelKey) {
-                var channel = json.projectSequences[sequenceKey][channelKey];
-                var activeSteps = channel.steps.length > 0 ? channel.steps.join(', ') : 'No active steps';
-                return channelKey + ': [' + activeSteps + ']';
-            });
-        }
-    }
+        return acc;
+    }, {});
 
     return {
-        projectName: json.projectName,
-        bpm: json.projectBPM,
-        channels: urls.length,
-        channelURLs: urls,
+        projectName,
+        bpm: projectBPM,
+        channels: channelURLs.length,
+        channelURLs,
         trimTimes: formattedTrimTimes,
         stats: {
             channelsWithUrls: stats.channelsWithUrls,
@@ -122,114 +120,79 @@ function prepareForPlayback(json, stats) {
 }
 
 function displayOutput(playbackData) {
-    function replacer(key, value) {
-        if (Array.isArray(value) && value.every(function(item) { return typeof item === 'number'; })) {
-            return '[' + value.join(', ') + ']';
-        }
-        if (Array.isArray(value) && value.every(function(item) { return typeof item === 'string' && item.startsWith('ch'); })) {
-            return '[' + value.join(', ') + ']';
+    const replacer = (key, value) => {
+        if (Array.isArray(value)) {
+            const isNumberArray = value.every(item => typeof item === 'number');
+            const isChannelArray = value.every(item => typeof item === 'string' && item.startsWith('ch'));
+            if (isNumberArray || isChannelArray) {
+                return `[${value.join(', ')}]`;
+            }
         }
         return value;
-    }
+    };
 
-    var formattedOutput = JSON.stringify(playbackData, replacer, 2);
+    const formattedOutput = JSON.stringify(playbackData, replacer, 2);
     document.getElementById('output').textContent = formattedOutput;
 }
 
 
 
-// Assuming the existence of the globalAudioBuffers and audioCtx variables as previously defined
-function fetchAndProcessAudioData(urls) {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUDIO DATA FETCHING AND PROCESSING //
+
+// Use async/await with fetch API for cleaner syntax
+async function fetchAndProcessAudioData(urls) {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    urls.forEach(function(url, index) {
+    // Use Promise.all to wait for all fetches to complete
+    await Promise.all(urls.map(async (url, index) => {
         const channelNumber = index + 1; // Assuming channel numbering starts at 1
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'blob';
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch from URL: ${url}, Status: ${response.status}`);
+            const contentType = response.headers.get('Content-Type');
 
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                var contentType = xhr.getResponseHeader('Content-Type');
-                
-                // Handling direct audio formats (wav, mp3)
-                if (/audio\/wav/.test(contentType) || /audio\/mpeg/.test(contentType)) {
-                    var reader = new FileReader();
-                    reader.onload = function() {
-                        const audioData = reader.result;
-                        audioCtx.decodeAudioData(audioData, function(buffer) {
-                            globalAudioBuffers.push({ buffer: buffer, channel: `Channel ${channelNumber}` });
-                            console.log(`AudioBuffer stored for direct audio content at index: ${index}, Channel: ${channelNumber}`);
-                        }, function(e) {
-                            console.error(`Error decoding direct audio data for Channel ${channelNumber}:`, e);
-                        });
-                    };
-                    reader.readAsArrayBuffer(xhr.response);
-                } else {
-                    var reader = new FileReader();
-
-                    reader.onload = function() {
-                        let base64AudioData;
-                        if (/application\/json/.test(contentType)) {
-                            // Process JSON content
-                            const json = JSON.parse(reader.result);
-                            base64AudioData = json.audioData; // Directly from JSON
-                        } else if (/text\/html/.test(contentType)) {
-                            // Process HTML content and log channel information upon successful extraction
-                            base64AudioData = extractBase64FromHTML(reader.result, channelNumber); // Pass channelNumber if needed
-                            console.log(`[Channel ${channelNumber}] Extracted base64 audio data from HTML.`);
-                        }
-
-                        if (base64AudioData) {
-                            // Decode and process the base64 audio data
-                            const audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]);
-                            audioCtx.decodeAudioData(audioData, function(buffer) {
-                                globalAudioBuffers.push({ buffer: buffer, channel: `Channel ${channelNumber}` });
-                                console.log(`AudioBuffer stored for URL at index: ${index}, Channel: ${channelNumber}`);
-                            }, function(e) {
-                                console.error(`Error decoding audio data for Channel ${channelNumber}:`, e);
-                            });
-                        }
-                    };
-
-                    if (/text\/html/.test(contentType) || /application\/json/.test(contentType)) {
-                        reader.readAsText(xhr.response);
-                    } else if (/audio/.test(contentType)) {
-                        reader.readAsArrayBuffer(xhr.response); // Handling direct audio content
-                    }
-                }
+            // Process direct audio formats (wav, mp3)
+            if (/audio\/wav/.test(contentType) || /audio\/mpeg/.test(contentType)) {
+                const arrayBuffer = await response.arrayBuffer();
+                const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                globalAudioBuffers.push({ buffer: decodedBuffer, channel: `Channel ${channelNumber}` });
+                console.log(`AudioBuffer stored for direct audio content at index: ${index}, Channel: ${channelNumber}`);
             } else {
-                console.error(`Failed to fetch from URL: ${url}, Status: ${xhr.status}`);
+                // Handle non-direct audio formats (e.g., JSON or HTML with base64 encoded data)
+                const text = await response.text();
+                let base64AudioData;
+
+                if (/application\/json/.test(contentType)) {
+                    const json = JSON.parse(text);
+                    base64AudioData = json.audioData;
+                } else if (/text\/html/.test(contentType)) {
+                    base64AudioData = extractBase64FromHTML(text);
+                    console.log(`[Channel ${channelNumber}] Extracted base64 audio data from HTML.`);
+                }
+
+                if (base64AudioData) {
+                    const audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]);
+                    const decodedBuffer = await audioCtx.decodeAudioData(audioData);
+                    globalAudioBuffers.push({ buffer: decodedBuffer, channel: `Channel ${channelNumber}` });
+                    console.log(`AudioBuffer stored for URL at index: ${index}, Channel: ${channelNumber}`);
+                }
             }
-        };
-
-        xhr.send();
-    });
+        } catch (error) {
+            console.error(`Error fetching or decoding audio for Channel ${channelNumber}:`, error);
+        }
+    }));
 }
-
-
-// Helper function to convert a base64 string to an ArrayBuffer
-function base64ToArrayBuffer(base64) {
-    var binaryString = window.atob(base64);
-    var len = binaryString.length;
-    var bytes = new Uint8Array(len);
-    for (var i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-}
-
 
 function extractBase64FromHTML(htmlText) {
     try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlText, "text/html");
         const audioSource = doc.querySelector("audio[data-audionalSampleName] source");
-        
+
         if (audioSource) {
             const src = audioSource.getAttribute("src");
-            
-            if (src.toLowerCase().startsWith("data:audio/wav;base64,") || src.toLowerCase().startsWith("data:audio/mp3;base64,")) {
+            if (/^data:audio\/(wav|mp3);base64,/.test(src.toLowerCase())) {
                 console.log("[importHTMLAudioData] Extracted base64 audio data.");
                 return src;
             } else {
@@ -241,14 +204,22 @@ function extractBase64FromHTML(htmlText) {
     } catch (error) {
         console.error("[importHTMLAudioData] Error parsing HTML content: ", error);
     }
-    
+
     return null;
 }
 
+// Helper function to convert a base64 string to an ArrayBuffer
+function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    bytes.forEach((_, i) => bytes[i] = binaryString.charCodeAt(i));
+    return bytes.buffer;
+}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AUDIO BUFFERS HAVE BEEN FETCHED AND PROCESSED //
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// KEY MAPPING AND USER CONTROLLED PLAYBACK FUNCTIONS //
 
 // Key to channel mapping
 const keyChannelMap = {
@@ -267,12 +238,9 @@ document.addEventListener('keydown', function(event) {
 });
 
 
-// Assuming globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
+//  globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
 // and audioCtx is an instance of AudioContext
-// Initialize the AudioContext at a scope accessible by playAudioForChannel
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// Assuming globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
 function playAudioForChannel(channelNumber) {
     console.log('Playing audio for channel:', channelNumber);
 
@@ -298,37 +266,140 @@ function playAudioForChannel(channelNumber) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUTOMATIC SEQUENCE PLAYBACK FUNCTIONS //
 
-// The rest of your code for key mapping and event listener remains unchanged
-
-
-
-
-
-
-function schedulePlayback(playbackData, audioBuffers) {
-    if (!window.AudioContext) return; // Ensure the AudioContext is supported
-    const audioCtx = new AudioContext();
-    const bpm = playbackData.bpm;
+const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
     const beatDuration = 60 / bpm; // Duration of a beat in seconds
 
-    // Assuming playbackData.sequences is structured correctly based on the description
-    playbackData.sequences.forEach((sequence, sequenceIndex) => {
-        sequence.forEach((step, stepIndex) => {
-            step.forEach(channelKey => {
-                const bufferIndex = playbackData.channelURLs.findIndex(url => url.includes(channelKey));
-                if (bufferIndex !== -1) {
-                    const audioBuffer = audioBuffers[bufferIndex];
-                    if (audioBuffer) {
-                        const source = audioCtx.createBufferSource();
-                        source.buffer = audioBuffer;
-                        source.connect(audioCtx.destination);
-                        const stepStartTime = stepIndex * beatDuration;
-                        source.start(audioCtx.currentTime + stepStartTime);
-                        // Assuming `trimTimes` has been applied during buffer preparation
-                    }
-                }
-            });
-        });
-    });
+    return Object.entries(sequences).map(([sequenceKey, sequenceValue]) => ({
+        sequenceKey,
+        channels: Object.entries(sequenceValue)
+            .filter(([, channel]) => channel.steps && channel.steps.length > 0)
+            .map(([channelKey, channel]) => ({
+                channelKey,
+                steps: channel.steps.map(step => ({
+                    step, // This could be a step number or timing information
+                    timing: step * beatDuration // Timing calculation example
+                })),
+                trim: trimTimes[`Channel ${channelKey}`]
+            }))
+    }));
 }
+
+const togglePlayback = async () => {
+    console.log('[togglePlayback] Called');
+    
+    if (audioCtx.state === 'suspended') {
+        console.log('[togglePlayback] AudioContext is suspended, resuming...');
+        await audioCtx.resume();
+        console.log('[togglePlayback] AudioContext resumed.');
+    }
+
+    if (!isPlaying) {
+        if (!globalJsonData) {
+            console.error('No JSON data loaded.');
+            return;
+        }
+
+        console.log('[togglePlayback] Initiating playback...');
+        const playbackData = transformSequencesForPlayback(globalJsonData.projectSequences, globalTrimTimes, globalJsonData.projectBPM);
+        scheduleSequencePlayback(playbackData, globalAudioBuffers, audioCtx);
+        console.log('[togglePlayback] Playback initiated.');
+        isPlaying = true;
+    } else {
+        console.log('[togglePlayback] Stopping playback, suspending AudioContext...');
+        await audioCtx.suspend();
+        activeSources.forEach(source => source.stop());
+        activeSources = [];
+        console.log('[togglePlayback] Playback stopped and AudioContext suspended.');
+        isPlaying = false;
+    }
+};
+
+
+
+const scheduleSequencePlayback = (playbackData, audioBuffers, audioCtx) => {
+    console.log('[scheduleSequencePlayback] Scheduling playback for sequences...');
+    playbackData.forEach(({channels}) => channels.forEach(channelData => {
+        // Parse the channel key to extract the numeric part, adjusting for JSON's 0-based indexing
+        let channelNumber = parseInt(channelData.channelKey.replace('ch', '')) + 1;
+        let channelName = `Channel ${channelNumber}`;  // This matches the naming convention used in the manual playback
+        
+        console.log(`[scheduleSequencePlayback] Accessing buffer for ${channelName}`);
+        const audioBufferObj = audioBuffers.find(obj => obj.channel === channelName);
+        
+        if (!audioBufferObj) {
+            console.error(`[scheduleSequencePlayback] No audio buffer found for ${channelName}.`);
+            return;
+        }
+
+        console.log(`[scheduleSequencePlayback] Playing ${channelName} with buffer`, audioBufferObj.buffer);
+        
+        channelData.steps.forEach(({timing}) => {
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBufferObj.buffer;
+            console.log(`[scheduleSequencePlayback] Scheduling ${channelName} at timing: ${timing}`);
+            source.connect(audioCtx.destination);
+
+            // Apply trim times if available, otherwise start at 0
+            const trim = globalTrimTimes[channelName] || {startTrim: 0, endTrim: source.buffer.duration};
+            const startTime = trim.startTrim * source.buffer.duration;
+            const endTime = trim.endTrim * source.buffer.duration;
+            source.start(audioCtx.currentTime + timing, startTime, endTime - startTime);
+        });
+    }));
+};
+
+
+
+// A function to start automatic sequence playback using the spacebar
+// Attach the event listener to the document
+document.addEventListener('keydown', async function(event) {
+    console.log('Key pressed:', event.key);
+    if (event.key === ' ') {
+        event.preventDefault(); // Prevent any default action triggered by the spacebar
+        togglePlayback(); // This now ensures audio context is resumed if suspended.
+    }
+});
+
+
+// // Attach the event listener to the document
+// document.addEventListener('keydown', async (event) => {
+//     console.log('Key pressed:', event.key);
+//     if (event.key === ' ') {
+//         event.preventDefault(); // Prevent any default action triggered by the spacebar
+//         togglePlayback();
+//     }
+// });
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PLAYBACK FUNCTIONS //
+
+// function schedulePlayback(playbackData, audioBuffers) {
+//     if (!window.AudioContext) return; // Ensure the AudioContext is supported
+//     const audioCtx = new AudioContext();
+//     const bpm = playbackData.bpm;
+//     const beatDuration = 60 / bpm; // Duration of a beat in seconds
+
+//     // Assuming playbackData.sequences is structured correctly based on the description
+//     playbackData.sequences.forEach((sequence, sequenceIndex) => {
+//         sequence.forEach((step, stepIndex) => {
+//             step.forEach(channelKey => {
+//                 const bufferIndex = playbackData.channelURLs.findIndex(url => url.includes(channelKey));
+//                 if (bufferIndex !== -1) {
+//                     const audioBuffer = audioBuffers[bufferIndex];
+//                     if (audioBuffer) {
+//                         const source = audioCtx.createBufferSource();
+//                         source.buffer = audioBuffer;
+//                         source.connect(audioCtx.destination);
+//                         const stepStartTime = stepIndex * beatDuration;
+//                         source.start(audioCtx.currentTime + stepStartTime);
+//                         // Assuming `trimTimes` has been applied during buffer preparation
+//                     }
+//                 }
+//             });
+//         });
+//     });
+// }
