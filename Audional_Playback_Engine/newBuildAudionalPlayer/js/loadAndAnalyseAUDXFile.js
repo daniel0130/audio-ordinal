@@ -6,17 +6,38 @@ document.getElementById('jsonInput').addEventListener('change', function(event) 
         const reader = new FileReader();
         reader.onload = async function(e) {
             const json = JSON.parse(e.target.result);
-            // Presume stats initialization and analysis code here remains the same
-            const playbackData = prepareForPlayback(json, /* stats or any other necessary parameters */);
-            displayOutput(playbackData); // Adjusted to display the prepared data for playback
-            
-            // Ensure AudioLoader is initialized and called here
-            const audioLoader = new AudioLoader(new (window.AudioContext || window.webkitAudioContext)());
-            await audioLoader.processChannelURLs(playbackData.channelURLs);
+
+            // Initialize stats here or ensure it's properly populated before passing
+            let stats = {
+                channelsWithUrls: 0,
+                sequencesCount: 0,
+                activeStepsPerSequence: {},
+                activeChannelsPerSequence: {},
+                types: {}
+            };
+            // Right before calling analyzeJsonStructure in the FileReader onload
+            stats.channelsWithUrls = json.channelURLs ? json.channelURLs.length : 0;
+            stats.sequencesCount = json.projectSequences ? Object.keys(json.projectSequences).length : 0;
+
+            // Perform JSON structure analysis to populate stats
+
+            analyzeJsonStructure(json, '', stats);
+
+
+        
+            const playbackData = prepareForPlayback(json, stats);
+            displayOutput(playbackData);
+
+            // Correctly check if all data has been processed after displayOutput
+            if (checkAllDataProcessed(stats)) {
+                console.log('All data processed. Ready for the next stage.');
+            } else {
+                console.log('Data processing incomplete.');
+            }
         };
         reader.readAsText(file);
     }
-});
+    });
 
 // Assume other functions (analyzeJsonStructure, incrementTypeCount, prepareForPlayback, displayOutput) remain unchanged
 
@@ -55,44 +76,113 @@ function incrementTypeCount(types, type) {
     types[type] = (types[type] || 0) + 1;
 }
 
-function prepareForPlayback(json, stats) {
-    // Separate URLs and trim settings into distinct arrays
-    const urls = json.channelURLs; // Directly use the URL array
-    const trimTimes = json.trimSettings.map((trim, index) => ({
-        channel: `Channel ${index + 1}`, // Display channel number starting from 1 for readability
-        startTrim: parseFloat(trim.startSliderValue).toFixed(3), // Reduce to three decimal places
-        endTrim: parseFloat(trim.endSliderValue).toFixed(3) // Reduce to three decimal places
-    }));
+// function prepareForPlayback(json, stats) {
+//     // Prepare raw data and formatted strings in parallel
+//     const channelsData = json.channelURLs.map((url, index) => {
+//         const trim = json.trimSettings[index];
+//         // Raw data for buffering
+//         const raw = {
+//             url,
+//             startTrim: parseFloat(trim.startSliderValue),
+//             endTrim: parseFloat(trim.endSliderValue)
+//         };
+//         // Formatted data for display
+//         const formatted = {
+//             channel: `Channel ${index + 1}`,
+//             url,
+//             formattedTrim: `StartTrim=${raw.startTrim.toFixed(3)}s, EndTrim=${raw.endTrim.toFixed(3)}s`
+//         };
 
-    // Format trim times for display, each channel on a single line
-    const formattedTrimTimes = trimTimes.map(trim => `${trim.channel}: StartTrim=${trim.startTrim}, EndTrim=${trim.endTrim}`);
+//         // Fetch and decode audio data
+//         const audioData = fetchAndDecodeAudioData(url);
 
-    // Format sequences for display, focusing only on active steps
-    const formattedSequences = {};
-    Object.keys(json.projectSequences).forEach(sequenceKey => {
-        formattedSequences[sequenceKey] = Object.keys(json.projectSequences[sequenceKey]).map(channelKey => {
-            const channel = json.projectSequences[sequenceKey][channelKey];
-            // Ensure active steps are represented as a joined string
-            const activeSteps = channel.steps.length > 0 ? channel.steps.join(', ') : 'No active steps';
-            return `${channelKey}: [${activeSteps}]`; // Channel identifier with active steps
-        });
+//         return { raw, formatted, audioData };
+//     });
+
+//     // Extract separately the raw and formatted data for easy access
+//     const rawChannelData = channelsData.map(data => data.raw);
+//     const formattedChannelData = channelsData.map(data => `${data.formatted.channel}: URL=${data.formatted.url}, ${data.formatted.formattedTrim}`);
+
+//     // Handling sequences for display
+//     const formattedSequences = {};
+//     Object.keys(json.projectSequences).forEach(sequenceKey => {
+//         formattedSequences[sequenceKey] = Object.keys(json.projectSequences[sequenceKey]).map(channelKey => {
+//             const channel = json.projectSequences[sequenceKey][channelKey];
+//             const activeSteps = channel.steps.length > 0 ? channel.steps.join(', ') : 'No active steps';
+//             return `${channelKey}: [${activeSteps}]`;
+//         });
+//     });
+
+//     // Compile the final object to return
+//     return {
+//         projectName: json.projectName,
+//         bpm: json.projectBPM,
+//         channels: json.channelURLs.length,
+//         channelURLs: formattedChannelData, // For display
+//         rawChannelData, // For processing
+//         stats: {
+//             channelsWithUrls: stats.channelsWithUrls,
+//             sequencesCount: stats.sequencesCount,
+//             activeStepsPerSequence: stats.activeStepsPerSequence,
+//             activeChannelsPerSequence: stats.activeChannelsPerSequence,
+//         },
+//         sequences: formattedSequences, // For display
+//     };
+// }
+
+async function prepareForPlayback(json, stats) {
+    const channelPromises = json.channelURLs.map(async (url, index) => {
+        const trim = json.trimSettings[index];
+        let audioData;
+
+        try {
+            audioData = await fetchAndDecodeAudioData(url);
+        } catch (error) {
+            console.error(`Error fetching audio for channel ${index + 1}:`, error.message);
+            audioData = null; // Handle the error as appropriate for your use case
+        }
+
+        return {
+            raw: {
+                url,
+                startTrim: parseFloat(trim.startSliderValue),
+                endTrim: parseFloat(trim.endSliderValue)
+            },
+            formatted: {
+                channel: `Channel ${index + 1}`,
+                url,
+                formattedTrim: `StartTrim=${trim.startSliderValue.toFixed(3)}s, EndTrim=${trim.endSliderValue.toFixed(3)}s`
+            },
+            audioData // This is now the actual data or null in case of an error
+        };
     });
 
-    return {
-        projectName: json.projectName,
-        bpm: json.projectBPM,
-        channels: urls.length,
-        channelURLs: urls, // Separated URLs array
-        trimTimes: formattedTrimTimes, // Formatted trim times with channel numbers on single lines
-        stats: { // Including stats for potential debug or display purposes
-            channelsWithUrls: stats.channelsWithUrls,
-            sequencesCount: stats.sequencesCount,
-            activeStepsPerSequence: stats.activeStepsPerSequence,
-            activeChannelsPerSequence: stats.activeChannelsPerSequence,
-        },
-        sequences: formattedSequences, // Formatted sequences with active steps on single lines
-    };
+    const channelsData = await Promise.all(channelPromises);
+
+    // Continue as before, but remember channelsData now includes fetched audio data
+    // ...
 }
+
+
+async function fetchAndDecodeAudioData(url) {
+    const response = await fetch(url);
+    const contentType = response.headers.get("Content-Type");
+
+    if (contentType.includes('application/json')) {
+        const json = await response.json();
+        if (!json.audioData) throw new Error('JSON does not contain audioData');
+        return base64ToArrayBuffer(json.audioData.split(",")[1]);
+    } else if (contentType.includes('text/html')) {
+        const htmlContent = await response.text();
+        const match = htmlContent.match(/data:audio\/[^;]+;base64,([^"]+)/);
+        if (!match) throw new Error('HTML does not contain base64 audio data');
+        return base64ToArrayBuffer(match[1]);
+    } else {
+        throw new Error('Unsupported content type');
+    }
+    
+}
+
 
 
 
@@ -115,4 +205,161 @@ function displayOutput(playbackData) {
     document.getElementById('output').textContent = formattedOutput;
 }
 
+function checkAllDataProcessed(stats) {
+    // Assuming all data is considered processed if there's at least one URL and one sequence
+    return stats.channelsWithUrls > 0 && stats.sequencesCount > 0;
+}
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUDIO BUFFERING FUNCTIONS
+
+// Prepare Audio for bufferring. 
+// Each Channel URL is matched to a set of trim settings that need to be applied to each buffer using a start and end time.
+// Utility Functions
+const audioContext = new AudioContext(); // Use a single AudioContext for efficiency
+
+function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+async function decodeAudioData(arrayBuffer) {
+    return audioContext.decodeAudioData(arrayBuffer);
+}
+
+function convertTrimSettings(trimSettings, duration) {
+    return trimSettings.map(({ start, end }) => ({
+        start: (start / 100) * duration,
+        end: (end / 100) * duration
+    }));
+}
+
+async function bufferAudioData(url, trimSettings) {
+    const arrayBuffer = await fetchAndDecodeAudioData(url);
+    const audioBuffer = await decodeAudioData(arrayBuffer);
+    const duration = audioBuffer.duration;
+
+    const trims = convertTrimSettings(trimSettings, duration);
+    // Process trimming here. This is an oversimplified view, real trimming involves creating a new AudioBuffer
+    return audioBuffer; // Placeholder, replace with actual trimmed buffer
+}
+
+// Main Function
+async function processAudioChannels(json) {
+    const { channelURLs, trimSettings } = json;
+    const buffers = [];
+
+    for (let i = 0; i < channelURLs.length; i++) {
+        try {
+            const buffer = await bufferAudioData(channelURLs[i], trimSettings[i]);
+            buffers.push(buffer);
+        } catch (error) {
+            console.error(`Error processing channel ${i + 1}:`, error);
+            return;
+        }
+    }
+
+    if (buffers.every(buffer => buffer !== null)) {
+        console.log('All channels buffered successfully.');
+    } else {
+        console.log('One or more channels failed to buffer.');
+    }
+}
+
+// // Example Usage
+// processAudioChannels(json).then(() => console.log("Audio processing complete."));
+
+
+  
+ 
+
+// async function bufferAudioData(base64Data, trimSettings) {
+//     const audioBuffer = await decodeBase64Audio(base64Data);
+//     // Calculate start and end times in seconds based on audioBuffer.duration and trimSettings
+//     // Extract the trimmed audioBuffer portion here
+//     // This step is complex and requires manipulating the raw audio buffer data
+//     return trimmedAudioBuffer;
+// }
+
+
+
+// // Usage
+// async function main() {
+//     const channelURLs = getChannelURLs(json); // Assume json is available
+//     const trimSettings = getTrimSettings(json); // Adjust this based on actual data structure
+//     const buffers = await bufferAllChannels(channelURLs, trimSettings);
+//     if (checkBuffers(buffers)) {
+//         console.log('All channels buffered successfully');
+//     } else {
+//         console.log('Error buffering channels');
+//     }
+// }
+// main();
+
+
+
+// async function importHTMLAudioData(htmlContent, index) {
+//     console.log("[importHTMLAudioData] Entered function with index: ", index);
+    
+//     try {
+//         const parser = new DOMParser();
+//         const doc = parser.parseFromString(htmlContent, "text/html");
+//         const audioSource = doc.querySelector("audio[data-audionalSampleName] source");
+        
+//         if (audioSource) {
+//             const src = audioSource.getAttribute("src");
+            
+//             if (src.toLowerCase().startsWith("data:audio/wav;base64,") || src.toLowerCase().startsWith("data:audio/mp3;base64,")) {
+//                 console.log("[importHTMLAudioData] Extracted base64 audio data.");
+//                 return src;
+//             } else {
+//                 console.error("[importHTMLAudioData] Audio data does not start with expected base64 prefix.");
+//             }
+//         } else {
+//             console.error("[importHTMLAudioData] Could not find the audio source element in the HTML content.");
+//         }
+//     } catch (error) {
+//         console.error("[importHTMLAudioData] Error parsing HTML content: ", error);
+//     }
+    
+//     return null;
+// }
+
+
+
+// async function importHTMLAudioData(htmlContent, index) {
+//     console.log("[importHTMLAudioData] Entered function with index: ", index);
+    
+//     try {
+//         const parser = new DOMParser();
+//         const doc = parser.parseFromString(htmlContent, "text/html");
+//         const audioSource = doc.querySelector("audio[data-audionalSampleName] source");
+        
+//         if (audioSource) {
+//             const src = audioSource.getAttribute("src");
+            
+//             if (src.toLowerCase().startsWith("data:audio/wav;base64,") || src.toLowerCase().startsWith("data:audio/mp3;base64,")) {
+//                 console.log("[importHTMLAudioData] Extracted base64 audio data.");
+//                 return src;
+//             } else {
+//                 console.error("[importHTMLAudioData] Audio data does not start with expected base64 prefix.");
+//             }
+//         } else {
+//             console.error("[importHTMLAudioData] Could not find the audio source element in the HTML content.");
+//         }
+//     } catch (error) {
+//         console.error("[importHTMLAudioData] Error parsing HTML content: ", error);
+//     }
+    
+//     return null;
+// }
+
+// A function to extract base64 audio data from a JSON file

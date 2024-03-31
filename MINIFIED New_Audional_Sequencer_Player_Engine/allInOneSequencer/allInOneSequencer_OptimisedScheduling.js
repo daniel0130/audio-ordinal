@@ -267,7 +267,32 @@ function resetStepLights() {
 const presets={preset1:{name:"Preset 1",bpm:"105",channels:[{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!0,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""},{triggers:[],mute:!1,toggleMuteSteps:[],url:""}]}};console.log("Initial Presets:",presets);
 const audioBuffers=new Map;function getIDFromURL(e){console.log("[HTML Debugging] getIDFromURL entered");const t=e.split("/");return t[t.length-1]}function base64ToArrayBuffer(e){console.log("[HTML Debugging] [base64ToArrayBuffer] Entered function. Base64 sample:",e.substring(0,100));const t=atob(e),o=t.length,n=new Uint8Array(o);for(let e=0;e<o;e++)n[e]=t.charCodeAt(e);return console.log(`[HTML Debugging] [base64ToArrayBuffer] Generated Uint8Array length: ${n.length}`),n.buffer}const decodeAudioData=e=>{let t=new Uint8Array(e.slice(0,20));return console.log("[HTML Debugging] [decodeAudioData] ArrayBuffer first 20 bytes:",t.join(", ")),new Promise(((t,o)=>{audioContext.decodeAudioData(e,(e=>{console.log("[HTML Debugging] [decodeAudioData] Audio data decoded successfully."),t(e)}),(e=>{console.error("[HTML Debugging] [decodeAudioData] Detailed Error:",{message:e.message,code:e.code}),o(e)}))}))};
 
-async function importHTMLAudioData(e,t){console.log("[importHTMLSampleData] Entered function with index: ",t);try{const t=new DOMParser,o=t.parseFromString(e,"text/html").querySelector("audio[data-audionalSampleName] source");if(o){const e=o.getAttribute("src");if(e.toLowerCase().startsWith("data:audio/wav;base64,")||e.toLowerCase().startsWith("data:audio/mp3;base64,"))return console.log("[importHTMLSampleData] Extracted base64 audio data."),e;console.error("[importHTMLSampleData] Audio data does not start with expected base64 prefix.")}else console.error("[importHTMLSampleData] Could not find the audio source element in the HTML content.")}catch(e){console.error("[importHTMLSampleData] Error parsing HTML content: ",e)}return null}
+async function importHTMLAudioData(htmlContent, index) {
+    console.log("[importHTMLAudioData] Entered function with index: ", index);
+    
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        const audioSource = doc.querySelector("audio[data-audionalSampleName] source");
+        
+        if (audioSource) {
+            const src = audioSource.getAttribute("src");
+            
+            if (src.toLowerCase().startsWith("data:audio/wav;base64,") || src.toLowerCase().startsWith("data:audio/mp3;base64,")) {
+                console.log("[importHTMLAudioData] Extracted base64 audio data.");
+                return src;
+            } else {
+                console.error("[importHTMLAudioData] Audio data does not start with expected base64 prefix.");
+            }
+        } else {
+            console.error("[importHTMLAudioData] Could not find the audio source element in the HTML content.");
+        }
+    } catch (error) {
+        console.error("[importHTMLAudioData] Error parsing HTML content: ", error);
+    }
+    
+    return null;
+}
 
 
 ////////////////////////////////////////////////////////////////////////
