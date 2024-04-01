@@ -21,6 +21,7 @@ let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAndProcessJson('OB1_Song_1.json'); // Adjust the path to where your JSON file is located
+    initializeWorker();
 });
 
 async function loadAndProcessJson(jsonPath) {
@@ -215,16 +216,59 @@ function base64ToArrayBuffer(base64) {
     return bytes.buffer;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUTOMATIC SEQUENCE PLAYBACK and MESSAGING FUNCTIONS //
 
-
-// Assuming global variables and initial setup are defined elsewhere
+// Global setup
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
 let preprocessedSequences = {};
-let nextNoteTime = 0; // The time when the next note is due.
+let audioWorker;
+
+let nextNoteTime = 0; // When the next note is due, in AudioContext time
+
+function initializeWorker() {
+    if (window.Worker) {
+        audioWorker = new Worker('worker.js');
+        audioWorker.onmessage = (e) => {
+            if (e.data.action === 'scheduleNotes') {
+                scheduleNotes();
+            }
+        };
+        audioWorker.postMessage({ action: 'start', stepDuration: getStepDuration() });
+
+        // Add a cleanup mechanism on page unload
+        window.addEventListener('beforeunload', () => {
+            audioWorker.terminate();
+        });
+    } else {
+        console.error("Web Workers are not supported in your browser.");
+    }
+}
+
+let intervalID = setInterval(scheduleNotes, stepDuration * 1000 * 0.5);
+
+function scheduleNotes() {
+    let currentTime = audioCtx.currentTime;
+    if (nextNoteTime < currentTime) {
+        nextNoteTime = currentTime;
+    }
+
+    // Adjust this to control how far ahead to schedule
+    const scheduleAheadTime = 0.1; // How far ahead to schedule audio (in seconds)
+
+    while (nextNoteTime < currentTime + scheduleAheadTime) {
+        playSequenceStep(nextNoteTime);
+        nextNoteTime += getStepDuration(); // Ensure this moves the nextNoteTime forward correctly
+    }
+}
+
+
+
+function getStepDuration() {
+    const bpm = globalJsonData?.projectBPM || 120;
+    return 60 / bpm / 4; // Time for each step in seconds
+}
 
 function preprocessAndSchedulePlayback() {
     if (!globalJsonData?.projectSequences) {
@@ -243,39 +287,19 @@ function preprocessAndSchedulePlayback() {
     console.log("Preprocessed sequences:", preprocessedSequences);
 }
 
-// Check if we need to resume the AudioContext due to browser restrictions
-function ensureAudioContextState() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => {
-            console.log('AudioContext resumed successfully.');
-            startPlaybackLoop(); // Only start the playback loop after ensuring the AudioContext is running
-        }).catch(console.error);
-    }
-}
-document.addEventListener('click', ensureAudioContextState);
-
-
 function startPlaybackLoop() {
     if (!globalJsonData) return;
 
     const bpm = globalJsonData.projectBPM || 120;
-    const stepDuration = 60 / bpm / 4;
-    nextNoteTime = audioCtx.currentTime;
+    const stepDuration = 60 / bpm / 4; // Time for each step in seconds
+    let lastScheduledTime = audioCtx.currentTime; // Initialize last scheduled time to current time
+    const scheduleAheadTime = 0.1; // How far ahead to schedule audio (in seconds)
 
-    (function scheduler() {
-        while (nextNoteTime < audioCtx.currentTime + 0.1) {
-            const scheduleAheadTime = nextNoteTime - audioCtx.currentTime;
-            playSequenceStep(scheduleAheadTime);
-            nextNoteTime += stepDuration;
-        }
-        requestAnimationFrame(scheduler);
-    })();
+    // `scheduleNotes` remains largely the same but now directly called by worker messages
 }
-
-function playSequenceStep(scheduleAheadTime) {
+function playSequenceStep(scheduledTime) {
     if (Object.keys(preprocessedSequences).length === 0) {
-        console.error("Preprocessed sequence data is not available or empty.");
-        return;
+        return console.error("Preprocessed sequence data is not available or empty.");
     }
 
     const sequenceKeys = Object.keys(preprocessedSequences);
@@ -285,7 +309,6 @@ function playSequenceStep(scheduleAheadTime) {
     Object.entries(sequence).forEach(([channelKey, steps]) => {
         const stepDetail = steps.find(detail => detail.step === currentStep);
         if (stepDetail) {
-            const scheduledTime = audioCtx.currentTime + scheduleAheadTime;
             playChannelStep(channelKey, stepDetail, scheduledTime);
         }
     });
@@ -298,12 +321,11 @@ function playChannelStep(channelKey, stepDetail, scheduledTime) {
     const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
     const trimTimes = globalTrimTimes[bufferKey];
 
-    if (!(audioBufferObj?.buffer && trimTimes)) {
+    if (audioBufferObj?.buffer && trimTimes) {
+        playBuffer(audioBufferObj.buffer, trimTimes, bufferKey, scheduledTime);
+    } else {
         console.error(`No audio buffer or trim times found for ${bufferKey}`);
-        return;
     }
-
-    playBuffer(audioBufferObj.buffer, trimTimes, bufferKey, scheduledTime);
 }
 
 function playBuffer(buffer, {startTrim, endTrim}, bufferKey, scheduledTime) {
@@ -314,30 +336,24 @@ function playBuffer(buffer, {startTrim, endTrim}, bufferKey, scheduledTime) {
     const startTime = startTrim * buffer.duration;
     const duration = (endTrim - startTrim) * buffer.duration;
 
-    console.log(`Channel ${bufferKey}: Scheduled play at ${scheduledTime}, Start Time: ${startTime}, Duration: ${duration}`);
     source.start(scheduledTime, startTime, duration);
+    console.log(`Channel ${bufferKey}: Scheduled play at ${scheduledTime}, Start Time: ${startTime}, Duration: ${duration}`);
 
-    // Correctly defining and using channelNumber within the same functional scope
-    let channelNumber;
-    if (bufferKey.startsWith('Channel ')) {
-        channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10) - 1; // Adjusting channel index to be 0-based
-    } else {
-        console.error('Invalid bufferKey format:', bufferKey);
-        return; // Early return to prevent dispatching events with undefined channelNumber
+    let channelNumber = bufferKey.startsWith('Channel ') ? parseInt(bufferKey.replace('Channel ', ''), 10) - 1 : null;
+    if (channelNumber === null) {
+        return console.error('Invalid bufferKey format:', bufferKey);
     }
 
-    // Broadcasting message through the BroadcastChannel
     AudionalPlayerMessages.postMessage({
         action: "activeStep",
-        channelIndex: channelNumber, // Already adjusted to 0-15 index
+        channelIndex: channelNumber,
         step: currentStep
     });
 
-    // Dispatching internal event for the built-in visualizer
     document.dispatchEvent(new CustomEvent('internalAudioPlayback', {
         detail: {
             action: "activeStep",
-            channelIndex: channelNumber, // Same adjustment as above
+            channelIndex: channelNumber,
             step: currentStep
         }
     }));
@@ -379,6 +395,18 @@ document.addEventListener('keydown', async (event) => {
     }
 });
 
+window.addEventListener('beforeunload', () => {
+    // If using setInterval directly in the main thread
+    clearInterval(intervalID);
+
+    // If using a worker
+    if (audioWorker) {
+        audioWorker.terminate(); // This will stop the worker immediately
+    }
+
+    // Optionally suspend the AudioContext to stop all processing if the page is being closed
+    audioCtx.suspend().then(() => console.log('AudioContext suspended successfully.'));
+});
 
 
 // const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
