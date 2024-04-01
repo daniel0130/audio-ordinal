@@ -16,9 +16,6 @@ let isPlaying = false; // Tracks playback state
 let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
 
 
-// Initialize the AudioContext at a scope accessible by playAudioForChannel
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // JSON FILE LOADING AND ANALYSIS //
 
@@ -239,143 +236,92 @@ function base64ToArrayBuffer(base64) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUTOMATIC SEQUENCE PLAYBACK and MESSAGING FUNCTIONS //
 
-const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
 
-let preprocessedSequences = {}; // This will hold the pre-processed sequences
+// Assuming global variables and initial setup are defined elsewhere
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
+let preprocessedSequences = {};
+let nextNoteTime = 0; // The time when the next note is due.
 
 function preprocessAndSchedulePlayback() {
-    if (!globalJsonData || !globalJsonData.projectSequences) {
-        console.error("Global sequence data is not available or empty.");
-        return;
+    if (!globalJsonData?.projectSequences) {
+        return console.error("Global sequence data is not available or empty.");
     }
 
-    bpm = globalJsonData.projectBPM; // Assume bpm is updated globally as before
-
-    preprocessedSequences = {}; // Reset to handle new data
-
-    Object.entries(globalJsonData.projectSequences).forEach(([sequenceKey, channels]) => {
-        const preprocessedChannels = Object.entries(channels)
-            .filter(([, channelData]) => channelData.steps && channelData.steps.length)
-            .reduce((acc, [channelKey, { steps }]) => {
-                const processedSteps = steps.map(step => ({
-                    step,
-                    timing: step * (60 / bpm) // Calculate timing based on BPM
-                }));
-                acc[channelKey] = processedSteps;
-                return acc;
-            }, {});
-
-        preprocessedSequences[sequenceKey] = preprocessedChannels;
-    });
-
-    console.log("Preprocessed sequences:", preprocessedSequences); // Log preprocessed data
-}
-
-
-
-
-const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
-    const beatDuration = 60 / bpm; 
-
-    return Object.entries(sequences).map(([sequenceKey, sequenceValue]) => ({
+    const bpm = globalJsonData.projectBPM;
+    preprocessedSequences = Object.fromEntries(Object.entries(globalJsonData.projectSequences).map(([sequenceKey, channels]) => [
         sequenceKey,
-        channels: Object.entries(sequenceValue)
-            .filter(([, channel]) => channel.steps && channel.steps.length > 0)
-            .map(([channelKey, channel]) => ({
-                channelKey,
-                steps: channel.steps.map(step => ({
-                    step, 
-                    timing: step * beatDuration // 
-                })),
-                trim: trimTimes[`Channel ${channelKey}`]
-            }))
-    }));
-}
-// Simplified and optimized code structure
+        Object.fromEntries(Object.entries(channels).filter(([, channelData]) => channelData.steps?.length).map(([channelKey, { steps }]) => [
+            channelKey,
+            steps.map(step => ({ step, timing: step * (60 / bpm) }))
+        ]))
+    ]));
 
-const playSequenceStep = () => {
-    if (!preprocessedSequences || Object.keys(preprocessedSequences).length === 0) {
+    console.log("Preprocessed sequences:", preprocessedSequences);
+}
+
+function playSequenceStep(scheduleAheadTime) {
+    if (Object.keys(preprocessedSequences).length === 0) {
         console.error("Preprocessed sequence data is not available or empty.");
         return;
     }
 
     const sequenceKeys = Object.keys(preprocessedSequences);
-    currentSequence = currentSequence % sequenceKeys.length;  // Ensure this is the correct way to handle sequence looping.
+    currentSequence %= sequenceKeys.length;
+    const sequence = preprocessedSequences[sequenceKeys[currentSequence]];
 
-    const sequenceKey = sequenceKeys[currentSequence];
-    // Directly access the sequence's channels without assuming an intermediate 'channels' property.
-    const channels = preprocessedSequences[sequenceKey];
-
-    console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
-
-    Object.entries(channels).forEach(([channelKey, steps]) => {
-        steps.forEach(stepDetail => {
-            if (stepDetail.step === currentStep) {
-                playChannelStep(channelKey, {steps: steps}); // Corrected to pass a structure that playChannelStep expects
-            }
-        });
+    Object.entries(sequence).forEach(([channelKey, steps]) => {
+        const stepDetail = steps.find(detail => detail.step === currentStep);
+        if (stepDetail) {
+            const scheduledTime = audioCtx.currentTime + scheduleAheadTime;
+            playChannelStep(channelKey, stepDetail, scheduledTime);
+        }
     });
 
     incrementStepAndSequence(sequenceKeys.length);
-};
+}
 
+function playChannelStep(channelKey, stepDetail, scheduledTime) {
+    const bufferKey = `Channel ${parseInt(channelKey.slice(2)) + 1}`;
+    const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+    const trimTimes = globalTrimTimes[bufferKey];
 
-
-const playChannelStep = (channelKey, channel) => {
-    const stepDetail = channel.steps.find(stepDetail => stepDetail.step === currentStep);
-    if (stepDetail) {
-        // Adjust the key format to match how it's stored in globalAudioBuffers
-        // Assuming channelKey is like "ch15" and needs to be converted to "Channel 16"
-        const bufferKey = `Channel ${parseInt(channelKey.replace('ch', ''), 10) + 1}`;
-        const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
-        const trimTimes = globalTrimTimes[bufferKey];
-
-        if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
-            playBuffer(audioBufferObj.buffer, trimTimes, bufferKey);
-        } else {
-            console.error(`No audio buffer or trim times found for ${bufferKey}`);
-        }
+    if (!(audioBufferObj?.buffer && trimTimes)) {
+        console.error(`No audio buffer or trim times found for ${bufferKey}`);
+        return;
     }
-};
 
+    playBuffer(audioBufferObj.buffer, trimTimes, bufferKey, scheduledTime);
+}
 
-
-
-const playBuffer = (buffer, trimTimes, bufferKey) => {
+function playBuffer(buffer, {startTrim, endTrim}, bufferKey, scheduledTime) {
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
     source.connect(audioCtx.destination);
 
-    const duration = (trimTimes.endTrim - trimTimes.startTrim) * buffer.duration;
-    const startTime = trimTimes.startTrim * buffer.duration;
+    const startTime = startTrim * buffer.duration;
+    const duration = (endTrim - startTrim) * buffer.duration;
 
+    console.log(`Channel ${bufferKey}: Scheduled play at ${scheduledTime}, Start Time: ${startTime}, Duration: ${duration}`);
+    source.start(scheduledTime, startTime, duration);
 
-    // Assuming bufferKey is in the format "Channel X" where X is the channel number
-    const channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10); // Extract the channel number from bufferKey
-    const channelIndex = channelNumber - 1; // Convert to zero-based index
-    console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${duration}`);
-
-    source.start(audioCtx.currentTime, startTime, duration);
-
-    // Adjusting message format to align with visualizer expectations
+    const channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10);
     AudionalPlayerMessages.postMessage({
-        action: "activeStep", // Ensure the action property is used as per the listener
-        channelIndex: channelIndex, // Send the correct channelIndex
+        action: "activeStep",
+        channelIndex: channelNumber - 1,
         step: currentStep
     });
-};
+}
 
-
-const incrementStepAndSequence = (sequenceLength) => {
-    currentStep = (currentStep + 1) % 64; 
-    if (currentStep === 0 && currentSequence < sequenceLength - 1) {
-        currentSequence++;
+function incrementStepAndSequence(sequenceLength) {
+    currentStep = (currentStep + 1) % 64;
+    if (currentStep === 0) {
+        currentSequence = (currentSequence + 1) % sequenceLength;
     }
-};
+}
 
-const togglePlayback = async () => {
+async function togglePlayback() {
     console.log(`[togglePlayback] ${isPlaying ? 'Stopping' : 'Initiating'} playback...`);
-    
     isPlaying = !isPlaying;
 
     if (isPlaying) {
@@ -383,26 +329,31 @@ const togglePlayback = async () => {
         startPlaybackLoop();
     } else {
         await audioCtx.suspend();
-        currentSequence = 0;
-        currentStep = 0;
+        resetPlayback();
     }
-};
+}
 
-const startPlaybackLoop = () => {
+function resetPlayback() {
+    currentSequence = 0;
+    currentStep = 0;
+}
+
+function startPlaybackLoop() {
     if (!globalJsonData) return;
 
     const bpm = globalJsonData.projectBPM || 120;
     const stepDuration = 60 / bpm / 4;
+    nextNoteTime = audioCtx.currentTime;
 
-    const playLoop = () => {
-        if (!isPlaying) return;
-
-        playSequenceStep();
-        setTimeout(playLoop, stepDuration * 1000);
-    };
-
-    playLoop();
-};
+    (function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + 0.1) {
+            const scheduleAheadTime = nextNoteTime - audioCtx.currentTime;
+            playSequenceStep(scheduleAheadTime);
+            nextNoteTime += stepDuration;
+        }
+        requestAnimationFrame(scheduler);
+    })();
+}
 
 document.addEventListener('keydown', async (event) => {
     if (event.key === ' ') {
@@ -410,6 +361,26 @@ document.addEventListener('keydown', async (event) => {
         togglePlayback();
     }
 });
+
+
+
+// const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
+//     const beatDuration = 60 / bpm; 
+
+//     return Object.entries(sequences).map(([sequenceKey, sequenceValue]) => ({
+//         sequenceKey,
+//         channels: Object.entries(sequenceValue)
+//             .filter(([, channel]) => channel.steps && channel.steps.length > 0)
+//             .map(([channelKey, channel]) => ({
+//                 channelKey,
+//                 steps: channel.steps.map(step => ({
+//                     step, 
+//                     timing: step * beatDuration // 
+//                 })),
+//                 trim: trimTimes[`Channel ${channelKey}`]
+//             }))
+//     }));
+// }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,25 +448,6 @@ document.addEventListener('keydown', function(event) {
 });
 
 
-//  globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
-// and audioCtx is an instance of AudioContext
-
-function reverseAudioBuffer(audioBuffer) {
-    const numberOfChannels = audioBuffer.numberOfChannels;
-    let reversedBuffer = audioCtx.createBuffer(numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
-
-    for (let channel = 0; channel < numberOfChannels; channel++) {
-        const inputChannelData = audioBuffer.getChannelData(channel);
-        const reversedChannelData = reversedBuffer.getChannelData(channel);
-
-        for (let i = 0; i < audioBuffer.length; i++) {
-            reversedChannelData[i] = inputChannelData[audioBuffer.length - 1 - i];
-        }
-    }
-
-    return reversedBuffer;
-}
-
 function playAudioForChannel(channelNumber) {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume(); // Ensure the AudioContext is active
@@ -531,5 +483,29 @@ function playAudioForChannel(channelNumber) {
     } else {
         console.error('No audio buffer or trim times found for channel:', channelNumber);
     }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUDIO PROCESSING AND BUFFER MANIPULATION FUNCTIONS //
+
+//  globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
+// and audioCtx is an instance of AudioContext
+
+function reverseAudioBuffer(audioBuffer) {
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    let reversedBuffer = audioCtx.createBuffer(numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+        const inputChannelData = audioBuffer.getChannelData(channel);
+        const reversedChannelData = reversedBuffer.getChannelData(channel);
+
+        for (let i = 0; i < audioBuffer.length; i++) {
+            reversedChannelData[i] = inputChannelData[audioBuffer.length - 1 - i];
+        }
+    }
+
+    return reversedBuffer;
 }
 
