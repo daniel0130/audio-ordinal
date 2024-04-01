@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Structure Analyzer</title>
+    <link rel="stylesheet" href="visualiser/s.css">
+
+</head>
+<body>
+    <input type="file" id="jsonInput" accept=".json">
+    <pre id="output"></pre>
+    <button id="play">play</button>
+
+
+
+    <script>
+        let cci2 = 18; // Initial CCI2 value
+        const initialCCI2 = 21; // Store the initial value of cci2 to reset later
+        let seed = 9; // Seed value, can be adjusted for production purposes
+    
+        // Enhanced randomization function using a seed
+        function randomWithSeed(seedValue) {
+            const x = Math.sin(seedValue) * 10000;
+            return x - Math.floor(x);
+        }
+    
+        // Function to calculate cci2 based on channelIndex and seed, now with enhanced randomness
+        function calculateCCI2(channelIndex) {
+            const randomSeed = seed + channelIndex; // Combine seed with channelIndex for unique seed per channel
+            const randomMultiplier = randomWithSeed(randomSeed) * 100; // Generate a pseudo-random number [0, 100)
+            return Math.floor(randomMultiplier) + 1; // Ensure CCI2 is within 1-100 range
+        }
+    
+        const channelPlaybackListener = new BroadcastChannel('channel_playback');
+        channelPlaybackListener.onmessage = (event) => {
+            if (event.data.action === 'stop') {
+                cci2 = initialCCI2; // Reset to initial cci2 value when stop is received
+                console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}`);
+            } else {
+                const { channelIndex } = event.data;
+                cci2 = calculateCCI2(channelIndex); // Update the CCI2 with enhanced randomization
+                console.log(`Received channel playback: Channel ${channelIndex}. CCI2 updated to ${cci2} based on seed ${seed}.`);
+            }
+        };
+    
+        document.addEventListener('click', () => {
+        // Construct the message
+        const message = JSON.stringify({ command: 'play' });
+        
+        // Notify parent window, which should relay to the sequencer iframe
+        window.parent.postMessage(message, '*'); // Again, replace '*' with the parent's origin in production
+    });
+    
+    </script>
+        <script src="js/loadAndAnalyseAUDXFile2.js"></script>
+        <!-- <script src="js/audioLoader.js"></script> -->
+        <canvas id="cv"></canvas>
+        <script src="visualiser/g2.js"></script>
+        <script src="visualiser/c2.js"></script>
+        <script src="visualiser/d2.js"></script> 
+</body>
+</html>
+

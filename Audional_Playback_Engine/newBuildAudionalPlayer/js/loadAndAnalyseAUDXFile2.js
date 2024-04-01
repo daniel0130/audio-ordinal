@@ -225,7 +225,10 @@ function base64ToArrayBuffer(base64) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AUTOMATIC SEQUENCE PLAYBACK FUNCTIONS //
+// AUTOMATIC SEQUENCE PLAYBACK and MESSAGING FUNCTIONS //
+
+const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
+
 
 const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
     const beatDuration = 60 / bpm; 
@@ -244,127 +247,112 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
             }))
     }));
 }
+// Simplified and optimized code structure
 
 const playSequenceStep = () => {
-    if (!globalJsonData || !globalJsonData.projectSequences) {
-        console.error("Global sequence data is not available.");
-        AudionalPlayerMessages.postMessage({ type: "error", data: "Sequence data not available" });
+    if (!globalJsonData || !globalJsonData.projectSequences || Object.keys(globalJsonData.projectSequences).length === 0) {
+        console.error("Global sequence data is not available or empty.");
+        AudionalPlayerMessages.postMessage({ type: "error", data: "Sequence data not available or no sequences available for playback" });
         return;
     }
 
     const sequenceKeys = Object.keys(globalJsonData.projectSequences);
-    if (sequenceKeys.length === 0) {
-        console.error("No sequences available for playback.");
-        AudionalPlayerMessages.postMessage({ type: "error", data: "No sequences available for playback" });
-        return;
-    }
-
-    if (currentSequence >= sequenceKeys.length) {
-        console.log("All sequences have been played.");
-        currentSequence = 0; // Reset to loop back to the first sequence
-        AudionalPlayerMessages.postMessage({ type: "info", data: "Looping back to first sequence" });
-    }
+    currentSequence = currentSequence % sequenceKeys.length; // Loop back to the first sequence if over
 
     const sequenceKey = sequenceKeys[currentSequence];
     const sequence = globalJsonData.projectSequences[sequenceKey];
-
     console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
-    
+
     Object.entries(sequence).forEach(([channelKey, channel]) => {
-        const channelIndex = parseInt(channelKey.replace('ch', ''), 10); // Adjusted to correctly process indexes
-        const bufferKey = `Channel ${channelIndex + 1}`; // Ensuring correct mapping to channel numbers
-
-        if (channel.steps.includes(currentStep) && !channel.mute) {
-            const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
-            const trimTimes = globalTrimTimes[bufferKey]; // Accessing the correct trim times
-
-            if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
-                const source = audioCtx.createBufferSource();
-                source.buffer = audioBufferObj.buffer;
-                source.connect(audioCtx.destination);
-
-                // Precise handling of trim times based on buffer duration
-                const duration = (trimTimes.endTrim - trimTimes.startTrim) * source.buffer.duration;
-                const startTime = trimTimes.startTrim * source.buffer.duration;
-
-                console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${duration}`);
-                source.start(audioCtx.currentTime, startTime, duration);
-
-                // Broadcasting the correct message with bufferKey instead of channel index
-                AudionalPlayerMessages.postMessage({
-                    type: "activeStep", 
-                    data: { channel: bufferKey, step: currentStep }
-                });
-            } else {
-                console.error(`No audio buffer or trim times found for ${bufferKey}`);
-            }
-        }
+        playChannelStep(channelKey, channel);
     });
 
-    // Handling sequence and step incrementation
-    currentStep = (currentStep + 1) % 64; // Assuming 64 steps per sequence
-    if (currentStep === 0 && currentSequence < sequenceKeys.length - 1) {
-        currentSequence++; // Move to the next sequence after the current one
+    // Increment and loop step, sequence
+    incrementStepAndSequence(sequenceKeys.length);
+};
+
+const playChannelStep = (channelKey, channel) => {
+    const channelIndex = parseInt(channelKey.replace('ch', ''), 10); 
+    const bufferKey = `Channel ${channelIndex + 1}`;
+
+    if (channel.steps.includes(currentStep) && !channel.mute) {
+        const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+        const trimTimes = globalTrimTimes[bufferKey];
+        if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
+            playBuffer(audioBufferObj.buffer, trimTimes, bufferKey);
+        } else {
+            console.error(`No audio buffer or trim times found for ${bufferKey}`);
+        }
     }
 };
 
+const playBuffer = (buffer, trimTimes, bufferKey) => {
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+
+    const duration = (trimTimes.endTrim - trimTimes.startTrim) * buffer.duration;
+    const startTime = trimTimes.startTrim * buffer.duration;
+
+
+    // Assuming bufferKey is in the format "Channel X" where X is the channel number
+    const channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10); // Extract the channel number from bufferKey
+    const channelIndex = channelNumber - 1; // Convert to zero-based index
+    console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${duration}`);
+
+    source.start(audioCtx.currentTime, startTime, duration);
+
+    // Adjusting message format to align with visualizer expectations
+    AudionalPlayerMessages.postMessage({
+        action: "activeStep", // Ensure the action property is used as per the listener
+        channelIndex: channelIndex, // Send the correct channelIndex
+        step: currentStep
+    });
+};
+
+
+const incrementStepAndSequence = (sequenceLength) => {
+    currentStep = (currentStep + 1) % 64; 
+    if (currentStep === 0 && currentSequence < sequenceLength - 1) {
+        currentSequence++;
+    }
+};
 
 const togglePlayback = async () => {
-    console.log('[togglePlayback] Called');
+    console.log(`[togglePlayback] ${isPlaying ? 'Stopping' : 'Initiating'} playback...`);
+    
+    isPlaying = !isPlaying;
 
-    if (!isPlaying) {
-        console.log('[togglePlayback] Initiating playback...');
-        isPlaying = true; // Set the playback flag to true
-        
-        if (audioCtx.state === 'suspended') {
-            await audioCtx.resume(); // Ensure the AudioContext is active
-            console.log('[togglePlayback] AudioContext resumed.');
-        }
-
-        startPlaybackLoop(); // Initiate the playback loop
-        console.log('[togglePlayback] Playback initiated.');
+    if (isPlaying) {
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        startPlaybackLoop();
     } else {
-        console.log('[togglePlayback] Stopping playback...');
-        isPlaying = false; // Set the playback flag to false to stop the loop
-
-        // Add logic to stop any currently playing sources if necessary
-        // e.g., activeSources.forEach(source => source.stop());
-
-        await audioCtx.suspend(); // Optionally suspend the AudioContext to save resources
-        console.log('[togglePlayback] Playback stopped.');
-
-        // Reset sequence number and step number
+        await audioCtx.suspend();
         currentSequence = 0;
         currentStep = 0;
     }
 };
 
-
-// Adjusted startPlaybackLoop to respect the isPlaying flag
 const startPlaybackLoop = () => {
-    const bpm = globalJsonData ? globalJsonData.projectBPM : 120;
+    if (!globalJsonData) return;
+
+    const bpm = globalJsonData.projectBPM || 120;
     const stepDuration = 60 / bpm / 4;
 
-    // Define the loop function
     const playLoop = () => {
-        if (!isPlaying) 
-        return; // Exit the loop if playback has been stopped
+        if (!isPlaying) return;
 
-        playSequenceStep(); // Play the current step
-
-        // Schedule the next execution of the loop
+        playSequenceStep();
         setTimeout(playLoop, stepDuration * 1000);
     };
 
-    playLoop(); // Start the loop
+    playLoop();
 };
 
-// A function to start automatic sequence playback using the spacebar
-document.addEventListener('keydown', async function(event) {
-    console.log('Key pressed:', event.key);
+document.addEventListener('keydown', async (event) => {
     if (event.key === ' ') {
-        event.preventDefault(); // Prevent any default action triggered by the spacebar
-        togglePlayback(); // This now ensures audio context is resumed if suspended.
+        event.preventDefault();
+        togglePlayback();
     }
 });
 
@@ -372,36 +360,35 @@ document.addEventListener('keydown', async function(event) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUDIONAL PLAYER BROADCAST MESSAGE MODULE //
 
-const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
 
-function emitMessage(type, data) {
-    AudionalPlayerMessages.postMessage({ type: type, data: data });
-}
+// function emitMessage(type, data) {
+//     AudionalPlayerMessages.postMessage({ type: type, data: data });
+// }
 
-function emitBar(bar) {
-    emitMessage("bar", { bar: bar });
-}
+// function emitBar(bar) {
+//     emitMessage("bar", { bar: bar });
+// }
 
-function emitBeat(beat, bar) {
-    emitMessage("beat", { beat: beat, bar: bar });
-}
+// function emitBeat(beat, bar) {
+//     emitMessage("beat", { beat: beat, bar: bar });
+// }
 
-function emitPause() {
-    emitMessage("pause", {});
-}
+// function emitPause() {
+//     emitMessage("pause", {});
+// }
 
-function emitResume() {
-    emitMessage("resume", {});
-}
+// function emitResume() {
+//     emitMessage("resume", {});
+// }
 
-function emitStop() {
-    emitMessage("stop", {});
-}
+// function emitStop() {
+//     emitMessage("stop", {});
+// }
 
-function emitPlay() {
-    emitMessage("play", {});
-    emitMessage("beat", { beat: beatCount, bar: barCount });
-}
+// function emitPlay() {
+//     emitMessage("play", {});
+//     emitMessage("beat", { beat: beatCount, bar: barCount });
+// }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -491,11 +478,3 @@ function playAudioForChannel(channelNumber) {
     }
 }
 
-// // Attach keydown event listener to the document
-// document.addEventListener('keydown', function(event) {
-//     const key = event.key.toLowerCase(); // Normalize key to lowercase to match the map
-//     if (keyChannelMap.hasOwnProperty(key)) {
-//         const channel = keyChannelMap[key];
-//         playAudioForChannel(channel);
-//     }
-// });
