@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Interface</title>
+    <style>
+        .iframe-container {
+            display: flex;
+        }
+
+        .iframe-container iframe {
+            flex: 1;
+            border: none;
+            height: 600px; /* Adjust height as needed */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- iframe to embed the sequencer -->
+    <div class="iframe-container">
+        <!-- iframe to embed the sequencer -->
+        <iframe id="sequencerFrame" src="index.html" style="width: 50%;"></iframe>
+        <!-- <iframe id="visualizerIframe" src="2ndCollection/index2.html" style="position: relative; width: 50%; height: 100%;"></iframe> -->
+    </div>
+
+    <!-- <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const sequencerFrame = document.getElementById('sequencerFrame');
+            sequencerFrame.onload = () => {
+                // Send a message to the sequencer iframe
+                sequencerFrame.contentWindow.postMessage({ runningInIframe: true }, '*');
+            };
+        });
+    </script> -->
+    
+</body>
+</html>

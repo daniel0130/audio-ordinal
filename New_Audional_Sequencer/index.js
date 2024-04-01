@@ -151,7 +151,8 @@ if (playButton && stopButton) {
         // }
         
         // Inside your playButton event listener, after the play logic
-        playButton.addEventListener('click', () => {            const continuousPlayCheckbox = document.getElementById('continuous-play');
+        playButton.addEventListener('click', () => {            
+            const continuousPlayCheckbox = document.getElementById('continuous-play');
             let isContinuousPlay = continuousPlayCheckbox.checked;
 
             if (!isPlaying) {

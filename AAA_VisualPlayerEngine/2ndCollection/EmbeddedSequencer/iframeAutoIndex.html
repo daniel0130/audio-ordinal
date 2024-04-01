@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Interface</title>
+    <style>
+        .iframe-container {
+            display: flex;
+        }
+
+        .iframe-container iframe {
+            flex: 1;
+            border: none;
+            height: 600px; /* Adjust height as needed */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- iframe to embed the sequencer -->
+    <div class="iframe-container">
+        <!-- iframe to embed the sequencer -->
+        <iframe id="sequencerFrame" src="indexORIGINAL.html" style="width: 50%;"></iframe>
+        <!-- <iframe id="visualizerIframe" src="2ndCollection/index2.html" style="position: relative; width: 50%; height: 100%;"></iframe> -->
+    </div>
+
+    <!-- <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const sequencerFrame = document.getElementById('sequencerFrame');
+            sequencerFrame.onload = () => {
+                // Send a message to the sequencer iframe
+                sequencerFrame.contentWindow.postMessage({ runningInIframe: true }, '*');
+            };
+        });
+    </script> -->
+    <script>
+
+// if (window.self !== window.top) { // Check if in an iframe
+//     let presetLoaded = false; // Flag to track if the preset file has been loaded
+
+//     // Add a global click listener that toggles playback
+//     window.addEventListener("click", async (event) => {
+//         event.stopPropagation(); // Prevent event propagation
+
+//         console.log("[playbackDebug] Overlay clicked. State of audioContext:", audioContext.state);
+
+//         if (!presetLoaded) {
+//             try {
+//                 const response = await fetch('BasedSong1.json'); // Adjust the path as needed
+//                 const json = await response.json();
+//                 console.log("[Load Process] Settings loaded:", json);
+
+//                 // Assuming window.unifiedSequencerSettings exists and is ready to use
+//                 window.unifiedSequencerSettings.loadSettings(json);
+//                 console.log("[Load Process] Settings applied to the sequencer");
+
+//                 // Process channel URLs for audio loading
+//                 if (json.channelURLs && Array.isArray(json.channelURLs)) {
+//                     await processChannelURLs(json.channelURLs);
+//                 }
+
+//                 presetLoaded = true; // Mark the preset as loaded
+
+//             } catch (error) {
+//                 console.error("[Load Process] Error loading or applying settings:", error);
+//             }
+//         }
+
+//         if (audioContext && audioContext.state === 'suspended') {
+//             await audioContext.resume();
+//             console.log("[AudioContext] AudioContext resumed.");
+//         }
+
+//         if (isPlaying) {
+//             stopScheduler();
+//             emitStop(); // Assume this function signals the stop event
+//             isPlaying = false;
+//             console.log("[Playback] Playback stopped.");
+//         } else {
+//             startScheduler();
+//             emitPlay(); // Assume this function signals the play event
+//             isPlaying = true;
+//             console.log("[Playback] Playback started.");
+//         }
+//     }, true); // Use capture phase to ensure the event is handled first
+// }
+
+</script>> 
+</body>
+</html>

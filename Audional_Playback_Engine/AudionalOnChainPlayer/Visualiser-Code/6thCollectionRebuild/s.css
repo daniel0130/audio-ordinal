@@ -1,0 +1,35 @@
+body, #cv {
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: right;
+    height: 100vh;
+    margin: 0;
+}
+
+#cv {
+    background: black;
+}
+
+div {
+    margin-bottom: 10px;
+}
+
+label {
+    display: block; /* Change to block display */
+    width: 100%; /* Occupy full width of the container */
+    margin-bottom: 5px; /* Adjust spacing as needed */
+    color: white;
+}
+
+input[type="number"] {
+    opacity: 0.3;
+    width: calc(50px); /* Set width to occupy remaining space within the container */
+    padding: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    margin-bottom: 10px; /* Adjust spacing as needed */
+    position: right;
+}
+
+
