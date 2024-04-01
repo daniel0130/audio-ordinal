@@ -1,0 +1,411 @@
+// loadAndAnalyseAUDXFile2.js
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GLOBAL VARIABLES //
+
+var globalJsonData = null;
+let bpm = 0;
+let activeSources = []; // Keeps track of active source nodes for stopping them
+var globalAudioBuffers = [];
+var globalTrimTimes = {}; // This will hold trim times for each channel
+let currentStep = 0; // Tracks the current step within the sequence
+let currentSequenceIndex = 0; // New variable to track the index of the current sequence
+let isPlaying = false; // Tracks playback state
+let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
+
+
+// Initialize the AudioContext at a scope accessible by playAudioForChannel
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// JSON FILE LOADING AND ANALYSIS //
+
+// Updated JSON file loading and analysis to set globalJsonData
+document.getElementById('jsonInput').addEventListener('change', ({target}) => {
+    const {files} = target;
+    const file = files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = ({target}) => {
+            // Parse and store JSON data in global scope
+            globalJsonData = JSON.parse(target.result);
+
+            const stats = {
+                channelsWithUrls: 0,
+                sequencesCount: 0,
+                activeStepsPerSequence: {},
+                activeChannelsPerSequence: {},
+                types: {}
+            };
+
+            analyzeJsonStructure(globalJsonData, '', stats);
+            const playbackData = prepareForPlayback(globalJsonData, stats);
+            displayOutput(playbackData);
+            fetchAndProcessAudioData(playbackData.channelURLs); // Process audio data
+        };
+        reader.readAsText(file);
+    }
+});
+
+const analyzeJsonStructure = (json, parentKey, stats, path = '') => {
+    if (json.projectSequences && typeof json.projectSequences === 'object') {
+        Object.entries(json.projectSequences).forEach(([seqKey, sequence]) => {
+            stats.activeStepsPerSequence[seqKey] = 0;
+            stats.activeChannelsPerSequence[seqKey] = [];
+            Object.entries(sequence).forEach(([chKey, channel]) => {
+                if (channel.steps && Array.isArray(channel.steps) && channel.steps.length > 0) {
+                    stats.activeStepsPerSequence[seqKey] += channel.steps.length;
+                    stats.activeChannelsPerSequence[seqKey].push(chKey);
+                }
+            });
+        });
+    }
+
+    Object.entries(json).forEach(([key, value]) => {
+        if (key !== 'projectSequences') {
+            const type = Array.isArray(value) ? 'array' : typeof value;
+            incrementTypeCount(stats.types, type);
+            if (type === 'object' || type === 'array') {
+                analyzeJsonStructure(value, key, stats, path ? `${path}.${key}` : key);
+            }
+        }
+    });
+};
+
+const incrementTypeCount = (types, type) => {
+    types[type] = (types[type] || 0) + 1;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// JSON FILE PREPARATION FOR PLAYBACK //
+
+function prepareForPlayback(json, stats) {
+    const { channelURLs, trimSettings, projectSequences, projectName, projectBPM } = json;
+
+    // Update the global bpm variable with the projectBPM from the JSON
+    bpm = projectBPM; // Ensure this is done before any use of bpm in your scheduling
+
+    const trimTimes = trimSettings.map((trim, index) => ({
+        channel: `Channel ${index + 1}`,
+        startTrim: parseFloat(trim.startSliderValue),
+        endTrim: parseFloat(trim.endSliderValue)
+    }));
+
+    const formattedTrimTimes = trimTimes.map(trim => `${trim.channel}: StartTrim=${trim.startTrim}, EndTrim=${trim.endTrim}`);
+
+    // Populate globalTrimTimes with start and end trim times
+    trimSettings.forEach((trim, index) => {
+        const channel = `Channel ${index + 1}`;
+        globalTrimTimes[channel] = {
+            startTrim: parseFloat(trim.startSliderValue) / 100, // Convert to percentage
+            endTrim: parseFloat(trim.endSliderValue) / 100 // Convert to percentage
+        };
+    });
+
+    const formattedSequences = Object.entries(projectSequences).reduce((acc, [sequenceKey, sequenceValue]) => {
+        acc[sequenceKey] = Object.entries(sequenceValue).map(([channelKey, channel]) => {
+            const activeSteps = channel.steps.length > 0 ? channel.steps.join(', ') : 'No active steps';
+            return `${channelKey}: [${activeSteps}]`;
+        });
+        return acc;
+    }, {});
+
+    return {
+        projectName,
+        bpm: projectBPM,
+        channels: channelURLs.length,
+        channelURLs,
+        trimTimes: formattedTrimTimes,
+        stats: {
+            channelsWithUrls: stats.channelsWithUrls,
+            sequencesCount: stats.sequencesCount,
+            activeStepsPerSequence: stats.activeStepsPerSequence,
+            activeChannelsPerSequence: stats.activeChannelsPerSequence,
+        },
+        sequences: formattedSequences
+    };
+}
+
+function displayOutput(playbackData) {
+    const replacer = (key, value) => {
+        if (Array.isArray(value)) {
+            const isNumberArray = value.every(item => typeof item === 'number');
+            const isChannelArray = value.every(item => typeof item === 'string' && item.startsWith('ch'));
+            if (isNumberArray || isChannelArray) {
+                return `[${value.join(', ')}]`;
+            }
+        }
+        return value;
+    };
+
+    const formattedOutput = JSON.stringify(playbackData, replacer, 2);
+    document.getElementById('output').textContent = formattedOutput;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUDIO DATA FETCHING AND PROCESSING //
+
+// Use async/await with fetch API for cleaner syntax
+async function fetchAndProcessAudioData(urls) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Use Promise.all to wait for all fetches to complete
+    await Promise.all(urls.map(async (url, index) => {
+        const channelNumber = index + 1; // Assuming channel numbering starts at 1
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch from URL: ${url}, Status: ${response.status}`);
+            const contentType = response.headers.get('Content-Type');
+
+            // Process direct audio formats (wav, mp3)
+            if (/audio\/wav/.test(contentType) || /audio\/mpeg/.test(contentType)) {
+                const arrayBuffer = await response.arrayBuffer();
+                const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                globalAudioBuffers.push({ buffer: decodedBuffer, channel: `Channel ${channelNumber}` });
+                console.log(`AudioBuffer stored for direct audio content at index: ${index}, Channel: ${channelNumber}`);
+            } else {
+                // Handle non-direct audio formats (e.g., JSON or HTML with base64 encoded data)
+                const text = await response.text();
+                let base64AudioData;
+
+                if (/application\/json/.test(contentType)) {
+                    const json = JSON.parse(text);
+                    base64AudioData = json.audioData;
+                } else if (/text\/html/.test(contentType)) {
+                    base64AudioData = extractBase64FromHTML(text);
+                    console.log(`[Channel ${channelNumber}] Extracted base64 audio data from HTML.`);
+                }
+
+                if (base64AudioData) {
+                    const audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]);
+                    const decodedBuffer = await audioCtx.decodeAudioData(audioData);
+                    globalAudioBuffers.push({ buffer: decodedBuffer, channel: `Channel ${channelNumber}` });
+                    console.log(`AudioBuffer stored for URL at index: ${index}, Channel: ${channelNumber}`);
+                }
+            }
+        } catch (error) {
+            console.error(`Error fetching or decoding audio for Channel ${channelNumber}:`, error);
+        }
+    }));
+}
+
+function extractBase64FromHTML(htmlText) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        const audioSource = doc.querySelector("audio[data-audionalSampleName] source");
+
+        if (audioSource) {
+            const src = audioSource.getAttribute("src");
+            if (/^data:audio\/(wav|mp3);base64,/.test(src.toLowerCase())) {
+                console.log("[importHTMLAudioData] Extracted base64 audio data.");
+                return src;
+            } else {
+                console.error("[importHTMLAudioData] Audio data does not start with expected base64 prefix.");
+            }
+        } else {
+            console.error("[importHTMLAudioData] Could not find the audio source element in the HTML content.");
+        }
+    } catch (error) {
+        console.error("[importHTMLAudioData] Error parsing HTML content: ", error);
+    }
+
+    return null;
+}
+
+// Helper function to convert a base64 string to an ArrayBuffer
+function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    bytes.forEach((_, i) => bytes[i] = binaryString.charCodeAt(i));
+    return bytes.buffer;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AUTOMATIC SEQUENCE PLAYBACK FUNCTIONS //
+
+const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
+    const beatDuration = 60 / bpm; 
+
+    return Object.entries(sequences).map(([sequenceKey, sequenceValue]) => ({
+        sequenceKey,
+        channels: Object.entries(sequenceValue)
+            .filter(([, channel]) => channel.steps && channel.steps.length > 0)
+            .map(([channelKey, channel]) => ({
+                channelKey,
+                steps: channel.steps.map(step => ({
+                    step, 
+                    timing: step * beatDuration // 
+                })),
+                trim: trimTimes[`Channel ${channelKey}`]
+            }))
+    }));
+}
+
+const playSequenceStep = () => {
+    if (!globalJsonData || !globalJsonData.projectSequences) {
+        console.error("Global sequence data is not available.");
+        return;
+    }
+
+    const sequenceKeys = Object.keys(globalJsonData.projectSequences);
+    if (sequenceKeys.length === 0) {
+        console.error("No sequences available for playback.");
+        return;
+    }
+
+    if (currentSequenceIndex >= sequenceKeys.length) {
+        console.log("All sequences have been played.");
+        // Loop back to the first sequence at the end of the last sequence
+        currentSequenceIndex = 0; // Loop back to the first sequence
+    }
+
+    const sequenceKey = sequenceKeys[currentSequenceIndex];
+    const sequence = globalJsonData.projectSequences[sequenceKey];
+    const channels = Object.keys(sequence);
+
+    console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
+
+    channels.forEach(channelKey => {
+        const channelIndex = parseInt(channelKey.replace('ch', '')); // Convert 'chX' to a zero-based index
+        const channel = sequence[channelKey];
+
+        if (channel.steps.includes(currentStep) && !channel.mute) {
+            const bufferKey = `Channel ${channelIndex + 1}`; // Map 'ch0' to 'Channel 1', etc.
+            const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
+            const trimTimes = globalTrimTimes[bufferKey]; // Fetching the trim times for this channel
+
+            if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
+                const source = audioCtx.createBufferSource();
+                source.buffer = audioBufferObj.buffer;
+                source.connect(audioCtx.destination);
+
+                // Apply the trim times to calculate the correct start and duration
+                const startTime = trimTimes.startTrim * source.buffer.duration;
+                const endTime = trimTimes.endTrim * source.buffer.duration;
+                const playDuration = endTime - startTime;
+
+                console.log(`Channel ${bufferKey}: Playing step ${currentStep}, Start Time: ${startTime}, Duration: ${playDuration}`);
+                source.start(audioCtx.currentTime, startTime, playDuration);
+            } else {
+                console.error(`No audio buffer or trim times found for channel ${bufferKey}`);
+            }
+        }
+    });
+
+    // Check if we've reached the end of the current sequence
+    if (currentStep >= 63) { 
+        currentStep = 0; 
+        currentSequenceIndex++;
+    } else {
+        currentStep++; // Increment step within the current sequence
+    }
+};
+
+const togglePlayback = async () => {
+    console.log('[togglePlayback] Called');
+
+    if (!isPlaying) {
+        console.log('[togglePlayback] Initiating playback...');
+        isPlaying = true; // Set the playback flag to true
+        
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume(); // Ensure the AudioContext is active
+            console.log('[togglePlayback] AudioContext resumed.');
+        }
+
+        startPlaybackLoop(); // Initiate the playback loop
+        console.log('[togglePlayback] Playback initiated.');
+    } else {
+        console.log('[togglePlayback] Stopping playback...');
+        isPlaying = false; // Set the playback flag to false to stop the loop
+
+        // Add logic to stop any currently playing sources if necessary
+        // e.g., activeSources.forEach(source => source.stop());
+
+        await audioCtx.suspend(); // Optionally suspend the AudioContext to save resources
+        console.log('[togglePlayback] Playback stopped.');
+
+        // Reset sequence number and step number
+        currentSequenceIndex = 0;
+        currentStep = 0;
+    }
+};
+
+
+// Adjusted startPlaybackLoop to respect the isPlaying flag
+const startPlaybackLoop = () => {
+    const bpm = globalJsonData ? globalJsonData.projectBPM : 120;
+    const stepDuration = 60 / bpm / 4;
+
+    // Define the loop function
+    const playLoop = () => {
+        if (!isPlaying) 
+        return; // Exit the loop if playback has been stopped
+
+        playSequenceStep(); // Play the current step
+
+        // Schedule the next execution of the loop
+        setTimeout(playLoop, stepDuration * 1000);
+    };
+
+    playLoop(); // Start the loop
+};
+
+// A function to start automatic sequence playback using the spacebar
+document.addEventListener('keydown', async function(event) {
+    console.log('Key pressed:', event.key);
+    if (event.key === ' ') {
+        event.preventDefault(); // Prevent any default action triggered by the spacebar
+        togglePlayback(); // This now ensures audio context is resumed if suspended.
+    }
+});
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// KEY MAPPING AND USER CONTROLLED PLAYBACK FUNCTIONS //
+
+// Key to channel mapping
+const keyChannelMap = {
+    '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
+    '6': 6, '7': 7, '8': 8, '9': 9, '0': 10,
+    'q': 11, 'w': 12, 'e': 13, 'r': 14, 't': 15, 'y': 16
+};
+
+// Attach keydown event listener to the document
+document.addEventListener('keydown', function(event) {
+    const key = event.key.toLowerCase(); // Normalize key to lowercase to match the map
+    if (keyChannelMap.hasOwnProperty(key)) {
+        const channel = keyChannelMap[key];
+        playAudioForChannel(channel);
+    }
+});
+
+//  globalAudioBuffers is an array of objects with 'buffer' and 'channel' properties
+// and audioCtx is an instance of AudioContext
+
+function playAudioForChannel(channelNumber) {
+    console.log('Playing audio for channel:', channelNumber);
+
+    const channelName = `Channel ${channelNumber}`;
+    const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === channelName);
+    const trimTimes = globalTrimTimes[channelName];
+
+    if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBufferObj.buffer;
+
+        const duration = source.buffer.duration;
+        const startTime = duration * trimTimes.startTrim;
+        const endTime = duration * trimTimes.endTrim;
+        const playDuration = endTime - startTime;
+
+        source.connect(audioCtx.destination);
+
+        // Start playing the sound at the calculated start time and for the calculated duration
+        source.start(0, startTime, playDuration);
+    } else {
+        console.error('No audio buffer or trim times found for channel:', channelNumber);
+    }
+}

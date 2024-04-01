@@ -1,0 +1,80 @@
+/* --- variables-media-queries.css --- */
+:root {
+    --scale-factor: 1vw; /* This can be adjusted to scale with viewport width */
+    --main-bg-color: #000;
+    --secondary-bg-color: #333;
+    --primary-color: #fff;
+    --accent-color: #f00;
+    --button-dimension: 5vw; /* Using viewport width for relative sizing */
+    --control-button-dimension: 18px; /* Fixed size */
+    --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;
+    --default-font: Arial, sans-serif;
+}
+
+.channel {
+    width: 100%; /* Full width on small screens */
+}
+
+
+/* --- Media Queries for Responsive Design --- */
+/* @media (max-width: 1200px) {
+    :root {
+        --button-dimension: 4.5vw;
+        --control-button-dimension: 1.6vw;
+        --step-button-max-width: 1.5vw;
+        --step-button-max-height: 1.5vw;
+    }
+
+    #main-container {
+        transform: scale(0.9);
+    }
+}
+
+@media (max-width: 1000px) {
+    :root {
+        --button-dimension: 4vw;
+        --control-button-dimension: 1.4vw;
+        --step-button-max-width: 1.2vw;
+        --step-button-max-height: 1.2vw;
+    }
+
+    #main-container {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 800px) {
+    :root {
+        --button-dimension: 3.5vw;
+        --control-button-dimension: 1.2vw;
+        --step-button-max-width: 1vw;
+        --step-button-max-height: 1vw;
+    }
+
+    #main-container {
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --button-dimension: 3vw;
+        --control-button-dimension: 1vw;
+        --step-button-max-width: 0.8vw;
+        --step-button-max-height: 0.8vw;
+    }
+
+    /* Add media queries for smaller screens */
+/* @media (max-width: 600px) {
+    .load-sample-button {
+        font-size: 0.7em; /* Smaller font size for smaller screens */
+/*        min-width: 15%; /* Adjust min-width for smaller screens */
+/*     }
+/* }
+/* 
+/*     #main-container {
+/*         transform: scale(0.6);
+/*     }*/
+ 
+   
+ 

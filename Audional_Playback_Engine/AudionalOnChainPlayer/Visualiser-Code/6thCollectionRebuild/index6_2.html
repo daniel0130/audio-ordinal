@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BOT 1t5</title>
+    <link rel="stylesheet" href="s.css">
+</head>
+<body>
+    <canvas id="cv"></canvas>
+    <div class="inputs-container">
+        <!-- Array Index Control -->
+        <div>
+            <label for="arrayIndex">Array Index:</label>
+            <input id="arrayIndex" type="number" min="0" max="50" value="0">
+        </div>
+        
+        <!-- Color Settings Control -->
+        <div>
+            <label for="colorIndex">Color Settings Index:</label>
+            <input id="colorIndex" type="number" min="0" value="0">
+        </div>
+        
+        <!-- Size Control -->
+        <!-- <div>
+            <label for="sizeControl">Size:</label>
+            <input type="range" id="sizeControl" min="0.5" max="5" step="0.1" value="3">
+        </div> -->
+        
+        <!-- Rotation Control -->
+        <!-- <div>
+            <label for="rotationControl">Rotation Angle:</label>
+            <input type="range" id="rotationControl" min="0" max="360" step="1" value="0">
+        </div> -->
+        
+        <!-- Rotation Speed Control -->
+        <!-- <div>
+            <label for="rotationSpeedControl">Rotation Speed:</label>
+            <input type="range" id="rotationSpeedControl" min="1" max="10" step="0.5" value="5">
+        </div> -->
+        
+        <!-- Rotation Direction Control -->
+        <!-- <div>
+            <label for="rotationDirectionSwitch">Rotation Direction (Check for CW):</label>
+            <input type="checkbox" id="rotationDirectionSwitch">
+        </div> -->
+        
+        <!-- Color Control -->
+        <!-- <div>
+            <label for="colorControl">Color:</label>
+            <input type="color" id="colorControl" value="#ff0000">
+        </div> -->
+        
+        <!-- Segmentation Control -->
+        <!-- <div>
+            <label for="segmentationControl">Segmentation:</label>
+            <input type="number" id="segmentationControl" min="10" max="100" step="1" value="30">
+        </div> -->
+        
+        <!-- Effect Buttons -->
+        <!-- <button id="pulsateButton">Pulsate Effect</button>
+        <button id="rotateButton">Rotate Effect</button>
+        <button id="morphGeometryButton">Morph Geometry</button>
+        <button id="expandContractButton">Expand/Contract</button>
+        <button id="oscillatePositionButton">Oscillate Position</button>
+        <button id="colorShiftButton">Color Shift</button> -->
+    </div>
+    
+    
+    <!-- Corrected script loading order with new scripts included -->
+    <script src="geometry.js"></script>
+    <!-- <script src="geoEffects.js"></script> -->
+    <!-- <script src="geoEffectsController.js"></script> -->
+    <script src="drawObjects.js"></script>
+    <script src="colorEffects.js"></script>
+    
+
+</body>
+</html>

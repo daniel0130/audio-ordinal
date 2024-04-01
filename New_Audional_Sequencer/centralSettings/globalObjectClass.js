@@ -9,11 +9,13 @@ class UnifiedSequencerSettings {
                 projectName: 'New Audx Project', // Set the project name placeholder
                 projectBPM: 120,
                 currentSequence: 0, // Initialize with a default value
-                projectURLs: new Array(16).fill(''), 
+                channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
+
+                // projectURLs: new Array(16).fill(''), 
                 trimSettings: Array.from({ length: 16 }, () => ({
-                    startSliderValue: 0.01,
-                    endSliderValue: 100.00,
-                    totalSampleDuration: 0
+                    start: 0.01,
+                    end: 100.00,
+                    length: 0
                 })),
                 projectChannelNames: new Array(16).fill(''), // Placeholder for channel names
                 projectSequences: this.initializeSequences(16, 16, 64) // Adjust dimensions as needed
@@ -27,6 +29,144 @@ class UnifiedSequencerSettings {
             this.clearMasterSettings = this.clearMasterSettings.bind(this);
         }
 
+        exportSettings() {
+            console.log("exportSettings entered");
+        
+            // Clone the masterSettings to avoid mutating the original object
+            const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
+        
+            // Serialize step settings
+            for (let sequenceKey in settingsClone.projectSequences) {
+                const sequence = settingsClone.projectSequences[sequenceKey];
+                for (let channelKey in sequence) {
+                    const channel = sequence[channelKey];
+                    const stepIndexes = [];
+                    channel.steps.forEach((step, index) => {
+                        if (step) {
+                            // Store index + 1 to match 1-64 numbering, instead of 0-63
+                            stepIndexes.push(index + 1);
+                        }
+                    });
+                    // Replace steps array with just the indexes of 'true' values
+                    channel.steps = stepIndexes;
+                }
+            }
+        
+            // Convert the modified settings to a JSON string for export
+            const exportedSettings = JSON.stringify(settingsClone);
+            console.log("[exportSettings] Exported Settings:", exportedSettings);
+            return exportedSettings;
+        }
+        
+        
+            isValidIndex(index) {
+                    console.log("isValidIndex entered");
+                return index >= 0 && index < 16; // Directly checking against 16
+            }
+    
+        loadSettings(jsonSettings) {
+            console.log("[internalPresetDebug] loadSettings entered");
+            try {
+                console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
+                const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
+                console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
+        
+                // Use the formatURL function from formattingHelpers.js for URL formatting
+                // Ensure formatURL is accessible here, either by importing or defining it in the same scope
+        
+                // Process channelURLs and projectURLs with proper URL formatting
+                this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ?
+                    parsedSettings.channelURLs.map(url => formatURL(url)) : [];
+        
+                this.settings.masterSettings.projectName = parsedSettings.projectName;
+                this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+        
+                // this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
+                //     parsedSettings.projectURLs.map(url => formatURL(url)) : [];
+        
+                this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
+                this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
+        
+                console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
+        
+                // Deserialize projectSequences step settings
+                if (parsedSettings.projectSequences) {
+                    for (let sequenceKey in parsedSettings.projectSequences) {
+                        let sequence = parsedSettings.projectSequences[sequenceKey];
+                        for (let channelKey in sequence) {
+                            let channel = sequence[channelKey];
+                            let steps = new Array(64).fill(false); // Assuming 64 steps per channel
+                            channel.steps.forEach(stepIndex => {
+                                if (stepIndex >= 1 && stepIndex <= 64) {
+                                    steps[stepIndex - 1] = true;
+                                }
+                            });
+                            channel.steps = steps;
+                        }
+                    }
+                }
+    
+                this.settings.masterSettings = parsedSettings;
+    
+                console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
+    
+        
+                this.updateAllLoadSampleButtonTexts();
+                this.notifyObservers();
+        
+            } catch (error) {
+                console.error('[internalPresetDebug] Error loading settings:', error);
+            }
+        }
+        
+           
+
+        // Method to add a URL to the channelURLs array
+        addChannelURL(index, url) {
+            if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+                console.log(`[addChannelURL] Adding URL to channel ${index}: ${url}`);
+                this.settings.masterSettings.channelURLs[index] = url;
+                this.notifyObservers(); // Notify observers about the change, if necessary
+            } else {
+                console.error(`[addChannelURL] Invalid channel index: ${index}`);
+            }
+        }
+
+        // Helper function to retrieve a URL from the channelURLs array
+        getChannelURL(index) {
+            if (index >= 0 && index < this.settings.masterSettings.channelURLs.length) {
+                console.log(`[getChannelURL] Retrieving URL from channel ${index}: ${this.settings.masterSettings.channelURLs[index]}`);
+                return this.settings.masterSettings.channelURLs[index];
+            } else {
+                console.error(`[getChannelURL] Invalid channel index: ${index}`);
+                return null; // or throw an error as per your application's requirements
+            }
+        }
+
+
+
+    getprojectUrlforChannel(channelIndex) {
+        console.log("getprojectUrlforChannel entered");
+        return this.settings.masterSettings.channelURLs[channelIndex];
+    }
+
+    setChannelURLs(urls) {
+        console.log("setProjectURLs entered");
+        this.settings.masterSettings.channelURLs = urls;
+        console.log(`[setChannelURLs] Channel URLs set:`, urls);
+    
+        // Correctly calling the method within the same class
+        this.updateAllLoadSampleButtonTexts();
+    }
+
+    setProjectName(name) {
+        console.log("setProjectName entered");
+        this.settings.masterSettings.projectName = name;
+        console.log(`[setProjectName] Project name set to: ${name}`);
+    }
+
+     
+
         clearMasterSettings() {
             console.log("[clearMasterSettings] Current masterSettings before clearing:", this.settings.masterSettings);
 
@@ -34,11 +174,13 @@ class UnifiedSequencerSettings {
                 projectName: '',
                 projectBPM: 120,
                 currentSequence: 0, // Initialize with a default value
-                projectURLs: new Array(16).fill(''),
+                channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
+
+                // projectURLs: new Array(16).fill(''),
                 trimSettings: Array.from({ length: 16 }, () => ({
-                    startSliderValue: 0.01,
-                    endSliderValue: 100.00,
-                    totalSampleDuration: 0
+                    start: 0.01,
+                    end: 100.00,
+                    length: 0
                 })),
                 projectChannelNames: new Array(16).fill(''),
                 projectSequences: this.initializeSequences(16, 16, 64)
@@ -79,11 +221,26 @@ class UnifiedSequencerSettings {
         console.log("initializeTrimSettings", numSettings);
         }
         return Array.from({ length: numSettings }, () => ({
-            startSliderValue: 0,
-            endSliderValue: 100,
-            totalSampleDuration: 0
+            start: 0,
+            end: 100,
+            length: 0
         }));
     }
+
+    updateTrimSettingsUI(trimSettings) {
+        // Implement logic to update UI for trim settings
+        console.log("Trim settings UI entered and updated:", trimSettings);
+        // Example: Update each trim setting input field
+        trimSettings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+
 
     // Method to register an observer
     addObserver(observerFunction) {
@@ -101,15 +258,15 @@ class UnifiedSequencerSettings {
         this.observers.forEach(observerFunction => observerFunction(this.settings));
     }
 
-    setTrimSettings(channelIndex, startSliderValue, endSliderValue) {
+    setTrimSettings(channelIndex, start, end) {
         console.log("setTrimSettings entered");
         if (channelIndex < 1) {
-            console.log("setTrimSettings", channelIndex, startSliderValue, endSliderValue);
+            console.log("setTrimSettings", channelIndex, start, end);
         }
         if (this.isValidIndex(channelIndex)) {
             const currentSettings = this.settings.masterSettings.trimSettings[channelIndex];
             if (currentSettings) {
-                Object.assign(currentSettings, { startSliderValue, endSliderValue });
+                Object.assign(currentSettings, { start, end });
             } else {
                 console.error(`Trim settings not found for channel index: ${channelIndex}`);
             }
@@ -124,7 +281,7 @@ class UnifiedSequencerSettings {
         console.log("getTrimSettings", channelIndex);
         }
         const trimSettings = this.settings.masterSettings.trimSettings[channelIndex];
-        return trimSettings || { startSliderValue: 0.01, endSliderValue: 100.00 };
+        return trimSettings || { start: 0.01, end: 100.00 };
     }
 
     updateTrimSettingsUI(trimSettings) {
@@ -136,8 +293,8 @@ class UnifiedSequencerSettings {
             const startSlider = document.getElementById(`start-slider-${index}`);
             const endSlider = document.getElementById(`end-slider-${index}`);
             if (startSlider && endSlider) {
-                startSlider.value = setting.startSliderValue;
-                endSlider.value = setting.endSliderValue;
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
             }
         });
     }
@@ -274,7 +431,7 @@ class UnifiedSequencerSettings {
             console.log(`[updateSampleDuration] Called with duration: ${duration}, channelIndex: ${channelIndex}`);
         }
         if (this.isValidIndex(channelIndex)) {
-            this.settings.masterSettings.trimSettings[channelIndex].totalSampleDuration = duration;
+            this.settings.masterSettings.trimSettings[channelIndex].length = duration;
         } else {
             console.error(`Invalid channel index: ${channelIndex}`);
         }
@@ -289,31 +446,6 @@ class UnifiedSequencerSettings {
     }
 
     
-   
-
-    getprojectUrlforChannel(channelIndex) {
-        console.log("getprojectUrlforChannel entered");
-        return this.settings.masterSettings.projectURLs[channelIndex];
-    }
-
-    setProjectURLs(urls) {
-        console.log("setProjectURLs entered");
-        this.settings.masterSettings.projectURLs = urls;
-        console.log(`[setProjectURLs] Project URLs set:`, urls);
-    
-        // Correctly calling the method within the same class
-        this.updateAllLoadSampleButtonTexts();
-    }
-
-    setProjectName(name) {
-        console.log("setProjectName entered");
-        this.settings.masterSettings.projectName = name;
-        console.log(`[setProjectName] Project name set to: ${name}`);
-    }
-
-    
-    
-
     // setTrimSettings(settings) {
     //     this.settings.masterSettings.trimSettings = settings;
     //     console.log(`[setTrimSettings] Trim settings set:`, settings);
@@ -343,39 +475,7 @@ class UnifiedSequencerSettings {
     }
 
 
-    loadSettings(jsonSettings) {
-        console.log("[internalPresetDebug] loadSettings entered");
-        try {
-            console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
-            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-            console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
-    
-            // Update the masterSettings with the parsed settings
-            this.settings.masterSettings.projectName = parsedSettings.projectName;
-            this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
-            this.settings.masterSettings.projectURLs = parsedSettings.projectURLs;
-            this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
-            this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
-            console.log("[internalPresetDebug] Updated masterSettings:", this.settings.masterSettings);
-    
-            // Update projectSequences
-            if (parsedSettings.projectSequences) {
-                console.log("[internalPresetDebug] Updating project sequences");
-                this.setProjectSequences(parsedSettings.projectSequences);
-            }
-    
-            console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
-    
-            // Update the text of each loadSampleButton with the loaded URL
-            this.updateAllLoadSampleButtonTexts();
-        } catch (error) {
-            console.error('[internalPresetDebug] Error loading settings:', error);
-        }
-        // Notify all observers about the change
-        this.notifyObservers();
-    }
-    
-    
+  
     
         
         // Helper function to ensure array length
@@ -406,9 +506,9 @@ class UnifiedSequencerSettings {
         console.log("updateLoadSampleButtonText entered");
         let buttonText = 'Load New Audional'; // Default text
     
-        // Accessing projectChannelNames and projectURLs from settings
+        // Accessing projectChannelNames and channelURLs from settings
         const channelName = this.settings.masterSettings.projectChannelNames[channelIndex];
-        const loadedUrl = this.settings.masterSettings.projectURLs[channelIndex];
+        const loadedUrl = this.settings.masterSettings.channelURLs[channelIndex];
     
         if (channelName) {
             buttonText = channelName;
@@ -423,17 +523,14 @@ class UnifiedSequencerSettings {
         button.textContent = buttonText;
     }
     
-    exportSettings() {
-        console.log("exportSettings entered");
-        const exportedSettings = JSON.stringify(this.settings.masterSettings);
-        console.log("[exportSettings] Exported Settings:", exportedSettings);
-        return exportedSettings;
-    }
+    // exportSettings() {
+    //     console.log("exportSettings entered");
+    //     const exportedSettings = JSON.stringify(this.settings.masterSettings);
+    //     console.log("[exportSettings] Exported Settings:", exportedSettings);
+    //     return exportedSettings;
+    // }
   
-    isValidIndex(index) {
-            console.log("isValidIndex entered");
-        return index >= 0 && index < 16; // Directly checking against 16
-    }
+
 
     // Additional methods for updating UI
     updateProjectNameUI(projectName) {
@@ -467,19 +564,6 @@ class UnifiedSequencerSettings {
         });
     }
 
-    updateTrimSettingsUI(trimSettings) {
-        // Implement logic to update UI for trim settings
-        console.log("Trim settings UI entered and updated:", trimSettings);
-        // Example: Update each trim setting input field
-        trimSettings.forEach((setting, index) => {
-            const startSlider = document.getElementById(`start-slider-${index}`);
-            const endSlider = document.getElementById(`end-slider-${index}`);
-            if (startSlider && endSlider) {
-                startSlider.value = setting.startSliderValue;
-                endSlider.value = setting.endSliderValue;
-            }
-        });
-    }
 
     updateProjectChannelNamesUI(urlNames) {
         // Implement logic to update UI for project URL names
@@ -502,7 +586,7 @@ class UnifiedSequencerSettings {
     getDefaultArrayElement() {
         // Return the default element structure
         // For example, for trimSettings:
-        return { startSliderValue: 0.01, endSliderValue: 100.00, totalSampleDuration: 0 };
+        return { start: 0.01, end: 100.00, length: 0 };
     }
     
    

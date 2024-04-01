@@ -35,7 +35,6 @@ let channelMutes = []; // Declare the channelMutes array as a global variable
 let muteState = false
 let volumeStates = Array(16).fill(1); // Start with full volume for all channels
 let soloedChannels = Array(16).fill(false); // Assuming you have 16 channels
-const audioBuffers = new Map();
 let channels = document.querySelectorAll('.channel[id^="channel-"]');
 let activeChannels = 16;// new Set();
 let clearClickedOnce = Array(channels.length).fill(false);
@@ -152,7 +151,8 @@ if (playButton && stopButton) {
         // }
         
         // Inside your playButton event listener, after the play logic
-        playButton.addEventListener('click', () => {            const continuousPlayCheckbox = document.getElementById('continuous-play');
+        playButton.addEventListener('click', () => {            
+            const continuousPlayCheckbox = document.getElementById('continuous-play');
             let isContinuousPlay = continuousPlayCheckbox.checked;
 
             if (!isPlaying) {
@@ -217,16 +217,13 @@ if (playButton && stopButton) {
 
 
         const loadPreset = (preset) => {
-            console.log('index.js loadPresetentered');
+            console.log('index.js loadPreset entered');
             console.log(`index.js loadPreset: Loading preset: ${preset}`);
             const presetData = presets[preset];
             if (!presetData) {
                 console.error('Preset not found:', preset);
                 return;
             }
-        
-            // Retrieve the URLs from global settings
-            const projectURLs = window.unifiedSequencerSettings.getSettings('projectURLs');
         
             channels.forEach((channel, index) => {
                 const channelData = presetData.channels[index];
@@ -235,8 +232,8 @@ if (playButton && stopButton) {
                     return;
                 }
         
-                // Use the URL from the global settings instead of the preset
-                const url = projectURLs[index];
+                // Use getChannelURL to retrieve the URL for each channel
+                const url = window.unifiedSequencerSettings.getChannelURL(index);
                 const { steps, mute } = channelData;
         
                 if (url) {
@@ -249,7 +246,7 @@ if (playButton && stopButton) {
                                 const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
                                 audioTrimmer.setStartSliderValue(startSliderValue);
                                 audioTrimmer.setEndSliderValue(endSliderValue);
-                
+        
                                 window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
                                 updateLoadSampleButtonText(index, loadSampleButton);
                             });
@@ -280,7 +277,7 @@ function updateLoadSampleButtonText(channelIndex, button) {
     console.log('updateLoadSampleButtonText entered');
     console.log(`[updateLoadSampleButtonText] Called for channel index: ${channelIndex}`);
 
-    const loadedUrl = window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
+    const loadedUrl = window.unifiedSequencerSettings.channelURLs(channelIndex);
     console.log(`[updateLoadSampleButtonText] Loaded URL for channel ${channelIndex}: ${loadedUrl}`);
 
     if (loadedUrl) {

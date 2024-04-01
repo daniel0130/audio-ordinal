@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     loadButton.addEventListener('click', () => {
+        console.log('[Save/Load debug] Load button clicked');
         if (!loadButtonClicked) {
             // Remove the "smooth-wave" class when the button is clicked for the first time
             loadButton.classList.remove('smooth-wave');
@@ -57,11 +58,14 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     loadJson.addEventListener('click', () => {
+        console.log('[Save/Load debug] loadJson clicked');
+
         loadFileInput.click();
         loadOptions.style.display = "none";
     });
 
     loadFileInput.addEventListener('change', () => {
+        console.log('[Save/Load debug] loadFileInput change event');
         let file = loadFileInput.files[0];
         let reader = new FileReader();
         reader.onload = async function(e) {
@@ -74,17 +78,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     
             // Fetch audio for each URL in the loaded settings
-            if (loadedSettings.projectURLs && Array.isArray(loadedSettings.projectURLs)) {
-                for (let i = 0; i < loadedSettings.projectURLs.length; i++) {
-                    const url = loadedSettings.projectURLs[i];
+            if (loadedSettings.channelURLs && Array.isArray(loadedSettings.channelURLs)) {
+                for (let i = 0; i < loadedSettings.channelURLs.length; i++) {
+                    const url = loadedSettings.channelURLs[i];
                     if (url) {
-                        // Call fetchAudio for each URL
-                        // Assuming you have a way to get the corresponding loadSampleButtonElement
+                        // Continue with the existing logic to call fetchAudio
                         const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
                         await fetchAudio(url, i, loadSampleButtonElement);
                     }
                 }
             }
+            
         };
     
         reader.readAsText(file);
@@ -93,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     function loadPresetFromFile(filePath) {
+        console.log('[Save/Load Debug] loadPresetFromFile called');
         console.log(`[internalPresetDebug] Loading preset from: ${filePath}`);
         fetch(filePath)
             .then(response => response.json())
