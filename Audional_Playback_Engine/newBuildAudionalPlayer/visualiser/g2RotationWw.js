@@ -1,3 +1,6 @@
+// g2RotationWw.js
+
+
 let scaleFactor = 3,
     S = window.innerWidth,
     R = 100 * scaleFactor,
@@ -11,6 +14,29 @@ let scaleFactor = 3,
 cv.width = S;
 cv.height = S;
 
+// Assuming the worker script is named rotationWorker.js
+const rotationWorker = new Worker('rotationWorker.js');
+
+rotationWorker.onmessage = function(e) {
+    const { id, updatedVertices } = e.data;
+    // Update the relevant object with new vertices
+    if (id === 'cy') {
+        cp.cy.updateVertices(updatedVertices);
+    } else if (id.startsWith('sp')) {
+        // Determine which sphere and update accordingly
+        cp[id].updateVertices(updatedVertices);
+    }
+};
+
+function sendRotationRequest(id, vertices, pivot, angle) {
+    rotationWorker.postMessage({ id, vertices, pivot, angle });
+}
+
+// Example usage
+// sendRotationRequest('cy', cp.cy.v, {x: cp.c.x, y: cp.c.y}, currentAngle);
+
+
+
 class Cy {
     constructor(c, r, h, s) {
         this.c = c;
@@ -20,6 +46,11 @@ class Cy {
         this.gV();
         this.gF();
     }
+
+    updateVertices(newVertices) {
+        this.v = newVertices;
+    }
+
 
     gV() {
         this.v = [];
@@ -49,19 +80,10 @@ class Cy {
     }
 
     rP(p, a) {
-        this.v = this.v.map((v) => {
-            let x = v.x - p.x,
-                y = v.y - p.y,
-                x1 = x * Math.cos(a) - y * Math.sin(a),
-                y1 = x * Math.sin(a) + y * Math.cos(a);
-            return { x: x1 + p.x, y: y1 + p.y, z: v.z };
-        });
+        // Send rotation request to the web worker instead of doing it locally
+        sendRotationRequest(this.id, this.v, p, a);
     }
-        updateVertices(updatedVertices) {
-            this.v = updatedVertices;
-            // Trigger re-render or additional processing as needed
-        }
-    }
+}
 
 class Sp {
     constructor(c, r, s) {
@@ -70,6 +92,10 @@ class Sp {
         this.s = s;
         this.gV();
         this.gF();
+    }
+
+    updateVertices(newVertices) {
+        this.v = newVertices;
     }
 
     gV() {
@@ -101,19 +127,10 @@ class Sp {
     }
 
     rP(p, a) {
-        this.v = this.v.map((v) => {
-            let x = v.x - p.x,
-                y = v.y - p.y,
-                x1 = x * Math.cos(a) - y * Math.sin(a),
-                y1 = x * Math.sin(a) + y * Math.cos(a);
-            return { x: x1 + p.x, y: y1 + p.y, z: v.z };
-        });
+        // Send rotation request to the web worker instead of doing it locally
+        sendRotationRequest(this.id, this.v, p, a);
     }
-        updateVertices(updatedVertices) {
-            this.v = updatedVertices;
-            // Trigger re-render or additional processing as needed
-        }
-    }
+}
 
 class Cp {
     constructor(c, r, h, s) {
@@ -126,16 +143,17 @@ class Cp {
         this.sp2 = new Sp({ x: c.x + r, y: c.y, z: c.z }, r, s);
     }
 
-    rP(p, a) {
-        this.cy.rP(p, a);
-        this.sp1.rP(p, a);
-        this.sp2.rP(p, a);
+    updateVertices(newVertices) {
+        this.v = newVertices;
     }
-    updateVertices(updatedVertices) {
-        this.v = updatedVertices;
-        // Trigger re-render or additional processing as needed
+
+    rP(p, a) {
+        sendRotationRequest('cy', this.cy.v, p, a);
+        sendRotationRequest('sp1', this.sp1.v, p, a);
+        sendRotationRequest('sp2', this.sp2.v, p, a);
     }
 }
+
 
 let cp = new Cp({ x: S / 2, y: S / 2, z: 0 }, R, H, 30);
 let os1 = new Sp({ x: S / 2 - OR, y: S / 2, z: 0 }, SR, 30);
