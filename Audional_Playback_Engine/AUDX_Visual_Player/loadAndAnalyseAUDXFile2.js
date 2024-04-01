@@ -229,7 +229,7 @@ let nextNoteTime = 0; // When the next note is due, in AudioContext time
 
 function initializeWorker() {
     if (window.Worker) {
-        audioWorker = new Worker('worker.js');
+        audioWorker = new Worker('audioWebworker.js');
         audioWorker.onmessage = (e) => {
             if (e.data.action === 'scheduleNotes') {
                 scheduleNotes();

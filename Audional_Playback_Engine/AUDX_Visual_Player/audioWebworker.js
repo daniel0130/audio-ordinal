@@ -1,4 +1,4 @@
-// worker.js
+// audioWebworker.js
 
 let stepDuration; // Duration of a single step in seconds
 let timerID;
