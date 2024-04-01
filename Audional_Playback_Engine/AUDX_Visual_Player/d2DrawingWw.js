@@ -21,19 +21,22 @@ console.log('d2.js loaded');
         return Math.floor(randomMultiplier) + 1; // Ensure CCI2 is within 1-100 range
     }
 
-    // audioEventDispatcher.addEventListener('audioPlayback', (event) => {
-    //     if (event.data.action === 'stop') {
-    //         cci2 = initialCCI2; // Reset to initial cci2 value when stop is received
-    //         isChannel11Active = false; // Reset channel 11 active flag
-    //         console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}`);
-    //     } else {
-    //         const { channelIndex } = event.data;
-    //         cci2 = calculateCCI2(channelIndex); // Update the CCI2 with enhanced randomization
-    //         console.log(`Received channel playback: Channel ${channelIndex}. CCI2 updated to ${cci2} based on seed ${seed}.`);
-    //     }
-    // });
-    //     console.log('Received playback event:', event.detail);
-    
+    document.addEventListener('internalAudioPlayback', function(event) {
+        const { action, channelIndex, step } = event.detail; // Corrected to access `event.detail`
+        
+        // Adjusted conditional check to utilize the destructured `action` variable
+        if (action === 'stop') {
+            cci2 = initialCCI2; // Reset to initial CCI2 value when stop is received
+            isChannel11Active = false; // Reset channel 11 active flag
+            console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}`);
+        } else if (action === "activeStep") { // Ensuring that only 'activeStep' actions are processed here
+            // `channelIndex` already obtained from destructuring `event.detail`, no need to re-declare
+            cci2 = calculateCCI2(channelIndex); // Update the CCI2 with enhanced randomization
+            console.log(`Received channel playback: Channel ${channelIndex}. CCI2 updated to ${cci2} based on seed ${seed}.`);
+        }
+        // Removed redundant logging of `event.detail` here to avoid cluttering the console.
+    });
+
         
     // const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
     AudionalPlayerMessages.onmessage = (event) => {

@@ -317,19 +317,33 @@ function playBuffer(buffer, {startTrim, endTrim}, bufferKey, scheduledTime) {
     console.log(`Channel ${bufferKey}: Scheduled play at ${scheduledTime}, Start Time: ${startTime}, Duration: ${duration}`);
     source.start(scheduledTime, startTime, duration);
 
-    const channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10);
-    // Dispatch an event with the necessary data
-        const event = new CustomEvent('audioPlayback', {
-            detail: { action: "activeStep", channelIndex: channelNumber - 1, step: currentStep }
-        });
-        audioEventDispatcher.dispatchEvent(event);
-    
-        AudionalPlayerMessages.postMessage({
-            action: "activeStep",
-            channelIndex: channelNumber - 1,
-            step: currentStep
-        });
+    // Correctly defining and using channelNumber within the same functional scope
+    let channelNumber;
+    if (bufferKey.startsWith('Channel ')) {
+        channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10) - 1; // Adjusting channel index to be 0-based
+    } else {
+        console.error('Invalid bufferKey format:', bufferKey);
+        return; // Early return to prevent dispatching events with undefined channelNumber
     }
+
+    // Broadcasting message through the BroadcastChannel
+    AudionalPlayerMessages.postMessage({
+        action: "activeStep",
+        channelIndex: channelNumber, // Already adjusted to 0-15 index
+        step: currentStep
+    });
+
+    // Dispatching internal event for the built-in visualizer
+    document.dispatchEvent(new CustomEvent('internalAudioPlayback', {
+        detail: {
+            action: "activeStep",
+            channelIndex: channelNumber, // Same adjustment as above
+            step: currentStep
+        }
+    }));
+}
+
+
 
 function incrementStepAndSequence(sequenceLength) {
     currentStep = (currentStep + 1) % 64;
