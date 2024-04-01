@@ -214,40 +214,75 @@ function base64ToArrayBuffer(base64) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUTOMATIC SEQUENCE PLAYBACK and MESSAGING FUNCTIONS //
 
+// Main JavaScript Code with Integrated Web Worker
+
 // Global playback setup
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
 let preprocessedSequences = {};
 let audioWorker;
 let isReadyToPlay = false;
-let currentStep = 0; // Tracks the current step within the sequence
-let beatCount = 0; // Assuming you have a way to count beats
-let barCount = 0; // Assuming you have a way to count bars
-let currentSequence = 0; // New variable to track the index of the current sequence
-let isPlaying = false; // Tracks playback state
-let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
-
-
-let nextNoteTime = 0; // When the next note is due, in AudioContext time
+let currentStep = 0;
+let beatCount = 0;
+let barCount = 0;
+let currentSequence = 0;
+let isPlaying = false;
+let playbackTimeoutId = null;
+let nextNoteTime = 0;
 
 function initializeWorker() {
     if (window.Worker) {
-        audioWorker = new Worker('audioWebworker.js');
+        // Define the worker's code as a string
+        const workerScript = `
+            let stepDuration;
+            let timerID;
+
+            self.onmessage = (e) => {
+                if (e.data.action === 'start') {
+                    stepDuration = e.data.stepDuration * 1000 * 0.5; // Convert to milliseconds and adjust for interval
+                    startScheduling();
+                }
+            };
+
+            function startScheduling() {
+                if (timerID) clearInterval(timerID); // Clear existing timer if any
+
+                timerID = setInterval(() => {
+                    postMessage({ action: 'scheduleNotes' });
+                }, stepDuration);
+            }
+        `;
+
+        // Create a Blob from the worker's script
+        const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
+
+        // Create a URL for the Blob
+        const workerUrl = URL.createObjectURL(workerBlob);
+
+        // Initialize the web worker with the Blob URL
+        audioWorker = new Worker(workerUrl);
+
         audioWorker.onmessage = (e) => {
             if (e.data.action === 'scheduleNotes') {
                 scheduleNotes();
             }
         };
+
         audioWorker.postMessage({ action: 'start', stepDuration: getStepDuration() });
 
         // Add a cleanup mechanism on page unload
         window.addEventListener('beforeunload', () => {
             audioWorker.terminate();
+            URL.revokeObjectURL(workerUrl); // Clean up the Blob URL
         });
     } else {
         console.error("Web Workers are not supported in your browser.");
     }
 }
+
+// Make sure to define your `scheduleNotes` and `getStepDuration` functions
+// and any other relevant functions or setup code you need.
+
 
 function scheduleNotes() {
     let currentTime = audioCtx.currentTime;
