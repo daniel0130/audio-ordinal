@@ -24,6 +24,49 @@
     <script src="c2.js"></script>
     <script src="d2DrawingWw.js"></script>
 
+    <script>
+
+const audioEventDispatcher = new EventTarget();
+
+  // audioEventDispatcher.addEventListener('audioPlayback', (event) => {
+    //     if (event.data.action === 'stop') {
+    //         cci2 = initialCCI2; // Reset to initial cci2 value when stop is received
+    //         isChannel11Active = false; // Reset channel 11 active flag
+    //         console.log(`Stop received. CCI2 reset to initial value ${initialCCI2}`);
+    //     } else {
+    //         const { channelIndex } = event.data;
+    //         cci2 = calculateCCI2(channelIndex); // Update the CCI2 with enhanced randomization
+    //         console.log(`Received channel playback: Channel ${channelIndex}. CCI2 updated to ${cci2} based on seed ${seed}.`);
+    //     }
+    // });
+    //     console.log('Received playback event:', event.detail);
+    
+        
+
+    document.addEventListener('click', togglePlayback);
+
+    async function togglePlayback() {
+        console.log(`[togglePlayback] ${isPlaying ? 'Stopping' : 'Initiating'} playback...`);
+        isPlaying = !isPlaying;
+
+        if (isPlaying) {
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            startPlaybackLoop();
+        } else {
+            await audioCtx.suspend();
+            resetPlayback();
+        }
+    }
+        function ensureAudioContextState() {
+            // This function ensures the AudioContext is in a running state. It's a stub here and should be implemented in your JavaScript file if not already present.
+            if (window.audioCtx && audioCtx.state === 'suspended') {
+                return audioCtx.resume();
+            }
+            return Promise.resolve();
+        }
+   
+        </script>
+        
 
 </body>
 </html>

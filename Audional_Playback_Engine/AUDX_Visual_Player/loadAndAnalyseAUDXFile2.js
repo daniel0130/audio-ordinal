@@ -19,44 +19,42 @@ let playbackTimeoutId = null; // Holds the timeout ID for stopping playback loop
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // JSON FILE LOADING AND ANALYSIS //
 
-// Updated JSON file loading and analysis to set globalJsonData
-document.getElementById('jsonInput').addEventListener('change', ({target}) => {
-    const {files} = target;
-    const file = files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = ({target}) => {
-            // Parse and store JSON data in global scope
-            globalJsonData = JSON.parse(target.result);
-            console.log("Loaded JSON data:", globalJsonData); // Log loaded JSON data
-
-
-            const stats = {
-                channelsWithUrls: 0,
-                sequencesCount: 0,
-                activeStepsPerSequence: {},
-                activeChannelsPerSequence: {},
-                types: {}
-            };
-
-            analyzeJsonStructure(globalJsonData, '', stats);
-            const playbackData = prepareForPlayback(globalJsonData, stats);
-            displayOutput(playbackData);
-            // Fetch and process audio data based on channel URLs
-            fetchAndProcessAudioData(playbackData.channelURLs).then(() => {
-                // Only call preprocessAndSchedulePlayback after ensuring that audio data is fetched and processed
-                // This is assuming fetchAndProcessAudioData is asynchronous and returns a Promise
-                // If fetchAndProcessAudioData isn't async, you can call preprocessAndSchedulePlayback directly without .then
-                preprocessAndSchedulePlayback();
-
-                // Optionally, if there's a specific point where playback is intended to start automatically,
-                // or an initialization of the playback system is needed, it can be placed here or triggered
-                // after this point to ensure all necessary data and processing has been completed.
-            });
-        };
-        reader.readAsText(file);
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    loadAndProcessJson('OB1_Song_1.json'); // Adjust the path to where your JSON file is located
 });
+
+async function loadAndProcessJson(jsonPath) {
+    try {
+        const response = await fetch(jsonPath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const jsonData = await response.json();
+        console.log("Loaded JSON data:", jsonData); // Log loaded JSON data
+
+        // Assuming globalJsonData and other global variables/functions are accessible
+        globalJsonData = jsonData;
+
+        const stats = {
+            channelsWithUrls: 0,
+            sequencesCount: 0,
+            activeStepsPerSequence: {},
+            activeChannelsPerSequence: {},
+            types: {}
+        };
+
+        analyzeJsonStructure(globalJsonData, '', stats);
+        const playbackData = prepareForPlayback(globalJsonData, stats);
+        // displayOutput(playbackData);
+
+        await fetchAndProcessAudioData(playbackData.channelURLs);
+        preprocessAndSchedulePlayback();
+        // Place further initialization logic here if needed
+    } catch (error) {
+        console.error("Could not load JSON data:", error);
+    }
+}
+
 
 const analyzeJsonStructure = (json, parentKey, stats, path = '') => {
     if (json.projectSequences && typeof json.projectSequences === 'object') {
@@ -137,21 +135,6 @@ function prepareForPlayback(json, stats) {
     };
 }
 
-function displayOutput(playbackData) {
-    const replacer = (key, value) => {
-        if (Array.isArray(value)) {
-            const isNumberArray = value.every(item => typeof item === 'number');
-            const isChannelArray = value.every(item => typeof item === 'string' && item.startsWith('ch'));
-            if (isNumberArray || isChannelArray) {
-                return `[${value.join(', ')}]`;
-            }
-        }
-        return value;
-    };
-
-    const formattedOutput = JSON.stringify(playbackData, replacer, 2);
-    document.getElementById('output').textContent = formattedOutput;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AUDIO DATA FETCHING AND PROCESSING //
@@ -335,12 +318,18 @@ function playBuffer(buffer, {startTrim, endTrim}, bufferKey, scheduledTime) {
     source.start(scheduledTime, startTime, duration);
 
     const channelNumber = parseInt(bufferKey.replace('Channel ', ''), 10);
-    AudionalPlayerMessages.postMessage({
-        action: "activeStep",
-        channelIndex: channelNumber - 1,
-        step: currentStep
-    });
-}
+    // Dispatch an event with the necessary data
+        const event = new CustomEvent('audioPlayback', {
+            detail: { action: "activeStep", channelIndex: channelNumber - 1, step: currentStep }
+        });
+        audioEventDispatcher.dispatchEvent(event);
+    
+        AudionalPlayerMessages.postMessage({
+            action: "activeStep",
+            channelIndex: channelNumber - 1,
+            step: currentStep
+        });
+    }
 
 function incrementStepAndSequence(sequenceLength) {
     currentStep = (currentStep + 1) % 64;

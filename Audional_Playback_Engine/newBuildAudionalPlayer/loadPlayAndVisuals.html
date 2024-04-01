@@ -59,6 +59,23 @@
         <script src="visualiser/g2.js"></script>
         <script src="visualiser/c2.js"></script>
         <script src="visualiser/d2.js"></script> 
+        <script>
+            document.addEventListener('click', function handler(event) {
+                ensureAudioContextState();
+                togglePlayback().then(() => {
+                    // Remove the event listener after initiating playback to prevent it from interfering with subsequent interactions
+                    document.removeEventListener('click', handler);
+                }).catch((error) => console.error("Error starting playback:", error));
+            }, {once: true}); // Use the {once: true} option to automatically remove the listener after the first invocation
+            
+            function ensureAudioContextState() {
+                // This function ensures the AudioContext is in a running state. It's a stub here and should be implemented in your JavaScript file if not already present.
+                if (window.audioCtx && audioCtx.state === 'suspended') {
+                    return audioCtx.resume();
+                }
+                return Promise.resolve();
+            }
+            </script>
 </body>
 </html>
 
