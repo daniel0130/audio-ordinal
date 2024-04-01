@@ -31,6 +31,8 @@ document.getElementById('jsonInput').addEventListener('change', ({target}) => {
         reader.onload = ({target}) => {
             // Parse and store JSON data in global scope
             globalJsonData = JSON.parse(target.result);
+            console.log("Loaded JSON data:", globalJsonData); // Log loaded JSON data
+
 
             const stats = {
                 channelsWithUrls: 0,
@@ -43,7 +45,17 @@ document.getElementById('jsonInput').addEventListener('change', ({target}) => {
             analyzeJsonStructure(globalJsonData, '', stats);
             const playbackData = prepareForPlayback(globalJsonData, stats);
             displayOutput(playbackData);
-            fetchAndProcessAudioData(playbackData.channelURLs); // Process audio data
+            // Fetch and process audio data based on channel URLs
+            fetchAndProcessAudioData(playbackData.channelURLs).then(() => {
+                // Only call preprocessAndSchedulePlayback after ensuring that audio data is fetched and processed
+                // This is assuming fetchAndProcessAudioData is asynchronous and returns a Promise
+                // If fetchAndProcessAudioData isn't async, you can call preprocessAndSchedulePlayback directly without .then
+                preprocessAndSchedulePlayback();
+
+                // Optionally, if there's a specific point where playback is intended to start automatically,
+                // or an initialization of the playback system is needed, it can be placed here or triggered
+                // after this point to ensure all necessary data and processing has been completed.
+            });
         };
         reader.readAsText(file);
     }
@@ -229,6 +241,38 @@ function base64ToArrayBuffer(base64) {
 
 const AudionalPlayerMessages = new BroadcastChannel('channel_playback');
 
+let preprocessedSequences = {}; // This will hold the pre-processed sequences
+
+function preprocessAndSchedulePlayback() {
+    if (!globalJsonData || !globalJsonData.projectSequences) {
+        console.error("Global sequence data is not available or empty.");
+        return;
+    }
+
+    bpm = globalJsonData.projectBPM; // Assume bpm is updated globally as before
+
+    preprocessedSequences = {}; // Reset to handle new data
+
+    Object.entries(globalJsonData.projectSequences).forEach(([sequenceKey, channels]) => {
+        const preprocessedChannels = Object.entries(channels)
+            .filter(([, channelData]) => channelData.steps && channelData.steps.length)
+            .reduce((acc, [channelKey, { steps }]) => {
+                const processedSteps = steps.map(step => ({
+                    step,
+                    timing: step * (60 / bpm) // Calculate timing based on BPM
+                }));
+                acc[channelKey] = processedSteps;
+                return acc;
+            }, {});
+
+        preprocessedSequences[sequenceKey] = preprocessedChannels;
+    });
+
+    console.log("Preprocessed sequences:", preprocessedSequences); // Log preprocessed data
+}
+
+
+
 
 const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
     const beatDuration = 60 / bpm; 
@@ -250,34 +294,42 @@ const transformSequencesForPlayback = (sequences, trimTimes, bpm) => {
 // Simplified and optimized code structure
 
 const playSequenceStep = () => {
-    if (!globalJsonData || !globalJsonData.projectSequences || Object.keys(globalJsonData.projectSequences).length === 0) {
-        console.error("Global sequence data is not available or empty.");
-        AudionalPlayerMessages.postMessage({ type: "error", data: "Sequence data not available or no sequences available for playback" });
+    if (!preprocessedSequences || Object.keys(preprocessedSequences).length === 0) {
+        console.error("Preprocessed sequence data is not available or empty.");
         return;
     }
 
-    const sequenceKeys = Object.keys(globalJsonData.projectSequences);
-    currentSequence = currentSequence % sequenceKeys.length; // Loop back to the first sequence if over
+    const sequenceKeys = Object.keys(preprocessedSequences);
+    currentSequence = currentSequence % sequenceKeys.length;  // Ensure this is the correct way to handle sequence looping.
 
     const sequenceKey = sequenceKeys[currentSequence];
-    const sequence = globalJsonData.projectSequences[sequenceKey];
+    // Directly access the sequence's channels without assuming an intermediate 'channels' property.
+    const channels = preprocessedSequences[sequenceKey];
+
     console.log(`Playing step ${currentStep} of sequence ${sequenceKey}`);
 
-    Object.entries(sequence).forEach(([channelKey, channel]) => {
-        playChannelStep(channelKey, channel);
+    Object.entries(channels).forEach(([channelKey, steps]) => {
+        steps.forEach(stepDetail => {
+            if (stepDetail.step === currentStep) {
+                playChannelStep(channelKey, {steps: steps}); // Corrected to pass a structure that playChannelStep expects
+            }
+        });
     });
 
-    // Increment and loop step, sequence
     incrementStepAndSequence(sequenceKeys.length);
 };
 
-const playChannelStep = (channelKey, channel) => {
-    const channelIndex = parseInt(channelKey.replace('ch', ''), 10); 
-    const bufferKey = `Channel ${channelIndex + 1}`;
 
-    if (channel.steps.includes(currentStep) && !channel.mute) {
+
+const playChannelStep = (channelKey, channel) => {
+    const stepDetail = channel.steps.find(stepDetail => stepDetail.step === currentStep);
+    if (stepDetail) {
+        // Adjust the key format to match how it's stored in globalAudioBuffers
+        // Assuming channelKey is like "ch15" and needs to be converted to "Channel 16"
+        const bufferKey = `Channel ${parseInt(channelKey.replace('ch', ''), 10) + 1}`;
         const audioBufferObj = globalAudioBuffers.find(obj => obj.channel === bufferKey);
         const trimTimes = globalTrimTimes[bufferKey];
+
         if (audioBufferObj && audioBufferObj.buffer && trimTimes) {
             playBuffer(audioBufferObj.buffer, trimTimes, bufferKey);
         } else {
@@ -285,6 +337,9 @@ const playChannelStep = (channelKey, channel) => {
         }
     }
 };
+
+
+
 
 const playBuffer = (buffer, trimTimes, bufferKey) => {
     const source = audioCtx.createBufferSource();

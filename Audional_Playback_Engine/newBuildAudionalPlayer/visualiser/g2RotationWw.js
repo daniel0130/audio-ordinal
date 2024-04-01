@@ -32,10 +32,15 @@ function sendRotationRequest(id, vertices, pivot, angle) {
     rotationWorker.postMessage({ id, vertices, pivot, angle });
 }
 
+function generateVerticesRequest(id, c, r, s) {
+    rotationWorker.postMessage({ 
+        taskType: 'generateVertices', 
+        data: { id, c, r, s } 
+    });
+}
+
 // Example usage
 // sendRotationRequest('cy', cp.cy.v, {x: cp.c.x, y: cp.c.y}, currentAngle);
-
-
 
 class Cy {
     constructor(c, r, h, s) {
