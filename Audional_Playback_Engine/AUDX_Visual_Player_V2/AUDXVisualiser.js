@@ -245,7 +245,7 @@ let t;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// d2.js
+// draw and colour functions
 
 
 cp.drawObjectD2 = function(obj, tm) {
@@ -262,8 +262,12 @@ cp.drawObjectD2 = function(obj, tm) {
         // Assuming angle, tm, and v are calculated correctly here
         let angle = Math.atan2(p[0].y - S / 2, p[0].x - S / 2) * 180 / Math.PI;
         
+        //////////////////////////////////////////
+        // Function to call the colour arrays
         // Now, obtain colors dynamically
         let colors = getColors(angle, tm, v); // Make sure to define tm and v appropriately
+
+
         cx.fillStyle = colors[cci2 % colors.length];
         cx.fill();
 
