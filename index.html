@@ -73,47 +73,54 @@ function toggleInfo(buttonId) {
     });
 }
 
-
-  function tryAudionalSequencer() {
-    var sequencerContainer = document.getElementById('sequencer-container');
-    
-    // Check if the iframe already exists
-    var existingIframe = document.getElementById('sequencer-iframe');
-    if (existingIframe) {
-        // If it exists, simply toggle its visibility
-        if (existingIframe.style.display === 'none') {
-            existingIframe.style.display = 'block';
-        } else {
-            existingIframe.style.display = 'none';
-        }
-    } else {
-        // If it doesn't exist, create it
-        var sequencerIframe = document.createElement('iframe');
-        sequencerIframe.id = 'sequencer-iframe';
-        sequencerIframe.src = 'New_Audional_Sequencer/index.html';
-        sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
-        
-        // Set the height of the iframe as desired (e.g., 600px)
-        sequencerIframe.style.height = '550px';
-
-        // Apply CSS scaling to shrink the content of the iframe
-        var scaleValue = 0.9; // e.g., shrink to 80% of the original size
-        sequencerIframe.style.transform = 'scale(' + scaleValue + ')';
-        sequencerIframe.style.transformOrigin = '0 0'; // Set the origin of the transformation to the top-left corner
-
-        // Adjust the width and height of the iframe element to fit the scaled content
-        sequencerIframe.style.width = (100 / scaleValue) + '%';
-        sequencerIframe.style.height = (540 / scaleValue) + 'px';
-
-        // Add the iframe to the container
-        sequencerContainer.appendChild(sequencerIframe);
-    }
+// a function to link the users to another page - https://audionals.com/ordSPD/
+function tryAudionalSequencer() {
+    window.location.href = 'https://audionals.com/ordSPD/';
 }
 
-// Call tryAudionalSequencer function once the window has loaded
-window.onload = function() {
-    tryAudionalSequencer();
-};
+
+
+
+//   function tryAudionalSequencer() {
+//     var sequencerContainer = document.getElementById('sequencer-container');
+    
+//     // Check if the iframe already exists
+//     var existingIframe = document.getElementById('sequencer-iframe');
+//     if (existingIframe) {
+//         // If it exists, simply toggle its visibility
+//         if (existingIframe.style.display === 'none') {
+//             existingIframe.style.display = 'block';
+//         } else {
+//             existingIframe.style.display = 'none';
+//         }
+//     } else {
+//         // If it doesn't exist, create it
+//         var sequencerIframe = document.createElement('iframe');
+//         sequencerIframe.id = 'sequencer-iframe';
+//         sequencerIframe.src = 'New_Audional_Sequencer/index.html';
+//         sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
+        
+//         // Set the height of the iframe as desired (e.g., 600px)
+//         sequencerIframe.style.height = '550px';
+
+//         // Apply CSS scaling to shrink the content of the iframe
+//         var scaleValue = 0.9; // e.g., shrink to 80% of the original size
+//         sequencerIframe.style.transform = 'scale(' + scaleValue + ')';
+//         sequencerIframe.style.transformOrigin = '0 0'; // Set the origin of the transformation to the top-left corner
+
+//         // Adjust the width and height of the iframe element to fit the scaled content
+//         sequencerIframe.style.width = (100 / scaleValue) + '%';
+//         sequencerIframe.style.height = (540 / scaleValue) + 'px';
+
+//         // Add the iframe to the container
+//         sequencerContainer.appendChild(sequencerIframe);
+//     }
+// }
+
+// // Call tryAudionalSequencer function once the window has loaded
+// window.onload = function() {
+//     tryAudionalSequencer();
+// };
 
       
   </script>
@@ -123,7 +130,7 @@ window.onload = function() {
         <img src="AudionalsLogo.png" alt="Audionals Logo">
         <h1>Audionals.com</h1>
         <div>
-          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Inscribe your own Audionals</button>
+          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Play with the Ord SPD</button>
           <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
         </div>
         <img src="AudionalsLogo.png" alt="Audionals Logo">
