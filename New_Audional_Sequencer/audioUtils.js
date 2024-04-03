@@ -52,39 +52,56 @@ const fetchAudio = async (url, channelIndex) => {
   try {
     const response = await fetch(fullUrl);
     const contentType = response.headers.get('Content-Type');
-    let audioData;
+    let audioData, sampleName;
+
+    // Attempt to extract the sample name from the URL as a fallback
+    sampleName = fullUrl.split('/').pop(); // Extracts the last part of the URL, often the filename
 
     if (contentType && contentType.includes('application/json')) {
       // Handle JSON content
       const jsonResponse = await response.json();
+      // Use filename from JSON if available, fallback to URL-derived name
+      sampleName = jsonResponse.filename || sampleName;
       const base64AudioData = jsonResponse.audioData;
       if (!base64AudioData) {
         console.error('[HTML Debugging] [fetchAudio] No audioData found in JSON response');
         return;
       }
-      audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]); // Assuming audioData is in the format: data:audio/mpeg;base64,...
+      audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]);
     } else if (contentType && contentType.includes('text/html')) {
       // Handle HTML content
       const htmlText = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, 'text/html');
+      const sampleNameElement = doc.getElementById('sampleName');
+      if (sampleNameElement) {
+        // Use the content of the div if available, fallback to URL-derived name
+        sampleName = sampleNameElement.textContent.trim() || sampleName;
+      }
       const extractedAudioData = await importHTMLAudioData(htmlText, channelIndex);
       if (!extractedAudioData) return;
 
       audioData = extractedAudioData.startsWith('data:') ?
-        base64ToArrayBuffer(extractedAudioData.split(',')[1]) : // Convert base64 to ArrayBuffer directly here
+        base64ToArrayBuffer(extractedAudioData.split(',')[1]) :
         await fetch(extractedAudioData).then(res => res.arrayBuffer());
     } else {
       // Handle direct audio file
       audioData = await response.arrayBuffer();
     }
 
-    // Decode and process the audio data uniformly
+    // Decode and process the audio data
     const audioBuffer = await decodeAudioData(audioData);
     audioBuffers.set(fullUrl, audioBuffer);
     console.log(`[HTML Debugging] [fetchAudio] Audio buffer stored.`);
+
+    // Update the project channel name in global settings
+    window.unifiedSequencerSettings.setProjectChannelName(channelIndex, sampleName);
+
   } catch (error) {
     console.error('[HTML Debugging] [fetchAudio] Error:', error);
   }
 };
+
 
 // Note: The importHTMLAudioData function remains the same.
 
@@ -180,21 +197,24 @@ function getAudioBuffer(url) {
 }
 
 function playTrimmedAudio(channelIndex, audioBuffer, url) {
-  console.log('playTrimmedAudio entered');
-  console.log("[playTrimmedAudio] Audio buffer found for URL:", url);
+  console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
 
+  // Retrieve calculated trim values based on the audio buffer's duration
+  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer);
+
+  // Create an AudioBufferSourceNode from the audio buffer
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
 
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer);
+  // Connect the source to the gain node and then to the destination
   source.connect(gainNodes[channelIndex]);
   gainNodes[channelIndex].connect(audioContext.destination);
 
-  
-  console.log(`[debug - playSound] Playing audio from URL: ${url} for channel index: ${channelIndex} at trimStart: ${trimStart} and duration: ${duration}`);
-
+  console.log(`[playTrimmedAudio] Playing audio for channel index: ${channelIndex} from ${trimStart} for duration: ${duration}`);
+  // Start playback at the calculated trim start time for the calculated duration
   source.start(0, trimStart, duration);
 }
+
 
 function calculateTrimValues(channelIndex, audioBuffer) {
   const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);

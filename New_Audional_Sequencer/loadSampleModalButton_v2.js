@@ -125,6 +125,7 @@
             console.log(`[HTML Debugging] [handleLoad] Audio loaded for channel ${index}: ${url}`);
             // Update the channel URL in global settings after successful audio loading
             window.unifiedSequencerSettings.addChannelURL(index, url);
+            window.unifiedSequencerSettings.updateLoadSampleButtonText(index, loadSampleButton);
         }).catch(error => {
             console.error(`[HTML Debugging] [handleLoad] Error loading audio for URL ${url}:`, error);
         });
@@ -133,6 +134,15 @@
         document.body.removeChild(idModal);
         console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
+
+    // function updateChannelButtonUI(settings) {
+    //     settings.masterSettings.channelURLs.forEach((url, index) => {
+    //         const button = document.querySelector(`#channelButton-${index}`);
+    //         if (button) {
+    //             button.textContent = settings.masterSettings.projectChannelNames[index] || url;
+    //         }
+    //     });
+    // }
     
     
     function createExternalLinkButton(text, url, className, tooltipText) {
