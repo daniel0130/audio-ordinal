@@ -35,6 +35,9 @@ class UnifiedSequencerSettings {
             // Clone the masterSettings to avoid mutating the original object
             const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
         
+            // Ensure currentSequence is set to 0 for the export
+            settingsClone.currentSequence = 0; // Set currentSequence to 0
+        
             // Serialize step settings
             for (let sequenceKey in settingsClone.projectSequences) {
                 const sequence = settingsClone.projectSequences[sequenceKey];
@@ -57,6 +60,7 @@ class UnifiedSequencerSettings {
             console.log("[exportSettings] Exported Settings:", exportedSettings);
             return exportedSettings;
         }
+        
         
         
             isValidIndex(index) {
