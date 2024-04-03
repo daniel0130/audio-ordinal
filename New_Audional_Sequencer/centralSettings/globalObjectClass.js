@@ -74,7 +74,7 @@ class UnifiedSequencerSettings {
                 // Use the formatURL function from formattingHelpers.js for URL formatting
                 // Ensure formatURL is accessible here, either by importing or defining it in the same scope
         
-                // Process channelURLs and projectURLs with proper URL formatting
+                // Process channelURLs with proper URL formatting
                 this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ?
                     parsedSettings.channelURLs.map(url => formatURL(url)) : [];
         
@@ -151,7 +151,7 @@ class UnifiedSequencerSettings {
     }
 
     setChannelURLs(urls) {
-        console.log("setProjectURLs entered");
+        console.log("setChannel entered");
         this.settings.masterSettings.channelURLs = urls;
         console.log(`[setChannelURLs] Channel URLs set:`, urls);
     
@@ -552,7 +552,7 @@ class UnifiedSequencerSettings {
         }
     }
 
-    updateProjectURLsUI(urls) {
+    updateChannelURLsUI(urls) {
         // Implement logic to update UI for project URLs
         console.log("Project URLs UI entered and updated:", urls);
         // Example: Update each URL input field

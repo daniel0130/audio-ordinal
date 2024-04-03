@@ -83,7 +83,7 @@ function openAudioTrimmerModal(channelIndex) {
                 }
 
                 // Retrieve the URL from the global settings
-                const url = window.unifiedSequencerSettings.settings.masterSettings.projectURLs[channelIndex];
+                const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
                 updateAudioTrimmerWithBufferHelper(url, channelIndex);
             });           
             document.getElementById('audio-trimmer-modal').style.display = 'block';
@@ -98,7 +98,7 @@ function openAudioTrimmerModal(channelIndex) {
             console.log('Clicked button with channelIndex:', channelIndex); // Log the channel index
 
             // Get the URL for the audio sample from the global settings
-            const url = window.unifiedSequencerSettings.settings.masterSettings.projectURLs[channelIndex];
+            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
 
             if (!url) {
                 console.error(`No URL found for channel index: ${channelIndex}`);

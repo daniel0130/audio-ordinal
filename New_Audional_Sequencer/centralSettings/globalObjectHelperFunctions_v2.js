@@ -165,10 +165,10 @@ function getProjectSequences() {
 //     console.log(`[setGlobalProjectName] Project name updated to: ${projectName}`);
 // }
 // 
-function setGlobalProjectURLs(urls) {
+function setGlobalChannelURLs(urls) {
     console.log("debugGlobalObjectToUI - entered");
-    window.unifiedSequencerSettings.setProjectURLs(urls);
-    console.log(`[setGlobalProjectURLs] Project URLs updated:`, urls);
+    window.unifiedSequencerSettings.setChannelURLs(urls);
+    console.log(`[setGlobalChannelURLs] Project URLs updated:`, urls);
 }
 // 
 function setTrimSettings(channelIndex, startSliderValue, endSliderValue) {
