@@ -1,3 +1,5 @@
+// geometry.js
+
 let scaleFactor = 3,
     S = window.innerWidth,
     R = 100 * scaleFactor,

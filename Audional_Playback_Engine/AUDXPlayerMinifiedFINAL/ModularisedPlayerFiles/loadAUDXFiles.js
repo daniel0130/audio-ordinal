@@ -1,0 +1,73 @@
+// loadAUDXFiles.js
+var globalJsonData=null;let bpm=0,activeSources=[];var globalAudioBuffers=[],globalTrimTimes={};async function loadJsonFromUrl(a){try{const e=await fetch(a);if(!e.ok)throw new Error(`HTTP error! Status: ${e.status}`);const o=await e.json();console.log("Loaded JSON data:",o);const t={channelsWithUrls:0,sequencesCount:0,activeStepsPerSequence:{},activeChannelsPerSequence:{},types:{}};analyzeJsonStructure(globalJsonData=o,"",t);const n=prepareForPlayback(o,t);await fetchAndProcessAudioData(n.channelURLs),preprocessAndSchedulePlayback()}catch(a){console.error("Could not load JSON data from URL:",a)}}
+const analyzeJsonStructure=(e,t,n,a="")=>{e.projectSequences&&"object"==typeof e.projectSequences&&Object.entries(e.projectSequences).forEach((([e,t])=>{n.activeStepsPerSequence[e]=0,n.activeChannelsPerSequence[e]=[],Object.entries(t).forEach((([t,a])=>{a.steps&&Array.isArray(a.steps)&&a.steps.length>0&&(n.activeStepsPerSequence[e]+=a.steps.length,n.activeChannelsPerSequence[e].push(t))}))})),Object.entries(e).forEach((([e,t])=>{if("projectSequences"!==e){const o=Array.isArray(t)?"array":typeof t;incrementTypeCount(n.types,o),"object"!==o&&"array"!==o||analyzeJsonStructure(t,e,n,a?`${a}.${e}`:e)}}))},incrementTypeCount=(e,t)=>{e[t]=(e[t]||0)+1};function prepareForPlayback(e,t){const{channelURLs:n,trimSettings:a,projectSequences:o,projectName:r,projectBPM:s}=e;bpm=s;const i=a.map(((e,t)=>({channel:`Channel ${t+1}`,startTrim:parseFloat(e.startSliderValue),endTrim:parseFloat(e.endSliderValue)}))).map((e=>`${e.channel}: StartTrim=${e.startTrim}, EndTrim=${e.endTrim}`));a.forEach(((e,t)=>{globalTrimTimes[`Channel ${t+1}`]={startTrim:parseFloat(e.startSliderValue)/100,endTrim:parseFloat(e.endSliderValue)/100}}));const c=Object.entries(o).reduce(((e,[t,n])=>(e[t]=Object.entries(n).map((([e,t])=>`${e}: [${t.steps.length>0?t.steps.join(", "):"No active steps"}]`)),e)),{});return{projectName:r,bpm:s,channels:n.length,channelURLs:n,trimTimes:i,stats:{channelsWithUrls:t.channelsWithUrls,sequencesCount:t.sequencesCount,activeStepsPerSequence:t.activeStepsPerSequence,activeChannelsPerSequence:t.activeChannelsPerSequence},sequences:c}}async function fetchAndProcessAudioData(e){const t=new(window.AudioContext||window.webkitAudioContext);await Promise.all(e.map((async(e,n)=>{const a=n+1;try{const o=await fetch(e);if(!o.ok)throw new Error(`Failed to fetch from URL: ${e}, Status: ${o.status}`);const r=o.headers.get("Content-Type");if(/audio\/wav/.test(r)||/audio\/mpeg/.test(r)){const e=await o.arrayBuffer(),r=await t.decodeAudioData(e);globalAudioBuffers.push({buffer:r,channel:`Channel ${a}`}),console.log(`AudioBuffer stored for direct audio content at index: ${n}, Channel: ${a}`)}else{const e=await o.text();let s;if(/application\/json/.test(r)){s=JSON.parse(e).audioData}else/text\/html/.test(r)&&(s=extractBase64FromHTML(e),console.log(`[Channel ${a}] Extracted base64 audio data from HTML.`));if(s){const e=base64ToArrayBuffer(s.split(",")[1]),o=await t.decodeAudioData(e);globalAudioBuffers.push({buffer:o,channel:`Channel ${a}`}),console.log(`AudioBuffer stored for URL at index: ${n}, Channel: ${a}`)}}}catch(e){console.error(`Error fetching or decoding audio for Channel ${a}:`,e)}})))}function extractBase64FromHTML(e){try{const t=new DOMParser,n=t.parseFromString(e,"text/html").querySelector("audio[data-audionalSampleName] source");if(n){const e=n.getAttribute("src");if(/^data:audio\/(wav|mp3);base64,/.test(e.toLowerCase()))return console.log("[importHTMLAudioData] Extracted base64 audio data."),e;console.error("[importHTMLAudioData] Audio data does not start with expected base64 prefix.")}else console.error("[importHTMLAudioData] Could not find the audio source element in the HTML content.")}catch(e){console.error("[importHTMLAudioData] Error parsing HTML content: ",e)}return null}
+function base64ToArrayBuffer(e){const t=window.atob(e),n=new Uint8Array(t.length);return n.forEach(((e,a)=>n[a]=t.charCodeAt(a))),n.buffer}const audioCtx=new(window.AudioContext||window.webkitAudioContext);
+
+
+
+// Initialize variables
+let audioWorker;
+let preprocessedSequences = {};
+let isReadyToPlay = false;
+let currentStep = 0;
+let beatCount = 0;
+let barCount = 0;
+let currentSequence = 0;
+let isPlaying = false;
+let playbackTimeoutId = null;
+let nextNoteTime = 0;
+
+function initializeWorker(){if(window.Worker){const e=new Blob(["\n            let stepDuration;\n            let timerID;\n\n            self.onmessage = (e) => {\n                if (e.data.action === 'start') {\n                    stepDuration = e.data.stepDuration * 1000 * 0.5; // Convert to milliseconds and adjust for interval\n                    startScheduling();\n                }\n            };\n\n            function startScheduling() {\n                if (timerID) clearInterval(timerID); // Clear existing timer if any\n\n                timerID = setInterval(() => {\n                    postMessage({ action: 'scheduleNotes' });\n                }, stepDuration);\n            }\n        "],{type:"application/javascript"}),t=URL.createObjectURL(e);audioWorker=new Worker(t),audioWorker.onmessage=e=>{"scheduleNotes"===e.data.action&&scheduleNotes()},audioWorker.postMessage({action:"start",stepDuration:getStepDuration()}),window.addEventListener("beforeunload",(()=>{audioWorker.terminate(),URL.revokeObjectURL(t)}))}else console.error("Web Workers are not supported in your browser.")}function scheduleNotes(){let e=audioCtx.currentTime;nextNoteTime<e&&(nextNoteTime=e);for(;nextNoteTime<e+.1;)playSequenceStep(nextNoteTime),nextNoteTime+=getStepDuration()}function getStepDuration(){return 60/(globalJsonData?.projectBPM||120)/4}function preprocessAndSchedulePlayback(){if(!globalJsonData?.projectSequences)return console.error("Global sequence data is not available or empty.");const e=globalJsonData.projectBPM;preprocessedSequences=Object.fromEntries(Object.entries(globalJsonData.projectSequences).map((([t,n])=>[t,Object.fromEntries(Object.entries(n).filter((([,e])=>e.steps?.length)).map((([t,{steps:n}])=>[t,n.map((t=>({step:t,timing:t*(60/e)})))])))]))),isReadyToPlay=!0,console.log("Preprocessed sequences:",preprocessedSequences)}function startPlaybackLoop(){if(!globalJsonData)return;globalJsonData.projectBPM}function playSequenceStep(e){if(!isReadyToPlay||!Object.keys(preprocessedSequences).length)return void console.error("Sequence data is not ready or empty.");const t=Object.keys(preprocessedSequences);currentSequence%=t.length;const n=preprocessedSequences[t[currentSequence]];Object.entries(n).forEach((([t,n])=>{const a=n.find((e=>e.step===currentStep));a&&playChannelStep(t,a,e)})),incrementStepAndSequence(t.length)}function playChannelStep(e,t,n){const a=`Channel ${parseInt(e.slice(2))+1}`,o=globalAudioBuffers.find((e=>e.channel===a)),r=globalTrimTimes[a];o?.buffer&&r?playBuffer(o.buffer,r,a,n):console.error(`No audio buffer or trim times found for ${a}`)}
+
+// Initialize a BroadcastChannel for communication
+const AudionalPlayerMessages = new BroadcastChannel("channel_playback");
+
+function playBuffer(buffer, { startTrim, endTrim }, channel, startTime) {
+    const audioSource = audioCtx.createBufferSource();
+    audioSource.buffer = buffer;
+    audioSource.connect(audioCtx.destination);
+
+    const startOffset = startTrim * buffer.duration;
+    const duration = (endTrim - startTrim) * buffer.duration;
+
+    audioSource.start(startTime, startOffset, duration);
+
+    console.log(`Channel ${channel}: Scheduled play at ${startTime}, Start Time: ${startOffset}, Duration: ${duration}`);
+
+    let channelIndex = null;
+
+    if (channel.startsWith("Channel ")) {
+        channelIndex = parseInt(channel.replace("Channel ", ""), 10) - 1;
+    }
+
+    if (channelIndex === null) {
+        console.error("Invalid bufferKey format:", channel);
+        return;
+    }
+
+    AudionalPlayerMessages.postMessage({
+        action: "activeStep",
+        channelIndex: channelIndex,
+        step: currentStep
+    });
+
+    document.dispatchEvent(new CustomEvent("internalAudioPlayback", {
+        detail: {
+            action: "activeStep",
+            channelIndex: channelIndex,
+            step: currentStep
+        }
+    }));
+}
+
+function incrementStepAndSequence(sequenceLength) {
+    currentStep = (currentStep + 1) % 64;
+
+    if (currentStep === 0) {
+        currentSequence = (currentSequence + 1) % sequenceLength;
+    }
+}
+async function togglePlayback(){console.log(`[togglePlayback] ${isPlaying?"Stopping":"Initiating"} playback...`),isPlaying=!isPlaying,isPlaying?("suspended"===audioCtx.state&&await audioCtx.resume(),startPlaybackLoop()):(await audioCtx.suspend(),resetPlayback(),"undefined"!=typeof cci2&&"undefined"!=typeof initialCCI2&&(cci2=initialCCI2,console.log(`CCI2 reset to initial value ${initialCCI2} without stopping animation.`),"function"==typeof immediateVisualUpdate&&immediateVisualUpdate()))}
+function resetPlayback(){currentSequence=0,currentStep=0}document.addEventListener("keydown",(async e=>{" "===e.key&&(e.preventDefault(),togglePlayback())})),window.addEventListener("beforeunload",(()=>{clearInterval(intervalID),audioWorker&&audioWorker.terminate(),audioCtx.suspend().then((()=>console.log("AudioContext suspended successfully.")))}));const keyChannelMap={1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,0:10,q:11,w:12,e:13,r:14,t:15,y:16};let isReversePlay=!1;
+function playAudioForChannel(e){"suspended"===audioCtx.state&&audioCtx.resume(),console.log("Playing audio for channel:",e);const t=`Channel ${e}`,n=globalAudioBuffers.find((e=>e.channel===t));if(n&&n.buffer){const e=audioCtx.createBufferSource();if(isReversePlay)e.buffer=reverseAudioBuffer(n.buffer),e.connect(audioCtx.destination),e.start(0,0,e.buffer.duration);else{const a=globalTrimTimes[t];if(a){const t=n.buffer.duration;let o=t*a.startTrim;const r=t*a.endTrim-o;e.buffer=n.buffer,e.connect(audioCtx.destination),e.start(0,o,r)}}}else console.error("No audio buffer or trim times found for channel:",e)}
+function reverseAudioBuffer(e){const t=e.numberOfChannels;let n=audioCtx.createBuffer(t,e.length,e.sampleRate);for(let a=0;a<t;a++){const t=e.getChannelData(a),o=n.getChannelData(a);for(let n=0;n<e.length;n++)o[n]=t[e.length-1-n]}return n}document.addEventListener("keydown",(function(e){const t=e.key.toLowerCase();if(e.shiftKey&&"r"===t)return isReversePlay=!isReversePlay,void console.log("Reverse play is now:",isReversePlay?"enabled":"disabled");if(keyChannelMap.hasOwnProperty(t)){playAudioForChannel(keyChannelMap[t])}}));

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Audio Visualizer</title>
+    <link rel="stylesheet" href="s.css">
+    <style>
+        #play { display: none; }
+    </style>
+</head>
+<body>
+    <input type="file" id="jsonInput" accept=".json" style="display: none;" onchange="loadAudioData()">
+    <canvas id="cv"></canvas>
+
+    <!-- Controls for selecting color effect settings -->
+    <!-- <div class="control-panel">
+        <label for="arrayIndex">Effect Array: </label>
+        <input type="number" id="arrayIndex" min="0" max="15" value="0"> <!-- Assume 16 total arrays for example -->
+         -->
+        <!-- <label for="colorIndex">Color Setting: </label>
+        <input type="number" id="colorIndex" min="0" value="0"> Dynamically adjust max in JS -->
+    <!-- </div> -->
+
+
+    <script src="colorEffects.js"></script>
+    <script src="AUDXPlayer.js"></script>
+    <script src="seedAndStartColour.js"></script>
+    <script src="AUDXVisualiser.js"></script>
+
+    <script>
+
+        
+        // Assuming isPlaying is declared and properly toggled elsewhere
+        document.addEventListener('DOMContentLoaded', ensureAudioContextState);
+
+        async function loadAudioData() {
+            // Example stub function to handle file input change
+            // This function should read the file, update globalJsonData, preprocess audio and color settings
+            console.log('Audio data and settings loading...');
+            // Place preprocessing and setup code here
+            startPlaybackLoop(); // Ensure playback starts or restarts as necessary
+        }
+
+        async function ensureAudioContextState() {
+            if (window.audioCtx && audioCtx.state === 'suspended') {
+                await audioCtx.resume();
+                console.log('AudioContext resumed');
+            }
+        }
+
+        document.addEventListener('click', async () => {
+            await ensureAudioContextState(); // Make sure AudioContext is in a running state
+            togglePlayback();
+        });
+    </script>
+</body>
+</html>

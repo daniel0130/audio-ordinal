@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Audio Visualizer</title>
+    <link rel="stylesheet" href="s.css"> <!-- Assuming the CSS is applicable to the visualizer -->
+    <style>
+        /* Hide the play button to ensure only the visualizer is visible */
+        #play { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Keeping the file input for the audio data -->
+    <input type="file" id="jsonInput" accept=".json" style="display: none;"> <!-- Hide the file input as well -->
+    <canvas id="cv"></canvas>
+
+    <!-- Scripts for the playback engine -->
+    <script src="AUDXPlayer.js"></script>
+    <!-- Other scripts might be commented out if not needed or if everything required is in the above script -->
+
+    <!-- Scripts for the visualizer -->
+    <script src="colourSettings.js"></script>
+<script src="seedAndStartColour.js"></script>
+    <script src="AUDXVisualiser.js"></script>
+
+    <script>
+
+const audioEventDispatcher = new EventTarget();
+ 
+
+    document.addEventListener('click', togglePlayback);
+
+    async function togglePlayback() {
+        console.log(`[togglePlayback] ${isPlaying ? 'Stopping' : 'Initiating'} playback...`);
+        isPlaying = !isPlaying;
+
+        if (isPlaying) {
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            startPlaybackLoop();
+        } else {
+            await audioCtx.suspend();
+            resetPlayback();
+        }
+    }
+        function ensureAudioContextState() {
+            // This function ensures the AudioContext is in a running state. It's a stub here and should be implemented in your JavaScript file if not already present.
+            if (window.audioCtx && audioCtx.state === 'suspended') {
+                return audioCtx.resume();
+            }
+            return Promise.resolve();
+        }
+   
+        </script>
+        
+
+</body>
+</html>

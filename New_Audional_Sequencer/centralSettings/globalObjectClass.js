@@ -29,11 +29,99 @@ class UnifiedSequencerSettings {
             this.clearMasterSettings = this.clearMasterSettings.bind(this);
         }
 
+
+    initializeTrimSettings(numSettings) {
+        console.log("initializeTrimSettings entered");
+        if (channelIndex < 1) {
+        console.log("initializeTrimSettings", numSettings);
+        }
+        return Array.from({ length: numSettings }, () => ({
+            start: 0,
+            end: 100,
+            length: 0
+        }));
+    }
+
+    updateTrimSettingsUI(trimSettings) {
+        // Implement logic to update UI for trim settings
+        console.log("Trim settings UI entered and updated:", trimSettings);
+        // Example: Update each trim setting input field
+        trimSettings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+
+
+    // Method to register an observer
+    addObserver(observerFunction) {
+     
+        console.log("addObserver", observerFunction);
+        
+        this.observers.push(observerFunction);
+    }
+
+    // Method to notify all observers
+    notifyObservers() {
+   
+        console.log("notifyObservers");
+        
+        this.observers.forEach(observerFunction => observerFunction(this.settings));
+    }
+
+    setTrimSettings(channelIndex, start, end) {
+        console.log("setTrimSettings entered");
+        if (channelIndex < 1) {
+            console.log("setTrimSettings", channelIndex, start, end);
+        }
+        if (this.isValidIndex(channelIndex)) {
+            const currentSettings = this.settings.masterSettings.trimSettings[channelIndex];
+            if (currentSettings) {
+                Object.assign(currentSettings, { start, end });
+            } else {
+                console.error(`Trim settings not found for channel index: ${channelIndex}`);
+            }
+        } else {
+            console.error(`Invalid channel index: ${channelIndex}`);
+        }
+    }
+    
+    getTrimSettings(channelIndex) {
+        console.log("getTrimSettings entered");
+        const trimSettings = this.settings.masterSettings.trimSettings[channelIndex];
+        // Ensure there are always valid default values
+        return trimSettings || { start: 0, end: 1 }; // Use 0 and 1 (100%) as defaults if necessary
+      }
+      
+
+    updateTrimSettingsUI(trimSettings) {
+        console.log("updateTrimSettingsUI entered", trimSettings);
+        // Implement logic to update UI for trim settings
+        console.log("Trim settings UI updated:", trimSettings);
+        // Example: Update each trim setting input field
+        trimSettings.forEach((setting, index) => {
+            const startSlider = document.getElementById(`start-slider-${index}`);
+            const endSlider = document.getElementById(`end-slider-${index}`);
+            if (startSlider && endSlider) {
+                startSlider.value = setting.start;
+                endSlider.value = setting.end;
+            }
+        });
+    }
+
+
         exportSettings() {
             console.log("exportSettings entered");
         
             // Clone the masterSettings to avoid mutating the original object
             const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
+        
+            // Ensure currentSequence is set to 0 for the export
+            settingsClone.currentSequence = 0; // Set currentSequence to 0
         
             // Serialize step settings
             for (let sequenceKey in settingsClone.projectSequences) {
@@ -59,6 +147,7 @@ class UnifiedSequencerSettings {
         }
         
         
+        
             isValidIndex(index) {
                     console.log("isValidIndex entered");
                 return index >= 0 && index < 16; // Directly checking against 16
@@ -74,7 +163,7 @@ class UnifiedSequencerSettings {
                 // Use the formatURL function from formattingHelpers.js for URL formatting
                 // Ensure formatURL is accessible here, either by importing or defining it in the same scope
         
-                // Process channelURLs and projectURLs with proper URL formatting
+                // Process channelURLs with proper URL formatting
                 this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ?
                     parsedSettings.channelURLs.map(url => formatURL(url)) : [];
         
@@ -151,7 +240,7 @@ class UnifiedSequencerSettings {
     }
 
     setChannelURLs(urls) {
-        console.log("setProjectURLs entered");
+        console.log("setChannel entered");
         this.settings.masterSettings.channelURLs = urls;
         console.log(`[setChannelURLs] Channel URLs set:`, urls);
     
@@ -214,90 +303,6 @@ class UnifiedSequencerSettings {
         }
         
 
-
-    initializeTrimSettings(numSettings) {
-        console.log("initializeTrimSettings entered");
-        if (channelIndex < 1) {
-        console.log("initializeTrimSettings", numSettings);
-        }
-        return Array.from({ length: numSettings }, () => ({
-            start: 0,
-            end: 100,
-            length: 0
-        }));
-    }
-
-    updateTrimSettingsUI(trimSettings) {
-        // Implement logic to update UI for trim settings
-        console.log("Trim settings UI entered and updated:", trimSettings);
-        // Example: Update each trim setting input field
-        trimSettings.forEach((setting, index) => {
-            const startSlider = document.getElementById(`start-slider-${index}`);
-            const endSlider = document.getElementById(`end-slider-${index}`);
-            if (startSlider && endSlider) {
-                startSlider.value = setting.start;
-                endSlider.value = setting.end;
-            }
-        });
-    }
-
-
-    // Method to register an observer
-    addObserver(observerFunction) {
-     
-        console.log("addObserver", observerFunction);
-        
-        this.observers.push(observerFunction);
-    }
-
-    // Method to notify all observers
-    notifyObservers() {
-   
-        console.log("notifyObservers");
-        
-        this.observers.forEach(observerFunction => observerFunction(this.settings));
-    }
-
-    setTrimSettings(channelIndex, start, end) {
-        console.log("setTrimSettings entered");
-        if (channelIndex < 1) {
-            console.log("setTrimSettings", channelIndex, start, end);
-        }
-        if (this.isValidIndex(channelIndex)) {
-            const currentSettings = this.settings.masterSettings.trimSettings[channelIndex];
-            if (currentSettings) {
-                Object.assign(currentSettings, { start, end });
-            } else {
-                console.error(`Trim settings not found for channel index: ${channelIndex}`);
-            }
-        } else {
-            console.error(`Invalid channel index: ${channelIndex}`);
-        }
-    }
-    
-    getTrimSettings(channelIndex) {
-        console.log("getTrimSettings entered");
-        if (channelIndex < 1) {
-        console.log("getTrimSettings", channelIndex);
-        }
-        const trimSettings = this.settings.masterSettings.trimSettings[channelIndex];
-        return trimSettings || { start: 0.01, end: 100.00 };
-    }
-
-    updateTrimSettingsUI(trimSettings) {
-        console.log("updateTrimSettingsUI entered", trimSettings);
-        // Implement logic to update UI for trim settings
-        console.log("Trim settings UI updated:", trimSettings);
-        // Example: Update each trim setting input field
-        trimSettings.forEach((setting, index) => {
-            const startSlider = document.getElementById(`start-slider-${index}`);
-            const endSlider = document.getElementById(`end-slider-${index}`);
-            if (startSlider && endSlider) {
-                startSlider.value = setting.start;
-                endSlider.value = setting.end;
-            }
-        });
-    }
 
 
     // Example of a method that changes settings
@@ -552,7 +557,7 @@ class UnifiedSequencerSettings {
         }
     }
 
-    updateProjectURLsUI(urls) {
+    updateChannelURLsUI(urls) {
         // Implement logic to update UI for project URLs
         console.log("Project URLs UI entered and updated:", urls);
         // Example: Update each URL input field
