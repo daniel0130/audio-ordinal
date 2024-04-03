@@ -54,7 +54,16 @@ const fetchAudio = async (url, channelIndex) => {
     const contentType = response.headers.get('Content-Type');
     let audioData;
 
-    if (contentType && contentType.includes('text/html')) {
+    if (contentType && contentType.includes('application/json')) {
+      // Handle JSON content
+      const jsonResponse = await response.json();
+      const base64AudioData = jsonResponse.audioData;
+      if (!base64AudioData) {
+        console.error('[HTML Debugging] [fetchAudio] No audioData found in JSON response');
+        return;
+      }
+      audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]); // Assuming audioData is in the format: data:audio/mpeg;base64,...
+    } else if (contentType && contentType.includes('text/html')) {
       // Handle HTML content
       const htmlText = await response.text();
       const extractedAudioData = await importHTMLAudioData(htmlText, channelIndex);
