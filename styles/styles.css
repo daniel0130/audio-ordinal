@@ -311,6 +311,6 @@
 .donate-button:hover {
   transform: scale(1.1); /* Enlarges the button */
 }
-#sequencer-container {
+/* #sequencer-container {
   display: none;
-}
+} */
