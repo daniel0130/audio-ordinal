@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/BeBased_OB1.json'));
     loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/FREEDOM_to_TRANSACT.json'));
-    // loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Drums and Beats.json'));
+    loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/OB1_PresetTemplate.json'));
     // Additional presets can be added in the same manner
     
     // loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset4.json'));
