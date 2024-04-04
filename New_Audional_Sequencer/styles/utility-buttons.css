@@ -1,43 +1,17 @@
-
-
-#save-button, #new-load-button {
-    margin-left: 2px; /* Add some space between buttons */
-    right: 0px;
-  }
-  
-
-/* Apply the smooth wave effect directly to the Load button */
-#new-load-button {
-    margin-left: 2px; /* Add some space between buttons */
-    right: 0px;
-    background-color: rgb(255, 255, 255); /* Initial background color */
-    color: black; /* Initial text color */
-    animation: smooth-wave 4s linear infinite;
+.load-popup {
+    display: none;
+    position: absolute;
+    width: auto; /* This will make the div only as wide as its content requires */
+    min-width: 100px; /* You can set a min-width to ensure it doesn't get too narrow */
+    max-width: 300px; /* Optional: You can set a max-width if you want to limit how wide it can get */
+    max-height: 100px; /* Set a max-height for the container */
+    overflow-y: auto; /* Add scroll to the container */
+    border: 1px solid #aaa;
+    background-color: #f9f9f9;
+    z-index: 1000; /* Higher than other elements to ensure visibility */
+    box-sizing: border-box; /* This ensures borders and padding are included in the width */
+    padding: 10px 0; /* Add some padding on the top and bottom */
 }
-
-@keyframes smooth-wave {
-    0% {
-        background-color: rgb(255, 255, 255);
-        color: black;
-    }
-    25% {
-        background-color: #fd6f6f; /* Change to your desired yellow color */
-        color: black;
-    }
-    50% {
-        background-color: rgb(255, 255, 255);
-        color: black;
-    }
-    75% {
-        background-color: #ff6f6f; /* Change to your desired yellow color */
-        color: black;
-    }
-    100% {
-        background-color: rgb(255, 255, 255);
-        color: black;
-    }
-}
-
 
 /* Specific styles for the copy button */
 .copy-button {

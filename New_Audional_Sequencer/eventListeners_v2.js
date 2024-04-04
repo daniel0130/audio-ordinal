@@ -44,17 +44,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     loadButton.addEventListener('click', () => {
         console.log('[Save/Load debug] Load button clicked');
-        if (!loadButtonClicked) {
-            // Remove the "smooth-wave" class when the button is clicked for the first time
-            loadButton.classList.remove('smooth-wave');
-            
-            // Remove the animation property to stop the animation
-            loadButton.style.animation = 'none';
     
-            loadButtonClicked = true; // Set the flag to true
+        // Toggle the display of the load options menu
+        const loadOptionsVisible = loadOptions.style.display === "block";
+        loadOptions.style.display = loadOptionsVisible ? "none" : "block";
+    
+        if (!loadOptionsVisible) {
+            // Position the load menu underneath the load button
+            const rect = loadButton.getBoundingClientRect();
+            loadOptions.style.position = 'absolute';
+            loadOptions.style.left = `${rect.left}px`; // Align with the left edge of the button
+            loadOptions.style.top = `${rect.bottom + window.scrollY}px`; // Place it directly below the button
         }
-        loadOptions.style.display = loadOptions.style.display === "none" || loadOptions.style.display === "" ? "block" : "none";
     });
+    
     
 
     loadJson.addEventListener('click', () => {
