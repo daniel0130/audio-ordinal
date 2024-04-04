@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
         // Use projectName from the settings for the file name
         let projectName = window.unifiedSequencerSettings.settings.masterSettings.projectName;
-        downloadLink.download = `AUDX - Seq Settings - ${projectName}.json`;
+        downloadLink.download = `${projectName}_AUDX.json`;
     
         // Trigger a click on the download link
         downloadLink.click();
