@@ -64,6 +64,25 @@ document.addEventListener("DOMContentLoaded", function() {
         loadOptions.style.display = "none";
     });
 
+    async function loadSettingsAndFetchAudio(jsonSettings) {
+        console.log("[UnifiedLoad] Settings Loaded:", jsonSettings);
+        window.unifiedSequencerSettings.loadSettings(jsonSettings);
+    
+        // Determine the correct URLs array to use (handling both cases)
+        let urls = jsonSettings.channelURLs || jsonSettings.projectURLs; 
+        if (urls && Array.isArray(urls)) {
+            console.log("[UnifiedLoad] Found URLs:", urls);
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                if (url) {
+                    console.log(`[UnifiedLoad] Processing URL ${i}: ${url}`);
+                    const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
+                    await fetchAudio(url, i, loadSampleButtonElement);
+                }
+            }
+        }
+    }
+
     loadFileInput.addEventListener('change', () => {
         console.log('[Save/Load debug] loadFileInput change event');
         let file = loadFileInput.files[0];
@@ -72,27 +91,45 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log("File read start");
             let loadedSettings = JSON.parse(e.target.result);
             console.log("[loadFileInput] File content:", loadedSettings);
-        
-            // Load new settings and update UI
-            window.unifiedSequencerSettings.loadSettings(loadedSettings);
-
     
-            // Fetch audio for each URL in the loaded settings
-            if (loadedSettings.channelURLs && Array.isArray(loadedSettings.channelURLs)) {
-                for (let i = 0; i < loadedSettings.channelURLs.length; i++) {
-                    const url = loadedSettings.channelURLs[i];
-                    if (url) {
-                        // Continue with the existing logic to call fetchAudio
-                        const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
-                        await fetchAudio(url, i, loadSampleButtonElement);
-                    }
-                }
-            }
-            
+            // Using the unified function
+            await loadSettingsAndFetchAudio(loadedSettings);
         };
     
         reader.readAsText(file);
     });
+    
+    
+
+    // loadFileInput.addEventListener('change', () => {
+    //     console.log('[Save/Load debug] loadFileInput change event');
+    //     let file = loadFileInput.files[0];
+    //     let reader = new FileReader();
+    //     reader.onload = async function(e) {
+    //         console.log("File read start");
+    //         let loadedSettings = JSON.parse(e.target.result);
+    //         console.log("[loadFileInput] File content:", loadedSettings);
+        
+    //         // Load new settings and update UI
+    //         window.unifiedSequencerSettings.loadSettings(loadedSettings);
+
+    
+    //         // Fetch audio for each URL in the loaded settings
+    //         if (loadedSettings.channelURLs && Array.isArray(loadedSettings.channelURLs)) {
+    //             for (let i = 0; i < loadedSettings.channelURLs.length; i++) {
+    //                 const url = loadedSettings.channelURLs[i];
+    //                 if (url) {
+    //                     // Continue with the existing logic to call fetchAudio
+    //                     const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
+    //                     await fetchAudio(url, i, loadSampleButtonElement);
+    //                 }
+    //             }
+    //         }
+            
+    //     };
+    
+    //     reader.readAsText(file);
+    // });
     
     
 
@@ -103,19 +140,9 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(async jsonSettings => {
                 console.log("[internalPresetDebug] JSON settings fetched:", jsonSettings);
-                window.unifiedSequencerSettings.loadSettings(jsonSettings);
     
-                if (jsonSettings.projectURLs && Array.isArray(jsonSettings.projectURLs)) {
-                    console.log("[internalPresetDebug] Found project URLs:", jsonSettings.projectURLs);
-                    for (let i = 0; i < jsonSettings.projectURLs.length; i++) {
-                        const url = jsonSettings.projectURLs[i];
-                        if (url) {
-                            console.log(`[internalPresetDebug] Processing URL ${i}: ${url}`);
-                            const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
-                            await fetchAudio(url, i, loadSampleButtonElement);
-                        }
-                    }
-                }
+                // Using the unified function
+                await loadSettingsAndFetchAudio(jsonSettings);
             })
             .catch(error => console.error(`[internalPresetDebug] Error loading preset from ${filePath}:`, error));
         loadOptions.style.display = "none";
@@ -123,9 +150,11 @@ document.addEventListener("DOMContentLoaded", function() {
     
     
     
-    loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Vitalik Ordinals Remix.json'));
-    loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto Strings.json'));
-    loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Drums and Beats.json'));
+    loadInternalPreset1.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/BeBased_OB1.json'));
+    loadInternalPreset2.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/FREEDOM_to_TRANSACT.json'));
+    // loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Drums and Beats.json'));
+    // Additional presets can be added in the same manner
+    
     // loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset4.json'));
     // loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto2.json'));
 });
