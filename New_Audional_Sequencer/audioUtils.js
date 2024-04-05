@@ -218,9 +218,16 @@ function playTrimmedAudio(channelIndex, audioBuffer, url) {
 
 function calculateTrimValues(channelIndex, audioBuffer) {
   const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
-  let trimStart = (trimSettings.startSliderValue / 100) * audioBuffer.duration;
-  let trimEnd = (trimSettings.endSliderValue / 100) * audioBuffer.duration;
 
+  // Try to accommodate both possible settings formats
+  let trimStartPercentage = trimSettings.startSliderValue !== undefined ? trimSettings.startSliderValue : trimSettings.start;
+  let trimEndPercentage = trimSettings.endSliderValue !== undefined ? trimSettings.endSliderValue : trimSettings.end;
+
+  // Calculate start and end times in seconds
+  let trimStart = (trimStartPercentage / 100) * audioBuffer.duration;
+  let trimEnd = (trimEndPercentage / 100) * audioBuffer.duration;
+
+  // Ensure the calculated values are within the bounds of the audio buffer's duration
   trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
   trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
 
@@ -229,6 +236,7 @@ function calculateTrimValues(channelIndex, audioBuffer) {
       duration: trimEnd - trimStart
   };
 }
+
 
 
 

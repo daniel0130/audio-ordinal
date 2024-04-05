@@ -153,62 +153,92 @@ class UnifiedSequencerSettings {
                 return index >= 0 && index < 16; // Directly checking against 16
             }
     
-        loadSettings(jsonSettings) {
-            console.log("[internalPresetDebug] loadSettings entered");
-            try {
-                console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
-                const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-                console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
-        
-                // Use the formatURL function from formattingHelpers.js for URL formatting
-                // Ensure formatURL is accessible here, either by importing or defining it in the same scope
-        
-                // Process channelURLs with proper URL formatting
-                this.settings.masterSettings.channelURLs = parsedSettings.channelURLs ?
-                    parsedSettings.channelURLs.map(url => formatURL(url)) : [];
-        
-                this.settings.masterSettings.projectName = parsedSettings.projectName;
-                this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
-        
-                // this.settings.masterSettings.projectURLs = parsedSettings.projectURLs ?
-                //     parsedSettings.projectURLs.map(url => formatURL(url)) : [];
-        
-                this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
-                this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
-        
-                console.log("[internalPresetDebug] Updated masterSettings with full URLs:", this.settings.masterSettings);
-        
-                // Deserialize projectSequences step settings
-                if (parsedSettings.projectSequences) {
-                    for (let sequenceKey in parsedSettings.projectSequences) {
-                        let sequence = parsedSettings.projectSequences[sequenceKey];
-                        for (let channelKey in sequence) {
-                            let channel = sequence[channelKey];
-                            let steps = new Array(64).fill(false); // Assuming 64 steps per channel
-                            channel.steps.forEach(stepIndex => {
-                                if (stepIndex >= 1 && stepIndex <= 64) {
-                                    steps[stepIndex - 1] = true;
-                                }
-                            });
-                            channel.steps = steps;
+            loadSettings(jsonSettings) {
+                console.log("[internalPresetDebug] loadSettings entered");
+                try {
+                    // First, clear the current project settings to ensure a clean state
+                    this.clearMasterSettings();
+            
+                    console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
+                    const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
+                    console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
+            
+                    // Reset to sequence zero for a clean start
+                    this.settings.masterSettings.currentSequence = 0;
+            
+                    // Apply the basic settings directly
+                    this.settings.masterSettings.projectName = parsedSettings.projectName;
+                    this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+                    
+                    // Process and apply channel URLs with proper formatting
+                    if (parsedSettings.channelURLs) {
+                        for (let i = 0; i < parsedSettings.channelURLs.length; i++) {
+                            this.settings.masterSettings.channelURLs[i] = formatURL(parsedSettings.channelURLs[i]);
                         }
                     }
+                    
+                    // Directly assign trim settings and channel names
+                    this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
+                    this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
+            
+                    // Deserialize and apply project sequences step settings
+                    if (parsedSettings.projectSequences) {
+                        Object.keys(parsedSettings.projectSequences).forEach(sequenceKey => {
+                            let sequence = parsedSettings.projectSequences[sequenceKey];
+                            Object.keys(sequence).forEach(channelKey => {
+                                let channel = sequence[channelKey];
+                                let steps = new Array(64).fill(false); // Assuming 64 steps per channel
+                                channel.steps.forEach(stepIndex => {
+                                    if (stepIndex >= 1 && stepIndex <= 64) {
+                                        steps[stepIndex - 1] = true;
+                                    }
+                                });
+                                // Directly assign deserialized steps to the appropriate sequence and channel
+                                this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = steps;
+                            });
+                        });
+                    }
+            
+                    console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
+            
+                    // Update UI elements based on the new settings
+                    this.updateAllLoadSampleButtonTexts();
+                    // Notify observers to reflect changes in the UI and other dependent components
+                    this.notifyObservers();
+            
+                    // Additionally, ensure that the UI is updated to reflect the reset to sequence zero.
+                    this.updateUIForSequenceZero();
+                    
+                } catch (error) {
+                    console.error('[internalPresetDebug] Error loading settings:', error);
                 }
-    
-                this.settings.masterSettings = parsedSettings;
-    
-                console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
-    
-        
-                this.updateAllLoadSampleButtonTexts();
-                this.notifyObservers();
-        
-            } catch (error) {
-                console.error('[internalPresetDebug] Error loading settings:', error);
             }
-        }
+            
         
-           
+            updateUIForSequenceZero() {
+                console.log("UI updated for sequence zero.");
+            
+                // Assuming you have a way to select the current sequence UI element
+                const sequenceSelector = document.querySelector('.current-sequence-selector');
+                if (sequenceSelector) {
+                    sequenceSelector.value = 'Sequence0'; // Or however your sequence selector is structured
+                }
+            
+                // Reset step buttons to their default state for sequence zero
+                const channels = document.querySelectorAll('.channel');
+                channels.forEach((channel, channelIndex) => {
+                    const stepButtons = channel.querySelectorAll('.step-button');
+                    stepButtons.forEach((button, stepIndex) => {
+                        const stepState = this.getStepState(0, channelIndex, stepIndex);
+                        if (stepState) {
+                            button.classList.add('selected');
+                        } else {
+                            button.classList.remove('selected');
+                        }
+                    });
+                });
+            }
+            
 
         // Method to add a URL to the channelURLs array
         addChannelURL(index, url) {

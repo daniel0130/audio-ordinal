@@ -4,7 +4,7 @@
         const loadSampleButton = channel.querySelector('.load-sample-button');
         // Update the button text with the corresponding URL from channelURLs array
         loadSampleButton.textContent = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index];
-        updateModalButtonText(loadSampleButton, index); // Update modal button text
+        // updateModalButtonText(loadSampleButton, index); // Update modal button text
 
         // Add event listener to open the modal
         // loadSampleButton.addEventListener('click', () => 
@@ -102,12 +102,11 @@
     
         return container;
     }
-
+    
     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
         console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
         let url;
     
-        // Format and validate URLs directly using existing helper functions
         if (audionalInput.value) {
             url = 'https://ordinals.com/content/' + audionalInput.value;
         } else if (ipfsInput.value) {
@@ -123,9 +122,19 @@
         // Directly call fetchAudio to process and load the sample
         fetchAudio(url, index).then(() => {
             console.log(`[HTML Debugging] [handleLoad] Audio loaded for channel ${index}: ${url}`);
+    
             // Update the channel URL in global settings after successful audio loading
             window.unifiedSequencerSettings.addChannelURL(index, url);
+    
+            // Check if trim settings already exist for this channel, if not, set default
+            const existingTrimSettings = window.unifiedSequencerSettings.getTrimSettings(index);
+            if (!existingTrimSettings || Object.keys(existingTrimSettings).length === 0) {
+                // Apply default trim settings if none exist for the channel
+                window.unifiedSequencerSettings.setTrimSettings(index, 0.01, 100);
+            }
+    
             window.unifiedSequencerSettings.updateLoadSampleButtonText(index, loadSampleButton);
+            window.unifiedSequencerSettings.notifyObservers(); // Notify all observers of the update
         }).catch(error => {
             console.error(`[HTML Debugging] [handleLoad] Error loading audio for URL ${url}:`, error);
         });
@@ -134,6 +143,7 @@
         document.body.removeChild(idModal);
         console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
+    
 
     // function updateChannelButtonUI(settings) {
     //     settings.masterSettings.channelURLs.forEach((url, index) => {

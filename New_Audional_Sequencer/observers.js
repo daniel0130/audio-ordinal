@@ -1,7 +1,72 @@
 // observers.js
 
-// Assuming UnifiedSequencerSettings instance is accessible via a global variable
-// For example, window.unifiedSequencerSettings
+
+
+// Register all observers
+function registerObservers() {
+    console.log("[observers] registerObservers called")
+    if (window.unifiedSequencerSettings) {
+        window.unifiedSequencerSettings.addObserver(updateStepStateObserver);
+        window.unifiedSequencerSettings.addObserver(updateProjectNameObserver);
+        window.unifiedSequencerSettings.addObserver(updateBPMObserver);
+        window.unifiedSequencerSettings.addObserver(updateProjectURLsObserver);
+        window.unifiedSequencerSettings.addObserver(updateTrimSettingsObserver);
+        window.unifiedSequencerSettings.addObserver(updateProjectChannelNamesObserver);
+        window.unifiedSequencerSettings.addObserver(updateProjectSequencesObserver);
+        window.unifiedSequencerSettings.addObserver(updateCurrentSequenceObserver);
+        window.unifiedSequencerSettings.addObserver(updateTotalSequencesObserver);
+    } else {
+        console.error("UnifiedSequencerSettings instance not found.");
+    }
+}
+
+// This observer function should be placed in your observers file
+function updateStepStateObserver(settings) {
+    console.log("[observers] updateStepStateObserver called");
+
+    // Reset UI for step buttons across all channels
+    const channels = document.querySelectorAll('.channel');
+    channels.forEach(channel => {
+        const stepButtons = channel.querySelectorAll('.step-button');
+        stepButtons.forEach(button => button.classList.remove('selected'));
+    });
+
+    // Now, apply the current state of steps for sequence zero to the UI
+    const currentSequenceSettings = settings.masterSettings.projectSequences['Sequence0'];
+    if (currentSequenceSettings) {
+        Object.keys(currentSequenceSettings).forEach(channelKey => {
+            const channelIndex = parseInt(channelKey.replace('ch', ''), 10); // Assuming channel keys are 'ch0', 'ch1', etc.
+            const steps = currentSequenceSettings[channelKey].steps;
+            const channelElement = document.querySelector(`[data-id="Channel-${channelIndex}"]`);
+
+            if (channelElement) {
+                const stepButtons = channelElement.querySelectorAll('.step-button');
+                stepButtons.forEach((button, index) => {
+                    if (steps[index]) {
+                        button.classList.add('selected');
+                    }
+                });
+            }
+        });
+        window.unifiedSequencerSettings.updateUIForSequenceZero(); // Adjust based on your actual implementation
+    }
+
+    // If there are specific UI elements or indicators for the current sequence, update them here
+}
+
+// Observer for Trim Settings
+// Ensure the observer function for updating trim settings (updateTrimSettingsObserver)
+// correctly initializes the UI with default values if they are undefined.
+function updateTrimSettingsObserver(settings) {
+    console.log("[observers] updateTrimSettingsObserver called with:", settings)
+    if (settings && settings.masterSettings && settings.masterSettings.trimSettings) {
+        console.log("Updating Trim Settings UI:", settings.masterSettings.trimSettings);
+
+        // This assumes updateTrimSettingsUI correctly handles default values
+        updateTrimSettingsUI(settings.masterSettings.trimSettings);
+    }
+}
+
 
 // Observer for Project Name
 function updateProjectNameObserver(settings) {
@@ -33,15 +98,6 @@ function updateProjectURLsObserver(settings) {
     }
 }
 
-// Observer for Trim Settings
-function updateTrimSettingsObserver(settings) {
-    console.log("[observers] updateTrimSettingsObserver called with:", settings)    
-    if (settings && settings.masterSettings && settings.masterSettings.trimSettings) {
-        console.log("Updating Trim Settings UI:", settings.masterSettings.trimSettings);
-
-        updateTrimSettingsUI(settings.masterSettings.trimSettings);
-    }
-}
 
 // Observer for Project Channel Names
 function updateProjectChannelNamesObserver(settings) {
@@ -68,22 +124,6 @@ function updateProjectSequencesObserver(settings) {
     }
 }
 
-// Register all observers
-function registerObservers() {
-    console.log("[observers] registerObservers called")
-    if (window.unifiedSequencerSettings) {
-        window.unifiedSequencerSettings.addObserver(updateProjectNameObserver);
-        window.unifiedSequencerSettings.addObserver(updateBPMObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectURLsObserver);
-        window.unifiedSequencerSettings.addObserver(updateTrimSettingsObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectChannelNamesObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectSequencesObserver);
-        window.unifiedSequencerSettings.addObserver(updateCurrentSequenceObserver);
-        window.unifiedSequencerSettings.addObserver(updateTotalSequencesObserver);
-    } else {
-        console.error("UnifiedSequencerSettings instance not found.");
-    }
-}
 
 function updateCurrentSequenceObserver(settings) {
     console.log("[Observer] updateCurrentSequenceObserver called with:", settings)
