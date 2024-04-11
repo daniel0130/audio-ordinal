@@ -205,6 +205,7 @@ async function fetchAudio(url, channelIndex) {
 
 
 function playSound(currentSequence, channel, currentStep) {
+  // const playbackSpeed = window.unifiedSequencerSettings.getStepPlaybackSpeed(currentSequence, channelIndex, currentStep);
   console.log('playSound entered');
   const channelIndex = getChannelIndex(channel);
   console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
@@ -242,20 +243,31 @@ function playSound(currentSequence, channel, currentStep) {
 
 // Example modification in playTrimmedAudio function
 function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
-  console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
-  console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentStep}: ${isReversePlayback}`);
+console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
+console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentStep}: ${isReversePlayback}`);
+
+  // Fetch additional settings for the step
+  const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
 
   // Adjust the calculation of trim values based on the received isReversePlayback status
   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
 
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
-  source.connect(gainNodes[channelIndex]);
+  
+  // Create a gain node for volume control
+  const gainNode = audioContext.createGain();
+  gainNode.gain.value = isFinite(volume) ? volume : 1; // Default to 1 if non-finite
+  source.connect(gainNode);
+  gainNode.connect(gainNodes[channelIndex]); // Assuming gainNodes[channelIndex] is another gain node for global channel volume
   gainNodes[channelIndex].connect(audioContext.destination);
-
-  console.log(`[playTrimmedAudio] Playing audio for channel index: ${channelIndex}, step: ${currentStep}, from ${trimStart} for duration: ${duration}`);
+  console.log(`[playTrimmedAudio] setting volume for channel index: ${channelIndex}, step: ${currentStep}, volume: ${volume}`);
+    // Set playback rate for pitch control
+    source.playbackRate.value = isFinite(pitch) ? pitch : 1; // Default to 1 if non-finite
+    console.log('[playTrimmedAudio] Setting playback rate for pitch control for channel index: ${channelIndex}, step: ${currentStep}, pitch: ${pitch}');
   source.start(0, trimStart, duration);
 }
+
 
 
 
