@@ -15,8 +15,14 @@ function createStepButtonsForSequence() {
             updateButtonState(button, currentSequence, channelIndex, i);
 
             // Left-click Listener: Toggle activation (selected state)
-            button.addEventListener('click', () => {
-                toggleStepActivation(button, currentSequence, channelIndex, i);
+            button.addEventListener('click', (e) => {
+                if (e.shiftKey) {
+                    // Shift + Click: Open settings menu
+                    openStepSettingsMenu(button, currentSequence, channelIndex, i);
+                } else {
+                    // Regular Click: Toggle activation
+                    toggleStepActivation(button, currentSequence, channelIndex, i);
+                }
             });
 
             // Right-click Listener: Toggle reverse state
@@ -52,5 +58,6 @@ function updateButtonState(button, sequence, channelIndex, stepIndex) {
     if (isActive) button.style.backgroundColor = 'red';
     if (isReverse) button.style.backgroundColor = 'green';
 }
+
 
 document.addEventListener('DOMContentLoaded', createStepButtonsForSequence);
