@@ -1,0 +1,32 @@
+.load-popup {
+    display: none;
+    position: absolute;
+    width: auto; /* This will make the div only as wide as its content requires */
+    min-width: 100px; /* You can set a min-width to ensure it doesn't get too narrow */
+    max-width: 300px; /* Optional: You can set a max-width if you want to limit how wide it can get */
+    max-height: 100px; /* Set a max-height for the container */
+    overflow-y: auto; /* Add scroll to the container */
+    border: 1px solid #aaa;
+    background-color: #f9f9f9;
+    z-index: 1000; /* Higher than other elements to ensure visibility */
+    box-sizing: border-box; /* This ensures borders and padding are included in the width */
+    padding: 10px 0; /* Add some padding on the top and bottom */
+}
+
+/* Specific styles for the copy button */
+.copy-button {
+    background-color: #2196F3; /* Blue background */
+}
+
+.copy-button:hover {
+    background-color: #0b7dda; /* Darker blue on hover */
+}
+
+/* Specific styles for the paste button */
+.paste-button {
+    background-color: #FFC107; /* Amber background */
+}
+
+.paste-button:hover {
+    background-color: #ffb300; /* Darker amber on hover */
+}
