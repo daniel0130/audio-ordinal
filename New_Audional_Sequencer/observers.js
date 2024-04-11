@@ -5,54 +5,54 @@
 // Register all observers
 function registerObservers() {
     console.log("[observers] registerObservers called")
-    if (window.unifiedSequencerSettings) {
-        window.unifiedSequencerSettings.addObserver(updateStepStateObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectNameObserver);
-        window.unifiedSequencerSettings.addObserver(updateBPMObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectURLsObserver);
-        window.unifiedSequencerSettings.addObserver(updateTrimSettingsObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectChannelNamesObserver);
-        window.unifiedSequencerSettings.addObserver(updateProjectSequencesObserver);
-        window.unifiedSequencerSettings.addObserver(updateCurrentSequenceObserver);
-        window.unifiedSequencerSettings.addObserver(updateTotalSequencesObserver);
-    } else {
-        console.error("UnifiedSequencerSettings instance not found.");
-    }
+    // if (window.unifiedSequencerSettings) {
+    //     window.unifiedSequencerSettings.addObserver(updateStepStateObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateProjectNameObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateBPMObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateProjectURLsObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateTrimSettingsObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateProjectChannelNamesObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateProjectSequencesObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateCurrentSequenceObserver);
+    //     window.unifiedSequencerSettings.addObserver(updateTotalSequencesObserver);
+    // } else {
+    //     console.error("UnifiedSequencerSettings instance not found.");
+    // }
 }
 
-// This observer function should be placed in your observers file
-function updateStepStateObserver(settings) {
-    console.log("[observers] updateStepStateObserver called");
+// // This observer function should be placed in your observers file
+// function updateStepStateObserver(settings) {
+//     console.log("[observers] updateStepStateObserver called");
 
-    // Reset UI for step buttons across all channels
-    const channels = document.querySelectorAll('.channel');
-    channels.forEach(channel => {
-        const stepButtons = channel.querySelectorAll('.step-button');
-        stepButtons.forEach(button => button.classList.remove('selected'));
-    });
+//     // Reset UI for step buttons across all channels
+//     const channels = document.querySelectorAll('.channel');
+//     channels.forEach(channel => {
+//         const stepButtons = channel.querySelectorAll('.step-button');
+//         stepButtons.forEach(button => button.classList.remove('selected'));
+//     });
 
-    // Now, apply the current state of steps for sequence zero to the UI
-    const currentSequenceSettings = settings.masterSettings.projectSequences['Sequence0'];
-    if (currentSequenceSettings) {
-        Object.keys(currentSequenceSettings).forEach(channelKey => {
-            const channelIndex = parseInt(channelKey.replace('ch', ''), 10); // Assuming channel keys are 'ch0', 'ch1', etc.
-            const steps = currentSequenceSettings[channelKey].steps;
-            const channelElement = document.querySelector(`[data-id="Channel-${channelIndex}"]`);
+//     // Now, apply the current state of steps for sequence zero to the UI
+//     const currentSequenceSettings = settings.masterSettings.projectSequences['Sequence0'];
+//     if (currentSequenceSettings) {
+//         Object.keys(currentSequenceSettings).forEach(channelKey => {
+//             const channelIndex = parseInt(channelKey.replace('ch', ''), 10); // Assuming channel keys are 'ch0', 'ch1', etc.
+//             const steps = currentSequenceSettings[channelKey].steps;
+//             const channelElement = document.querySelector(`[data-id="Channel-${channelIndex}"]`);
 
-            if (channelElement) {
-                const stepButtons = channelElement.querySelectorAll('.step-button');
-                stepButtons.forEach((button, index) => {
-                    if (steps[index]) {
-                        button.classList.add('selected');
-                    }
-                });
-            }
-        });
-        window.unifiedSequencerSettings.updateUIForSequenceZero(); // Adjust based on your actual implementation
-    }
+//             if (channelElement) {
+//                 const stepButtons = channelElement.querySelectorAll('.step-button');
+//                 stepButtons.forEach((button, index) => {
+//                     if (steps[index]) {
+//                         button.classList.add('selected');
+//                     }
+//                 });
+//             }
+//         });
+//         window.unifiedSequencerSettings.updateUIForSequenceZero(); // Adjust based on your actual implementation
+//     }
 
-    // If there are specific UI elements or indicators for the current sequence, update them here
-}
+//     // If there are specific UI elements or indicators for the current sequence, update them here
+// }
 
 // Observer for Trim Settings
 // Ensure the observer function for updating trim settings (updateTrimSettingsObserver)
