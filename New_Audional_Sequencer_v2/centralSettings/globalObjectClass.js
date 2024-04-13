@@ -319,6 +319,8 @@
                     // Set current sequence to zero and update UI accordingly
                     this.setCurrentSequence(0);
                     this.updateUIForSequence(this.settings.masterSettings.currentSequence);
+                    handleSequenceTransition(0); // Explicitly set to 0 or use parsedSettings.currentSequence if available
+
             
                 } catch (error) {
                     console.error('[internalPresetDebug] Error loading settings:', error);
