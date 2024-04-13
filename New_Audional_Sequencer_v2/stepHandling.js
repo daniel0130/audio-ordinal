@@ -75,9 +75,9 @@ function playStep() {
     let isContinuousPlay = continuousPlayCheckbox.checked;
 
     // If the currentStep is 63 (meaning the last step has just played), move to the next sequence
-    if (isContinuousPlay && currentStep === 0) {
-        let nextSequence = (currentSequence + 1) % totalNumberOfSequences; // Assuming totalNumberOfSequences is defined
-        handleSequenceTransition(nextSequence);
+    if (isContinuousPlay && currentStep === 63) { // Assuming 64 steps per sequence
+        let nextSequence = (currentSequence + 1) % totalNumberOfSequences;
+        handleSequenceTransition(nextSequence, currentStep); // Pass currentStep to continue from the same step
     }
 
     // Optionally: Update display values
@@ -109,10 +109,8 @@ function incrementStepCounters() {
 }
 
 // Check if we need to switch to the next sequence (continuous play logic)
-function handleSequenceTransition(targetSequence) {
+function handleSequenceTransition(targetSequence, startStep = currentStep) {
     console.log("[SeqDebug][stepHandling] handleSequenceTransition entered");
-    // Inside handleSequenceTransition
-    console.log(`[SeqDebug] handleSequenceTransition called with sequence: ${targetSequence}`);
 
     // Set the target sequence
     window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
@@ -124,13 +122,11 @@ function handleSequenceTransition(targetSequence) {
         currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
     }
 
-
-    // Reset counters, recreate step buttons, and update UI
-    resetCountersForNewSequence();
+    // Reset and update the UI without resetting the step counters if startStep is provided
+    resetCountersForNewSequence(startStep);
     createStepButtonsForSequence();
 
     console.log(`[SeqDebug][handleSequenceTransition] Checking reverse state retention for sequence ${targetSequence}`);
-
 
     // Delay updating the UI to ensure DOM has updated
     setTimeout(() => {
@@ -141,14 +137,12 @@ function handleSequenceTransition(targetSequence) {
 
 
 
-
-
-function resetCountersForNewSequence() {
-    beatCount = 0;
-    barCount = 0;
-    currentStep = 0;
-    totalStepCount = 0;
+function resetCountersForNewSequence(startStep = 0) {
+    currentStep = startStep; // Set the currentStep to the provided startStep
+    beatCount = Math.floor(startStep / 4); // Assuming each beat is 4 steps
+    barCount = Math.floor(startStep / 16); // Assuming each bar is 16 steps
+    totalStepCount = startStep; // This might need adjustment based on your total step counting logic
+    console.log(`[resetCountersForNewSequence] Counters reset for new sequence starting at step ${startStep}`);
 }
-
 
 // displayUpdatedValues();
