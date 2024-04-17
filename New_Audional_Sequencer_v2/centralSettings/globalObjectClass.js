@@ -190,13 +190,13 @@
             
 
             getStepState(currentSequence, channelIndex, stepIndex) {
-                console.log("getStepState entered");
+                // console.log("getStepState entered");
                 const sequence = this.settings.masterSettings.projectSequences[`Sequence${currentSequence}`];
                 const channel = sequence && sequence[`ch${channelIndex}`];
                 if (channel && stepIndex < channel.steps.length) {
                     const step = channel.steps[stepIndex];
                     // Return the isActive state of the step
-                    console.log(`getStepState Step at Seq: ${currentSequence}, Ch: ${channelIndex}, Step: ${stepIndex} is active: ${step.isActive}`);
+                    // console.log(`getStepState Step at Seq: ${currentSequence}, Ch: ${channelIndex}, Step: ${stepIndex} is active: ${step.isActive}`);
                     return step.isActive;
                 } else {
                     console.error('Invalid sequence, channel, or step index in getStepState');
@@ -435,7 +435,7 @@
     }
     
     getTrimSettings(channelIndex) {
-        console.log("getTrimSettings entered");
+        // console.log("getTrimSettings entered");
         const trimSettings = this.settings.masterSettings.trimSettings[channelIndex];
         // Ensure there are always valid default values
         return trimSettings || { start: 0, end: 1 }; // Use 0 and 1 (100%) as defaults if necessary
@@ -522,7 +522,7 @@
 
 
     getprojectUrlforChannel(channelIndex) {
-        console.log("getprojectUrlforChannel entered");
+        // console.log("getprojectUrlforChannel entered");
         return this.settings.masterSettings.channelURLs[channelIndex];
     }
 
@@ -592,7 +592,7 @@
 
     // Method to get the current sequence
     getCurrentSequence() {
-        console.log("getCurrentSequence entered");
+        // console.log("getCurrentSequence entered");
         return this.settings.masterSettings.currentSequence;
     }
 

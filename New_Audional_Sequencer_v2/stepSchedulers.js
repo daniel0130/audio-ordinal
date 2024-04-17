@@ -37,14 +37,14 @@ function resumeScheduler() {
 }
 
 function scheduleNextStep() {
-    console.log('[SequenceChangeDebug] Scheduling next step.');
-    console.log("[SequenceChangeDebug] Attempting to play sound for Channel:", "Step:", currentStep);
+    // console.log('[SequenceChangeDebug] Scheduling next step.');
+    // console.log("[SequenceChangeDebug] Attempting to play sound for Channel:", "Step:", currentStep);
 
     const bpm = window.unifiedSequencerSettings.getBPM() || 105; // Fallback to 105 BPM
-    console.log(`[scheduleNextStep] Current BPM: ${bpm}`);
+    // console.log(`[scheduleNextStep] Current BPM: ${bpm}`);
 
     stepDuration = 60 / bpm / 4;
-    console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`);
+    // console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`);
 
     timeoutId = setTimeout(() => {
         playStep();

@@ -7,14 +7,14 @@ const audioBuffers = new Map();
 
 // Function to get the ID from a URL
 function getIDFromURL(url) {
-  console.log('[HTML Debugging] getIDFromURL entered');
+  // console.log('[HTML Debugging] getIDFromURL entered');
   const parts = url.split('/');
   return parts[parts.length - 1];
 }
 
 // Logging function to reduce redundancy
 function logConversion(conversionType, details, length) {
-  console.log(`[HTML Debugging] [${conversionType}] Entered function. ${details} length: ${length}`);
+  // console.log(`[HTML Debugging] [${conversionType}] Entered function. ${details} length: ${length}`);
 }
 
 // Function to convert base64 to an array buffer
@@ -152,13 +152,13 @@ const decodeAudioData = (audioData) => {
 
 
 async function fetchAudio(url, channelIndex) {
-  console.log(`[fetchAndProcessAudio] Entered function. URL: ${url}, Channel Index: ${channelIndex}`);
+  // console.log(`[fetchAndProcessAudio] Entered function. URL: ${url}, Channel Index: ${channelIndex}`);
   try {
       const fullUrl = formatURL(url);
-      console.log(`[fetchAndProcessAudio] Formatted URL: ${fullUrl}`);
+      // console.log(`[fetchAndProcessAudio] Formatted URL: ${fullUrl}`);
 
       const response = await fetch(fullUrl);
-      console.log(`[fetchAndProcessAudio] Fetch response received for URL: ${fullUrl}`);
+      // console.log(`[fetchAndProcessAudio] Fetch response received for URL: ${fullUrl}`);
 
       if (!response.ok) {
           console.error(`[fetchAndProcessAudio] Fetch request failed for URL: ${fullUrl}, Status: ${response.status}`);
@@ -166,29 +166,29 @@ async function fetchAudio(url, channelIndex) {
       }
 
       const contentType = response.headers.get('Content-Type');
-      console.log(`[fetchAndProcessAudio] Content-Type of response: ${contentType}`);
+      // console.log(`[fetchAndProcessAudio] Content-Type of response: ${contentType}`);
 
       let audioData;
       let sampleName = fullUrl.split('/').pop(); // Fallback sample name from URL
-      console.log(`[fetchAndProcessAudio] Initial sampleName set to: ${sampleName}`);
+      // console.log(`[fetchAndProcessAudio] Initial sampleName set to: ${sampleName}`);
 
       if (contentType.includes('application/json')) {
-          console.log("[fetchAndProcessAudio] Processing as JSON");
+          // console.log("[fetchAndProcessAudio] Processing as JSON");
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response);
           audioData = processedAudioData;
           sampleName = processedSampleName || sampleName;
-          console.log(`[fetchAndProcessAudio] Processed sampleName from JSON: ${sampleName}`);
+          // console.log(`[fetchAndProcessAudio] Processed sampleName from JSON: ${sampleName}`);
       } else if (contentType.includes('text/html')) {
-          console.log("[fetchAndProcessAudio] Processing as HTML");
+          // console.log("[fetchAndProcessAudio] Processing as HTML");
           const htmlText = await response.text();
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processHTMLResponse(htmlText);
           audioData = processedAudioData;
           sampleName = processedSampleName || sampleName;
-          console.log(`[fetchAndProcessAudio] Processed sampleName from HTML: ${sampleName}`);
+          // console.log(`[fetchAndProcessAudio] Processed sampleName from HTML: ${sampleName}`);
       } else {
-          console.log("[fetchAndProcessAudio] Processing as direct audio file");
+          // console.log("[fetchAndProcessAudio] Processing as direct audio file");
           audioData = await response.arrayBuffer();
-          console.log("[fetchAndProcessAudio] Audio data set from direct audio file");
+          // console.log("[fetchAndProcessAudio] Audio data set from direct audio file");
       }
 
       // Now, use decodeAndStoreAudio to handle decoding and storage
@@ -206,19 +206,19 @@ async function fetchAudio(url, channelIndex) {
 
 function playSound(currentSequence, channel, currentStep) {
   // const playbackSpeed = window.unifiedSequencerSettings.getStepPlaybackSpeed(currentSequence, channelIndex, currentStep);
-  console.log('playSound entered');
+  // console.log('playSound entered');
   const channelIndex = getChannelIndex(channel);
-  console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
+  // console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
 
   const stepState = window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
-  console.log(`[playSound Debugging] [playSound] setting stepState using direct call to: ${stepState}`);
+  // console.log(`[playSound Debugging] [playSound] setting stepState using direct call to: ${stepState}`);
   
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
-  console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
+  // console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
 
  // Check if the step is either active or marked for reverse playback.
   if (!isActive && !isReverse) {
-    console.log("[playSound Debugging] [playSound] Current step is neither active nor reverse. Skipping playback.");
+    // console.log("[playSound Debugging] [playSound] Current step is neither active nor reverse. Skipping playback.");
     return;
   }
   const isReversePlayback = isReverse;
@@ -227,15 +227,15 @@ function playSound(currentSequence, channel, currentStep) {
   const stepButton = document.getElementById(stepButtonId);
 
   const url = getAudioUrl(channelIndex) + (isReversePlayback ? "_reverse" : "");
-  console.log("[playSound Debugging] [playSound] Audio URL:", url);
+  // console.log("[playSound Debugging] [playSound] Audio URL:", url);
 
   const audioBuffer = audioBuffers.get(url);
   if (!audioBuffer) {
-      console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
+      // console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
       return;
   }
   
-  console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
+  // console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
 
   playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback); // Include isReversePlayback as an argument
 }
@@ -243,8 +243,8 @@ function playSound(currentSequence, channel, currentStep) {
 
 // Example modification in playTrimmedAudio function
 function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
-console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
-console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentStep}: ${isReversePlayback}`);
+// console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
+// console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentStep}: ${isReversePlayback}`);
 
   // Fetch additional settings for the step
   const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
@@ -261,10 +261,10 @@ console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentSt
   source.connect(gainNode);
   gainNode.connect(gainNodes[channelIndex]); // Assuming gainNodes[channelIndex] is another gain node for global channel volume
   gainNodes[channelIndex].connect(audioContext.destination);
-  console.log(`[playTrimmedAudio] setting volume for channel index: ${channelIndex}, step: ${currentStep}, volume: ${volume}`);
+  // console.log(`[playTrimmedAudio] setting volume for channel index: ${channelIndex}, step: ${currentStep}, volume: ${volume}`);
     // Set playback rate for pitch control
     source.playbackRate.value = isFinite(pitch) ? pitch : 1; // Default to 1 if non-finite
-    console.log('[playTrimmedAudio] Setting playback rate for pitch control for channel index: ${channelIndex}, step: ${currentStep}, pitch: ${pitch}');
+    // console.log('[playTrimmedAudio] Setting playback rate for pitch control for channel index: ${channelIndex}, step: ${currentStep}, pitch: ${pitch}');
   source.start(0, trimStart, duration);
 }
 
@@ -272,18 +272,18 @@ console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentSt
 
 
 function calculateTrimValues(channelIndex, audioBuffer, isReversePlayback) {
-  console.log(`[calculateTrimValues] Called for channelIndex: ${channelIndex}, isReversePlayback: ${isReversePlayback}`);
+  // console.log(`[calculateTrimValues] Called for channelIndex: ${channelIndex}, isReversePlayback: ${isReversePlayback}`);
 
   const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
   let trimStartPercentage = trimSettings.startSliderValue !== undefined ? trimSettings.startSliderValue : 0;
   let trimEndPercentage = trimSettings.endSliderValue !== undefined ? trimSettings.endSliderValue : 100;
 
-  console.log(`[calculateTrimValues] Trim Settings: Start = ${trimStartPercentage}%, End = ${trimEndPercentage}%`);
+  // console.log(`[calculateTrimValues] Trim Settings: Start = ${trimStartPercentage}%, End = ${trimEndPercentage}%`);
 
   let trimStart = (trimStartPercentage / 100) * audioBuffer.duration;
   let trimEnd = (trimEndPercentage / 100) * audioBuffer.duration;
 
-  console.log(`[calculateTrimValues] Calculated Times (before mirroring): Start = ${trimStart}s, End = ${trimEnd}s, Buffer Duration = ${audioBuffer.duration}s`);
+  // console.log(`[calculateTrimValues] Calculated Times (before mirroring): Start = ${trimStart}s, End = ${trimEnd}s, Buffer Duration = ${audioBuffer.duration}s`);
 
   if (isReversePlayback) {
     // Reverse the calculation for mirrored start and end times
@@ -296,7 +296,7 @@ function calculateTrimValues(channelIndex, audioBuffer, isReversePlayback) {
   trimStart = Math.max(0, Math.min(trimStart, audioBuffer.duration));
   trimEnd = Math.max(trimStart, Math.min(trimEnd, audioBuffer.duration));
 
-  console.log(`[calculateTrimValues] Final Calculated Values: Trim Start = ${trimStart}s, Trim End = ${trimEnd}s, Duration = ${trimEnd - trimStart}s`);
+  // console.log(`[calculateTrimValues] Final Calculated Values: Trim Start = ${trimStart}s, Trim End = ${trimEnd}s, Duration = ${trimEnd - trimStart}s`);
 
   return {
     trimStart: trimStart,
@@ -315,7 +315,7 @@ function getChannelIndex(channel) {
 function getAudioUrl(channelIndex) {
   // Example check to ensure URL exists for the given channel index
   if (typeof window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex) === 'undefined') {
-    console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${channelIndex}`);
+    // console.error(`[getAudioUrl] [ playSound ] URL not found for channel index: ${channelIndex}`);
     return 'defaultURL'; // Provide a default URL or handle the error appropriately
   }
   return window.unifiedSequencerSettings.getprojectUrlforChannel(channelIndex);
@@ -328,7 +328,7 @@ function getAudioBuffer(url) {
 
 // Function to toggle the play state
 function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
-  console.log('togglePlayState entered');
+  // console.log('togglePlayState entered');
   if (!isPlaying) {
     isPlaying = true;
     startStopFunction();
@@ -339,8 +339,8 @@ function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton
 
 // Function to update the mute state in a single function
 function updateMuteState(channel, isMuted) {
-  console.log('updateMuteState entered');
-  console.log("updateMuteState - isMuted: " + isMuted);
+  // console.log('updateMuteState entered');
+  // console.log("updateMuteState - isMuted: " + isMuted);
   const channelIndex = parseInt(channel.dataset.id.split('-')[1]);
   channel.dataset.muted = isMuted ? 'true' : 'false';
   const muteButton = channel.querySelector('.mute-button');
@@ -365,10 +365,10 @@ function updateMuteState(channel, isMuted) {
 
 // Function to handle manual toggle of the mute button
 function toggleMute(channelElement) {
-  console.log('toggleMute entered');
+  // console.log('toggleMute entered');
   const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]);
   const isMuted = channelMutes[channelIndex];
   updateMuteState(channelElement, !isMuted, channelIndex);
-  console.log('Mute has been toggled by the toggleMute function');
+  // console.log('Mute has been toggled by the toggleMute function');
 }
 

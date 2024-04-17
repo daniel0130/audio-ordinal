@@ -19,26 +19,25 @@ document.addEventListener("DOMContentLoaded", function() {
     // let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
     // let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
     // let loadButtonClicked = false; // Flag to track if the load button is clicked
-        
     // Previous Sequence Button
-    document.getElementById('prev-sequence').addEventListener('click', function() {
-        let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-        let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
-        let prevSequence = (currentSequence - 1 + totalSequences) % totalSequences;
+document.getElementById('prev-sequence').addEventListener('click', function() {
+    let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+    let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
+    let prevSequence = (currentSequence - 1 + totalSequences) % totalSequences;
 
-        // Use handleSequenceTransition to smoothly move to the previous sequence
-        handleSequenceTransition(prevSequence);
-    });
+    // Pass currentStep to handle sequence transition
+    handleSequenceTransition(prevSequence, currentStep);
+});
 
-    // Next Sequence Button
-    document.getElementById('next-sequence').addEventListener('click', function() {
-        let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-        let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
-        let nextSequence = (currentSequence + 1) % totalSequences;
+// Next Sequence Button
+document.getElementById('next-sequence').addEventListener('click', function() {
+    let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+    let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
+    let nextSequence = (currentSequence + 1) % totalSequences;
 
-        // Use handleSequenceTransition to smoothly move to the next sequence
-        handleSequenceTransition(nextSequence);
-    });
+    // Pass currentStep to handle sequence transition
+    handleSequenceTransition(nextSequence, currentStep);
+});
 
 
     saveButton.addEventListener('click', () => {

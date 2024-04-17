@@ -3,7 +3,7 @@
 let totalNumberOfSequences = 16;
 
 function handleStep(channel, channelData, totalStepCount) {
-    console.log('handleStep entered');
+    // console.log('handleStep entered');
     let isMuted = channel.dataset.muted === 'true';
     const isToggleMuteStep = channelData.toggleMuteSteps.includes(totalStepCount);
 
@@ -12,14 +12,14 @@ function handleStep(channel, channelData, totalStepCount) {
         channel.dataset.muted = isMuted ? 'true' : 'false';
         // Update the mute state in the DOM
         updateMuteState(channel, isMuted);
-        console.log('Mute toggled by the handleStep function');
+        // console.log('Mute toggled by the handleStep function');
     }
 
     return isMuted;
 }
 
 function renderPlayhead(buttons, currentStep) {
-    console.log('renderPlayhead entered');
+    // console.log('renderPlayhead entered');
     buttons.forEach((button, buttonIndex) => {
         button.classList.remove('playing');
         button.classList.remove('triggered');
@@ -33,14 +33,15 @@ function renderPlayhead(buttons, currentStep) {
         }
     });
 }
+
 function playStep() {
-    console.log("[stepHandling][playStep] Function entered");
+    // console.log("[stepHandling][playStep] Function entered");
 
     const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
     const presetData = presets.preset1;
 
     for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
-        console.log(`[playStep] Processing channel index: ${channelIndex}`);
+        // console.log(`[playStep] Processing channel index: ${channelIndex}`);
 
         const channel = channels[channelIndex];
         const buttons = channel.querySelectorAll('.step-button');
@@ -52,25 +53,51 @@ function playStep() {
 
         renderPlayhead(buttons, currentStep);
         const isMuted = handleStep(channel, channelData, totalStepCount);
-        console.log(`[playStep] Mute state for channel index ${channelIndex}: ${isMuted}`);
+        // console.log(`[playStep] Mute state for channel index ${channelIndex}: ${isMuted}`);
 
         playSound(currentSequence, channel, currentStep);
-        console.log(`[playStep] Playing sound for current sequence: ${currentSequence}, channel index: ${channelIndex}, current step: ${currentStep}`);
+        // console.log(`[playStep] Playing sound for current sequence: ${currentSequence}, channel index: ${channelIndex}, current step: ${currentStep}`);
     }
 
+    const isLastStep = currentStep === 63;
     incrementStepCounters();
 
     const continuousPlayCheckbox = document.getElementById('continuous-play');
     let isContinuousPlay = continuousPlayCheckbox.checked;
 
-    if (isContinuousPlay && currentStep === 63) {
+    // Check if it's the last step and continuous play is enabled, then transition
+    if (isContinuousPlay && isLastStep) {
         let nextSequence = (currentSequence + 1) % totalNumberOfSequences;
         handleSequenceTransition(nextSequence, 0); // Always start from step 0 on automatic transition
     }
 }
 
-function handleSequenceTransition(targetSequence, startStep = 0) {
-    console.log("[SeqDebug][stepHandling] handleSequenceTransition entered");
+function incrementStepCounters() {
+    // Increment step first before checking if it's the last step in playStep()
+    currentStep = (currentStep + 1) % 64;
+    totalStepCount = (totalStepCount + 1);
+    nextStepTime += stepDuration;
+
+    if (currentStep % 4 === 0) {
+        beatCount++;
+        emitBeat(beatCount);
+    }
+
+    if (currentStep % 16 === 0) {
+        barCount++;
+        emitBar(barCount);
+    }
+
+    if (currentStep === 0) {
+        sequenceCount++;
+        // console.log(`[playStep-count] Sequence count: ${sequenceCount}`);
+    }
+    // console.log(`[SeqDebug][playStep-count] Next step time: ${nextStepTime}`);
+}
+
+
+function handleSequenceTransition(targetSequence, startStep) {
+    // console.log("[SeqDebug][stepHandling] handleSequenceTransition entered");
 
     window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
     console.log(`[SeqDebug][stepHandling] Sequence set to ${targetSequence}`);
@@ -80,12 +107,17 @@ function handleSequenceTransition(targetSequence, startStep = 0) {
         currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
     }
 
+    // If no specific start step is provided, default to the current step
+    if (startStep === undefined) {
+        startStep = currentStep;
+    }
+
     resetCountersForNewSequence(startStep);
     createStepButtonsForSequence();
 
     setTimeout(() => {
         window.unifiedSequencerSettings.updateUIForSequence(targetSequence);
-        console.log(`[SeqDebug][handleSequenceTransition][stepHandling] UI updated for sequence ${targetSequence}`);
+        // console.log(`[SeqDebug][handleSequenceTransition][stepHandling] UI updated for sequence ${targetSequence}`);
     }, 100);
 }
 
@@ -100,27 +132,3 @@ function resetCountersForNewSequence(startStep = 0) {
 
 // displayUpdatedValues();
 
-
-
-function incrementStepCounters() {
-    currentStep = (currentStep + 1) % 64;
-    totalStepCount = (totalStepCount + 1);
-    nextStepTime += stepDuration;
-
-
-    if (currentStep % 4 === 0) {
-        beatCount++;
-        emitBeat(beatCount);
-    }
-
-    if (currentStep % 16 === 0) {
-        barCount = (barCount + 1);
-        emitBar(barCount);
-    }
-
-    if (currentStep % 64 === 0) {
-        sequenceCount++;
-        console.log(`[playStep-count] Sequence count: ${sequenceCount}`);
-    }
-    console.log(`[SeqDebug][playStep-count] Next step time: ${nextStepTime}`);
-}

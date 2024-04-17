@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script>
+var u=new URLSearchParams(location.search),s=document.createElement('script');
+window.seed=u.get('seed')||'defaultSeed';
+window.jsonDataUrl="https://ordinals.com/content/b77bc993907aaae50d0e4d4e7bb001d725141cf71b1b92a6716e4dddc97bb028i0";
+s.src="loader.js";
+document.body.appendChild(s);
+document.body.style.cssText='margin:0;padding:0;overflow:hidden;height:100%;width:100%;display:flex;justify-content:center;align-items:center;background:#000';
+c=document.createElement('canvas');
+c.id='cv';
+c.style.cssText='width:100%;max-height:100%;object-fit:contain';
+document.body.appendChild(c);
+</script>
