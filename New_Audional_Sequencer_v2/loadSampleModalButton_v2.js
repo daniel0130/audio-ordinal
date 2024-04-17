@@ -24,11 +24,17 @@
         idModalContent.appendChild(createTextParagraph('Or, enter an IPFS ID for an off-chain Audional:'));
         const ipfsInput = createInputField('Enter IPFS ID:');
         idModalContent.appendChild(ipfsInput);
+
+          // New section: Choose local audio file
+        idModalContent.appendChild(createTextParagraph('Or, select a local audio file (MP3, WAV, FLAC, Base64):'));
+        const fileInput = createFileInput();
+        idModalContent.appendChild(fileInput);
+
     
-        addInputListeners(audionalInput, ipfsInput);
+        addInputListeners(audionalInput, ipfsInput, fileInput);
     
         // Add Load and Cancel buttons with unique class names for styling
-        idModalContent.appendChild(createButton('Load Sample ID', () => handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton), 'loadButton', 'Load Audio from ID'));
+        idModalContent.appendChild(createButton('Load Sample ID', () => handleLoad(index, audionalInput, ipfsInput, fileInput, idModal, loadSampleButton), 'loadButton', 'Load Audio from ID'));
         idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal), 'cancelButton', 'Close this window'));
     
         // Add the 'Search Ordinal Audio Files' button with a unique class name and tooltip
@@ -51,6 +57,14 @@
         return content;
     }
 
+    function updateModalButtonText(button, index) {
+        const channelName = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index];
+        if (channelName) {
+            button.textContent = channelName;
+        } else {
+            button.textContent = `Load new audience (${index})`;
+        }
+    }
 
     function createTextParagraph(text) {
         const paragraph = document.createElement('p');
@@ -67,14 +81,31 @@
         return input;
     }
 
-    function addInputListeners(audionalInput, ipfsInput) {
+    function createFileInput() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.mp3, .wav, .flac, text/plain';  // Accept MP3, WAV, FLAC, and text files for Base64
+        fileInput.className = 'loadSampleModalButton-input';
+        return fileInput;
+    }
+    
+    function addInputListeners(audionalInput, ipfsInput, fileInput) {
         audionalInput.addEventListener('input', () => {
-            ipfsInput.disabled = !!audionalInput.value;
+            ipfsInput.disabled = fileInput.disabled = !!audionalInput.value;
         });
-
+    
         ipfsInput.addEventListener('input', () => {
-            audionalInput.disabled = !!ipfsInput.value;
+            audionalInput.disabled = fileInput.disabled = !!ipfsInput.value;
         });
+    
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                audionalInput.disabled = ipfsInput.disabled = true;
+            } else {
+                audionalInput.disabled = ipfsInput.disabled = false;
+            }
+        });
+        
     }
 
     function createButton(text, onClick, className, tooltipText) {
@@ -94,57 +125,90 @@
     
         return container;
     }
-
-    function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
+    
+    function handleLoad(index, audionalInput, ipfsInput, fileInput, idModal, loadSampleButton) {
         console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
-        let url;
+        console.log(`[HTML Debugging] [handleLoad] Audional Input Value: ${audionalInput.value}`);
+        console.log(`[HTML Debugging] [handleLoad] IPFS Input Value: ${ipfsInput.value}`);
+        console.log(`[HTML Debugging] [handleLoad] File Input:`, fileInput.files);
     
         if (audionalInput.value) {
-            url = 'https://ordinals.com/content/' + audionalInput.value;
+            const url = 'https://ordinals.com/content/' + audionalInput.value;
+            console.log(`[HTML Debugging] [handleLoad] Loading from Ordinals with URL: ${url}`);
+            fetchAndProcessURL(url, index, idModal, loadSampleButton);
         } else if (ipfsInput.value) {
-            url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+            const url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+            console.log(`[HTML Debugging] [handleLoad] Loading from IPFS with URL: ${url}`);
+            fetchAndProcessURL(url, index, idModal, loadSampleButton);
+        } else if (fileInput.files.length > 0) {
+            console.log(`[HTML Debugging] [handleLoad] Local file selected: ${fileInput.files[0].name}`);
+            processLocalFile(fileInput.files[0], index, idModal, loadSampleButton);
         } else {
-            console.log("[HTML Debugging] [handleLoad] No input value found.");
-            return; // Exit early if no input value is provided
+            console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
+            alert("Please enter an ID or select a file.");
+            return;  // Exit early if no input value or file is provided
         }
     
-        // Ensure URL formatting is consistent with application expectations
-        url = formatURL(url);
-    
-        // Directly call fetchAudio to process and load the sample
-        fetchAudio(url, index).then(() => {
-            console.log(`[HTML Debugging] [handleLoad] Audio loaded for channel ${index}: ${url}`);
-    
-            // Update the channel URL in global settings after successful audio loading
-            window.unifiedSequencerSettings.addChannelURL(index, url);
-    
-            // Check if trim settings already exist for this channel, if not, set default
-            const existingTrimSettings = window.unifiedSequencerSettings.getTrimSettings(index);
-            if (!existingTrimSettings || Object.keys(existingTrimSettings).length === 0) {
-                // Apply default trim settings if none exist for the channel
-                window.unifiedSequencerSettings.setTrimSettings(index, 0.01, 100);
+        // Only remove the modal if an action has been initiated
+        if (audionalInput.value || ipfsInput.value || fileInput.files.length > 0) {
+            console.log('Preparing to remove modal', idModal);
+            if (document.body.contains(idModal)) {
+                document.body.removeChild(idModal);
+                console.log('Modal removed successfully');
+            } else {
+                console.error('Failed to remove modal: it is not a child of document.body', idModal);
             }
+          
+            console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
+        }
+    }
     
+    function fetchAndProcessURL(url, index, idModal, loadSampleButton) {
+        console.log(`[HTML Debugging] [fetchAndProcessURL] Fetching URL: ${url}`);
+        url = formatURL(url);  // Ensure URL formatting is consistent with application expectations
+    
+        fetchAudio(url, index).then(() => {
+            console.log(`[HTML Debugging] [fetchAndProcessURL] Audio loaded for channel ${index}: ${url}`);
+            window.unifiedSequencerSettings.addChannelURL(index, url);
+            updateSettingsAfterLoad(index, loadSampleButton);
+        }).catch(error => {
+            console.error(`[HTML Debugging] [fetchAndProcessURL] Error loading audio for URL ${url}:`, error);
+        });
+    }
+    
+    function processLocalFile(file, index, idModal, loadSampleButton) {
+        const url = URL.createObjectURL(file); // This creates a blob URL that acts as a temporary URL
+        console.log(`[HTML Debugging] [processLocalFile] Temporary URL created for local file: ${url}`);
+    
+        // Directly call fetchAudio as if it was loaded from a URL
+        fetchAudio(url, index).then(() => {
+            console.log(`[HTML Debugging] [processLocalFile] Audio loaded for channel ${index} using temporary URL: ${url}`);
+            window.unifiedSequencerSettings.addChannelURL(index, url);
             window.unifiedSequencerSettings.updateLoadSampleButtonText(index, loadSampleButton);
             window.unifiedSequencerSettings.notifyObservers(); // Notify all observers of the update
         }).catch(error => {
-            console.error(`[HTML Debugging] [handleLoad] Error loading audio for URL ${url}:`, error);
+            console.error(`[HTML Debugging] [processLocalFile] Error loading audio for temporary URL ${url}:`, error);
         });
     
-        // Close the modal
+        // Clean up the modal
         document.body.removeChild(idModal);
-        console.log(`[HTML Debugging] [handleLoad] Modal removed for channel ${index}`);
     }
     
-
-    // function updateChannelButtonUI(settings) {
-    //     settings.masterSettings.channelURLs.forEach((url, index) => {
-    //         const button = document.querySelector(`#channelButton-${index}`);
-    //         if (button) {
-    //             button.textContent = settings.masterSettings.projectChannelNames[index] || url;
-    //         }
-    //     });
-    // }
+    
+    async function loadAudioData(audioData, index, fileName, loadSampleButton) {
+        console.log(`[HTML Debugging] [loadAudioData] Decoding audio data for file: ${fileName}`);
+        const audioBuffer = await decodeAudioData(audioData);
+        audioBuffers.set(fileName, audioBuffer);
+        console.log(`[HTML Debugging] [loadAudioData] Audio loaded and buffered for channel ${index}: ${fileName}`);
+        window.unifiedSequencerSettings.setProjectChannelName(index, fileName);
+        updateSettingsAfterLoad(index, loadSampleButton);
+    }
+    
+    function updateSettingsAfterLoad(index, loadSampleButton) {
+        console.log(`[HTML Debugging] [updateSettingsAfterLoad] Updating settings post-load for channel ${index}`);
+        window.unifiedSequencerSettings.updateLoadSampleButtonText(index, loadSampleButton);
+        window.unifiedSequencerSettings.notifyObservers();  // Notify all observers of the update
+    }
     
     
     function createExternalLinkButton(text, url, className, tooltipText) {
@@ -171,6 +235,15 @@
     
     
 
+    // function updateChannelButtonUI(settings) {
+    //     settings.masterSettings.channelURLs.forEach((url, index) => {
+    //         const button = document.querySelector(`#channelButton-${index}`);
+    //         if (button) {
+    //             button.textContent = settings.masterSettings.projectChannelNames[index] || url;
+    //         }
+    //     });
+    // }
+    
 //     function handleLoad(index, audionalInput, ipfsInput, idModal, loadSampleButton) {
 //         console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
 //         let url;

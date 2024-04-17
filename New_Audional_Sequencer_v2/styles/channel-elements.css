@@ -190,3 +190,32 @@
 .color-008000 .color-FF0000 .step-button.selected { background-color: #008000; }
 .color-FFC0CB .color-FF0000 .step-button.selected { background-color: #FFC0CB; }
 .color-D2691E .color-FF0000 .step-button.selected { background-color: #D2691E; }
+
+
+.fwd-pattern-selection {
+    flex: 1; /* Flex grow and shrink */
+    overflow: hidden; /* Changed from 'auto' to 'hidden' to prevent unnecessary scrollbars */
+    text-overflow: ellipsis;
+    font-size: 0.8em; /* Consider making this responsive as well */
+    max-height: 20px;
+    max-width: 20px; /* Changed from 'max-width' to 'width' for consistency */
+    padding: 1px;
+    font-weight: bold;
+    background-color: #ffffff; /* Default background color */
+    color: #333; /* Default text color */
+    border: 1px solid #000000; /* Default border */
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s; /* Smooth transition for color changes */
+}
+
+/* Hover effect */
+.fwd-pattern-selection:hover {
+    background-color: #ff8888; /* Lighter background color on hover */
+}
+
+/* Clicked effect */
+.fwd-pattern-selection:active {
+    background-color: blue; /* Change background color to blue when clicked */
+    transition: background-color 0s; /* Remove transition for instant color change */
+}
+
+/* Add any additional styling as needed */

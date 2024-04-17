@@ -4,13 +4,20 @@ import { setupLoadSampleModalButton } from './loadSampleModalButton_v2.js';
 console.log("channelsForeach.js entered");
     channels.forEach((channel, index) => {
         channel.dataset.id = `Channel-${index}`;
-    
+
         // Create a gain node for the channel
         const gainNode = audioContext.createGain();
         gainNode.gain.value = 1; // Initial volume set to 1 (full volume)
         gainNode.connect(audioContext.destination);
         gainNodes[index] = gainNode;
-    
+
+        const volumeButton = channel.querySelector('.volume-button');
+        if (volumeButton) {
+            volumeButton.addEventListener('click', () => {
+                showVolumeSlider(volumeButton, index);
+            });
+        }
+
         const muteButton = channel.querySelector('.mute-button');
         muteButton.addEventListener('click', () => {
             console.log(`Mute button clicked for Channel-${index}`);

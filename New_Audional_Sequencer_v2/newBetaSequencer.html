@@ -85,16 +85,24 @@
             </p>
         </div>
         <main id="app" role="main"><!-- Channel Templates -->
+            <!-- Channel Templates -->
             <div class="channel-template" style="display: none;">
                 <div class="channel">
                     <button class="load-sample-button tooltip" title="Load New Audional">Load New Audional
                         <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
                     </button>
+                
+                    <button class="control-button volume-button tooltip" style="background-color: rgb(255, 145, 0); font-weight: bold;">
+                        <span class="letter">V</span>
+                        <span class="tooltiptext">Adjust the volume of the current channel.</span>
+                    </button>
+                    
                     <!-- Open Audio Trimmer Button for each channel -->
                     <button class="control-button open-audio-trimmer tooltip" style="background-color: blue; font-weight: bold;">
                         <span class="letter">T</span>
                         <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
                     </button>
+                    
                     <button class="control-button clear-button tooltip">
                         <span class="letter">C</span>
                         <span class="tooltiptext">Clear the current channel's sequence.</span>
@@ -102,19 +110,31 @@
                             Click again to confirm clear
                         </div>
                     </button>
+                    
                     <button class="control-button mute-button tooltip">
                         <span class="letter">M</span>
                         <span class="tooltiptext">Mute or unmute the current channel.</span>
                     </button>
+                    
                     <button class="control-button solo-button tooltip">
                         <span class="letter">S</span>
                         <span class="tooltiptext">Solo the current channel.</span>
                     </button>
-                        <!-- Steps Container (Where step buttons go) -->
-                        <div class="steps-container"></div>
-                       
-                        </div>
-                    </div>
+                    
+                    <!-- Steps Container (Where step buttons go) -->
+                    <div class="steps-container"></div>
+                    
+                    <!-- Pattern Selection Button and Pattern Shift Buttons -->
+                    <button class="control-button fwd-pattern-selection tooltip">
+                        <span class="emoji">🔲</span>
+                        <span class="tooltiptext">Select a pattern for the current channel.</span>
+                    </button>
+                    <!--Pattern Shift Button - A Button with a big red arrow pointing to the right-->
+                    <button class="control-button pattern-shift-right tooltip">
+                        <span class="emoji">➡️</span>
+                        <span class="tooltiptext">Shift the pattern 1 step to the right.</span>
+                    </button>
+
                 </div>
             </div>
         </main><!-- Modal Structure -->
@@ -133,7 +153,7 @@
             <label for="continuous-play" class="tooltip">Continuous Play
                 <span class="tooltiptext">Toggle continuous play mode</span>
             </label>
-            <input type="checkbox" id="continuous-play" class="tooltip" checked>
+            <input type="checkbox" id="continuous-play" class="tooltip" unchecked>
 
             <!--<div id="quick-play-button" class="tooltip">
                 <span class="tooltiptext">Quick play button</span>
@@ -158,6 +178,8 @@
 
 <script src="centralSettings/globalObjectClass.js"></script>
 <script src="centralSettings/importExportGlobalSettings.js"></script>
+<script src="volumeSettings.js"></script> 
+<script src="patternSelectionButtons.js"></script>   
 <script src="AudioTrimModule/audioTrimModuleHelperFunctions.js"></script>
 <script src="AudioTrimModule/audioTrimModule_v2.js"></script>
 <script src="centralSettings/globalObjectHelperFunctions_v2.js"></script>
