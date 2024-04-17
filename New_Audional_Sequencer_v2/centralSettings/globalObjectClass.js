@@ -31,82 +31,7 @@
                 this.formatURL = this.formatURL.bind(this);
             }
 
-            getChannelVolume(channelIndex) {
-                const channelSettings = this.settings.masterSettings.channelSettings || {};
-                return channelSettings[`ch${channelIndex}`]?.volume || 1; // Default volume is 1
-            }
-
-            getChannelPitch(channelIndex) {
-                const channelSettings = this.settings.masterSettings.channelSettings || {};
-                return channelSettings[`ch${channelIndex}`]?.pitch || 1; // Default pitch is 1
-            }
-
-            getStepVolume(sequenceIndex, channelIndex, stepIndex) {
-                const step = this.getStepSettings(sequenceIndex, channelIndex, stepIndex);
-                return step.volume;
-            }
-            
-            getStepPitch(sequenceIndex, channelIndex, stepIndex) {
-                const step = this.getStepSettings(sequenceIndex, channelIndex, stepIndex);
-                return step.pitch;
-            }
-
-            setChannelVolume(channelIndex, volume) {
-                if (!this.settings.masterSettings.channelSettings) {
-                    this.settings.masterSettings.channelSettings = {};
-                }
-                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
-                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
-                }
-                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
-                
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
-
-            setChannelPitch(channelIndex, pitch) {
-                if (!this.settings.masterSettings.channelSettings) {
-                    this.settings.masterSettings.channelSettings = {};
-                }
-                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
-                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
-                }
-                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].pitch = pitch;
-                
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
-
-            setStepVolume(channelIndex, stepIndex, volume) {
-                const sequence = this.settings.masterSettings.currentSequence;
-                const channel = this.settings.masterSettings.projectSequences[`Sequence${sequence}`]?.[`ch${channelIndex}`];
-                const step = channel?.steps[stepIndex];
-                if (step) {
-                    step.volume = volume;
-                } else {
-                    console.error('Invalid sequence, channel, or step index in setStepVolume');
-                }
-                
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
-
-            setStepPitch(channelIndex, stepIndex, pitch) {
-                const sequence = this.settings.masterSettings.currentSequence;
-                const channel = this.settings.masterSettings.projectSequences[`Sequence${sequence}`]?.[`ch${channelIndex}`];
-                const step = channel?.steps[stepIndex];
-                if (step) {
-                    step.pitch = pitch;
-                } else {
-                    console.error('Invalid sequence, channel, or step index in setStepPitch');
-                }
-                
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
-            
-            
-                        
+                          
 
             initializeSequences(numSequences, numChannels, numSteps) {
                 console.log("initializeSequences entered", numSequences, numChannels, numSteps);
@@ -235,6 +160,83 @@
             }
             
             
+
+            getChannelVolume(channelIndex) {
+                const channelSettings = this.settings.masterSettings.channelSettings || {};
+                return channelSettings[`ch${channelIndex}`]?.volume || 1; // Default volume is 1
+            }
+
+            getChannelPitch(channelIndex) {
+                const channelSettings = this.settings.masterSettings.channelSettings || {};
+                return channelSettings[`ch${channelIndex}`]?.pitch || 1; // Default pitch is 1
+            }
+
+            getStepVolume(sequenceIndex, channelIndex, stepIndex) {
+                const step = this.getStepSettings(sequenceIndex, channelIndex, stepIndex);
+                return step.volume;
+            }
+            
+            getStepPitch(sequenceIndex, channelIndex, stepIndex) {
+                const step = this.getStepSettings(sequenceIndex, channelIndex, stepIndex);
+                return step.pitch;
+            }
+
+            setChannelVolume(channelIndex, volume) {
+                if (!this.settings.masterSettings.channelSettings) {
+                    this.settings.masterSettings.channelSettings = {};
+                }
+                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
+                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
+                }
+                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
+                
+                // Notify observers to update the UI or other components if necessary
+                this.notifyObservers();
+            }
+
+            setChannelPitch(channelIndex, pitch) {
+                if (!this.settings.masterSettings.channelSettings) {
+                    this.settings.masterSettings.channelSettings = {};
+                }
+                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
+                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
+                }
+                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].pitch = pitch;
+                
+                // Notify observers to update the UI or other components if necessary
+                this.notifyObservers();
+            }
+
+            setStepVolume(channelIndex, stepIndex, volume) {
+                const sequence = this.settings.masterSettings.currentSequence;
+                const channel = this.settings.masterSettings.projectSequences[`Sequence${sequence}`]?.[`ch${channelIndex}`];
+                const step = channel?.steps[stepIndex];
+                if (step) {
+                    step.volume = volume;
+                } else {
+                    console.error('Invalid sequence, channel, or step index in setStepVolume');
+                }
+                
+                // Notify observers to update the UI or other components if necessary
+                this.notifyObservers();
+            }
+
+            setStepPitch(channelIndex, stepIndex, pitch) {
+                const sequence = this.settings.masterSettings.currentSequence;
+                const channel = this.settings.masterSettings.projectSequences[`Sequence${sequence}`]?.[`ch${channelIndex}`];
+                const step = channel?.steps[stepIndex];
+                if (step) {
+                    step.pitch = pitch;
+                } else {
+                    console.error('Invalid sequence, channel, or step index in setStepPitch');
+                }
+                
+                // Notify observers to update the UI or other components if necessary
+                this.notifyObservers();
+            }
+            
+            
+          
       
             exportSettings() {
                 const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
