@@ -49,14 +49,13 @@ let clearConfirmTimeout = Array(channels.length).fill(null);
 // });
 
 
-    if (!audioContext) {
-        try {
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioContext = new AudioContext();
-        } catch (e) {
-            console.warn('Web Audio API is not supported in this browser');
-        }
+if (!audioContext) {
+    try {
+        audioContext = window.unifiedSequencerSettings.audioContext; // Use global audio context
+    } catch (e) {
+        console.warn('Web Audio API is not supported in this browser');
     }
+}
 
     // Function to update the actual volume
     function updateVolume(channel, index) {

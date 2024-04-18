@@ -9,8 +9,8 @@ function startScheduler() {
     });
 
     clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
-    audioContext.resume();
-    startTime = audioContext.currentTime;
+    window.unifiedSequencerSettings.audioContext.resume();
+    startTime = window.unifiedSequencerSettings.audioContext.currentTime;
     nextStepTime = startTime;
 
     const currentBPM = window.unifiedSequencerSettings.getBPM();
@@ -21,16 +21,16 @@ function startScheduler() {
 
 function pauseScheduler() {
     clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
-    audioContext.suspend();
-    pauseTime = audioContext.currentTime;  // record the time at which the sequencer was paused
+    window.unifiedSequencerSettings.audioContext.suspend();
+    pauseTime = window.unifiedSequencerSettings.audioContext.currentTime;  // record the time at which the sequencer was paused
     isPaused = true;
 }
 
 function resumeScheduler() {
   if(isPaused) {
       // Replace the startTime adjustment with a nextStepTime reset
-      audioContext.resume();
-      nextStepTime = audioContext.currentTime;
+      window.unifiedSequencerSettings.audioContext.resume();
+      nextStepTime = window.unifiedSequencerSettings.audioContext.currentTime;
       isPaused = false;
   }
   scheduleNextStep(); // Begin scheduling steps again

@@ -1,51 +1,58 @@
-    // globalObjectClass.js
+class UnifiedSequencerSettings {
+    constructor(audioContext) {
+        this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        this.observers = [];
 
-    class UnifiedSequencerSettings {
-        constructor() {
-            this.observers = [];
-
-            this.settings = {
-                masterSettings: {
-                    projectName: 'New Audx Project', // Set the project name placeholder
-                    projectBPM: 120,
-                    currentSequence: 0, // Initialize with a default value
-                    channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
-
-                    // projectURLs: new Array(16).fill(''), 
-                    trimSettings: Array.from({ length: 16 }, () => ({
-                        start: 0.01,
-                        end: 100.00,
-                        length: 0
-                    })),
-                    projectChannelNames: new Array(16).fill(''), // Placeholder for channel names
-                    projectSequences: this.initializeSequences(16, 16, 64) // Adjust dimensions as needed
-                }
-                
-            };
-
-
-            // Bind methods
-                this.checkSettings = this.checkSettings.bind(this);
-                this.clearMasterSettings = this.clearMasterSettings.bind(this);
-                this.loadSettings = this.loadSettings.bind(this);
-                this.formatURL = this.formatURL.bind(this);
+        this.settings = {
+            masterSettings: {
+                projectName: 'New Audx Project',
+                projectBPM: 120,
+                currentSequence: 0,
+                channelURLs: new Array(16).fill(''),
+                channelVolume: new Array(16).fill(1),  // Default volume set to 1
+                trimSettings: Array.from({ length: 16 }, () => ({
+                    start: 0.01,
+                    end: 100.00,
+                    length: 0
+                })),
+                projectChannelNames: new Array(16).fill(''),
+                projectSequences: this.initializeSequences(16, 16, 64)
             }
+        };
 
-                          
+        this.initializeGainNodes();  // Ensure gain nodes are initialized on construction
+        // Bind methods
+        this.checkSettings = this.checkSettings.bind(this);
+        this.clearMasterSettings = this.clearMasterSettings.bind(this);
+        this.loadSettings = this.loadSettings.bind(this);
+        this.formatURL = this.formatURL.bind(this);
+    }
 
-            initializeSequences(numSequences, numChannels, numSteps) {
-                console.log("initializeSequences entered", numSequences, numChannels, numSteps);
-                
-                let sequenceData = {};
-                for (let seq = 0; seq < numSequences; seq++) {
-                    sequenceData[`Sequence${seq}`] = this.initializeChannels(numChannels, numSteps);
-                }
-                return sequenceData;
+
+    initializeGainNodes() {
+        // Initialize gain nodes for each channel based on the default or specified volume
+        this.gainNodes = this.settings.masterSettings.channelVolume.map((volume, index) => {
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+            gainNode.connect(this.audioContext.destination);
+            return gainNode;
+        });
+
+        console.log("GainNodes initialized for all channels");
+    }
+
+
+        initializeSequences(numSequences, numChannels, numSteps) {
+            let sequenceData = {};
+            for (let seq = 0; seq < numSequences; seq++) {
+                sequenceData[`Sequence${seq}`] = this.initializeChannels(numChannels, numSteps);
             }
-            
-            initializeChannels(numChannels, numSteps) {
-                let channels = {};
-                for (let ch = 0; ch < numChannels; ch++) {
+            return sequenceData;
+        }
+
+        initializeChannels(numChannels, numSteps) {
+            let channels = {};
+            for (let ch = 0; ch < numChannels; ch++) {
                 channels[`ch${ch}`] = {
                     steps: Array.from({ length: numSteps }, () => ({
                     isActive: false,
@@ -56,9 +63,9 @@
                     mute: false,
                     url: ''
                 };
-                }
-                return channels;
             }
+            return channels;
+        }
 
             // Inside the UnifiedSequencerSettings class
             getStepSettings(sequenceIndex, channelIndex, stepIndex) {

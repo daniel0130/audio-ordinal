@@ -113,14 +113,12 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
 // For example, if you need the reverse buffer for https://example.com/audio.mp3, 
 // you would look for https://example.com/audio.mp3_reverse in the audioBuffers map.
 async function createReverseBuffer(audioBuffer) {
+  const audioContext = window.unifiedSequencerSettings.audioContext;
   const numberOfChannels = audioBuffer.numberOfChannels;
   const length = audioBuffer.length;
   const sampleRate = audioBuffer.sampleRate;
 
-  // Create an empty AudioBuffer for the reversed audio
   const reverseBuffer = audioContext.createBuffer(numberOfChannels, length, sampleRate);
-
-  // Copy and reverse each channel's data
   for (let channel = 0; channel < numberOfChannels; channel++) {
       const forwardData = audioBuffer.getChannelData(channel);
       const reverseData = reverseBuffer.getChannelData(channel);
@@ -128,7 +126,6 @@ async function createReverseBuffer(audioBuffer) {
           reverseData[i] = forwardData[length - 1 - i];
       }
   }
-
   return reverseBuffer;
 }
 
@@ -136,16 +133,14 @@ async function createReverseBuffer(audioBuffer) {
 
 // Function to decode audio data
 const decodeAudioData = (audioData) => {
-  let byteArray = new Uint8Array(audioData.slice(0, 20));
-  console.log('[HTML Debugging] [decodeAudioData] ArrayBuffer first 20 bytes:', byteArray.join(', '));
-    return new Promise((resolve, reject) => {
-      audioContext.decodeAudioData(audioData, (decodedData) => {
+  const audioContext = window.unifiedSequencerSettings.audioContext;
+  return new Promise((resolve, reject) => {
+      audioContext.decodeAudioData(audioData, decodedData => {
           console.log('[HTML Debugging] [decodeAudioData] Audio data decoded successfully.');
           resolve(decodedData);
-      }, (error) => {
-        console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
-
-        reject(error);
+      }, error => {
+          console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
+          reject(error);
       });
   });
 };
@@ -243,28 +238,18 @@ function playSound(currentSequence, channel, currentStep) {
 
 // Example modification in playTrimmedAudio function
 function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
-// console.log('[playTrimmedAudio] Audio buffer found for URL:', url);
-// console.log(`[playTrimmedAudio Debugging] isReversePlayback for step ${currentStep}: ${isReversePlayback}`);
-
-  // Fetch additional settings for the step
-  const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
-
-  // Adjust the calculation of trim values based on the received isReversePlayback status
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
-
+  const audioContext = window.unifiedSequencerSettings.audioContext;
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
-  
-  // Create a gain node for volume control
+
   const gainNode = audioContext.createGain();
-  gainNode.gain.value = isFinite(volume) ? volume : 1; // Default to 1 if non-finite
+  const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
+  gainNode.gain.value = isFinite(volume) ? volume : 1;
   source.connect(gainNode);
-  gainNode.connect(gainNodes[channelIndex]); // Assuming gainNodes[channelIndex] is another gain node for global channel volume
-  gainNodes[channelIndex].connect(audioContext.destination);
-  // console.log(`[playTrimmedAudio] setting volume for channel index: ${channelIndex}, step: ${currentStep}, volume: ${volume}`);
-    // Set playback rate for pitch control
-    source.playbackRate.value = isFinite(pitch) ? pitch : 1; // Default to 1 if non-finite
-    // console.log('[playTrimmedAudio] Setting playback rate for pitch control for channel index: ${channelIndex}, step: ${currentStep}, pitch: ${pitch}');
+  gainNode.connect(audioContext.destination);
+
+  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
+  source.playbackRate.value = isFinite(pitch) ? pitch : 1;
   source.start(0, trimStart, duration);
 }
 

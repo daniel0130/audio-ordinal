@@ -1,15 +1,19 @@
 // channelsForeach.js
 
+// channelsForeach.js
+
 import { setupLoadSampleModalButton } from './loadSampleModalButton_v2.js';
+
 console.log("channelsForeach.js entered");
     channels.forEach((channel, index) => {
         channel.dataset.id = `Channel-${index}`;
 
-        // Create a gain node for the channel
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 1; // Initial volume set to 1 (full volume)
-        gainNode.connect(audioContext.destination);
-        gainNodes[index] = gainNode;
+        // Directly use the gainNode from UnifiedSequencerSettings
+        const gainNode = window.unifiedSequencerSettings.gainNodes[index];
+        if (!gainNode) {
+            console.error("GainNode not found for channel:", index);
+            return;
+        }
 
         const volumeButton = channel.querySelector('.volume-button');
         if (volumeButton) {
@@ -17,6 +21,9 @@ console.log("channelsForeach.js entered");
                 showVolumeSlider(volumeButton, index);
             });
         }
+
+
+
 
         const muteButton = channel.querySelector('.mute-button');
         muteButton.addEventListener('click', () => {
