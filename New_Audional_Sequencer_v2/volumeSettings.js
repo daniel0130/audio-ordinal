@@ -1,96 +1,91 @@
 // volumeSettings.js
 
+let volumeModalTimeout; // To track the inactivity timeout
+
+
 document.addEventListener("DOMContentLoaded", function() {
-    // Attach event listeners to all volume buttons
     const volumeButtons = document.querySelectorAll('.volume-button');
     volumeButtons.forEach((button, index) => {
         button.addEventListener('click', (event) => {
-            showVolumeSlider(event.target, index);
+            console.log('volumeButton clicked, opening volume slider modal:', volumeButtons);
+
+            // // Stop propagation to prevent the document-level click handler from closing the modal immediately
+            event.stopPropagation(); 
+            openVolumeModal(event.currentTarget, index);
         });
+    });
+
+    // Close the modal if the click is outside of it
+    document.addEventListener('click', function(event) {
+        console.log('VolumeButton clicked to close:', event.target);
+        if (!event.target.closest('.volume-modal')) {
+            closeVolumeModal();
+        }
     });
 });
 
-function showVolumeSlider(button, channelIndex) {
-    // Remove any existing sliders first
-    const existingSlider = document.querySelector('.volume-slider');
-    if (existingSlider) {
-        existingSlider.parentNode.removeChild(existingSlider);
-    }
 
-    // Create a new slider
+function openVolumeModal(button, channelIndex) {
+    // Close any existing modals first
+    closeVolumeModal();
+
+    // Create the modal container
+    const modal = document.createElement('div');
+    modal.classList.add('volume-modal');
+
+    // Style the modal to position it correctly (this is just an example)
+    modal.style.position = 'absolute';
+    modal.style.left = `${button.offsetLeft + button.offsetWidth + 10}px`; // To the right of the button
+    modal.style.top = `${button.offsetTop}px`; // Aligned with the button vertically
+    modal.style.zIndex = 1000; // Make sure it's on top of other elements
+
+    // Create the slider inside the modal
     const slider = document.createElement('input');
     slider.type = 'range';
-    slider.min = 0;
-    slider.max = 1;
+    slider.min = 0.01;
+    slider.max = 2;
     slider.step = 0.01;
-    slider.value = getChannelVolume(channelIndex); // Retrieve the current volume
-    slider.classList.add('volume-slider');
+    slider.value = getChannelVolume(channelIndex) || 1.0; // Default to 1.0
+    // slider.value = getChannelVolume(channelIndex).toString();
+    modal.appendChild(slider);
 
-    // Position the slider near the button
-    button.parentNode.insertBefore(slider, button.nextSibling);
-
-    // Event listener for the slider
-    slider.addEventListener('input', () => {
-        setChannelVolume(channelIndex, parseFloat(slider.value));
+    slider.addEventListener('input', (event) => {
+        setChannelVolume(channelIndex, parseFloat(event.target.value));
+        resetVolumeModalTimeout(); // Reset the timeout on slider interaction
     });
 
-    // Auto-remove slider when it loses focus
-    slider.addEventListener('blur', () => {
-        slider.parentNode.removeChild(slider);
-    });
+    resetVolumeModalTimeout(); // Start the close timer
 
-    // Focus the slider to show it
-    slider.focus();
+    // Prevent clicks inside the modal from closing it
+    modal.addEventListener('click', (event) => {
+        event.stopPropagation();
+        resetVolumeModalTimeout(); // Reset the timeout on click inside the modal
+    });
+    document.body.appendChild(modal);
+
 }
 
-// Function to set the volume for a specific channel
 function setChannelVolume(channelIndex, volume) {
     console.log(`Setting volume for channel ${channelIndex}: ${volume}`);
-    const audioContext = getAudioContext();
-    const gainNode = getGainNodeForChannel(channelIndex, audioContext);
+    const audioContext = window.unifiedSequencerSettings.audioContext;
+    const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
     gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
 }
 
-// Function to get the current volume for a specific channel
 function getChannelVolume(channelIndex) {
-    const audioContext = getAudioContext();
-    const gainNode = getGainNodeForChannel(channelIndex, audioContext);
-    return gainNode.gain.value;
+    const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+    return gainNode ? gainNode.gain.value : 1.0; // Default to mid-range if undefined
 }
 
-// Placeholder for getting the AudioContext
-function getAudioContext() {
-    // Assuming audioContext is globally defined or manage it accordingly
-    return window.audioContext || new AudioContext();
+function closeVolumeModal() {
+    clearTimeout(volumeModalTimeout);
+    document.querySelectorAll('.volume-modal').forEach(modal => modal.remove());
 }
 
-// Placeholder for retrieving the GainNode associated with a channel
-function getGainNodeForChannel(channelIndex, audioContext) {
-    // This function should return the gain node associated with the channel index.
-    // Assume it's stored somewhere globally or manage how gain nodes are associated with channels.
-    return window.channelGainNodes[channelIndex];
+function resetVolumeModalTimeout() {
+    clearTimeout(volumeModalTimeout);
+    volumeModalTimeout = setTimeout(closeVolumeModal, 3000);
 }
 
-
-function showVolumeSlider(button, channelIndex) {
-    // Create or use existing slider logic
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = 0;
-    slider.max = 2;
-    slider.step = 0.01;
-    slider.value = gainNodes[channelIndex].gain.value;
-    slider.classList.add('volume-slider');
-    button.parentNode.insertBefore(slider, button.nextSibling);
-
-    slider.addEventListener('input', () => {
-        gainNodes[channelIndex].gain.value = parseFloat(slider.value);
-        console.log(`Volume for channel ${channelIndex} set to ${slider.value}`);
-    });
-
-    slider.addEventListener('blur', () => {
-        button.parentNode.removeChild(slider);
-    });
-
-    slider.focus();
-}
+// Call this function when you need to close the modal, such as when a new button is clicked
+// or potentially when the user clicks outside the modal.

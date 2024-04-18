@@ -39,3 +39,14 @@
     text-decoration: none;
     cursor: pointer;
 }
+
+
+.volume-modal {
+    /* Add your styling here */
+    border: 2px solid red; /* Just for debugging */
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
