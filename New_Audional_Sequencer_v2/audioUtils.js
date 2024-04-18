@@ -332,36 +332,39 @@ function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton
 
 // Function to update the mute state in a single function
 function updateMuteState(channel, isMuted) {
-  // console.log('updateMuteState entered');
-  // console.log("updateMuteState - isMuted: " + isMuted);
   const channelIndex = parseInt(channel.dataset.id.split('-')[1]);
   channel.dataset.muted = isMuted ? 'true' : 'false';
   const muteButton = channel.querySelector('.mute-button');
 
   muteButton.classList.toggle('selected', isMuted);
-  channelMutes[channelIndex] = isMuted;
 
-  // Mute or unmute using gain node
-  if (isMuted) {
-      gainNodes[channelIndex].gain.value = 0; // Mute the channel
-      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Muted");
+  // Access gainNodes from global settings
+  const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+  if (gainNode) {
+    // Mute or unmute using gain node
+    gainNode.gain.value = isMuted ? 0 : 1; // Mute the channel if isMuted is true, otherwise set volume to 1
   } else {
-      gainNodes[channelIndex].gain.value = 1; // Unmute the channel (set to original volume)
-      // console.log("updateMuteState - Channel-" + channel.dataset.id.replace("Channel-", "") + " Unmuted");
+    console.error("GainNode not found for channel:", channelIndex);
   }
 
   // Update the dim state of the channel
   updateDimState(channel, channelIndex);
-
-  // console.log(`Channel-${channel.dataset.id.replace("Channel-", "")} Muted: ${isMuted}`);
 }
 
 // Function to handle manual toggle of the mute button
 function toggleMute(channelElement) {
-  // console.log('toggleMute entered');
   const channelIndex = parseInt(channelElement.dataset.id.split('-')[1]);
-  const isMuted = channelMutes[channelIndex];
-  updateMuteState(channelElement, !isMuted, channelIndex);
-  // console.log('Mute has been toggled by the toggleMute function');
+  const isMuted = channelElement.dataset.muted === 'true';
+  updateMuteState(channelElement, !isMuted);
 }
+
+// // Example usage in an event listener for the mute button
+// const muteButton = channel.querySelector('.mute-button');
+// muteButton.addEventListener('click', () => {
+//   const isMuted = muteButton.classList.contains('selected');
+//   toggleMute(channel); // Pass the channel element to the toggle function
+// });
+
+// ...rest of your code...
+
 

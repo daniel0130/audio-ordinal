@@ -71,18 +71,23 @@ if (!audioContext) {
     console.log('updateDimState entered');
     console.log(`updateDimState called for channel ${index}`);
 
-    // Retrieve the current sequence number from the global settings
     const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
 
-    // Select step buttons for the current sequence and channel
     const stepButtons = channel.querySelectorAll(`.step-button[id^="Sequence${currentSequence}-ch${index}"]`);
     const currentVolume = window.unifiedSequencerSettings.getChannelVolume(index);
-    if (currentVolume === 0) {
-        stepButtons.forEach(button => button.classList.add('dimmed'));
+
+    // Add a null check before accessing 'gain' property
+    if (currentVolume !== null && currentVolume !== undefined) {
+        if (currentVolume === 0) {
+            stepButtons.forEach(button => button.classList.add('dimmed'));
+        } else {
+            stepButtons.forEach(button => button.classList.remove('dimmed'));
+        }
     } else {
-        stepButtons.forEach(button => button.classList.remove('dimmed'));
+        console.error(`Volume for channel ${index} is null or undefined.`);
     }
 }
+
 
 
 const loadPreset = (preset) => {
