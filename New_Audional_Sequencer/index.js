@@ -29,7 +29,6 @@ let currentStepTime;
 let startTime;
 let nextStepTime;
 let stepDuration;
-let gainNodes = Array(16).fill(null);
 let isMuted = false;
 let channelMutes = []; // Declare the channelMutes array as a global variable
 let muteState = false
@@ -40,6 +39,108 @@ let activeChannels = 16;// new Set();
 let clearClickedOnce = Array(channels.length).fill(false);
 let clearConfirmTimeout = Array(channels.length).fill(null);
 
+
+if (!audioContext) {
+    try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+    } catch (e) {
+        console.warn('Web Audio API is not supported in this browser');
+    }
+}
+
+
+
+
+ // Function to update the actual volume
+ function updateVolume(channel, index) {
+    console.log('updateVolume entered');
+    let newVolume = 1; // Default volume
+    if (soloedChannels.some(state => state)) {
+        newVolume = soloedChannels[index] ? 1 : 0;
+    } else {
+        const isMuted = channel.querySelector('.mute-button').classList.contains('selected');
+        newVolume = isMuted ? 0 : 1;
+    }
+    window.unifiedSequencerSettings.setChannelVolume(index, newVolume);
+}
+
+
+  // Function to update the dim state based on gain value
+  function updateDimState(channel, index) {
+    console.log('updateDimState entered');
+    console.log(`updateDimState called for channel ${index}`);
+
+    // Retrieve the current sequence number from the global settings
+    const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+
+    // Select step buttons for the current sequence and channel
+    const stepButtons = channel.querySelectorAll(`.step-button[id^="Sequence${currentSequence}-ch${index}"]`);
+    const currentVolume = window.unifiedSequencerSettings.getChannelVolume(index);
+    if (currentVolume === 0) {
+        stepButtons.forEach(button => button.classList.add('dimmed'));
+    } else {
+        stepButtons.forEach(button => button.classList.remove('dimmed'));
+    }
+}
+
+
+const loadPreset = (preset) => {
+    console.log('index.js loadPreset entered');
+    console.log(`index.js loadPreset: Loading preset: ${preset}`);
+    const presetData = presets[preset];
+    if (!presetData) {
+        console.error('Preset not found:', preset);
+        return;
+    }
+
+    channels.forEach((channel, index) => {
+        const channelData = presetData.channels[index];
+        if (!channelData) {
+            console.warn(`No preset data for channel index: ${index}`);
+            return;
+        }
+
+        // Use getChannelURL to retrieve the URL for each channel
+        const url = window.unifiedSequencerSettings.getChannelURL(index);
+        const { steps, mute } = channelData;
+
+        if (url) {
+            const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index}"] .load-sample-button`);
+            fetchAudio(url, index, loadSampleButton).then(() => {
+                const audioTrimmer = getAudioTrimmerInstanceForChannel(index);
+                if (audioTrimmer) {
+                    audioTrimmer.loadSampleFromURL(url).then(() => {
+                        const startSliderValue = channelData.trimSettings?.startSliderValue || 0.01;
+                        const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
+                        audioTrimmer.setStartSliderValue(startSliderValue);
+                        audioTrimmer.setEndSliderValue(endSliderValue);
+
+                        window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
+                        updateLoadSampleButtonText(index, loadSampleButton);
+                    });
+                }
+            });
+        }
+
+        steps.forEach(pos => {
+            const btn = document.querySelector(`.channel[data-id="Channel-${index}"] .step-button:nth-child(${pos})`);
+            if (btn) btn.classList.add('selected');
+        });
+
+        const channelElement = document.querySelector(`.channel[data-id="Channel-${index}"]`);
+        if (channelElement) {
+            updateMuteState(channelElement, mute);
+            channelElement.classList.add('ordinal-loaded');
+        }
+    });
+
+    console.log(preset);
+    loadChannelSettingsFromPreset(presets[preset]);
+    console.log("loadPreset: After loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+};
+
+
 // let isContinuousPlay = false;
 // 
 // const continuousPlayButton = document.getElementById('continuous-play');
@@ -49,42 +150,6 @@ let clearConfirmTimeout = Array(channels.length).fill(null);
 // });
 
 
-    if (!audioContext) {
-        try {
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioContext = new AudioContext();
-        } catch (e) {
-            console.warn('Web Audio API is not supported in this browser');
-        }
-    }
-
-    // Function to update the actual volume
-    function updateVolume(channel, index) {
-        console.log('updateVolume entered');
-        if (soloedChannels.some(state => state)) {
-            gainNodes[index].gain.value = soloedChannels[index] ? 1 : 0;
-        } else {
-            const isMuted = channel.querySelector('.mute-button').classList.contains('selected');
-            gainNodes[index].gain.value = isMuted ? 0 : 1;
-        }
-    }
-    
-    // Function to update the dim state based on gain value
-    function updateDimState(channel, index) {
-        console.log('updateDimState entered');
-        console.log(`updateDimState called for channel ${index}`);
-
-        // Retrieve the current sequence number from the global settings
-        const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-
-        // Select step buttons for the current sequence and channel
-        const stepButtons = channel.querySelectorAll(`.step-button[id^="Sequence${currentSequence}-ch${index}"]`);
-        if (gainNodes[index].gain.value === 0) {
-            stepButtons.forEach(button => button.classList.add('dimmed'));
-        } else {
-            stepButtons.forEach(button => button.classList.remove('dimmed'));
-        }
-    }
 
     
 
@@ -216,61 +281,7 @@ if (playButton && stopButton) {
         }
 
 
-        const loadPreset = (preset) => {
-            console.log('index.js loadPreset entered');
-            console.log(`index.js loadPreset: Loading preset: ${preset}`);
-            const presetData = presets[preset];
-            if (!presetData) {
-                console.error('Preset not found:', preset);
-                return;
-            }
-        
-            channels.forEach((channel, index) => {
-                const channelData = presetData.channels[index];
-                if (!channelData) {
-                    console.warn(`No preset data for channel index: ${index}`);
-                    return;
-                }
-        
-                // Use getChannelURL to retrieve the URL for each channel
-                const url = window.unifiedSequencerSettings.getChannelURL(index);
-                const { steps, mute } = channelData;
-        
-                if (url) {
-                    const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index}"] .load-sample-button`);
-                    fetchAudio(url, index, loadSampleButton).then(() => {
-                        const audioTrimmer = getAudioTrimmerInstanceForChannel(index);
-                        if (audioTrimmer) {
-                            audioTrimmer.loadSampleFromURL(url).then(() => {
-                                const startSliderValue = channelData.trimSettings?.startSliderValue || 0.01;
-                                const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
-                                audioTrimmer.setStartSliderValue(startSliderValue);
-                                audioTrimmer.setEndSliderValue(endSliderValue);
-        
-                                window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
-                                updateLoadSampleButtonText(index, loadSampleButton);
-                            });
-                        }
-                    });
-                }
-        
-                steps.forEach(pos => {
-                    const btn = document.querySelector(`.channel[data-id="Channel-${index}"] .step-button:nth-child(${pos})`);
-                    if (btn) btn.classList.add('selected');
-                });
-        
-                const channelElement = document.querySelector(`.channel[data-id="Channel-${index}"]`);
-                if (channelElement) {
-                    updateMuteState(channelElement, mute);
-                    channelElement.classList.add('ordinal-loaded');
-                }
-            });
-        
-            console.log(preset);
-            loadChannelSettingsFromPreset(presets[preset]);
-            console.log("loadPreset: After loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
-        };
-        
+      
 
  
 function updateLoadSampleButtonText(channelIndex, button) {

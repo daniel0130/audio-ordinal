@@ -242,9 +242,16 @@ function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReverse
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
 
-  const gainNode = audioContext.createGain();
+  // Use the GainNode assigned to the channel from the unified settings
+  const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+  if (!gainNode) {
+    console.error("No gain node found for channel", channelIndex);
+    return;
+  }
+
   const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
-  gainNode.gain.value = isFinite(volume) ? volume : 1;
+  
+  // No need to set volume here as it should be managed via user input directly affecting the GainNode
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
@@ -252,6 +259,7 @@ function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReverse
   source.playbackRate.value = isFinite(pitch) ? pitch : 1;
   source.start(0, trimStart, duration);
 }
+
 
 
 

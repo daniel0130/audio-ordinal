@@ -1,7 +1,5 @@
 // channelsForeach.js
 
-// channelsForeach.js
-
 import { setupLoadSampleModalButton } from './loadSampleModalButton_v2.js';
 
 console.log("channelsForeach.js entered");
@@ -15,12 +13,12 @@ console.log("channelsForeach.js entered");
             return;
         }
 
-        const volumeButton = channel.querySelector('.volume-button');
-        if (volumeButton) {
-            volumeButton.addEventListener('click', () => {
-                showVolumeSlider(volumeButton, index);
-            });
-        }
+        // const volumeButton = channel.querySelector('.volume-button');
+        // if (volumeButton) {
+        //     volumeButton.addEventListener('click', () => {
+        //         openVolumeModal(volumeButton, index);
+        //     });
+        // }
 
 
 
