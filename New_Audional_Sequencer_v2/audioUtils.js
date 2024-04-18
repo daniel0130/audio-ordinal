@@ -95,28 +95,84 @@ async function processHTMLResponse(htmlText) {
 async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
   try {
+      // Decode the audio data into a buffer
       const audioBuffer = await decodeAudioData(audioData);
       console.log("[decodeAndStoreAudio] Audio data decoded");
 
       // Create a reverse buffer by copying and reversing the audioBuffer
       const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Use channel-specific keys for storing buffers
+      // Store buffers using both channel-specific keys and URL-based keys
       const forwardKey = `channel_${channelIndex}_forward`;
       const reverseKey = `channel_${channelIndex}_reverse`;
+      const forwardUrlKey = `${fullUrl}`;
+      const reverseUrlKey = `${fullUrl}_reverse`;
 
-      // Store both buffers using the new keys
+      // Use a global buffer storage (adjust according to your actual storage method)
       audioBuffers.set(forwardKey, audioBuffer);
       audioBuffers.set(reverseKey, reverseBuffer);
-      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex}: ${sampleName}`);
+      audioBuffers.set(forwardUrlKey, audioBuffer);
+      audioBuffers.set(reverseUrlKey, reverseBuffer);
 
-      // Update the channel name in the UI
+      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+
+      // Update UI or other components that depend on these buffers
       window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
+      // Optionally, trigger any UI updates or callbacks that need these buffers
+      if (typeof updateWaveformDisplay === "function") {
+          updateWaveformDisplay(channelIndex, audioBuffer);
+      }
 
   } catch (error) {
       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
+
+// async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
+//   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
+//   try {
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log("[decodeAndStoreAudio] Audio data decoded");
+
+//       // Create a reverse buffer by copying and reversing the audioBuffer
+//       const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//       // Use channel-specific keys for storing buffers
+//       const forwardKey = `channel_${channelIndex}_forward`;
+//       const reverseKey = `channel_${channelIndex}_reverse`;
+
+//       // Store both buffers using the new keys
+//       audioBuffers.set(forwardKey, audioBuffer);
+//       audioBuffers.set(reverseKey, reverseBuffer);
+//       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex}: ${sampleName}`);
+
+//       // Update the channel name in the UI
+//       window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
+//   } catch (error) {
+//       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+//   }
+// }
+
+// async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
+//   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
+//   try {
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log("[decodeAndStoreAudio] Audio data decoded");
+
+//       // Create a reverse buffer by copying and reversing the audioBuffer
+//       const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//       // Store both buffers using distinct keys
+//       audioBuffers.set(fullUrl, audioBuffer);
+//       audioBuffers.set(fullUrl + "_reverse", reverseBuffer);
+//       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for ${sampleName}`);
+
+//   } catch (error) {
+//       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+//   }
+// }
 
 
 // Function to create a reverse buffer from an existing AudioBuffer
