@@ -770,7 +770,7 @@ class UnifiedSequencerSettings {
 
         updateProjectChannelNamesUI(channelIndex, name) {
             // Implement logic to update UI for project channel names
-            console.log("Project channel names UI entered and updated:", channelIndex, name);
+            console.log("[updateProjectChannelNamesUI] Project channel names UI entered and updated:", channelIndex, name);
             // Example: Update specific channel name display
             const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
             if (nameDisplay) {

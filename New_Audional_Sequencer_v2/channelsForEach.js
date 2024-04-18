@@ -95,6 +95,18 @@ console.log("channelsForeach.js entered");
         
 
 
+        // Global document click listener for clear buttons
+        document.addEventListener('click', () => {
+            channels.forEach((channel, channelIndex) => {
+                if (clearClickedOnce[channelIndex]) {
+                    const clearConfirm = channel.querySelector('.clear-confirm');
+                    clearConfirm.style.display = "none";
+                    clearTimeout(clearConfirmTimeout[channelIndex]);
+                    clearClickedOnce[channelIndex] = false;
+                }
+            });
+        });
+
         
     const loadSampleButton = channel.querySelector('.load-sample-button');
 
@@ -293,51 +305,51 @@ console.log("channelsForeach.js entered");
         }
     }
 
-    function showChannelNamingModal(channelIndex) {
-        closeModal(); // Close any existing modal first
+    // function showChannelNamingModal(channelIndex) {
+    //     closeModal(); // Close any existing modal first
 
-        const modal = document.createElement('div');
-        modal.className = 'channel-naming-modal';
-        // Add styles as needed
+    //     const modal = document.createElement('div');
+    //     modal.className = 'channel-naming-modal';
+    //     // Add styles as needed
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Give this channel a name';
-        input.className = 'channel-name-input';
+    //     const input = document.createElement('input');
+    //     input.type = 'text';
+    //     input.placeholder = 'Give this channel a name';
+    //     input.className = 'channel-name-input';
 
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.onclick = () => {
-            if (input.value) {
-                window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
-            }
-            closeModal();
-        };
+    //     const submitButton = document.createElement('button');
+    //     submitButton.textContent = 'Submit';
+    //     submitButton.onclick = () => {
+    //         if (input.value) {
+    //             window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
+    //         }
+    //         closeModal();
+    //     };
 
-        const cancelButton = document.createElement('button');
-        cancelButton.textContent = 'Cancel';
-        cancelButton.onclick = closeModal;
+    //     const cancelButton = document.createElement('button');
+    //     cancelButton.textContent = 'Cancel';
+    //     cancelButton.onclick = closeModal;
 
-        modal.appendChild(input);
-        modal.appendChild(submitButton);
-        modal.appendChild(cancelButton);
-        document.body.appendChild(modal);
+    //     modal.appendChild(input);
+    //     modal.appendChild(submitButton);
+    //     modal.appendChild(cancelButton);
+    //     document.body.appendChild(modal);
 
-        // Event listener to close the modal when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
-                closeModal();
-            }
-        }, { capture: true, once: true });
-        input.focus(); // Automatically focus the input field for immediate typing
-    }
+    //     // Event listener to close the modal when clicking outside
+    //     document.addEventListener('click', (event) => {
+    //         if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
+    //             closeModal();
+    //         }
+    //     }, { capture: true, once: true });
+    //     input.focus(); // Automatically focus the input field for immediate typing
+    // }
 
-    function closeModal() {
-        const existingModal = document.querySelector('.channel-naming-modal');
-        if (existingModal) {
-            document.body.removeChild(existingModal);
-        }
-    }
+    // function closeModal() {
+    //     const existingModal = document.querySelector('.channel-naming-modal');
+    //     if (existingModal) {
+    //         document.body.removeChild(existingModal);
+    //     }
+    // }
 
     // Function to copy the full URL instead of just the Ordinal ID
     function copyOrdinalId(channelIndex) {

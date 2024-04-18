@@ -42,7 +42,7 @@ function bufferToBase64(buffer) {
 
 
 
-async function processJSONResponse(response) {
+async function processJSONResponse(response, channelIndex) {
   console.log("[processJSONResponse] Processing JSON response");
   const jsonResponse = await response.json();
   console.log("[processJSONResponse] JSON response parsed");
@@ -53,8 +53,17 @@ async function processJSONResponse(response) {
   const audioData = jsonResponse.audioData ? base64ToArrayBuffer(jsonResponse.audioData.split(',')[1]) : null;
   console.log("[processJSONResponse] audioData set from JSON");
 
+  // Attempt to set the channel name using the provided method
+  if (sampleName && window.unifiedSequencerSettings.setChannelName) {
+      window.unifiedSequencerSettings.setChannelName(channelIndex, sampleName);
+  } else {
+      console.error("[processJSONResponse] Unable to update channel name, setChannelName method not found or sampleName is empty.");
+  }
+
   return { audioData, sampleName };
 }
+
+
 
 async function processHTMLResponse(htmlText) {
   console.log("[processHTMLResponse] Processing HTML content");
@@ -171,7 +180,7 @@ async function fetchAudio(url, channelIndex) {
 
       if (contentType.includes('application/json')) {
           // console.log("[fetchAndProcessAudio] Processing as JSON");
-          const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response);
+          const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response, channelIndex);
           audioData = processedAudioData;
           sampleName = processedSampleName || sampleName;
           // console.log(`[fetchAndProcessAudio] Processed sampleName from JSON: ${sampleName}`);
