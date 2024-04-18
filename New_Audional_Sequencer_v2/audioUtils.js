@@ -92,15 +92,18 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
       // Create a reverse buffer by copying and reversing the audioBuffer
       const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Store both buffers using distinct keys
-      audioBuffers.set(fullUrl, audioBuffer);
-      audioBuffers.set(fullUrl + "_reverse", reverseBuffer);
+      // Use channel-specific keys for storing buffers
+      const forwardKey = `channel_${channelIndex}_forward`;
+      const reverseKey = `channel_${channelIndex}_reverse`;
 
-      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for ${sampleName}`);
+      // Store both buffers using the new keys
+      audioBuffers.set(forwardKey, audioBuffer);
+      audioBuffers.set(reverseKey, reverseBuffer);
+      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex}: ${sampleName}`);
 
-      // Update project channel name in global settings
-      window.unifiedSequencerSettings.setProjectChannelName(channelIndex, sampleName);
-      console.log(`[decodeAndStoreAudio] Project channel name updated for channel index: ${channelIndex}, sampleName: ${sampleName}`);
+      // Update the channel name in the UI
+      window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
   } catch (error) {
       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
@@ -108,7 +111,6 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
 
 
 // Function to create a reverse buffer from an existing AudioBuffer
-
 // Accessibility: Both buffers can be accessed using their keys. 
 // For example, if you need the reverse buffer for https://example.com/audio.mp3, 
 // you would look for https://example.com/audio.mp3_reverse in the audioBuffers map.
@@ -197,42 +199,31 @@ async function fetchAudio(url, channelIndex) {
   }
 }
 
-
-
 function playSound(currentSequence, channel, currentStep) {
-  // const playbackSpeed = window.unifiedSequencerSettings.getStepPlaybackSpeed(currentSequence, channelIndex, currentStep);
-  // console.log('playSound entered');
   const channelIndex = getChannelIndex(channel);
-  // console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
-
-  const stepState = window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
-  // console.log(`[playSound Debugging] [playSound] setting stepState using direct call to: ${stepState}`);
-  
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
-  // console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
 
- // Check if the step is either active or marked for reverse playback.
+  // Log debugging to check state
+  console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
+
+  // Check if the step is either active or marked for reverse playback.
   if (!isActive && !isReverse) {
-    // console.log("[playSound Debugging] [playSound] Current step is neither active nor reverse. Skipping playback.");
-    return;
-  }
-  const isReversePlayback = isReverse;
-  // Check if the current step is marked for reverse playback
-  const stepButtonId = `Sequence${currentSequence}-ch${channelIndex}-step-${currentStep}`;
-  const stepButton = document.getElementById(stepButtonId);
-
-  const url = getAudioUrl(channelIndex) + (isReversePlayback ? "_reverse" : "");
-  // console.log("[playSound Debugging] [playSound] Audio URL:", url);
-
-  const audioBuffer = audioBuffers.get(url);
-  if (!audioBuffer) {
-      // console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
+      console.log("[playSound Debugging] Current step is neither active nor reverse. Skipping playback.");
       return;
   }
-  
-  // console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
 
-  playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback); // Include isReversePlayback as an argument
+  // Construct the key to retrieve the appropriate buffer
+  const bufferKey = `channel_${channelIndex}_${isReverse ? 'reverse' : 'forward'}`;
+  const audioBuffer = audioBuffers.get(bufferKey);
+
+  // Log the buffer retrieval status
+  if (!audioBuffer) {
+      console.error(`[playSound] No audio buffer found for ${bufferKey}`);
+      return;
+  }
+
+  // Play the audio buffer using a function designed to handle audio playback
+  playTrimmedAudio(channelIndex, audioBuffer, bufferKey, currentStep, isReverse);
 }
 
 

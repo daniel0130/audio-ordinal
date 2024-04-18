@@ -700,31 +700,38 @@ class UnifiedSequencerSettings {
     // }
 
         // Method to update the name of a specific channel
-/**
- * Updates the name of a specific project channel and notifies observers of the change.
- * @param {number} channelIndex - The index of the channel to update.
- * @param {string} name - The new name for the channel.
- * @returns {boolean} Indicates whether the update was successful.
- */
-        setProjectChannelName(channelIndex, name) {
-            console.log("setProjectChannelName entered");
-            if (this.isValidIndex(channelIndex)) {
-                if (this.settings.masterSettings.projectChannelNames[channelIndex] !== name) {
-                    this.settings.masterSettings.projectChannelNames[channelIndex] = name;
-                    console.log(`[setChannelName] Channel ${channelIndex} name set to: ${name}`);
-                    this.notifyObservers(); // Notify observers about the change
-                    return true; // Indicate success
-                } else {
-                    console.log(`[setChannelName] No change for channel ${channelIndex}. Name remains: ${name}`);
-                    return false; // Indicate no change was made
-                }
+    /**
+         * Updates the name of a specific project channel and notifies observers of the change.
+         * @param {number} channelIndex - The index of the channel to update.
+         * @param {string} name - The new name for the channel.
+         * @returns {boolean} Indicates whether the update was successful.
+         */
+    setChannelName(channelIndex, name) {
+        console.log("[setChannelName] Entered method.");
+        if (this.isValidIndex(channelIndex)) {
+            if (this.settings.masterSettings.projectChannelNames[channelIndex] !== name) {
+                this.settings.masterSettings.projectChannelNames[channelIndex] = name;
+                console.log(`[setChannelName] Channel ${channelIndex} name set to: ${name}`);
+                // Update UI after setting the channel name
+                this.updateProjectChannelNamesUI(this.settings.masterSettings.projectChannelNames);
+                // Notify observers or trigger any necessary updates
+                // this.notifyObservers();
+                return true; // Indicate success
             } else {
-                console.error(`[setChannelName] Invalid channel index: ${channelIndex}`);
-                return false; // Indicate failure due to invalid index
+                console.log(`[setChannelName] No change for channel ${channelIndex}. Name remains: ${name}`);
+                return false; // Indicate no change was made
             }
+        } else {
+            console.error(`[setChannelName] Invalid channel index: ${channelIndex}`);
+            return false; // Indicate failure due to invalid index
         }
-
-        
+    }
+    
+    getChannelName(channelIndex) {
+        console.log("getChannelName entered");
+        return this.settings.masterSettings.projectChannelNames[channelIndex];
+    }
+    
 
 
     setProjectSequences(sequenceData) {
@@ -760,8 +767,19 @@ class UnifiedSequencerSettings {
                 }
             });
         }
+
+        updateProjectChannelNamesUI(channelIndex, name) {
+            // Implement logic to update UI for project channel names
+            console.log("Project channel names UI entered and updated:", channelIndex, name);
+            // Example: Update specific channel name display
+            const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+            if (nameDisplay) {
+                nameDisplay.textContent = name;
+            }
+        }
     
     
+    // WORKING VERSION
     updateLoadSampleButtonText(channelIndex, button) {
         console.log("updateLoadSampleButtonText entered");
         let buttonText = 'Load New Audional'; // Default text
@@ -782,6 +800,48 @@ class UnifiedSequencerSettings {
         // Update button text
         button.textContent = buttonText;
     }
+
+    ////NON-WORKING VERSION
+    // updateLoadSampleButtonText(channelIndex) {
+    //     console.log("[updateLoadSampleButtonText] Entered update function for channel:", channelIndex);
+    //         // Attempt to find the button by its ID
+    //         const button = document.getElementById(`load-sample-button-${channelIndex}`);
+            
+    //         if (button) {
+    //     const button = document.getElementById(`load-sample-button-${channelIndex}`);
+    //     if (!button) {
+    //         console.error(`[updateLoadSampleButtonText] Button for channel ${channelIndex} not found.`);
+    //         return; // Exit if button is not found to prevent errors
+    //     }
+    //     console.log("[updateLoadSampleButtonText] Button found:", button);
+    
+    //     let buttonText = 'Load New Audional'; // Default text
+    //     console.log("[updateLoadSampleButtonText] Default button text set.");
+    
+    //     // Accessing projectChannelNames and channelURLs from settings
+    //     const channelName = this.settings.masterSettings.projectChannelNames[channelIndex];
+    //     const loadedUrl = this.settings.masterSettings.channelURLs[channelIndex];
+    
+    //     console.log("[updateLoadSampleButtonText] Retrieved channel name:", channelName);
+    //     console.log("[updateLoadSampleButtonText] Retrieved loaded URL:", loadedUrl);
+    
+    //     if (channelName) {
+    //         buttonText = channelName; // Use the channel name if available
+    //         console.log("[updateLoadSampleButtonText] Button text updated with channel name:", buttonText);
+    //     } else if (loadedUrl) {
+    //         // Extract the desired portion of the URL
+    //         const urlParts = loadedUrl.split('/');
+    //         const lastPart = urlParts[urlParts.length - 1];
+    //         buttonText = lastPart; // Use the last part of the URL if no name is provided
+    //         console.log("[updateLoadSampleButtonText] Button text updated with last part of URL:", buttonText);
+    //     }
+    
+    //     // Update button text
+    //     button.textContent = buttonText;
+    //     } else {
+    //         console.warn(`[updateLoadSampleButtonText] Button for channel ${channelIndex} not found.`);
+    //     }
+    // }
 
 
     // Additional methods for updating UI
@@ -817,18 +877,7 @@ class UnifiedSequencerSettings {
     }
 
 
-    updateProjectChannelNamesUI(urlNames) {
-        // Implement logic to update UI for project URL names
-        console.log("Project URL names UI entered and updated:", urlNames);
-        // Example: Update each URL name display
-        urlNames.forEach((name, index) => {
-            const nameDisplay = document.getElementById(`url-name-${index}`);
-            if (nameDisplay) {
-                nameDisplay.textContent = name;
-            }
-        });
-    }
-
+  
     ensureArrayLength(array, maxLength) {
         while (array.length < maxLength) {
             array.push(this.getDefaultArrayElement());
