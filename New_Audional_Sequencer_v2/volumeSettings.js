@@ -45,8 +45,8 @@ function openVolumeModal(button, channelIndex) {
     slider.min = 0.01;
     slider.max = 2;
     slider.step = 0.01;
-    // slider.value = getChannelVolume(channelIndex) || 1.0; // Default to 1.0
-    slider.value = getChannelVolume(channelIndex).toString();
+    slider.value = getChannelVolume(channelIndex) || 1.0; // Default to 1.0
+    // slider.value = getChannelVolume(channelIndex).toString();
     modal.appendChild(slider);
 
     slider.addEventListener('input', (event) => {
