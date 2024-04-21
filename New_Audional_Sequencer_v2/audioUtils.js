@@ -213,7 +213,7 @@ const decodeAudioData = (audioData) => {
 };
 
 
-async function fetchAudio(url, channelIndex) {
+async function fetchAudio(url, channelIndex, callback = null) {
   // console.log(`[fetchAndProcessAudio] Entered function. URL: ${url}, Channel Index: ${channelIndex}`);
   try {
       const fullUrl = formatURL(url);
@@ -255,12 +255,16 @@ async function fetchAudio(url, channelIndex) {
 
       // Now, use decodeAndStoreAudio to handle decoding and storage
       if (audioData) {
-          await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
-      } else {
-          console.error("[fetchAndProcessAudio] No audio data to process.");
-      }
-  } catch (error) {
-      console.error('[fetchAndProcessAudio] Error:', error);
+        await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
+        // Trigger callback to update UI if provided
+        if (callback) {
+            callback(channelIndex, sampleName);
+        }
+    } else {
+        console.error("[fetchAndProcessAudio] No audio data to process.");
+    }
+  } catch (error) { 
+      console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }
 }
 
@@ -403,8 +407,8 @@ function updateMuteState(channel, isMuted) {
     console.error("GainNode not found for channel:", channelIndex);
   }
 
-  // Update the dim state of the channel
-  updateDimState(channel, channelIndex);
+  // // Update the dim state of the channel
+  // updateDimState(channel, channelIndex);
 }
 
 // Function to handle manual toggle of the mute button

@@ -95,17 +95,17 @@ console.log("channelsForeach.js entered");
         
 
 
-        // Global document click listener for clear buttons
-        document.addEventListener('click', () => {
-            channels.forEach((channel, channelIndex) => {
-                if (clearClickedOnce[channelIndex]) {
-                    const clearConfirm = channel.querySelector('.clear-confirm');
-                    clearConfirm.style.display = "none";
-                    clearTimeout(clearConfirmTimeout[channelIndex]);
-                    clearClickedOnce[channelIndex] = false;
-                }
-            });
-        });
+// Global document click listener for clear buttons
+document.addEventListener('click', () => {
+    channels.forEach((channel, channelIndex) => {
+        if (clearClickedOnce[channelIndex]) {
+            const clearConfirm = channel.querySelector('.clear-confirm');
+            clearConfirm.style.display = "none";
+            clearTimeout(clearConfirmTimeout[channelIndex]);
+            clearClickedOnce[channelIndex] = false;
+        }
+    });
+});
 
         
     const loadSampleButton = channel.querySelector('.load-sample-button');

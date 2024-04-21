@@ -28,6 +28,13 @@ class UnifiedSequencerSettings {
         this.formatURL = this.formatURL.bind(this);
     }
 
+    // Method to log the current settings to the console
+    checkSettings() {
+        console.log("Current Global Settings:", this.settings);
+        console.log("[checkSettings] Current masterSettings:", this.settings.masterSettings);
+
+    }
+
 
     initializeGainNodes() {
         // Initialize gain nodes for each channel based on the default or specified volume
@@ -535,14 +542,14 @@ class UnifiedSequencerSettings {
         return this.settings.masterSettings.channelURLs[channelIndex];
     }
 
-    setChannelURLs(urls) {
-        console.log("setChannel entered");
-        this.settings.masterSettings.channelURLs = urls;
-        console.log(`[setChannelURLs] Channel URLs set:`, urls);
+    // setChannelURLs(urls) {
+    //     console.log("setChannel entered");
+    //     this.settings.masterSettings.channelURLs = urls;
+    //     console.log(`[setChannelURLs] Channel URLs set:`, urls);
     
-        // Correctly calling the method within the same class
-        this.updateAllLoadSampleButtonTexts();
-    }
+    //     // Correctly calling the method within the same class
+    //     this.updateAllLoadSampleButtonTexts();
+    // }
 
     setProjectName(name) {
         console.log("setProjectName entered");
@@ -640,7 +647,7 @@ class UnifiedSequencerSettings {
     checkSettings() {
         console.log("checkSettings entered");
         
-        console.log("[checkSettings] Current masterSettings:", this.settings.masterSettings);
+        console.log("[checkSettings] Current masterSettings:");
         return this.settings.masterSettings;
     }
 
@@ -768,25 +775,39 @@ class UnifiedSequencerSettings {
             });
         }
 
-        updateProjectChannelNamesUI(channelIndex, name) {
-            // Implement logic to update UI for project channel names
-            console.log("[updateProjectChannelNamesUI] Project channel names UI entered and updated:", channelIndex, name);
-            // Example: Update specific channel name display
-            const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
-            if (nameDisplay) {
-                nameDisplay.textContent = name;
-            }
-        }
-    
-    
+
     // WORKING VERSION
     updateLoadSampleButtonText(channelIndex, button) {
         console.log("updateLoadSampleButtonText entered");
+    
+        // Ensure the button exists
+        if (!button) {
+            console.error(`updateLoadSampleButtonText: Button not found for channelIndex ${channelIndex}`);
+            return;
+        }
+    
         let buttonText = 'Load New Audional'; // Default text
     
+        // Check if masterSettings are correctly initialized
+        if (!this.settings || !this.settings.masterSettings) {
+            console.error('updateLoadSampleButtonText: masterSettings not properly initialized');
+            button.textContent = buttonText;
+            return;
+        }
+    
         // Accessing projectChannelNames and channelURLs from settings
-        const channelName = this.settings.masterSettings.projectChannelNames[channelIndex];
-        const loadedUrl = this.settings.masterSettings.channelURLs[channelIndex];
+        const { projectChannelNames, channelURLs } = this.settings.masterSettings;
+    
+        // Check if arrays are correctly initialized
+        if (!Array.isArray(projectChannelNames) || !Array.isArray(channelURLs)) {
+            console.error('updateLoadSampleButtonText: projectChannelNames or channelURLs is not an array');
+            button.textContent = buttonText;
+            return;
+        }
+    
+        // Check if indices exist in the arrays
+        const channelName = projectChannelNames[channelIndex];
+        const loadedUrl = channelURLs[channelIndex];
     
         if (channelName) {
             buttonText = channelName;
@@ -800,6 +821,19 @@ class UnifiedSequencerSettings {
         // Update button text
         button.textContent = buttonText;
     }
+
+        updateProjectChannelNamesUI(channelIndex, name) {
+            // Implement logic to update UI for project channel names
+            console.log("[updateProjectChannelNamesUI] Project channel names UI entered and updated:", channelIndex, name);
+            // Example: Update specific channel name display
+            const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+            if (nameDisplay) {
+                nameDisplay.textContent = name;
+            }
+        }
+    
+    
+    
 
     ////NON-WORKING VERSION
     // updateLoadSampleButtonText(channelIndex) {
