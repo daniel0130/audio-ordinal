@@ -214,13 +214,9 @@ const decodeAudioData = (audioData) => {
 
 
 async function fetchAudio(url, channelIndex, callback = null) {
-  // console.log(`[fetchAndProcessAudio] Entered function. URL: ${url}, Channel Index: ${channelIndex}`);
   try {
       const fullUrl = formatURL(url);
-      // console.log(`[fetchAndProcessAudio] Formatted URL: ${fullUrl}`);
-
       const response = await fetch(fullUrl);
-      // console.log(`[fetchAndProcessAudio] Fetch response received for URL: ${fullUrl}`);
 
       if (!response.ok) {
           console.error(`[fetchAndProcessAudio] Fetch request failed for URL: ${fullUrl}, Status: ${response.status}`);
@@ -228,45 +224,36 @@ async function fetchAudio(url, channelIndex, callback = null) {
       }
 
       const contentType = response.headers.get('Content-Type');
-      // console.log(`[fetchAndProcessAudio] Content-Type of response: ${contentType}`);
-
       let audioData;
       let sampleName = fullUrl.split('/').pop(); // Fallback sample name from URL
-      // console.log(`[fetchAndProcessAudio] Initial sampleName set to: ${sampleName}`);
 
       if (contentType.includes('application/json')) {
-          // console.log("[fetchAndProcessAudio] Processing as JSON");
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response, channelIndex);
           audioData = processedAudioData;
           sampleName = processedSampleName || sampleName;
-          // console.log(`[fetchAndProcessAudio] Processed sampleName from JSON: ${sampleName}`);
       } else if (contentType.includes('text/html')) {
-          // console.log("[fetchAndProcessAudio] Processing as HTML");
           const htmlText = await response.text();
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processHTMLResponse(htmlText);
           audioData = processedAudioData;
           sampleName = processedSampleName || sampleName;
-          // console.log(`[fetchAndProcessAudio] Processed sampleName from HTML: ${sampleName}`);
       } else {
-          // console.log("[fetchAndProcessAudio] Processing as direct audio file");
           audioData = await response.arrayBuffer();
-          // console.log("[fetchAndProcessAudio] Audio data set from direct audio file");
       }
 
-      // Now, use decodeAndStoreAudio to handle decoding and storage
       if (audioData) {
-        await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
-        // Trigger callback to update UI if provided
-        if (callback) {
-            callback(channelIndex, sampleName);
-        }
-    } else {
-        console.error("[fetchAndProcessAudio] No audio data to process.");
-    }
-  } catch (error) { 
+          await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
+          // Safely trigger callback to update UI if provided and is a function
+          if (typeof callback === 'function') {
+              callback(channelIndex, sampleName);
+          }
+      } else {
+          console.error("[fetchAndProcessAudio] No audio data to process.");
+      }
+  } catch (error) {
       console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }
 }
+
 
 function playSound(currentSequence, channel, currentStep) {
   const channelIndex = getChannelIndex(channel);
