@@ -110,7 +110,6 @@ document.addEventListener('click', () => {
 });
 
         
-    const loadSampleButton = channel.querySelector('.load-sample-button');
 
     
 
