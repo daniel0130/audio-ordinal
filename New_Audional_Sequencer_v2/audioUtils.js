@@ -195,15 +195,17 @@ async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = 
       }
 
       if (audioData) {
-          await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
-          window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
-          window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = sampleName;
-          window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = fullUrl;
-
-          if (callback) callback(channelIndex, sampleName);
-      } else {
-          console.error("[fetchAndProcessAudio] No audio data to process.");
-      }
+        // Use the filename from the URL as a fallback if the sampleName is empty or undefined
+        sampleName = sampleName || fullUrl.split('/').pop().split('#')[0] || 'Unnamed Sample';
+        await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
+        window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = sampleName;
+        window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = fullUrl;
+    
+        if (callback) callback(channelIndex, sampleName);
+    } else {
+        console.error("[fetchAndProcessAudio] No audio data to process.");
+    }
   } catch (error) {
       console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }

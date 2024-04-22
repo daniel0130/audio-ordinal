@@ -15,7 +15,7 @@ class UnifiedSequencerSettings {
                     end: 100.00,
                     length: 0
                 })),
-                projectChannelNames: new Array(16).fill(''),
+                projectChannelNames: new Array(16).fill('Load Sample'),  // Default names set here
                 projectSequences: this.initializeSequences(16, 16, 64)
             }
         };
@@ -822,15 +822,30 @@ class UnifiedSequencerSettings {
         button.textContent = buttonText;
     }
 
-        updateProjectChannelNamesUI(channelIndex, name) {
-            // Implement logic to update UI for project channel names
-            console.log("[updateProjectChannelNamesUI] Project channel names UI entered and updated:", channelIndex, name);
-            // Example: Update specific channel name display
-            const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
-            if (nameDisplay) {
-                nameDisplay.textContent = name;
-            }
+    updateProjectChannelNamesUI(channelIndex, name) {
+        const defaultName = 'Load Sample'; // Default placeholder
+        let effectiveName = name;
+    
+        // Safely access the URL to use as a fallback name
+        const channelUrl = this.settings.masterSettings.channelURLs[channelIndex];
+        const urlName = channelUrl ? channelUrl.split('/').pop().split('#')[0] : defaultName;
+    
+        if (!effectiveName) {
+            effectiveName = urlName;
         }
+    
+        console.log("[updateProjectChannelNamesUI] Updating with name:", effectiveName);
+    
+        // Ensure the UI is updated
+        const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+        if (nameDisplay) {
+            nameDisplay.textContent = effectiveName;
+        }
+    
+        // Also update the name in the global settings array to prevent issues on export or re-load
+        this.settings.masterSettings.projectChannelNames[channelIndex] = effectiveName;
+    }
+    
     
     
     
