@@ -179,33 +179,48 @@ async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = 
 
       const contentType = response.headers.get('Content-Type');
       let audioData;
-      let sampleName = sampleNameGiven || fullUrl.split('/').pop(); // Use given name if available, otherwise fallback to name from URL
+      // Initially, do not change the sample name if it already exists.
+      let sampleName = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex];
 
+      // Determine the content type and process accordingly
       if (contentType.includes('application/json')) {
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response, channelIndex);
           audioData = processedAudioData;
-          sampleName = processedSampleName || sampleName; // Use name from JSON if available
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              sampleName = processedSampleName || sampleNameGiven || fullUrl.split('/').pop();
+          }
       } else if (contentType.includes('text/html')) {
           const htmlText = await response.text();
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processHTMLResponse(htmlText);
           audioData = processedAudioData;
-          sampleName = processedSampleName || sampleName; // Use name from HTML if available
-      } else {
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              sampleName = processedSampleName || sampleNameGiven || fullUrl.split('/').pop();
+          }
+        } else {
           audioData = await response.arrayBuffer();
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              // Use the filename from the URL as a fallback if the sampleName is empty or undefined
+              sampleName = sampleNameGiven || fullUrl.split('/').pop().split('#')[0].split('?')[0] || 'Unnamed Sample';
+          }
       }
 
       if (audioData) {
-        // Use the filename from the URL as a fallback if the sampleName is empty or undefined
-        sampleName = sampleName || fullUrl.split('/').pop().split('#')[0] || 'Unnamed Sample';
-        await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
-        window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
-        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = sampleName;
-        window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = fullUrl;
-    
-        if (callback) callback(channelIndex, sampleName);
-    } else {
-        console.error("[fetchAndProcessAudio] No audio data to process.");
-    }
+          await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
+
+          // The name will only be updated in the UI and settings if it wasn't previously set by the user
+          if (!window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex]) {
+              window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+              window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = sampleName;
+          }
+          window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = fullUrl;
+
+          if (callback) callback(channelIndex, sampleName);
+      } else {
+          console.error("[fetchAndProcessAudio] No audio data to process.");
+      }
   } catch (error) {
       console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }

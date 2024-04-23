@@ -1,78 +1,290 @@
-    // loadSampleModalButton_v2.js
 
-    function setupLoadSampleButton(channel, index) {
-        const loadSampleButton = channel.querySelector('.load-sample-button');
-        if (!loadSampleButton) {
-            console.error("Load sample button not found.");
-            return;
-        }
+// loadSampleModalButton_v2.js
+let openModals = [];
 
-        loadSampleButton.id = `load-sample-button-${index}`; // Ensure ID is set correctly
-
-        // Attach event handlers
-        loadSampleButton.onclick = function() {
-            openModal(index, loadSampleButton);
-        };
-
-        // Updating the button text possibly when a modal submits
-        loadSampleButton.textContent = getButtonText(index);
-
-        // Handle context menu separately if needed
-        loadSampleButton.oncontextmenu = function(event) {
-            event.preventDefault();
-            showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
-        };
+function setupLoadSampleButton(channel, index) {
+    const loadSampleButton = channel.querySelector('.load-sample-button');
+    if (!loadSampleButton) {
+        console.error("Load sample button not found.");
+        return;
     }
 
-    
-    function getButtonText(index) {
-        const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
-        if (projectChannelNames && index < projectChannelNames.length && projectChannelNames[index]) {
-            return projectChannelNames[index];
-        }
-        return 'Load New Audional'; // Default text if no name is set
+    loadSampleButton.id = `load-sample-button-${index}`; // Ensure ID is set correctly
+
+    // Attach event handlers
+    loadSampleButton.onclick = function() {
+        openModal(index, loadSampleButton);
+        openModals.push(modal); // Add this modal to the tracking array
+    };
+
+    // Updating the button text possibly when a modal submits
+    loadSampleButton.textContent = getButtonText(index);
+
+    // Handle context menu separately if needed
+    loadSampleButton.oncontextmenu = function(event) {
+        event.preventDefault();
+        showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
+    };
+}
+
+
+function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButton) {
+    console.log('Creating custom context menu');
+
+    closeCustomContextMenu();  // Ensure any existing context menus are closed
+
+    const menu = createContextMenu(x, y);
+    menu.style.position = 'absolute';
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.className = 'custom-context-menu'; // Use a specific class for styling
+
+    // Define menu options
+    const options = [
+        { label: 'Add User Channel Name', action: () => showChannelNamingModal(channelIndex, loadSampleButton) },
+        // { label: 'Copy Ordinal ID', action: () => { console.log('Copy Ordinal ID clicked'); copyOrdinalId(channelIndex); } },
+        // { label: 'Copy Channel Settings (coming soon)', action: () => console.log('Copy Channel Settings clicked') },
+        // { label: 'Set Channel Colour', action: () => showColorPicker(contextEvent, button) },
+        // { label: 'Paste Ordinal ID', action: () => pasteOrdinalId(channelIndex) },
+        // { label: 'Paste Channel Settings (coming soon)', action: () => pasteChannelSettings(channelIndex) }
+    ];
+
+    options.forEach(option => {
+        const menuOption = createMenuOption(option.label, option.action);
+        menu.appendChild(menuOption);
+    });
+
+    document.body.appendChild(menu);
+
+    // // Timeout to avoid immediate closing due to the current click event
+    // setTimeout(() => {
+    //     // Listen for clicks outside the menu to close it
+    //     document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
+    // }, 0);
+}
+
+ 
+function closeCustomContextMenu() {
+    // Remove any existing context menus
+    const existingMenu = document.querySelector('.custom-context-menu');
+    if (existingMenu) {
+        existingMenu.remove();
     }
-    
-    function updateProjectChannelNamesUI(channelIndex, name) {
-        console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
-        const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
-        if (nameDisplay) {
-            nameDisplay.textContent = name;
-        }
+}
+
+function createContextMenu(x, y) {
+    const menu = document.createElement('div');
+    menu.style.position = 'fixed';
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.className = 'context-menu';
+    return menu;
+}
+
+function createMenuOption(text, action) {
+    const option = document.createElement('div');
+    option.textContent = text;
+    option.className = 'menu-option';
+    option.onclick = action;
+    return option;
+}
+
+function getButtonText(index) {
+    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
+    if (projectChannelNames && index < projectChannelNames.length && projectChannelNames[index]) {
+        return projectChannelNames[index];
     }
-    
-    function closeModal(modal) {
+    return 'Load New Audional'; // Default text if no name is set
+}
+
+
+
+function createElement(type, className, properties = {}) {
+    const element = document.createElement(type);
+    element.className = className;
+    Object.keys(properties).forEach(key => element[key] = properties[key]);
+    return element;
+}
+
+function createTextParagraph(text) {
+    return createElement('p', 'loadSampleModalButton-text', {textContent: text});
+}
+
+function createInputField(placeholder, type = 'text') {
+    return createElement('input', 'loadSampleModalButton-input', {type: type, placeholder: placeholder});
+}
+
+function createButton(text, onClick) {
+    return createElement('button', '', {textContent: text, onclick: onClick});
+}
+
+function createDropdown(label, options) {
+    const labelElement = createElement('label', 'loadSampleModalButton-label', {textContent: label});
+    const select = createElement('select', 'loadSampleModalButton-select');
+
+    options.forEach(option => {
+        select.appendChild(createElement('option', '', {value: option.value, textContent: option.text}));
+    });
+
+    return appendChildren(createElement('div', ''), [labelElement, select]);
+}
+
+function openModal(index, loadSampleButton) {
+    const modal = createElement('div', 'loadSampleModalButton');
+    const modalContent = createElement('div', 'loadSampleModalButton-content');
+    modal.appendChild(modalContent);
+    openModals.push(modal);
+
+    const sections = [
+        {text: 'Update Channel Name:', inputPlaceholder: 'Enter new channel name'},
+        {text: 'Enter an Ordinal ID to load a Bitcoin Audional:', inputPlaceholder: 'Enter ORD ID:'},
+        {text: 'Or, enter an IPFS ID for an off-chain Audional:', inputPlaceholder: 'Enter IPFS ID:'},
+        {text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):', input: createInputField('', 'file')}
+    ];
+
+    sections.forEach(section => {
+        modalContent.appendChild(createTextParagraph(section.text));
+        const input = section.input || createInputField(section.inputPlaceholder);
+        modalContent.appendChild(input);
+    });
+
+    const ogAudienceDropdown = createDropdown('OG Audience Samples:', ogSampleUrls);
+    ogAudienceDropdown.querySelector('select').id = `og-audience-dropdown-${index}`;
+    modalContent.appendChild(ogAudienceDropdown);
+
+    ogAudienceDropdown.querySelector('select').addEventListener('change', handleDropdownChange);
+
+    const buttons = [
+        {text: 'Load Audio', onClick: () => handleLoad(index, modal, loadSampleButton)},
+        {text: 'Cancel', onClick: () => closeModal(modal)},
+        {text: 'Update Channel Name', onClick: () => handleUpdate(index, modal, loadSampleButton)}
+    ];
+    buttons.forEach(btn => modalContent.appendChild(createButton(btn.text, btn.onClick)));
+
+    document.body.appendChild(modal);
+}
+
+function closeModal(modal) {
+    if (modal && document.body.contains(modal)) {
         document.body.removeChild(modal);
+        openModals = openModals.filter(m => m !== modal);  // Update the openModals array
+    }
+}
+
+function closeAllModals() {
+    console.log('Closing all modals. Current open modals:', openModals);
+    openModals.forEach(modal => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
+    });
+    openModals = [];  // Clear the array after removing all modals
+    console.log('All modals closed. Current open modals:', openModals);
+}
+
+function handleDropdownChange(event) {
+    const selectedUrl = event.target.value;
+    const selectedText = event.target.options[event.target.selectedIndex].text;
+    // Handle fetching and updating logic here...
+}
+
+function updateProjectChannelNamesUI(channelIndex, name) {
+    console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
+    const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+    if (nameDisplay) {
+        nameDisplay.textContent = name;
+    }
+}
+
+
+function showChannelNamingModal(channelIndex, loadSampleButton) {
+    // Close any existing modals first
+    closeAllModals();  // Ensure all modals are closed before opening a new one
+
+    // Create the channel naming modal
+    const modal = createElement('div', 'channel-naming-modal');
+    openModals.push(modal); // Add this modal to the tracking array
+    const input = createInputField('Give this channel a name', 'text');
+
+
+    const submitButton = createButton('Submit', () => {
+        if (input.value.trim()) {
+            window.unifiedSequencerSettings.setChannelName(channelIndex, input.value.trim());
+            updateProjectChannelNamesUI(channelIndex, input.value.trim());
+            loadSampleButton.textContent = input.value.trim();  // Update the button text
+            closeAllModals();  // Close all modals after submitting
+            closeCustomContextMenu(); // Close any custom context menu
+
+        }
+    });
+
+    const cancelButton = createButton('Cancel', () => closeAllModals());
+
+    // Append elements to the modal
+    modal.appendChild(input);
+    modal.appendChild(submitButton);
+    modal.appendChild(cancelButton);
+
+    // Append the modal to the document
+    document.body.appendChild(modal);
+    input.focus();  // Focus the input for user convenience
+}
+
+
+// Additional function for handling audio loading, including UI updates and modal management
+function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
+    console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
+    let url = '';
+    let sampleName = '';
+
+    // Logic to determine the URL and sampleName based on user input
+    if (audionalInput.value) {
+        url = 'https://ordinals.com/content/' + audionalInput.value;
+        sampleName = audionalInput.value.split('/').pop();
+    } else if (ipfsInput.value) {
+        url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+        sampleName = ipfsInput.value.split('/').pop();
+    } else if (fileInput.files.length > 0) {
+        url = URL.createObjectURL(fileInput.files[0]);
+        sampleName = fileInput.files[0].name;
+    } else {
+        const ogAudienceDropdown = document.getElementById(`og-audience-dropdown-${index}`);
+        url = ogAudienceDropdown.value;
+        sampleName = ogAudienceDropdown.options[ogAudienceDropdown.selectedIndex].text;
     }
 
-
-// function getButtonText(index) {
-//     // Retrieve the text based on channel URL or default text
-//     const urls = window.unifiedSequencerSettings.settings.masterSettings.channelURLs;
-//     return urls && urls[index] ? urls[index] : 'Load New Audional';
-// }
-
-
-    function createDropdown(label, options) {
-        const labelElement = document.createElement('label');
-        labelElement.textContent = label;
-        labelElement.className = 'loadSampleModalButton-label'; // Apply a class for styling
-    
-        const select = document.createElement('select');
-        select.className = 'loadSampleModalButton-select'; // Apply a class for styling
-    
-        options.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.text;
-            select.appendChild(optionElement);
+    if (url) {
+        fetchAudio(url, index, sampleName).then(() => {
+            updateProjectChannelNamesUI(index, sampleName);
+            loadSampleButton.textContent = sampleName;
+            closeAllModals();  // Close all modals upon successful loading
+        }).catch(error => {
+            console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
+            alert("Failed to load audio. Please check the console for details.");
         });
-    
-        const container = document.createElement('div');
-        container.appendChild(labelElement);
-        container.appendChild(select);
-        return container;
+    } else {
+        console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
+        alert("Please enter an ID or select a file.");
     }
+}
+
+function handleUpdate(index, modal, loadSampleButton) {
+    // Assuming nameInput is the input field for the channel name
+    const nameInput = document.querySelector('.channel-name-input');
+    if (nameInput && nameInput.value) {
+        updateProjectChannelNamesUI(index, nameInput.value);
+        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
+        loadSampleButton.textContent = nameInput.value;
+        closeAllModals();  // Ensure to close all modals when update is successful
+    }
+}
+function appendChildren(parent, children) {
+    children.forEach(child => parent.appendChild(child));
+    return parent;
+}
+
+export { setupLoadSampleButton };
+
 
       // New Dropdown for Og audience samples
       const ogSampleUrls = [
@@ -112,383 +324,479 @@
         { value: 'https://ordinals.com/content/4c40da69e783cfa96d2900bd15622c1ea60ad31e8ce9459cec13d155f39c463fi0', text: 'Intro Fill 1 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' }
     ];
     
-    function openModal(index, loadSampleButton) {
-        // Create the main modal and its content container
-        const modal = createModal();
-        const modalContent = createModalContent();
-        modal.appendChild(modalContent);
-    
-        // Section for channel name update
-        modalContent.appendChild(createTextParagraph('Update Channel Name:'));
-        const nameInput = createInputField('Enter new channel name');
-        modalContent.appendChild(nameInput);
-    
-        // Section for loading different types of audios
-        modalContent.appendChild(createTextParagraph('Enter an Ordinal ID to load a Bitcoin Audional:'));
-        const audionalInput = createInputField('Enter ORD ID:');
-        modalContent.appendChild(audionalInput);
-    
-        modalContent.appendChild(createTextParagraph('Or, enter an IPFS ID for an off-chain Audional:'));
-        const ipfsInput = createInputField('Enter IPFS ID:');
-        modalContent.appendChild(ipfsInput);
-    
-        modalContent.appendChild(createTextParagraph('Or, select a local audio file (MP3, WAV, FLAC, Base64):'));
-        const fileInput = createFileInput();
-        modalContent.appendChild(fileInput);
 
-        // Create and add the OG samples dropdown to the modal content
-        const ogAudienceDropdown = createDropdown('OG Audience Samples:', ogSampleUrls);
-        ogAudienceDropdown.querySelector('select').id = `og-audience-dropdown-${index}`;
-        modalContent.appendChild(ogAudienceDropdown);
-    
 
-        // Event listener for the OG samples dropdown
-        ogAudienceDropdown.querySelector('select').addEventListener('change', (event) => {
-            const selectedUrl = event.target.value;
-            const selectedText = event.target.options[event.target.selectedIndex].text; // Get the actual sample name
-            fetchAudio(selectedUrl, index, selectedText).then(() => {
-                updateProjectChannelNamesUI(index, selectedText);
-                loadSampleButton.textContent = selectedText;
-            }).catch(error => {
-                console.error('Error loading selected OG sample:', error);
-                alert("Failed to load the OG sample. Please check the console for more details.");
-            });
-        });
-    
-        // Adding controls for the modal (Submit and Cancel buttons)
-        const submitButton = createButton('Update Channel Name', () => {
-            if (nameInput.value) {
-                updateProjectChannelNamesUI(index, nameInput.value);
-                window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
-                updateLoadSampleButtonText(index, loadSampleButton);
-                closeModal(modal);
-            }
-        });
-        modalContent.appendChild(submitButton);
-    
-        const loadButton = createButton('Load Audio', () => {
-            handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton); // Pass loadSampleButton to handleLoad
-        });
-        modalContent.appendChild(loadButton);
-    
-        const cancelButton = createButton('Cancel', () => {
-            closeModal(modal);
-        });
-        modalContent.appendChild(cancelButton);
-    
-        document.body.appendChild(modal);
-    }
-    
-    function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
-        console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
-        let url = '';
-        let sampleName = '';  // Declare sampleName variable
-    
-        if (audionalInput.value) {
-            url = 'https://ordinals.com/content/' + audionalInput.value;
-            sampleName = audionalInput.value.split('/').pop();  // Assuming you can derive a name from URL
-        } else if (ipfsInput.value) {
-            url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
-            sampleName = ipfsInput.value.split('/').pop();
-        } else if (fileInput.files.length > 0) {
-            url = URL.createObjectURL(fileInput.files[0]);
-            sampleName = fileInput.files[0].name;  // Use file name as sample name
-        } else {
-            const ogAudienceDropdown = document.getElementById(`og-audience-dropdown-${index}`);
-            url = ogAudienceDropdown.value;
-            sampleName = ogAudienceDropdown.options[ogAudienceDropdown.selectedIndex].text;
-        }
-    
-        if (url) {
-            fetchAudio(url, index, sampleName).then(() => {  // Pass sampleName to fetchAudio
-                updateProjectChannelNamesUI(index, sampleName);
-                loadSampleButton.textContent = sampleName;
-                closeAndCleanupModal(modal);
-            }).catch(error => {
-                console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
-                alert("Failed to load audio. Please check the console for details.");
-            });
-        } else {
-            console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
-            alert("Please enter an ID or select a file.");
-        }
-    }
-    
-    
-    
-    
-    function createButton(text, onClick) {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.onclick = onClick;
-        return button;
-    }
+// // loadSampleModalButton_v2.js
+// let openModals = [];
 
-    // function testUpdateButtonName(channelIndex) {
-    //     const buttonId = `load-sample-button-${channelIndex}`;
-    //     const loadSampleButton = document.getElementById(buttonId);
-    
+// function createModal() {
+//     const modal = document.createElement('div');
+//     modal.className = 'loadSampleModalButton'; // Updated class name
+//     return modal;
+// }
+
+// function createModalContent() {
+//     const content = document.createElement('div');
+//     content.className = 'loadSampleModalButton-content'; // Updated class name
+//     return content;
+// }
+
+
+// function createTextParagraph(text) {
+//     const paragraph = document.createElement('p');
+//     paragraph.textContent = text;
+//     paragraph.className = 'loadSampleModalButton-text'; // Updated class name
+//     return paragraph;
+// }
+
+// function createInputField(placeholder) {
+//     const input = document.createElement('input');
+//     input.type = 'text';
+//     input.placeholder = placeholder;
+//     input.className = 'loadSampleModalButton-input'; // Updated class name
+//     return input;
+// }
+
+// function createFileInput() {
+//     const fileInput = document.createElement('input');
+//     fileInput.type = 'file';
+//     fileInput.accept = '.mp3, .wav, .flac, text/plain';  // Accept MP3, WAV, FLAC, and text files for Base64
+//     fileInput.className = 'loadSampleModalButton-input';
+//     return fileInput;
+// }
+
+
+// function createButton(text, onClick) {
+//     const button = document.createElement('button');
+//     button.textContent = text;
+//     button.onclick = onClick;
+//     return button;
+// }
+
+// function createDropdown(label, options) {
+//     const labelElement = document.createElement('label');
+//     labelElement.textContent = label;
+//     labelElement.className = 'loadSampleModalButton-label'; // Apply a class for styling
+
+//     const select = document.createElement('select');
+//     select.className = 'loadSampleModalButton-select'; // Apply a class for styling
+
+//     options.forEach(option => {
+//         const optionElement = document.createElement('option');
+//         optionElement.value = option.value;
+//         optionElement.textContent = option.text;
+//         select.appendChild(optionElement);
+//     });
+
+//     const container = document.createElement('div');
+//     container.appendChild(labelElement);
+//     container.appendChild(select);
+//     return container;
+// }
+
+
+// function openModal(index, loadSampleButton) {
+//     const modal = createModal();
+//     const modalContent = createModalContent();
+//     modal.appendChild(modalContent);
+//     openModals.push(modal);
+
+//     modalContent.appendChild(createTextParagraph('Update Channel Name:'));
+//     const nameInput = createInputField('Enter new channel name');
+//     modalContent.appendChild(nameInput);
+
+//     modalContent.appendChild(createTextParagraph('Enter an Ordinal ID to load a Bitcoin Audional:'));
+//     const audionalInput = createInputField('Enter ORD ID:');
+//     modalContent.appendChild(audionalInput);
+
+//     modalContent.appendChild(createTextParagraph('Or, enter an IPFS ID for an off-chain Audional:'));
+//     const ipfsInput = createInputField('Enter IPFS ID:');
+//     modalContent.appendChild(ipfsInput);
+
+//     modalContent.appendChild(createTextParagraph('Or, select a local audio file (MP3, WAV, FLAC, Base64):'));
+//     const fileInput = createFileInput();
+//     modalContent.appendChild(fileInput);
+
+//     const ogAudienceDropdown = createDropdown('OG Audience Samples:', ogSampleUrls);
+//     ogAudienceDropdown.querySelector('select').id = `og-audience-dropdown-${index}`;
+//     modalContent.appendChild(ogAudienceDropdown);
+
+//     ogAudienceDropdown.querySelector('select').addEventListener('change', (event) => {
+//         const selectedUrl = event.target.value;
+//         const selectedText = event.target.options[event.target.selectedIndex].text;
+//         fetchAudio(selectedUrl, index, selectedText).then(() => {
+//             updateProjectChannelNamesUI(index, selectedText);
+//             loadSampleButton.textContent = selectedText;
+//         }).catch(error => {
+//             console.error('Error loading selected OG sample:', error);
+//             alert("Failed to load the OG sample. Please check the console for more details.");
+//         });
+//     });
+
+//     const loadButton = createButton('Load Audio', () => handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton));
+//     modalContent.appendChild(loadButton);
+
+//     const cancelButton = createButton('Cancel', () => closeModal(modal));
+//     modalContent.appendChild(cancelButton);
+
+//     const submitButton = createButton('Update Channel Name', () => {
+//         if (nameInput.value) {
+//             updateProjectChannelNamesUI(index, nameInput.value);
+//             window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
+//             loadSampleButton.textContent = nameInput.value;
+//             closeAllModals();
+//         }
+//     });
+//     modalContent.appendChild(submitButton);
+
+//     document.body.appendChild(modal);
+// }
+
+// function closeModal(modal) {
+//     if (modal instanceof Node && document.body.contains(modal)) {
+//         document.body.removeChild(modal);
+//         openModals = openModals.filter(m => m !== modal);
+//     }
+// }
+
+// function closeAllModals() {
+//     openModals.forEach(modal => {
+//         if (document.body.contains(modal)) {
+//             document.body.removeChild(modal);
+//         }
+//     });
+//     openModals = [];
+// }
+
+
+    // function setupLoadSampleButton(channel, index) {
+    //     const loadSampleButton = channel.querySelector('.load-sample-button');
     //     if (!loadSampleButton) {
-    //         console.error("Button not found.");
+    //         console.error("Load sample button not found.");
     //         return;
     //     }
+
+    //     loadSampleButton.id = `load-sample-button-${index}`; // Ensure ID is set correctly
+
+    //     // Attach event handlers
+    //     loadSampleButton.onclick = function() {
+    //         openModal(index, loadSampleButton);
+    //     };
+
+    //     // Updating the button text possibly when a modal submits
+    //     loadSampleButton.textContent = getButtonText(index);
+
+    //     // Handle context menu separately if needed
+    //     loadSampleButton.oncontextmenu = function(event) {
+    //         event.preventDefault();
+    //         showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
+    //     };
+    // }
+
     
-    //     // Adding a click event listener to the button
-    //     loadSampleButton.addEventListener('click', () => {
-    //         // Here you would put the actual logic to determine the sample name
-    //         // For test purposes, we'll just use "Sample Loaded"
-    //         const sampleName = "Sample Loaded"; 
-    //         loadSampleButton.textContent = sampleName;
-    
-    //         console.log(`Button text updated for channel ${channelIndex}: ${sampleName}`);
-    //         // Optional: Remove the event listener if you don't want it to run again
-    //         // loadSampleButton.removeEventListener('click', this);
-    //     });
+    // function getButtonText(index) {
+    //     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
+    //     if (projectChannelNames && index < projectChannelNames.length && projectChannelNames[index]) {
+    //         return projectChannelNames[index];
+    //     }
+    //     return 'Load New Audional'; // Default text if no name is set
     // }
     
-    // // Example usage: Update the text of the button for channel 0
-    // testUpdateButtonName(0);
+    // function updateProjectChannelNamesUI(channelIndex, name) {
+    //     console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
+    //     const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+    //     if (nameDisplay) {
+    //         nameDisplay.textContent = name;
+    //     }
+    // }
+
+    // function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
+    //     console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
+    //     let url = '';
+    //     let sampleName = '';  // Declare sampleName variable
     
-    // function createButton(text, onClick, className, tooltipText) {
+    //     if (audionalInput.value) {
+    //         url = 'https://ordinals.com/content/' + audionalInput.value;
+    //         sampleName = audionalInput.value.split('/').pop();  // Assuming you can derive a name from URL
+    //     } else if (ipfsInput.value) {
+    //         url = 'https://ipfs.io/ipfs/' + ipfsInput.value;
+    //         sampleName = ipfsInput.value.split('/').pop();
+    //     } else if (fileInput.files.length > 0) {
+    //         url = URL.createObjectURL(fileInput.files[0]);
+    //         sampleName = fileInput.files[0].name;  // Use file name as sample name
+    //     } else {
+    //         const ogAudienceDropdown = document.getElementById(`og-audience-dropdown-${index}`);
+    //         url = ogAudienceDropdown.value;
+    //         sampleName = ogAudienceDropdown.options[ogAudienceDropdown.selectedIndex].text;
+    //     }
+    
+    //     if (url) {
+    //         fetchAudio(url, index, sampleName).then(() => {  // Pass sampleName to fetchAudio
+    //             updateProjectChannelNamesUI(index, sampleName);
+    //             loadSampleButton.textContent = sampleName;
+    //             closeAndCleanupModal(modal);
+    //         }).catch(error => {
+    //             console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
+    //             alert("Failed to load audio. Please check the console for details.");
+    //         });
+    //     } else {
+    //         console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
+    //         alert("Please enter an ID or select a file.");
+    //     }
+    // }
+    
+     
+//     // Function to remove the modal from the DOM
+//     function closeAndCleanupModal(idModal) {
+//         if (document.body.contains(idModal)) {
+//             document.body.removeChild(idModal);
+//             console.log('Modal removed successfully');
+//         } else {
+//             console.error('Failed to remove modal: it is not a child of document.body', idModal);
+//         }
+//     }
+
+
+    // function showCustomContextMenu(contextEvent, x, y, channelIndex, button) {
+    //     console.log('Creating custom context menu');
+    
+    //     closeCustomContextMenu();  // Ensure any existing context menus are closed
+    
+    //     const menu = createContextMenu(x, y);
+    //     menu.style.position = 'absolute';
+    //     menu.style.left = `${x}px`;
+    //     menu.style.top = `${y}px`;
+    //     menu.className = 'custom-context-menu'; // Use a specific class for styling
+    
+    //     // Define menu options
+    //     const options = [
+    //         { label: 'Add User Channel Name', action: () => showChannelNamingModal(channelIndex) },
+    //         { label: 'Copy Ordinal ID', action: () => { console.log('Copy Ordinal ID clicked'); copyOrdinalId(channelIndex); } },
+    //         { label: 'Copy Channel Settings (coming soon)', action: () => console.log('Copy Channel Settings clicked') },
+    //         { label: 'Set Channel Colour', action: () => showColorPicker(contextEvent, button) },
+    //         { label: 'Paste Ordinal ID', action: () => pasteOrdinalId(channelIndex) },
+    //         { label: 'Paste Channel Settings (coming soon)', action: () => pasteChannelSettings(channelIndex) }
+    //     ];
+    
+    //     options.forEach(option => {
+    //         const menuOption = createMenuOption(option.label, option.action);
+    //         menu.appendChild(menuOption);
+    //     });
+    
+    //     document.body.appendChild(menu);
+    
+    //     // Timeout to avoid immediate closing due to the current click event
+    //     setTimeout(() => {
+    //         // Listen for clicks outside the menu to close it
+    //         document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
+    //     }, 0);
+    // }
+    
+    // function createContextMenu(x, y) {
+    //     const menu = document.createElement('div');
+    //     menu.style.position = 'fixed';
+    //     menu.style.left = `${x}px`;
+    //     menu.style.top = `${y}px`;
+    //     menu.className = 'context-menu';
+    //     return menu;
+    // }
+    
+    // function createMenuOption(text, action) {
+    //     const option = document.createElement('div');
+    //     option.textContent = text;
+    //     option.className = 'menu-option';
+    //     option.onclick = action;
+    //     return option;
+    // }
+    
+//     function handleClickOutsideMenu(event, menu) {
+//         // Close the menu if the click is outside of the menu
+//         if (!menu.contains(event.target)) {
+//             menu.remove();
+//             document.removeEventListener('click', handleClickOutsideMenu);
+//         }
+//     }
+    
+    // function closeCustomContextMenu() {
+    //     // Remove any existing context menus
+    //     const existingMenu = document.querySelector('.custom-context-menu');
+    //     if (existingMenu) {
+    //         existingMenu.remove();
+    //     }
+    // }
+    
+
+//     function showChannelNamingModal(channelIndex) {
+//     // Close any existing modals first
+//     const existingModal = document.querySelector('.channel-naming-modal');
+//     if (existingModal) {
+//         closeModal(existingModal);
+//         closeAndCleanupModal(existingModal);
+//     }
+
+//     // Create the modal element
+//     const modal = document.createElement('div');
+//     modal.className = 'channel-naming-modal';
+//     // Add styles as needed here
+
+//     // Input for the channel name
+//     const input = document.createElement('input');
+//     input.type = 'text';
+//     input.placeholder = 'Give this channel a name';
+//     input.className = 'channel-name-input';
+    
+//     // Submit button for the modal
+//     const submitButton = document.createElement('button');
+//     submitButton.textContent = 'Submit';
+//     submitButton.onclick = () => {
+//         if (input.value) {
+//             window.unifiedSequencerSettings.setChannelName(channelIndex, input.value);
+//             updateProjectChannelNamesUI(channelIndex, input.value); // Ensure UI is updated
+//             closeModal(modal); // Close the modal right after submit
+//         }
+//     };
+    
+//     // Cancel button for the modal
+//     const cancelButton = document.createElement('button');
+//     cancelButton.textContent = 'Cancel';
+//     cancelButton.onclick = () => closeModal(modal);
+    
+//     // Append elements to the modal
+//     modal.appendChild(input);
+//     modal.appendChild(submitButton);
+//     modal.appendChild(cancelButton);
+    
+//     // Append the modal to the document
+//     document.body.appendChild(modal);
+//     input.focus(); // Focus the input for user convenience
+// }
+
+// function showColorPicker(event, button) {
+//     console.log('showColorPicker function called inside channelsForEach.js');
+
+//     // Define colors for the grid
+//     const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#808080', '#FFFFFF',
+//                     '#FFA500', '#800080', '#008080', '#000080', '#800000', '#008000', '#FFC0CB', '#D2691E'];
+
+//     // Create color picker container
+//     const colorPicker = document.createElement('div');
+//     colorPicker.style.position = 'absolute';
+//     colorPicker.style.display = 'grid';
+//     colorPicker.style.gridTemplateColumns = 'repeat(4, 1fr)';
+//     colorPicker.style.gap = '1px';
+
+//     // Calculate the position
+//     const gridHeight = (colors.length / 4) * 20; // 20px height for each color div
+//     const topPosition = event.clientY - gridHeight;
+//     const leftPosition = event.clientX;
+
+//     // Log calculated position
+//     console.log(`Color picker position - Top: ${topPosition}px, Left: ${leftPosition}px`);
+
+//     colorPicker.style.top = topPosition + 'px';
+//     colorPicker.style.left = leftPosition + 'px';
+
+//     // Add color options to the picker
+//     colors.forEach(color => {
+//         const colorDiv = document.createElement('div');
+//         colorDiv.style.width = '20px';
+//         colorDiv.style.height = '20px';
+//         colorDiv.style.backgroundColor = color;
+//         colorDiv.addEventListener('click', function() {
+//             console.log(`Color selected: ${color}`);
+//             button.style.backgroundColor = color;
+
+//             // Remove previous color class and add the new one
+//             button.className = button.className.replace(/\bcolor-[^ ]+/g, '');
+//             button.classList.add(`color-${color.replace('#', '')}`);
+
+//             colorPicker.remove();
+//         });
+//         colorPicker.appendChild(colorDiv);
+//     });
+
+//     // Append the color picker to the body
+//     document.body.appendChild(colorPicker);
+//     console.log('Color picker appended to the body. Check if it is visible in the DOM.');
+
+//     // Add event listener to stop propagation of click events inside the color picker
+//     colorPicker.addEventListener('click', function(e) {
+//         e.stopPropagation();
+//     });
+
+//     // Delay the addition of the global click listener
+//     setTimeout(() => {
+//         document.addEventListener('click', function removePicker() {
+//             console.log('Global click detected. Removing color picker.');
+//             colorPicker.remove();
+//             document.removeEventListener('click', removePicker);
+//         });
+//     }, 0); // Small delay like 0 or 10 milliseconds
+
+//     // Set a timeout to remove the color picker after 2 seconds
+//     setTimeout(() => {
+//         console.log('Removing color picker after 2 seconds.');
+//         colorPicker.remove();
+//     }, 5000);
+// }
+
+
+
+    
+    
+ 
+    
+   
+    
+    
+
+    // function updateChannelURL(index, newURL) {
+    //     window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index] = newURL;
+    //     console.log(`[UpdateChannelURL] Updated channel ${index} URL to ${newURL}`);
+    // }
+    
+
+
+
+
+   
+    
+
+    // function createExternalLinkButton(text, url, className, tooltipText) {
     //     const container = document.createElement('div');
     //     container.className = 'tooltip';
     
     //     const button = document.createElement('button');
     //     button.textContent = text;
-    //     button.addEventListener('click', onClick);
     //     button.className = className; // Apply the class name passed as a parameter
+    //     button.addEventListener('click', () => window.open(url, '_blank'));
     //     container.appendChild(button);
     
     //     const tooltip = document.createElement('span');
     //     tooltip.className = 'tooltiptext';
-    //     tooltip.textContent = tooltipText;
+    //     tooltip.textContent = tooltipText; // Set the tooltip text
     //     container.appendChild(tooltip);
     
     //     return container;
     // }
+
+
+
     
-      
-    //     const ogAudienceDropdown = createDropdown('Og audience samples:', ogSampleUrls);
-    //     idModalContent.appendChild(ogAudienceDropdown);
-    
-    //     // Event listener for the dropdown
-    //     ogAudienceDropdown.querySelector('select').addEventListener('change', (event) => {
-    //         const selectedUrl = event.target.value;
-    //         fetchAudio(selectedUrl, index, (channelIndex, sampleName) => {
-    //             window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
-    //         });
-    //     });
-    
-        // Add Load and Cancel buttons with unique class names for styling
-    //    // Inside the openModal function
-    //     idModalContent.appendChild(createButton('Load Sample ID', () => {
-    //         handleLoad(index, audionalInput, ipfsInput, fileInput, idModal, loadSampleButton, ogAudienceDropdown);
-    //         const selectedUrl = ogAudienceDropdown.querySelector('select').value;
-    //         const channelIndex = index; // Assuming index represents the channel index
-    //         window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, selectedUrl); // Update project channel names UI after loading the sample
-    //     }, 'loadButton', 'Load Audio from ID'));
-    //     idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal), 'cancelButton', 'Close this window'));
-    
-    //     // Add the 'Search Ordinal Audio Files' button with a unique class name and tooltip
-    //     const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc', 'searchButton', 'Search for audio files (Copy and paste the Ordinal ID to load a sample');
-    //     idModalContent.appendChild(searchOrdinalButton);
-    
-    //     document.body.appendChild(idModal);
+    // function closeModal(modal) {
+    //     if (modal instanceof Node) { // Check if modal is a node before attempting to remove
+    //         document.body.removeChild(modal);
+    //     }
     // }
 
-    function updateChannelURL(index, newURL) {
-        window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index] = newURL;
-        console.log(`[UpdateChannelURL] Updated channel ${index} URL to ${newURL}`);
-    }
-    
 
-    function createModal() {
-        const modal = document.createElement('div');
-        modal.className = 'loadSampleModalButton'; // Updated class name
-        return modal;
-    }
+// function getButtonText(index) {
+//     // Retrieve the text based on channel URL or default text
+//     const urls = window.unifiedSequencerSettings.settings.masterSettings.channelURLs;
+//     return urls && urls[index] ? urls[index] : 'Load New Audional';
+// }
 
-    function createModalContent() {
-        const content = document.createElement('div');
-        content.className = 'loadSampleModalButton-content'; // Updated class name
-        return content;
-    }
-
-
-
-    function createTextParagraph(text) {
-        const paragraph = document.createElement('p');
-        paragraph.textContent = text;
-        paragraph.className = 'loadSampleModalButton-text'; // Updated class name
-        return paragraph;
-    }
-
-    function createInputField(placeholder) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = placeholder;
-        input.className = 'loadSampleModalButton-input'; // Updated class name
-        return input;
-    }
-
-    function createFileInput() {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.mp3, .wav, .flac, text/plain';  // Accept MP3, WAV, FLAC, and text files for Base64
-        fileInput.className = 'loadSampleModalButton-input';
-        return fileInput;
-    }
     
-   
-
-   
-    
-   
-    
-    
-    // function extractNameFromURL(url) {
-    //     const urlParts = url.split('/');
-    //     return urlParts[urlParts.length - 1] || 'New Sample';
-    // }
-    
-    
-    
-    // Function to remove the modal from the DOM
-    function closeAndCleanupModal(idModal) {
-        if (document.body.contains(idModal)) {
-            document.body.removeChild(idModal);
-            console.log('Modal removed successfully');
-        } else {
-            console.error('Failed to remove modal: it is not a child of document.body', idModal);
-        }
-    }
-    
-
-    function createExternalLinkButton(text, url, className, tooltipText) {
-        const container = document.createElement('div');
-        container.className = 'tooltip';
-    
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.className = className; // Apply the class name passed as a parameter
-        button.addEventListener('click', () => window.open(url, '_blank'));
-        container.appendChild(button);
-    
-        const tooltip = document.createElement('span');
-        tooltip.className = 'tooltiptext';
-        tooltip.textContent = tooltipText; // Set the tooltip text
-        container.appendChild(tooltip);
-    
-        return container;
-    }
-    function showCustomContextMenu(contextEvent, x, y, channelIndex, button) {
-        console.log('Creating custom context menu');
-    
-        closeCustomContextMenu();  // Ensure any existing context menus are closed
-    
-        const menu = createContextMenu(x, y);
-        menu.style.position = 'absolute';
-        menu.style.left = `${x}px`;
-        menu.style.top = `${y}px`;
-        menu.className = 'custom-context-menu'; // Use a specific class for styling
-    
-        // Define menu options
-        const options = [
-            { label: 'Add User Channel Name', action: () => showChannelNamingModal(channelIndex) },
-            { label: 'Copy Ordinal ID', action: () => { console.log('Copy Ordinal ID clicked'); copyOrdinalId(channelIndex); } },
-            { label: 'Copy Channel Settings (coming soon)', action: () => console.log('Copy Channel Settings clicked') },
-            { label: 'Set Channel Colour', action: () => showColorPicker(contextEvent, button) },
-            { label: 'Paste Ordinal ID', action: () => pasteOrdinalId(channelIndex) },
-            { label: 'Paste Channel Settings (coming soon)', action: () => pasteChannelSettings(channelIndex) }
-        ];
-    
-        options.forEach(option => {
-            const menuOption = createMenuOption(option.label, option.action);
-            menu.appendChild(menuOption);
-        });
-    
-        document.body.appendChild(menu);
-    
-        // Timeout to avoid immediate closing due to the current click event
-        setTimeout(() => {
-            // Listen for clicks outside the menu to close it
-            document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
-        }, 0);
-    }
-    
-    function createContextMenu(x, y) {
-        const menu = document.createElement('div');
-        menu.style.position = 'fixed';
-        menu.style.left = `${x}px`;
-        menu.style.top = `${y}px`;
-        menu.className = 'context-menu';
-        return menu;
-    }
-    
-    function createMenuOption(text, action) {
-        const option = document.createElement('div');
-        option.textContent = text;
-        option.className = 'menu-option';
-        option.onclick = action;
-        return option;
-    }
-    
-    function handleClickOutsideMenu(event, menu) {
-        // Close the menu if the click is outside of the menu
-        if (!menu.contains(event.target)) {
-            menu.remove();
-            document.removeEventListener('click', handleClickOutsideMenu);
-        }
-    }
-    
-    function closeCustomContextMenu() {
-        // Remove any existing context menus
-        const existingMenu = document.querySelector('.custom-context-menu');
-        if (existingMenu) {
-            existingMenu.remove();
-        }
-    }
-    
-
-    function showChannelNamingModal(channelIndex) {
-        closeModal(); // Close any existing modal first
-
-        const modal = document.createElement('div');
-        modal.className = 'channel-naming-modal';
-        // Add styles as needed
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Give this channel a name';
-        input.className = 'channel-name-input';
-
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.onclick = () => {
-            if (input.value) {
-                window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
-            }
-            closeModal();
-        };
-
-        const cancelButton = document.createElement('button');
-        cancelButton.textContent = 'Cancel';
-        cancelButton.onclick = closeModal;
-
-        modal.appendChild(input);
-        modal.appendChild(submitButton);
-        modal.appendChild(cancelButton);
-        document.body.appendChild(modal);
-
-        // Event listener to close the modal when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
-                closeModal();
-            }
-        }, { capture: true, once: true });
-        input.focus(); // Automatically focus the input field for immediate typing
-    }
-
     // function closeModal() {
     //     const existingModal = document.querySelector('.channel-naming-modal');
     //     if (existingModal) {
@@ -531,74 +839,7 @@
         
     // }
     
-    function showColorPicker(event, button) {
-        console.log('showColorPicker function called inside channelsForEach.js');
-    
-        // Define colors for the grid
-        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#808080', '#FFFFFF',
-                        '#FFA500', '#800080', '#008080', '#000080', '#800000', '#008000', '#FFC0CB', '#D2691E'];
-    
-        // Create color picker container
-        const colorPicker = document.createElement('div');
-        colorPicker.style.position = 'absolute';
-        colorPicker.style.display = 'grid';
-        colorPicker.style.gridTemplateColumns = 'repeat(4, 1fr)';
-        colorPicker.style.gap = '1px';
-    
-        // Calculate the position
-        const gridHeight = (colors.length / 4) * 20; // 20px height for each color div
-        const topPosition = event.clientY - gridHeight;
-        const leftPosition = event.clientX;
-    
-        // Log calculated position
-        console.log(`Color picker position - Top: ${topPosition}px, Left: ${leftPosition}px`);
-    
-        colorPicker.style.top = topPosition + 'px';
-        colorPicker.style.left = leftPosition + 'px';
-    
-        // Add color options to the picker
-        colors.forEach(color => {
-            const colorDiv = document.createElement('div');
-            colorDiv.style.width = '20px';
-            colorDiv.style.height = '20px';
-            colorDiv.style.backgroundColor = color;
-            colorDiv.addEventListener('click', function() {
-                console.log(`Color selected: ${color}`);
-                button.style.backgroundColor = color;
-    
-                // Remove previous color class and add the new one
-                button.className = button.className.replace(/\bcolor-[^ ]+/g, '');
-                button.classList.add(`color-${color.replace('#', '')}`);
-    
-                colorPicker.remove();
-            });
-            colorPicker.appendChild(colorDiv);
-        });
-    
-        // Append the color picker to the body
-        document.body.appendChild(colorPicker);
-        console.log('Color picker appended to the body. Check if it is visible in the DOM.');
-    
-        // Add event listener to stop propagation of click events inside the color picker
-        colorPicker.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    
-        // Delay the addition of the global click listener
-        setTimeout(() => {
-            document.addEventListener('click', function removePicker() {
-                console.log('Global click detected. Removing color picker.');
-                colorPicker.remove();
-                document.removeEventListener('click', removePicker);
-            });
-        }, 0); // Small delay like 0 or 10 milliseconds
-    
-        // Set a timeout to remove the color picker after 2 seconds
-        setTimeout(() => {
-            console.log('Removing color picker after 2 seconds.');
-            colorPicker.remove();
-        }, 5000);
-    }
+   
 
     // // Helper function to handle click outside the custom context menu
     // function handleClickOutsideMenu(event) {
@@ -692,14 +933,6 @@
     //     }
     // }
 
-    
-    
-    
-    export { setupLoadSampleButton };
-
-
-    
-    
     
         // function updateSettingsAfterLoad(index, loadSampleButton) {
     //     console.log(`[HTML Debugging] [updateSettingsAfterLoad] Updating settings post-load for channel ${index}`);
@@ -902,3 +1135,87 @@
     // }
 
 
+  // function testUpdateButtonName(channelIndex) {
+    //     const buttonId = `load-sample-button-${channelIndex}`;
+    //     const loadSampleButton = document.getElementById(buttonId);
+    
+    //     if (!loadSampleButton) {
+    //         console.error("Button not found.");
+    //         return;
+    //     }
+    
+    //     // Adding a click event listener to the button
+    //     loadSampleButton.addEventListener('click', () => {
+    //         // Here you would put the actual logic to determine the sample name
+    //         // For test purposes, we'll just use "Sample Loaded"
+    //         const sampleName = "Sample Loaded"; 
+    //         loadSampleButton.textContent = sampleName;
+    
+    //         console.log(`Button text updated for channel ${channelIndex}: ${sampleName}`);
+    //         // Optional: Remove the event listener if you don't want it to run again
+    //         // loadSampleButton.removeEventListener('click', this);
+    //     });
+    // }
+    
+    // // Example usage: Update the text of the button for channel 0
+    // testUpdateButtonName(0);
+    
+    // function createButton(text, onClick, className, tooltipText) {
+    //     const container = document.createElement('div');
+    //     container.className = 'tooltip';
+    
+    //     const button = document.createElement('button');
+    //     button.textContent = text;
+    //     button.addEventListener('click', onClick);
+    //     button.className = className; // Apply the class name passed as a parameter
+    //     container.appendChild(button);
+    
+    //     const tooltip = document.createElement('span');
+    //     tooltip.className = 'tooltiptext';
+    //     tooltip.textContent = tooltipText;
+    //     container.appendChild(tooltip);
+    
+    //     return container;
+    // }
+    
+      
+    //     const ogAudienceDropdown = createDropdown('Og audience samples:', ogSampleUrls);
+    //     idModalContent.appendChild(ogAudienceDropdown);
+    
+    //     // Event listener for the dropdown
+    //     ogAudienceDropdown.querySelector('select').addEventListener('change', (event) => {
+    //         const selectedUrl = event.target.value;
+    //         fetchAudio(selectedUrl, index, (channelIndex, sampleName) => {
+    //             window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+    //         });
+    //     });
+    
+        // Add Load and Cancel buttons with unique class names for styling
+    //    // Inside the openModal function
+    //     idModalContent.appendChild(createButton('Load Sample ID', () => {
+    //         handleLoad(index, audionalInput, ipfsInput, fileInput, idModal, loadSampleButton, ogAudienceDropdown);
+    //         const selectedUrl = ogAudienceDropdown.querySelector('select').value;
+    //         const channelIndex = index; // Assuming index represents the channel index
+    //         window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, selectedUrl); // Update project channel names UI after loading the sample
+    //     }, 'loadButton', 'Load Audio from ID'));
+    //     idModalContent.appendChild(createButton('Cancel', () => document.body.removeChild(idModal), 'cancelButton', 'Close this window'));
+    
+    //     // Add the 'Search Ordinal Audio Files' button with a unique class name and tooltip
+    //     const searchOrdinalButton = createExternalLinkButton('Search Ordinal Audio Files', 'https://ordinals.hiro.so/inscriptions?f=audio&s=genesis_block_height&o=asc', 'searchButton', 'Search for audio files (Copy and paste the Ordinal ID to load a sample');
+    //     idModalContent.appendChild(searchOrdinalButton);
+    
+    //     document.body.appendChild(idModal);
+    // }
+
+
+   
+    
+   
+    
+    
+    // function extractNameFromURL(url) {
+    //     const urlParts = url.split('/');
+    //     return urlParts[urlParts.length - 1] || 'New Sample';
+    // }
+    
+    
