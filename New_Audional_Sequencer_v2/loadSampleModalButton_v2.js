@@ -193,6 +193,9 @@ function updateProjectChannelNamesUI(channelIndex, name) {
     if (nameDisplay) {
         nameDisplay.textContent = name;
     }
+    // Update the global settings object with new channel names
+    window.unifiedSequencerSettings.setChannelName(channelIndex, name);
+    console.log("[updateProjectChannelNamesUI] Project channel names updated:", window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames);
 }
 
 function showChannelNamingModal(channelIndex, loadSampleButton) {
