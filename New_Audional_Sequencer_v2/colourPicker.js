@@ -38,9 +38,9 @@ function showColorPicker(event, button) {
         colorPicker.remove();
     }, 2000);
 
-    // Add a global click listener to remove the color picker when clicked outside
-    document.addEventListener('click', function removePicker() {
-        colorPicker.remove();
-        document.removeEventListener('click', removePicker);
-    });
+//     // Add a global click listener to remove the color picker when clicked outside
+//     document.addEventListener('click', function removePicker() {
+//         colorPicker.remove();
+//         document.removeEventListener('click', removePicker);
+//     });
 }

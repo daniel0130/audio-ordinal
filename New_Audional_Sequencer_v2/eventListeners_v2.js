@@ -20,6 +20,21 @@ document.addEventListener("DOMContentLoaded", function() {
     // let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
     // let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
     // let loadButtonClicked = false; // Flag to track if the load button is clicked
+
+    // Create and append the Cancel button
+    let cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.id = 'cancel-load-button';
+    cancelButton.style.display = 'block'; // Display as block element
+    loadOptions.appendChild(cancelButton);
+
+    // Cancel button event listener
+    cancelButton.addEventListener('click', () => {
+        loadOptions.style.display = "none"; // Hide the load options
+        console.log('[Save/Load debug] Cancel button clicked');
+    });
+
+
     // Previous Sequence Button
 document.getElementById('prev-sequence').addEventListener('click', function() {
     let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
@@ -62,7 +77,6 @@ document.getElementById('next-sequence').addEventListener('click', function() {
 
     loadButton.addEventListener('click', () => {
         console.log('[Save/Load debug] Load button clicked');
-    
         // Toggle the display of the load options menu
         const loadOptionsVisible = loadOptions.style.display === "block";
         loadOptions.style.display = loadOptionsVisible ? "none" : "block";
@@ -75,7 +89,7 @@ document.getElementById('next-sequence').addEventListener('click', function() {
             loadOptions.style.top = `${rect.bottom + window.scrollY}px`; // Place it directly below the button
         }
     });
-    
+
     
 
     loadJson.addEventListener('click', () => {

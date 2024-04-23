@@ -150,9 +150,9 @@
      opacity: 0.5; /* You can adjust this value as needed */
  }
  
-.load-sample-button {
+ .load-sample-button {
     flex: 1; /* Flex grow and shrink */
-    overflow: auto;
+    /* overflow: auto; */
     text-overflow: ellipsis;
     font-size: 0.8em; /* Consider making this responsive as well */
     height: 20px;
@@ -162,16 +162,17 @@
     font-weight: bold;
 }
 
-
-
 .load-sample-button:hover::after {
+    content: attr(title); /* Display the title attribute text as tooltip */
     position: absolute;
-    top: 100%;
+    bottom: 150%; /* Position above the button */
     left: 0;
-    background: var(--primary-color);
-    color: var(--main-bg-color);
-    z-index: 1;
+    background: rgba(0, 0, 0, 0.8); /* Slightly opaque background */
+    color: white; /* Text color */
+    padding: 5px; /* Add padding for better readability */
+    pointer-events: none; /* Allow clicks to go through the tooltip */
 }
+
 
 /* Color classes for the loadSampleButton and step-buttons */
 .color-FF0000 .color-FF0000 .step-button.selected { background-color: #FF0000; }
@@ -194,7 +195,7 @@
 
 .fwd-pattern-selection {
     flex: 1; /* Flex grow and shrink */
-    overflow: hidden; /* Changed from 'auto' to 'hidden' to prevent unnecessary scrollbars */
+    /* overflow: hidden; */
     text-overflow: ellipsis;
     font-size: 0.8em; /* Consider making this responsive as well */
     max-height: 20px;

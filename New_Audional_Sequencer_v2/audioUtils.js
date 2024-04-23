@@ -42,7 +42,7 @@ function bufferToBase64(buffer) {
 
 
 
-async function processJSONResponse(response) {
+async function processJSONResponse(response, channelIndex) {
   console.log("[processJSONResponse] Processing JSON response");
   const jsonResponse = await response.json();
   console.log("[processJSONResponse] JSON response parsed");
@@ -53,8 +53,17 @@ async function processJSONResponse(response) {
   const audioData = jsonResponse.audioData ? base64ToArrayBuffer(jsonResponse.audioData.split(',')[1]) : null;
   console.log("[processJSONResponse] audioData set from JSON");
 
+  // // Attempt to set the channel name using the provided method
+  // if (sampleName && window.unifiedSequencerSettings.setChannelName) {
+  //     window.unifiedSequencerSettings.setChannelName(channelIndex, sampleName);
+  // } else {
+  //     console.error("[processJSONResponse] Unable to update channel name, setChannelName method not found or sampleName is empty.");
+  // }
+
   return { audioData, sampleName };
 }
+
+
 
 async function processHTMLResponse(htmlText) {
   console.log("[processHTMLResponse] Processing HTML content");
@@ -86,29 +95,41 @@ async function processHTMLResponse(htmlText) {
 async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
   try {
+      // Decode the audio data into a buffer
       const audioBuffer = await decodeAudioData(audioData);
       console.log("[decodeAndStoreAudio] Audio data decoded");
 
       // Create a reverse buffer by copying and reversing the audioBuffer
       const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Store both buffers using distinct keys
-      audioBuffers.set(fullUrl, audioBuffer);
-      audioBuffers.set(fullUrl + "_reverse", reverseBuffer);
+      // Store buffers using both channel-specific keys and URL-based keys
+      const forwardKey = `channel_${channelIndex}_forward`;
+      const reverseKey = `channel_${channelIndex}_reverse`;
+      const forwardUrlKey = `${fullUrl}`;
+      const reverseUrlKey = `${fullUrl}_reverse`;
 
-      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for ${sampleName}`);
+      // Use a global buffer storage (adjust according to your actual storage method)
+      audioBuffers.set(forwardKey, audioBuffer);
+      audioBuffers.set(reverseKey, reverseBuffer);
+      audioBuffers.set(forwardUrlKey, audioBuffer);
+      audioBuffers.set(reverseUrlKey, reverseBuffer);
 
-      // Update project channel name in global settings
-      window.unifiedSequencerSettings.setProjectChannelName(channelIndex, sampleName);
-      console.log(`[decodeAndStoreAudio] Project channel name updated for channel index: ${channelIndex}, sampleName: ${sampleName}`);
+      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+
+      // Update UI or other components that depend on these buffers
+      window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
+      // Optionally, trigger any UI updates or callbacks that need these buffers
+      if (typeof updateWaveformDisplay === "function") {
+          updateWaveformDisplay(channelIndex, audioBuffer);
+      }
+
   } catch (error) {
       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
 
-
 // Function to create a reverse buffer from an existing AudioBuffer
-
 // Accessibility: Both buffers can be accessed using their keys. 
 // For example, if you need the reverse buffer for https://example.com/audio.mp3, 
 // you would look for https://example.com/audio.mp3_reverse in the audioBuffers map.
@@ -146,14 +167,10 @@ const decodeAudioData = (audioData) => {
 };
 
 
-async function fetchAudio(url, channelIndex) {
-  // console.log(`[fetchAndProcessAudio] Entered function. URL: ${url}, Channel Index: ${channelIndex}`);
+async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = null) {
   try {
       const fullUrl = formatURL(url);
-      // console.log(`[fetchAndProcessAudio] Formatted URL: ${fullUrl}`);
-
       const response = await fetch(fullUrl);
-      // console.log(`[fetchAndProcessAudio] Fetch response received for URL: ${fullUrl}`);
 
       if (!response.ok) {
           console.error(`[fetchAndProcessAudio] Fetch request failed for URL: ${fullUrl}, Status: ${response.status}`);
@@ -161,78 +178,81 @@ async function fetchAudio(url, channelIndex) {
       }
 
       const contentType = response.headers.get('Content-Type');
-      // console.log(`[fetchAndProcessAudio] Content-Type of response: ${contentType}`);
-
       let audioData;
-      let sampleName = fullUrl.split('/').pop(); // Fallback sample name from URL
-      // console.log(`[fetchAndProcessAudio] Initial sampleName set to: ${sampleName}`);
+      // Initially, do not change the sample name if it already exists.
+      let sampleName = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex];
 
+      // Determine the content type and process accordingly
       if (contentType.includes('application/json')) {
-          // console.log("[fetchAndProcessAudio] Processing as JSON");
-          const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response);
+          const { audioData: processedAudioData, sampleName: processedSampleName } = await processJSONResponse(response, channelIndex);
           audioData = processedAudioData;
-          sampleName = processedSampleName || sampleName;
-          // console.log(`[fetchAndProcessAudio] Processed sampleName from JSON: ${sampleName}`);
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              sampleName = processedSampleName || sampleNameGiven || fullUrl.split('/').pop();
+          }
       } else if (contentType.includes('text/html')) {
-          // console.log("[fetchAndProcessAudio] Processing as HTML");
           const htmlText = await response.text();
           const { audioData: processedAudioData, sampleName: processedSampleName } = await processHTMLResponse(htmlText);
           audioData = processedAudioData;
-          sampleName = processedSampleName || sampleName;
-          // console.log(`[fetchAndProcessAudio] Processed sampleName from HTML: ${sampleName}`);
-      } else {
-          // console.log("[fetchAndProcessAudio] Processing as direct audio file");
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              sampleName = processedSampleName || sampleNameGiven || fullUrl.split('/').pop();
+          }
+        } else {
           audioData = await response.arrayBuffer();
-          // console.log("[fetchAndProcessAudio] Audio data set from direct audio file");
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              // Use the filename from the URL as a fallback if the sampleName is empty or undefined
+              sampleName = sampleNameGiven || fullUrl.split('/').pop().split('#')[0].split('?')[0] || 'Unnamed Sample';
+          }
       }
 
-      // Now, use decodeAndStoreAudio to handle decoding and storage
       if (audioData) {
           await decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex);
+
+          // The name will only be updated in the UI and settings if it wasn't previously set by the user
+          if (!window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex]) {
+              window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+              window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = sampleName;
+          }
+          window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = fullUrl;
+
+          if (callback) callback(channelIndex, sampleName);
       } else {
           console.error("[fetchAndProcessAudio] No audio data to process.");
       }
   } catch (error) {
-      console.error('[fetchAndProcessAudio] Error:', error);
+      console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }
 }
 
 
 
 function playSound(currentSequence, channel, currentStep) {
-  // const playbackSpeed = window.unifiedSequencerSettings.getStepPlaybackSpeed(currentSequence, channelIndex, currentStep);
-  // console.log('playSound entered');
   const channelIndex = getChannelIndex(channel);
-  // console.log(`[playSound Debugging] [playSound] Processing channel index: ${channelIndex}`);
-
-  const stepState = window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, currentStep);
-  // console.log(`[playSound Debugging] [playSound] setting stepState using direct call to: ${stepState}`);
-  
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
-  // console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
 
- // Check if the step is either active or marked for reverse playback.
+  // Log debugging to check state
+  console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
+
+  // Check if the step is either active or marked for reverse playback.
   if (!isActive && !isReverse) {
-    // console.log("[playSound Debugging] [playSound] Current step is neither active nor reverse. Skipping playback.");
-    return;
-  }
-  const isReversePlayback = isReverse;
-  // Check if the current step is marked for reverse playback
-  const stepButtonId = `Sequence${currentSequence}-ch${channelIndex}-step-${currentStep}`;
-  const stepButton = document.getElementById(stepButtonId);
-
-  const url = getAudioUrl(channelIndex) + (isReversePlayback ? "_reverse" : "");
-  // console.log("[playSound Debugging] [playSound] Audio URL:", url);
-
-  const audioBuffer = audioBuffers.get(url);
-  if (!audioBuffer) {
-      // console.log("[playSound Debugging] [playSound] No audio buffer found for URL:", url);
+      console.log("[playSound Debugging] Current step is neither active nor reverse. Skipping playback.");
       return;
   }
-  
-  // console.log("[playSound Debugging] [playSound] Audio buffer:", audioBuffer);
 
-  playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback); // Include isReversePlayback as an argument
+  // Construct the key to retrieve the appropriate buffer
+  const bufferKey = `channel_${channelIndex}_${isReverse ? 'reverse' : 'forward'}`;
+  const audioBuffer = audioBuffers.get(bufferKey);
+
+  // Log the buffer retrieval status
+  if (!audioBuffer) {
+      console.error(`[playSound] No audio buffer found for ${bufferKey}`);
+      return;
+  }
+
+  // Play the audio buffer using a function designed to handle audio playback
+  playTrimmedAudio(channelIndex, audioBuffer, bufferKey, currentStep, isReverse);
 }
 
 
@@ -347,8 +367,8 @@ function updateMuteState(channel, isMuted) {
     console.error("GainNode not found for channel:", channelIndex);
   }
 
-  // Update the dim state of the channel
-  updateDimState(channel, channelIndex);
+  // // Update the dim state of the channel
+  // updateDimState(channel, channelIndex);
 }
 
 // Function to handle manual toggle of the mute button
@@ -368,3 +388,49 @@ function toggleMute(channelElement) {
 // ...rest of your code...
 
 
+
+
+// async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
+//   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
+//   try {
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log("[decodeAndStoreAudio] Audio data decoded");
+
+//       // Create a reverse buffer by copying and reversing the audioBuffer
+//       const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//       // Use channel-specific keys for storing buffers
+//       const forwardKey = `channel_${channelIndex}_forward`;
+//       const reverseKey = `channel_${channelIndex}_reverse`;
+
+//       // Store both buffers using the new keys
+//       audioBuffers.set(forwardKey, audioBuffer);
+//       audioBuffers.set(reverseKey, reverseBuffer);
+//       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex}: ${sampleName}`);
+
+//       // Update the channel name in the UI
+//       window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
+//   } catch (error) {
+//       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+//   }
+// }
+
+// async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
+//   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
+//   try {
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log("[decodeAndStoreAudio] Audio data decoded");
+
+//       // Create a reverse buffer by copying and reversing the audioBuffer
+//       const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//       // Store both buffers using distinct keys
+//       audioBuffers.set(fullUrl, audioBuffer);
+//       audioBuffers.set(fullUrl + "_reverse", reverseBuffer);
+//       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for ${sampleName}`);
+
+//   } catch (error) {
+//       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+//   }
+// }
