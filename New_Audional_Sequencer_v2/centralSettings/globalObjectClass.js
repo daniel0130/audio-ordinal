@@ -2,6 +2,8 @@ class UnifiedSequencerSettings {
     constructor(audioContext) {
         this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
         this.observers = [];
+        this.gainNodes = [];
+        this.sourceNodes = []; // Array to hold source nodes
 
         this.settings = {
             masterSettings: {
@@ -18,35 +20,44 @@ class UnifiedSequencerSettings {
         };
 
         this.initializeGainNodes();
+        this.initializeSourceNodes(); // Initialize source nodes
         this.checkSettings = this.checkSettings.bind(this);
         this.clearMasterSettings = this.clearMasterSettings.bind(this);
         this.loadSettings = this.loadSettings.bind(this);
         this.formatURL = this.formatURL.bind(this);
         this.setChannelVolume = this.setChannelVolume.bind(this);
+        this.setChannelSpeed = this.setChannelSpeed.bind(this); // Bind the new method
     }
 
     initializeGainNodes() {
-        this.gainNodes = [];
-        try {
-            for (let i = 0; i < 16; i++) {
-                const gainNode = this.audioContext.createGain();
-                gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
-                gainNode.connect(this.audioContext.destination);
-                this.gainNodes.push(gainNode);
-            }
-            console.log("GainNodes initialized for all channels");
-        } catch (error) {
-            console.error("Failed to initialize gain nodes:", error);
+        for (let i = 0; i < 16; i++) {
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
+            gainNode.connect(this.audioContext.destination);
+            this.gainNodes.push(gainNode);
+        }
+    }
+
+    initializeSourceNodes() {
+        for (let i = 0; i < 16; i++) {
+            const source = this.audioContext.createBufferSource(); // Create a new buffer source node
+            source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
+            source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
+            this.sourceNodes.push(source);
         }
     }
 
     setChannelVolume(channelIndex, volume) {
         if (channelIndex >= 0 && channelIndex < this.gainNodes.length) {
             this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
-            this.settings.masterSettings.channelVolume[channelIndex] = volume; // Update the settings as well
-            console.log(`Volume for channel ${channelIndex} set to ${volume}`);
-        } else {
-            console.error("Invalid channel index:", channelIndex);
+            this.settings.masterSettings.channelVolume[channelIndex] = volume;
+        }
+    }
+
+    setChannelSpeed(channelIndex, speed) {
+        if (channelIndex >= 0 && channelIndex < this.sourceNodes.length) {
+            this.sourceNodes[channelIndex].playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+            this.settings.masterSettings.channelPlaybackSpeed[channelIndex] = speed; // Update setting
         }
     }
 
