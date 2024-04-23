@@ -196,7 +196,6 @@ function updateProjectChannelNamesUI(channelIndex, name) {
     }
 }
 
-
 function showChannelNamingModal(channelIndex, loadSampleButton) {
     // Close any existing modals first
     closeAllModals();  // Ensure all modals are closed before opening a new one
@@ -206,17 +205,17 @@ function showChannelNamingModal(channelIndex, loadSampleButton) {
     openModals.push(modal); // Add this modal to the tracking array
     const input = createInputField('Give this channel a name', 'text');
 
-
-    const submitButton = createButton('Submit', () => {
+    const submitFunction = () => {
         if (input.value.trim()) {
             window.unifiedSequencerSettings.setChannelName(channelIndex, input.value.trim());
             updateProjectChannelNamesUI(channelIndex, input.value.trim());
             loadSampleButton.textContent = input.value.trim();  // Update the button text
             closeAllModals();  // Close all modals after submitting
             closeCustomContextMenu(); // Close any custom context menu
-
         }
-    });
+    };
+
+    const submitButton = createButton('Submit', submitFunction);
 
     const cancelButton = createButton('Cancel', () => closeAllModals());
 
@@ -224,6 +223,13 @@ function showChannelNamingModal(channelIndex, loadSampleButton) {
     modal.appendChild(input);
     modal.appendChild(submitButton);
     modal.appendChild(cancelButton);
+
+    // Listen for Enter key press event
+    input.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            submitFunction(); // Call the submit function when Enter is pressed
+        }
+    });
 
     // Append the modal to the document
     document.body.appendChild(modal);
