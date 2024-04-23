@@ -22,8 +22,6 @@ let stopClickCount = 0;
 let playButton = document.getElementById('play');
 let stopButton = document.getElementById('stop');
 let saveButton = document.getElementById('save-button');
-// let loadButton = document.getElementById('new-load-button');
-// let bpm ;
 let audioContext;
 let currentStepTime;
 let startTime;
@@ -40,14 +38,6 @@ let activeChannels = 16;// new Set();
 let clearClickedOnce = Array(channels.length).fill(false);
 let clearConfirmTimeout = Array(channels.length).fill(null);
 
-// let isContinuousPlay = false;
-// 
-// const continuousPlayButton = document.getElementById('continuous-play');
-// continuousPlayButton.addEventListener('click', () => {
-//     isContinuousPlay = !isContinuousPlay;  // Toggle the continuous play mode
-//     continuousPlayButton.classList.toggle('selected', isContinuousPlay);
-// });
-
 
 if (!audioContext) {
     try {
@@ -57,56 +47,8 @@ if (!audioContext) {
     }
 }
 
-    // Function to update the actual volume
-    function updateVolume(channel, index) {
-        console.log('updateVolume entered');
-        if (soloedChannels.some(state => state)) {
-            gainNodes[index].gain.value = soloedChannels[index] ? 1 : 0;
-        } else {
-            const isMuted = channel.querySelector('.mute-button').classList.contains('selected');
-            gainNodes[index].gain.value = isMuted ? 0 : 1;
-        }
-    }
-    
-    // Function to update the dim state based on gain value
-    function updateDimState(channel, index) {
-        console.log('updateDimState entered');
-        console.log(`updateDimState called for channel ${index}`);
-
-        // Retrieve the current sequence number from the global settings
-        const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-
-        // Select step buttons for the current sequence and channel
-        const stepButtons = channel.querySelectorAll(`.step-button[id^="Sequence${currentSequence}-ch${index}"]`);
-        if (gainNodes[index].gain.value === 0) {
-            stepButtons.forEach(button => button.classList.add('dimmed'));
-        } else {
-            stepButtons.forEach(button => button.classList.remove('dimmed'));
-        }
-    }
 
     
-
-// Global document click listener for clear buttons
-document.addEventListener('click', () => {
-    channels.forEach((channel, channelIndex) => {
-        if (clearClickedOnce[channelIndex]) {
-            const clearConfirm = channel.querySelector('.clear-confirm');
-            clearConfirm.style.display = "none";
-            clearTimeout(clearConfirmTimeout[channelIndex]);
-            clearClickedOnce[channelIndex] = false;
-        }
-    });
-});
-
-
-
-
-
-
-
-
-
 
 if (playButton && stopButton) {
     const channel0 = document.querySelector('#channel-0 .step-button:nth-child(4n)');
@@ -137,19 +79,6 @@ if (playButton && stopButton) {
         }
     }
 
-
-        
-        
-        
-        // function updateCollectedURLsForSequences() {
-        //     // Assuming collectedURLsForSequences is a 2D array where each inner array represents URLs for a sequence.
-        //     if (!collectedURLsForSequences[currentSequence]) {
-        //         collectedURLsForSequences[currentSequence] = [];
-        //     }
-        //     collectedURLsForSequences[currentSequence] = [...collectedURLs];
-        //     console.log(`index.js loadButton: Updated collectedURLsForSequences for sequence ${currentSequence}:`, collectedURLsForSequences[currentSequence]);
-        // }
-        
         // Inside your playButton event listener, after the play logic
         playButton.addEventListener('click', () => {            
             const continuousPlayCheckbox = document.getElementById('continuous-play');
@@ -218,92 +147,134 @@ if (playButton && stopButton) {
         }
 
 
-        const loadPreset = (preset) => {
-            console.log('index.js loadPreset entered');
-            console.log(`index.js loadPreset: Loading preset: ${preset}`);
-            const presetData = presets[preset];
-            if (!presetData) {
-                console.error('Preset not found:', preset);
-                return;
-            }
+
+    // // Function to update the dim state based on gain value
+    // function updateDimState(channel, index) {
+    //     console.log('updateDimState entered');
+    //     console.log(`updateDimState called for channel ${index}`);
+
+    //     // Retrieve the current sequence number from the global settings
+    //     const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+
+    //     // Select step buttons for the current sequence and channel
+    //     const stepButtons = channel.querySelectorAll(`.step-button[id^="Sequence${currentSequence}-ch${index}"]`);
+    //     if (gainNodes[index].gain.value === 0) {
+    //         stepButtons.forEach(button => button.classList.add('dimmed'));
+    //     } else {
+    //         stepButtons.forEach(button => button.classList.remove('dimmed'));
+    //     }
+    // }
+
+
+
+    // // Function to update the actual volume
+    // function updateVolume(channel, index) {
+    //     console.log('updateVolume entered');
+    //     if (soloedChannels.some(state => state)) {
+    //         gainNodes[index].gain.value = soloedChannels[index] ? 1 : 0;
+    //     } else {
+    //         const isMuted = channel.querySelector('.mute-button').classList.contains('selected');
+    //         gainNodes[index].gain.value = isMuted ? 0 : 1;
+    //     }
+    // }
+    
+          
+        // function updateCollectedURLsForSequences() {
+        //     // Assuming collectedURLsForSequences is a 2D array where each inner array represents URLs for a sequence.
+        //     if (!collectedURLsForSequences[currentSequence]) {
+        //         collectedURLsForSequences[currentSequence] = [];
+        //     }
+        //     collectedURLsForSequences[currentSequence] = [...collectedURLs];
+        //     console.log(`index.js loadButton: Updated collectedURLsForSequences for sequence ${currentSequence}:`, collectedURLsForSequences[currentSequence]);
+        // }
+
+
+        // const loadPreset = (preset) => {
+        //     console.log('index.js loadPreset entered');
+        //     console.log(`index.js loadPreset: Loading preset: ${preset}`);
+        //     const presetData = presets[preset];
+        //     if (!presetData) {
+        //         console.error('Preset not found:', preset);
+        //         return;
+        //     }
         
-            channels.forEach((channel, index) => {
-                const channelData = presetData.channels[index];
-                if (!channelData) {
-                    console.warn(`No preset data for channel index: ${index}`);
-                    return;
-                }
+        //     channels.forEach((channel, index) => {
+        //         const channelData = presetData.channels[index];
+        //         if (!channelData) {
+        //             console.warn(`No preset data for channel index: ${index}`);
+        //             return;
+        //         }
         
-                // Use getChannelURL to retrieve the URL for each channel
-                const url = window.unifiedSequencerSettings.getChannelURL(index);
-                const { steps, mute } = channelData;
+        //         // Use getChannelURL to retrieve the URL for each channel
+        //         const url = window.unifiedSequencerSettings.getChannelURL(index);
+        //         const { steps, mute } = channelData;
         
-                if (url) {
-                    const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index}"] .load-sample-button`);
-                    fetchAudio(url, index, loadSampleButton).then(() => {
-                        const audioTrimmer = getAudioTrimmerInstanceForChannel(index);
-                        if (audioTrimmer) {
-                            audioTrimmer.loadSampleFromURL(url).then(() => {
-                                const startSliderValue = channelData.trimSettings?.startSliderValue || 0.01;
-                                const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
-                                audioTrimmer.setStartSliderValue(startSliderValue);
-                                audioTrimmer.setEndSliderValue(endSliderValue);
+        //         if (url) {
+        //             const loadSampleButton = document.querySelector(`.channel[data-id="Channel-${index}"] .load-sample-button`);
+        //             fetchAudio(url, index, loadSampleButton).then(() => {
+        //                 const audioTrimmer = getAudioTrimmerInstanceForChannel(index);
+        //                 if (audioTrimmer) {
+        //                     audioTrimmer.loadSampleFromURL(url).then(() => {
+        //                         const startSliderValue = channelData.trimSettings?.startSliderValue || 0.01;
+        //                         const endSliderValue = channelData.trimSettings?.endSliderValue || audioTrimmer.totalSampleDuration;
+        //                         audioTrimmer.setStartSliderValue(startSliderValue);
+        //                         audioTrimmer.setEndSliderValue(endSliderValue);
         
-                                window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
-                                updateLoadSampleButtonText(index, loadSampleButton);
-                            });
-                        }
-                    });
-                }
+        //                         window.unifiedSequencerSettings.setTrimSettings(index, startSliderValue, endSliderValue);
+        //                         updateLoadSampleButtonText(index, loadSampleButton);
+        //                     });
+        //                 }
+        //             });
+        //         }
         
-                steps.forEach(pos => {
-                    const btn = document.querySelector(`.channel[data-id="Channel-${index}"] .step-button:nth-child(${pos})`);
-                    if (btn) btn.classList.add('selected');
-                });
+        //         steps.forEach(pos => {
+        //             const btn = document.querySelector(`.channel[data-id="Channel-${index}"] .step-button:nth-child(${pos})`);
+        //             if (btn) btn.classList.add('selected');
+        //         });
         
-                const channelElement = document.querySelector(`.channel[data-id="Channel-${index}"]`);
-                if (channelElement) {
-                    updateMuteState(channelElement, mute);
-                    channelElement.classList.add('ordinal-loaded');
-                }
-            });
+        //         const channelElement = document.querySelector(`.channel[data-id="Channel-${index}"]`);
+        //         if (channelElement) {
+        //             updateMuteState(channelElement, mute);
+        //             channelElement.classList.add('ordinal-loaded');
+        //         }
+        //     });
         
-            console.log(preset);
-            loadChannelSettingsFromPreset(presets[preset]);
-            console.log("loadPreset: After loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
-        };
+        //     console.log(preset);
+        //     loadChannelSettingsFromPreset(presets[preset]);
+        //     console.log("loadPreset: After loadPreset, gainNodes values:", gainNodes.map(gn => gn.gain.value));
+        // };
         
 
  
-        function updateLoadSampleButtonText(channelIndex, button) {
-            console.log('updateLoadSampleButtonText entered');
-            console.log(`[updateLoadSampleButtonText] Called for channel index: ${channelIndex}`);
+        // function updateLoadSampleButtonText(channelIndex, button) {
+        //     console.log('updateLoadSampleButtonText entered');
+        //     console.log(`[updateLoadSampleButtonText] Called for channel index: ${channelIndex}`);
         
-            // Attempt to use the channel name if it's available and not an empty string
-            const channelName = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex];
-            const loadedUrl = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
+        //     // Attempt to use the channel name if it's available and not an empty string
+        //     const channelName = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex];
+        //     const loadedUrl = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
         
-            console.log(`[updateLoadSampleButtonText] Loaded URL for channel ${channelIndex}: ${loadedUrl}`);
-            console.log(`[updateLoadSampleButtonText] Channel name for channel ${channelIndex}: ${channelName}`);
+        //     console.log(`[updateLoadSampleButtonText] Loaded URL for channel ${channelIndex}: ${loadedUrl}`);
+        //     console.log(`[updateLoadSampleButtonText] Channel name for channel ${channelIndex}: ${channelName}`);
         
-            // Determine what text to display on the button
-            let buttonText;
-            if (channelName && channelName.trim() !== '') {
-                buttonText = channelName; // Use the user-defined channel name if available
-            } else if (loadedUrl) {
-                // If there's no channel name, fallback to using the ID from the URL
-                // Extract the ID or the last segment of the URL
-                const urlSegments = loadedUrl.split('/');
-                const id = urlSegments[urlSegments.length - 1]; // Get the last segment
-                buttonText = id; // Use the extracted ID as the button text
-            } else {
-                buttonText = 'Load New Audional'; // Default text if no URL is loaded
-            }
+        //     // Determine what text to display on the button
+        //     let buttonText;
+        //     if (channelName && channelName.trim() !== '') {
+        //         buttonText = channelName; // Use the user-defined channel name if available
+        //     } else if (loadedUrl) {
+        //         // If there's no channel name, fallback to using the ID from the URL
+        //         // Extract the ID or the last segment of the URL
+        //         const urlSegments = loadedUrl.split('/');
+        //         const id = urlSegments[urlSegments.length - 1]; // Get the last segment
+        //         buttonText = id; // Use the extracted ID as the button text
+        //     } else {
+        //         buttonText = 'Load New Audional'; // Default text if no URL is loaded
+        //     }
         
-            // Update the button text based on the determined text
-            button.textContent = buttonText;
-            console.log(`[updateLoadSampleButtonText] Button text updated to: ${buttonText}`);
-        }
+        //     // Update the button text based on the determined text
+        //     button.textContent = buttonText;
+        //     console.log(`[updateLoadSampleButtonText] Button text updated to: ${buttonText}`);
+        // }
         
-        console.log("index.js loaded");
+        // console.log("index.js loaded");
         

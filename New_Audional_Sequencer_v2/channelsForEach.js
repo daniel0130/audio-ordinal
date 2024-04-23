@@ -1,10 +1,12 @@
 // channelsForeach.js
 
-import { setupLoadSampleModalButton } from './loadSampleModalButton_v2.js';
+import { setupLoadSampleButton } from './loadSampleModalButton_v2.js';
 
 console.log("channelsForeach.js entered");
     channels.forEach((channel, index) => {
         channel.dataset.id = `Channel-${index}`;
+        setupLoadSampleButton(channel, index);
+
 
         // Directly use the gainNode from UnifiedSequencerSettings
         const gainNode = window.unifiedSequencerSettings.gainNodes[index];
@@ -95,249 +97,260 @@ console.log("channelsForeach.js entered");
         
 
 
+// Global document click listener for clear buttons
+document.addEventListener('click', () => {
+    channels.forEach((channel, channelIndex) => {
+        if (clearClickedOnce[channelIndex]) {
+            const clearConfirm = channel.querySelector('.clear-confirm');
+            clearConfirm.style.display = "none";
+            clearTimeout(clearConfirmTimeout[channelIndex]);
+            clearClickedOnce[channelIndex] = false;
+        }
+    });
+});
+
         
-    const loadSampleButton = channel.querySelector('.load-sample-button');
 
     
 
-   // Assuming 'loadSampleButton' is defined in a broader context
-    // and this code is part of a loop or function where 'channel' and 'index' are defined
+//    // Assuming 'loadSampleButton' is defined in a broader context
+//     // and this code is part of a loop or function where 'channel' and 'index' are defined
 
-     // Left-click event listener
-     loadSampleButton.addEventListener('click', () => {
-        setupLoadSampleModalButton(channel, index);
-        // Additional logic for closing the modal can be added within setupLoadSampleModalButton if needed
-    });
+//      // Left-click event listener
+//      loadSampleButton.addEventListener('click', () => {
+//         setupLoadSampleModalButton(channel, index);
+//         // Additional logic for closing the modal can be added within setupLoadSampleModalButton if needed
+//     });
 
-   // Right-click event listener for the loadSampleButton
-    loadSampleButton.addEventListener('contextmenu', (event) => {
-        console.log('Right-click on loadSampleButton');
+//    // Right-click event listener for the loadSampleButton
+//     loadSampleButton.addEventListener('contextmenu', (event) => {
+//         console.log('Right-click on loadSampleButton');
 
-        event.preventDefault();
-        showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
-    });
+//         event.preventDefault();
+//         showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
+//     });
 
-    // Function to create and show the custom context menu
-    function showCustomContextMenu(contextEvent, x, y, channelIndex, button) {
-        console.log('Creating custom context menu');
+    // // Function to create and show the custom context menu
+    // function showCustomContextMenu(contextEvent, x, y, channelIndex, button) {
+    //     console.log('Creating custom context menu');
 
-        closeCustomContextMenu();
+    //     closeCustomContextMenu();
 
-        const menu = createContextMenu(x, y);
-        const addChannelNameOption = createMenuOption('Add User Channel Name', () => {
-            showChannelNamingModal(channelIndex);
-            closeCustomContextMenu();
-        });
-        const copyOrdinalIdOption = createMenuOption('Copy Ordinal ID', () => {
-            copyOrdinalId(channelIndex);
-            console.log('Copy Ordinal ID clicked');
-            closeCustomContextMenu();
-        });
+    //     const menu = createContextMenu(x, y);
+    //     const addChannelNameOption = createMenuOption('Add User Channel Name', () => {
+    //         showChannelNamingModal(channelIndex);
+    //         closeCustomContextMenu();
+    //     });
+    //     const copyOrdinalIdOption = createMenuOption('Copy Ordinal ID', () => {
+    //         copyOrdinalId(channelIndex);
+    //         console.log('Copy Ordinal ID clicked');
+    //         closeCustomContextMenu();
+    //     });
 
-          // Modify the event listener for the 'Copy Ordinal ID' option
-        const copyChannelSettingsOption = createMenuOption('Copy Channel Settings (coming soon)', () => {
-            console.log('Copy Channel Settings clicked');
-            closeCustomContextMenu();
-        });
+    //       // Modify the event listener for the 'Copy Ordinal ID' option
+    //     const copyChannelSettingsOption = createMenuOption('Copy Channel Settings (coming soon)', () => {
+    //         console.log('Copy Channel Settings clicked');
+    //         closeCustomContextMenu();
+    //     });
 
-        // Modify the event listener for the 'Set Channel Colour' option
-        const setChannelColour = createMenuOption('Set Channel Colour', () => {
-            console.log('Set Channel Colour option selected');
+    //     // Modify the event listener for the 'Set Channel Colour' option
+    //     const setChannelColour = createMenuOption('Set Channel Colour', () => {
+    //         console.log('Set Channel Colour option selected');
 
-            showColorPicker(contextEvent, button); // Call showColorPicker with the captured right-click event and the button
-            closeCustomContextMenu();
-        });
+    //         showColorPicker(contextEvent, button); // Call showColorPicker with the captured right-click event and the button
+    //         closeCustomContextMenu();
+    //     });
     
-        // Add new menu options for pasting
-        const pasteOrdinalIdOption = createMenuOption('Paste Ordinal ID', () => {
-            pasteOrdinalId(channelIndex);
-            closeCustomContextMenu();
-        });
+    //     // Add new menu options for pasting
+    //     const pasteOrdinalIdOption = createMenuOption('Paste Ordinal ID', () => {
+    //         pasteOrdinalId(channelIndex);
+    //         closeCustomContextMenu();
+    //     });
 
-        const pasteChannelSettingsOption = createMenuOption('Paste Channel Settings (coming soon)', () => {
-            pasteChannelSettings(channelIndex);
-            closeCustomContextMenu();
-        });
+    //     const pasteChannelSettingsOption = createMenuOption('Paste Channel Settings (coming soon)', () => {
+    //         pasteChannelSettings(channelIndex);
+    //         closeCustomContextMenu();
+    //     });
 
-        menu.appendChild(addChannelNameOption);
-        menu.appendChild(setChannelColour);
-        menu.appendChild(copyOrdinalIdOption);
-        menu.appendChild(pasteOrdinalIdOption);
-        menu.appendChild(copyChannelSettingsOption);
-        menu.appendChild(pasteChannelSettingsOption);  
+    //     menu.appendChild(addChannelNameOption);
+    //     menu.appendChild(setChannelColour);
+    //     menu.appendChild(copyOrdinalIdOption);
+    //     menu.appendChild(pasteOrdinalIdOption);
+    //     menu.appendChild(copyChannelSettingsOption);
+    //     menu.appendChild(pasteChannelSettingsOption);  
 
        
            
 
-        document.body.appendChild(menu);
+    //     document.body.appendChild(menu);
 
-        // Global click listener to close the menu when clicking outside
-        setTimeout(() => { // Timeout to avoid immediate closing due to the current click event
-            document.addEventListener('click', handleClickOutsideMenu, { capture: true, once: true });
-        }, 0);
-    }
+    //     // Global click listener to close the menu when clicking outside
+    //     setTimeout(() => { // Timeout to avoid immediate closing due to the current click event
+    //         document.addEventListener('click', handleClickOutsideMenu, { capture: true, once: true });
+    //     }, 0);
+    // }
 
-    function showColorPicker(event, button) {
-        console.log('showColorPicker function called inside channelsForEach.js');
+    // function showColorPicker(event, button) {
+    //     console.log('showColorPicker function called inside channelsForEach.js');
     
-        // Define colors for the grid
-        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#808080', '#FFFFFF',
-                        '#FFA500', '#800080', '#008080', '#000080', '#800000', '#008000', '#FFC0CB', '#D2691E'];
+    //     // Define colors for the grid
+    //     const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#808080', '#FFFFFF',
+    //                     '#FFA500', '#800080', '#008080', '#000080', '#800000', '#008000', '#FFC0CB', '#D2691E'];
     
-        // Create color picker container
-        const colorPicker = document.createElement('div');
-        colorPicker.style.position = 'absolute';
-        colorPicker.style.display = 'grid';
-        colorPicker.style.gridTemplateColumns = 'repeat(4, 1fr)';
-        colorPicker.style.gap = '1px';
+    //     // Create color picker container
+    //     const colorPicker = document.createElement('div');
+    //     colorPicker.style.position = 'absolute';
+    //     colorPicker.style.display = 'grid';
+    //     colorPicker.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    //     colorPicker.style.gap = '1px';
     
-        // Calculate the position
-        const gridHeight = (colors.length / 4) * 20; // 20px height for each color div
-        const topPosition = event.clientY - gridHeight;
-        const leftPosition = event.clientX;
+    //     // Calculate the position
+    //     const gridHeight = (colors.length / 4) * 20; // 20px height for each color div
+    //     const topPosition = event.clientY - gridHeight;
+    //     const leftPosition = event.clientX;
     
-        // Log calculated position
-        console.log(`Color picker position - Top: ${topPosition}px, Left: ${leftPosition}px`);
+    //     // Log calculated position
+    //     console.log(`Color picker position - Top: ${topPosition}px, Left: ${leftPosition}px`);
     
-        colorPicker.style.top = topPosition + 'px';
-        colorPicker.style.left = leftPosition + 'px';
+    //     colorPicker.style.top = topPosition + 'px';
+    //     colorPicker.style.left = leftPosition + 'px';
     
-        // Add color options to the picker
-        colors.forEach(color => {
-            const colorDiv = document.createElement('div');
-            colorDiv.style.width = '20px';
-            colorDiv.style.height = '20px';
-            colorDiv.style.backgroundColor = color;
-            colorDiv.addEventListener('click', function() {
-                console.log(`Color selected: ${color}`);
-                button.style.backgroundColor = color;
+    //     // Add color options to the picker
+    //     colors.forEach(color => {
+    //         const colorDiv = document.createElement('div');
+    //         colorDiv.style.width = '20px';
+    //         colorDiv.style.height = '20px';
+    //         colorDiv.style.backgroundColor = color;
+    //         colorDiv.addEventListener('click', function() {
+    //             console.log(`Color selected: ${color}`);
+    //             button.style.backgroundColor = color;
     
-                // Remove previous color class and add the new one
-                button.className = button.className.replace(/\bcolor-[^ ]+/g, '');
-                button.classList.add(`color-${color.replace('#', '')}`);
+    //             // Remove previous color class and add the new one
+    //             button.className = button.className.replace(/\bcolor-[^ ]+/g, '');
+    //             button.classList.add(`color-${color.replace('#', '')}`);
     
-                colorPicker.remove();
-            });
-            colorPicker.appendChild(colorDiv);
-        });
+    //             colorPicker.remove();
+    //         });
+    //         colorPicker.appendChild(colorDiv);
+    //     });
     
-        // Append the color picker to the body
-        document.body.appendChild(colorPicker);
-        console.log('Color picker appended to the body. Check if it is visible in the DOM.');
+    //     // Append the color picker to the body
+    //     document.body.appendChild(colorPicker);
+    //     console.log('Color picker appended to the body. Check if it is visible in the DOM.');
     
-        // Add event listener to stop propagation of click events inside the color picker
-        colorPicker.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+    //     // Add event listener to stop propagation of click events inside the color picker
+    //     colorPicker.addEventListener('click', function(e) {
+    //         e.stopPropagation();
+    //     });
     
-        // Delay the addition of the global click listener
-        setTimeout(() => {
-            document.addEventListener('click', function removePicker() {
-                console.log('Global click detected. Removing color picker.');
-                colorPicker.remove();
-                document.removeEventListener('click', removePicker);
-            });
-        }, 0); // Small delay like 0 or 10 milliseconds
+    //     // Delay the addition of the global click listener
+    //     setTimeout(() => {
+    //         document.addEventListener('click', function removePicker() {
+    //             console.log('Global click detected. Removing color picker.');
+    //             colorPicker.remove();
+    //             document.removeEventListener('click', removePicker);
+    //         });
+    //     }, 0); // Small delay like 0 or 10 milliseconds
     
-        // Set a timeout to remove the color picker after 2 seconds
-        setTimeout(() => {
-            console.log('Removing color picker after 2 seconds.');
-            colorPicker.remove();
-        }, 5000);
-    }
+    //     // Set a timeout to remove the color picker after 2 seconds
+    //     setTimeout(() => {
+    //         console.log('Removing color picker after 2 seconds.');
+    //         colorPicker.remove();
+    //     }, 5000);
+    // }
     
 
-    // Helper function to handle click outside the custom context menu
-    function handleClickOutsideMenu(event) {
-        const existingMenu = document.querySelector('.custom-context-menu');
-        if (existingMenu && !existingMenu.contains(event.target)) {
-            closeCustomContextMenu();
-        }
-    }
+    // // Helper function to handle click outside the custom context menu
+    // function handleClickOutsideMenu(event) {
+    //     const existingMenu = document.querySelector('.custom-context-menu');
+    //     if (existingMenu && !existingMenu.contains(event.target)) {
+    //         closeCustomContextMenu();
+    //     }
+    // }
 
 
-    function createContextMenu(x, y) {
-        const menu = document.createElement('div');
-        menu.className = 'custom-context-menu';
-        Object.assign(menu.style, {
-            position: 'absolute',
-            top: `${y}px`,
-            left: `${x}px`,
-            backgroundColor: 'lightgray',
-            color: 'black',
-            padding: '10px',
-            border: '1px solid #ddd',
-            borderRadius: '5px',
-            boxShadow: '0px 2px 5px rgba(0,0,0,0.2)'
-        });
-        return menu;
-    }
+    // function createContextMenu(x, y) {
+    //     const menu = document.createElement('div');
+    //     menu.className = 'custom-context-menu';
+    //     Object.assign(menu.style, {
+    //         position: 'absolute',
+    //         top: `${y}px`,
+    //         left: `${x}px`,
+    //         backgroundColor: 'lightgray',
+    //         color: 'black',
+    //         padding: '10px',
+    //         border: '1px solid #ddd',
+    //         borderRadius: '5px',
+    //         boxShadow: '0px 2px 5px rgba(0,0,0,0.2)'
+    //     });
+    //     return menu;
+    // }
 
-    function createMenuOption(text, onClick) {
-        const option = document.createElement('div');
-        option.textContent = text;
-        Object.assign(option.style, {
-            padding: '5px 10px',
-            cursor: 'pointer'
-        });
-        option.addEventListener('mouseenter', () => option.style.backgroundColor = '#f0f0f0');
-        option.addEventListener('mouseleave', () => option.style.backgroundColor = 'lightgray');
-        option.addEventListener('click', onClick);
-        return option;
-    }
+    // function createMenuOption(text, onClick) {
+    //     const option = document.createElement('div');
+    //     option.textContent = text;
+    //     Object.assign(option.style, {
+    //         padding: '5px 10px',
+    //         cursor: 'pointer'
+    //     });
+    //     option.addEventListener('mouseenter', () => option.style.backgroundColor = '#f0f0f0');
+    //     option.addEventListener('mouseleave', () => option.style.backgroundColor = 'lightgray');
+    //     option.addEventListener('click', onClick);
+    //     return option;
+    // }
 
-    function closeCustomContextMenu() {
-        const existingMenu = document.querySelector('.custom-context-menu');
-        if (existingMenu) {
-            existingMenu.remove();
-        }
-    }
+    // function closeCustomContextMenu() {
+    //     const existingMenu = document.querySelector('.custom-context-menu');
+    //     if (existingMenu) {
+    //         existingMenu.remove();
+    //     }
+    // }
 
-    function showChannelNamingModal(channelIndex) {
-        closeModal(); // Close any existing modal first
+    // function showChannelNamingModal(channelIndex) {
+    //     closeModal(); // Close any existing modal first
 
-        const modal = document.createElement('div');
-        modal.className = 'channel-naming-modal';
-        // Add styles as needed
+    //     const modal = document.createElement('div');
+    //     modal.className = 'channel-naming-modal';
+    //     // Add styles as needed
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Give this channel a name';
-        input.className = 'channel-name-input';
+    //     const input = document.createElement('input');
+    //     input.type = 'text';
+    //     input.placeholder = 'Give this channel a name';
+    //     input.className = 'channel-name-input';
 
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.onclick = () => {
-            if (input.value) {
-                window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
-            }
-            closeModal();
-        };
+    //     const submitButton = document.createElement('button');
+    //     submitButton.textContent = 'Submit';
+    //     submitButton.onclick = () => {
+    //         if (input.value) {
+    //             window.unifiedSequencerSettings.setProjectChannelName(channelIndex, input.value);
+    //         }
+    //         closeModal();
+    //     };
 
-        const cancelButton = document.createElement('button');
-        cancelButton.textContent = 'Cancel';
-        cancelButton.onclick = closeModal;
+    //     const cancelButton = document.createElement('button');
+    //     cancelButton.textContent = 'Cancel';
+    //     cancelButton.onclick = closeModal;
 
-        modal.appendChild(input);
-        modal.appendChild(submitButton);
-        modal.appendChild(cancelButton);
-        document.body.appendChild(modal);
+    //     modal.appendChild(input);
+    //     modal.appendChild(submitButton);
+    //     modal.appendChild(cancelButton);
+    //     document.body.appendChild(modal);
 
-        // Event listener to close the modal when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
-                closeModal();
-            }
-        }, { capture: true, once: true });
-        input.focus(); // Automatically focus the input field for immediate typing
-    }
+    //     // Event listener to close the modal when clicking outside
+    //     document.addEventListener('click', (event) => {
+    //         if (!modal.contains(event.target) && !event.target.matches('.load-sample-button')) {
+    //             closeModal();
+    //         }
+    //     }, { capture: true, once: true });
+    //     input.focus(); // Automatically focus the input field for immediate typing
+    // }
 
-    function closeModal() {
-        const existingModal = document.querySelector('.channel-naming-modal');
-        if (existingModal) {
-            document.body.removeChild(existingModal);
-        }
-    }
+    // function closeModal() {
+    //     const existingModal = document.querySelector('.channel-naming-modal');
+    //     if (existingModal) {
+    //         document.body.removeChild(existingModal);
+    //     }
+    // }
 
     // Function to copy the full URL instead of just the Ordinal ID
     function copyOrdinalId(channelIndex) {

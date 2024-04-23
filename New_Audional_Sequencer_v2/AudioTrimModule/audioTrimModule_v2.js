@@ -70,37 +70,44 @@ displayValues() {
 
       // Method to set the audio buffer and update the waveform
       setAudioBuffer(audioBuffer) {
-        console.log("[Class Functions] setAudioBuffer", { audioBuffer });
-
-        this.audioBuffer = audioBuffer;
-        this.drawWaveform();
-        console.log(" updateDimmedAreas method called from setAudioBuffer");
-        this.updateDimmedAreas();
-        this.updateSliderValues();
-    }
-
-    drawWaveform() {
-        console.log("[Class Functions] drawWaveform");
-        if (!this.audioBuffer) {
-            console.log("[Class Functions] drawWaveform - No audio buffer");
-            return;
-        }
-        const width = this.waveformCanvas.width;
-        const height = this.waveformCanvas.height;
-        const channelData = this.audioBuffer.getChannelData(0);
-        const step = Math.ceil(channelData.length / width);
-        const amp = height / 2;
-        this.ctx.clearRect(0, 0, width, height);
-        this.ctx.beginPath();
-        
-        for (let i = 0; i < width; i++) {
-            const { min, max } = this.getMinMax(channelData, i * step, step);
-            this.ctx.moveTo(i, amp * (1 + min));
-            this.ctx.lineTo(i, amp * (1 + max));
+            console.log("[Class Functions] setAudioBuffer", { audioBuffer });
+            if (!audioBuffer) {
+                console.log("setAudioBuffer called with null or undefined audioBuffer");
+                return;
+            }
+            this.audioBuffer = audioBuffer;
+            this.updateSliderValues();
+            this.drawWaveform();
         }
         
-        this.ctx.stroke();
+        drawWaveform() {
+            console.log("[Class Functions] drawWaveform");
+            if (!this.audioBuffer) {
+                console.error("drawWaveform - No audio buffer available");
+                return;
+            }
+            if (!this.waveformCanvas) {
+                console.error("drawWaveform - No canvas available");
+                return;
+            }
+            const width = this.waveformCanvas.width;
+            const height = this.waveformCanvas.height;
+            const channelData = this.audioBuffer.getChannelData(0);
+            const step = Math.ceil(channelData.length / width);
+            const amp = height / 2;
+            const ctx = this.waveformCanvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+            ctx.beginPath();
+        
+            for (let i = 0; i < width; i++) {
+                const { min, max } = this.getMinMax(channelData, i * step, step);
+                ctx.moveTo(i, amp - amp * min);
+                ctx.lineTo(i, amp - amp * max);
+            }
+        
+            ctx.stroke();
         }
+    
 
         async initialize() {
             console.log("[Class Functions] initialize");

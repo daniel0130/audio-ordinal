@@ -15,13 +15,13 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // Close the modal if the click is outside of it
-    document.addEventListener('click', function(event) {
-        console.log('VolumeButton clicked to close:', event.target);
-        if (!event.target.closest('.volume-modal')) {
-            closeVolumeModal();
-        }
-    });
+//     // Close the modal if the click is outside of it
+//     document.addEventListener('click', function(event) {
+//         console.log('VolumeButton clicked to close:', event.target);
+//         if (!event.target.closest('.volume-modal')) {
+//             closeVolumeModal();
+//         }
+//     });
 });
 
 

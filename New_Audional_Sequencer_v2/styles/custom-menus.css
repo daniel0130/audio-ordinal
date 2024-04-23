@@ -2,7 +2,7 @@
 
 .custom-context-menu {
     position: absolute;
-    background-color: #f9f9f9;
+    background-color: #000000;
     border: 1px solid #ccc;
     padding: 5px;
     z-index: 1000; /* Ensure it appears above other elements */
