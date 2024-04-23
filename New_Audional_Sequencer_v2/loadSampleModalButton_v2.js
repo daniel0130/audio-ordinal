@@ -359,7 +359,7 @@ function getButtonText(index) {
     if (projectChannelNames && index < projectChannelNames.length && projectChannelNames[index]) {
         return projectChannelNames[index];
     }
-    return 'Load New Audional'; // Default text if no name is set
+    return 'Load New Audio into Channel'; // Default text if no name is set
 }
 
 
