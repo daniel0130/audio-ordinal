@@ -2,6 +2,45 @@
 // loadSampleModalButton_v2.js
 let openModals = [];
 
+// New Dropdown for Og Audional sample inscriptions
+const ogSampleUrls = [
+    { value: 'https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0#', text: 'MS10 Woop.mp3' },
+    { value: 'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0', text: 'audinalSample#1' },
+    { value: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0', text: 'melophonicSynthBassSample1' },
+    { value: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0', text: 'Step for man.mp3' },
+    { value: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0', text: 'melophonic_Snare_1.mp3' },
+    { value: 'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0', text: 'PumpIt_COLOR.mp3' },
+    { value: 'https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0', text: 'Drums 8 bit beat - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0', text: 'wobble-bass.mp3' },
+    { value: 'https://ordinals.com/content/8fa54ad2d9e297c79b225eff67a481ebc8682dacf4fe9dbf5b692a60b237c163i0', text: 'Entertainment - Quiet Loop (2) (1).mp3' },
+    { value: 'https://ordinals.com/content/695368ae1092c0633ef959dc795ddb90691648e43f560240d96da0e2753a0a08i0', text: 'Melody O  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/d4ce1d1e80e90378d8fc49fd7e0e24e7f2310b2f5eb95d0c2318c47b6c9cd645i0', text: 'Melody K - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/e4cb3caff3b4a5192adf0f2ab5cd9da378bacfbafce56c3d4fb678a313607970i0', text: 'Melody I - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/898cba6dc32faab5be09f13092b7500b13eb22f1e7b3d604c8e6e47b0becd139i0', text: 'Melody C-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/ed13d5389ae6273839342698b6d5bd3342c51eb472f32b8306e60f8e1e903ce8i0', text: 'Mel Fill 3 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0', text: 'Audional-Jim.mp3' },
+    { value: 'https://ordinals.com/content/b0fb7f9eb0fe6c368a8d140b1117234431da0cd8725e9f78e6573bb7f0f61dadi0', text: 'Melody N  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/0e38f29c76b29e471f5f0022a5e98f9ae64b5b1d8f25673f85e02851daf22526i0', text: 'Mel Fill 4 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/244c785d6df173f8425d654cfc6d2b006c7bb47a605c7de576ed87022e42c7dfi0', text: 'Melody D - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/a72adee5a07200a623c40831ae5979bc7562b542788c3ded35d9e81e39c6014fi0', text: 'Melody B-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/6a84401579707b76d9b9a77cc461e767f7ea8f08cc0e46dee0d21e5023cdde33i0', text: 'Melody J - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/c6decce29948ea64df9a24e689340c5907b6da207d74d13973fc5ca4dd3bd80ai0', text: 'Melody G - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/83174080310b0ab71c7a725461f3bd9e486bb62727b73134ee2c67f191d9d586i0', text: 'Mel Fill 5 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/4f9bed6449d99ef3cbb0fabefac6890c20ef17db2bfe7c07f1386cb43277f220i0', text: 'Melody H - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/e9885c35376ae95dd291bb02075b0763fb3e655d51dc981984130b8366a6d3c8i0', text: 'Mel Fill 2 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/34e73ef718034a3c0fdeba53899a2af8ee7771f252c419ab63cd13b0a39f6b10i0', text: 'Mel Fill 1 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/435c5c22eaf0c1791e09cb46d56ce942eb312372376abf5b5420200b1424ff7fi0', text: 'Melody E - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0', text: 'Drums Beat - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/ef8fdd599beee731e06aba4a9ed02d9c7bfe62147b27f6b6deaf22c8c067ab11i0', text: 'Melody A-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/187a8c18ebfe07c18aea0e86cd99b3100474c1c53f56f02ee096723f1a35ce70i0', text: 'Drums Crash  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/2b6b23199eae0760ee26650a0cc02c49b94fc8fd1f519a95417f0f8478246610i0', text: 'Melody M  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/474f2b0aab9020757826b168ce58725871fd2abb26c6ca805de4b07e314416d1i0', text: 'Outro Fill 1 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/1aa69c9d3b451ab3b584dba57ba6d6fedc6e9cb3df6830b9da270e84e51ea72di0', text: 'Melody L - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/81f9e6afc38b8c647d4ea258c29f13b81f6c1a2d40afd9c0a385d03126b4d11di0', text: 'Melody F - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
+    { value: 'https://ordinals.com/content/4c40da69e783cfa96d2900bd15622c1ea60ad31e8ce9459cec13d155f39c463fi0', text: 'Intro Fill 1 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' }
+];
+
+
 function setupLoadSampleButton(channel, index) {
     const loadSampleButton = channel.querySelector('.load-sample-button');
     if (!loadSampleButton) {
@@ -25,6 +64,232 @@ function setupLoadSampleButton(channel, index) {
         event.preventDefault();
         showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
     };
+}
+
+
+function openModal(index, loadSampleButton) {
+    const modal = createElement('div', 'loadSampleModalButton');
+    const modalContent = createElement('div', 'loadSampleModalButton-content');
+    modal.appendChild(modalContent);
+    openModals.push(modal);
+
+    const inputs = [
+        { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
+        { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
+        { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
+        { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
+    ];
+
+    inputs.forEach(({ text, placeholder, type, className }) => {
+        modalContent.appendChild(createTextParagraph(text));
+        modalContent.appendChild(createElement('input', className, { type: type, placeholder: placeholder }));
+    });
+
+
+    const ogAudionalDropdown = createDropdown('OG Audional Sample Imnscriptions:', ogSampleUrls);
+    ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
+    modalContent.appendChild(ogAudionalDropdown);
+    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, loadSampleButton));
+
+    const actions = [
+        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
+        { text: 'Cancel', action: () => closeModal(modal) },
+        { text: 'Update Channel Name', action: () => handleUpdate(index, modal, loadSampleButton) }
+    ];
+
+    actions.forEach(({ text, action }) => {
+        modalContent.appendChild(createButton(text, action));
+    });
+
+    document.body.appendChild(modal);
+    return modal;
+}
+
+
+
+function handleAction(index, modal, loadSampleButton) {
+    const audionalInput = modal.querySelector('.audional-input');
+    const ipfsInput = modal.querySelector('.ipfs-input');
+    const fileInput = modal.querySelector('.file-input');
+
+    console.log('File Input:', fileInput);
+    console.log('Files Available:', fileInput.files);
+
+    handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton);
+}
+
+// Simplified createElement function to reduce redundancy
+function createElement(type, className, attributes = {}) {
+    const element = document.createElement(type);
+    element.className = className;
+    Object.keys(attributes).forEach(key => {
+        element[key] = attributes[key];
+    });
+    return element;
+}
+// function createElement(type, className, properties = {}) {
+//     const element = document.createElement(type);
+//     element.className = className;
+//     Object.keys(properties).forEach(key => element[key] = properties[key]);
+//     return element;
+// }
+
+function createTextParagraph(text) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    return p;
+}
+
+function createDropdown(label, options) {
+    const container = createElement('div', 'dropdown-container');
+    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
+    const select = createElement('select', 'dropdown-select');
+
+    // Add a default, non-selectable option as the first item
+    const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
+    defaultOption.disabled = true;  // Make it non-selectable
+    defaultOption.selected = true;  // Make it selected by default
+    select.appendChild(defaultOption);
+
+    // Append other options from the provided array
+    options.forEach(({ value, text }) => {
+        const option = createElement('option', '', { value: value, textContent: text });
+        select.appendChild(option);
+    });
+
+    container.appendChild(labelElement);
+    container.appendChild(select);
+    return container;
+}
+
+
+function closeModal(modal) {
+    if (modal && document.body.contains(modal)) {
+        document.body.removeChild(modal);
+        openModals = openModals.filter(m => m !== modal);  // Update the openModals array
+    }
+}
+
+function closeAllModals() {
+    console.log('Closing all modals. Current open modals:', openModals);
+    openModals.forEach(modal => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
+    });
+    openModals = [];  // Clear the array after removing all modals
+    console.log('All modals closed. Current open modals:', openModals);
+}
+
+function handleDropdownChange(event) {
+    const selectedUrl = event.target.value;
+    const selectedText = event.target.options[event.target.selectedIndex].text;
+    // Handle fetching and updating logic here...
+}
+
+function updateProjectChannelNamesUI(channelIndex, name) {
+    console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
+    const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+    if (nameDisplay) {
+        nameDisplay.textContent = name;
+    }
+}
+
+function showChannelNamingModal(channelIndex, loadSampleButton) {
+    // Close any existing modals first
+    closeAllModals();  // Ensure all modals are closed before opening a new one
+
+    // Create the channel naming modal
+    const modal = createElement('div', 'channel-naming-modal');
+    openModals.push(modal); // Add this modal to the tracking array
+    const input = createInputField('Give this channel a name', 'text');
+
+    const submitFunction = () => {
+        if (input.value.trim()) {
+            window.unifiedSequencerSettings.setChannelName(channelIndex, input.value.trim());
+            updateProjectChannelNamesUI(channelIndex, input.value.trim());
+            loadSampleButton.textContent = input.value.trim();  // Update the button text
+            closeAllModals();  // Close all modals after submitting
+            closeCustomContextMenu(); // Close any custom context menu
+        }
+    };
+
+    const submitButton = createButton('Submit', submitFunction);
+
+    const cancelButton = createButton('Cancel', () => closeAllModals());
+
+    // Append elements to the modal
+    modal.appendChild(input);
+    modal.appendChild(submitButton);
+    modal.appendChild(cancelButton);
+
+    // Listen for Enter key press event
+    input.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            submitFunction(); // Call the submit function when Enter is pressed
+        }
+    });
+
+    // Append the modal to the document
+    document.body.appendChild(modal);
+    input.focus();  // Focus the input for user convenience
+}
+
+function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
+    console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
+    let url = '';
+    let sampleName = '';
+
+    // Retrieve the OG Audional Dropdown from the modal
+    const ogAudionalDropdown = modal.querySelector(`#og-audional-dropdown-${index}`);
+
+    // Check first if there is a value in the ordinal ID input field
+    if (audionalInput && audionalInput.value.trim()) {
+        url = 'https://ordinals.com/content/' + audionalInput.value.trim();
+        sampleName = audionalInput.value.trim().split('/').pop();
+        processLoad(url, sampleName, index, loadSampleButton, modal);
+    } else if (ipfsInput && ipfsInput.value.trim()) {
+        url = 'https://ipfs.io/ipfs/' + ipfsInput.value.trim();
+        sampleName = ipfsInput.value.trim().split('/').pop();
+        processLoad(url, sampleName, index, loadSampleButton, modal);
+    } else if (fileInput && fileInput.files.length > 0) {
+        url = URL.createObjectURL(fileInput.files[0]);
+        sampleName = fileInput.files[0].name;
+        processLoad(url, sampleName, index, loadSampleButton, modal);
+    } else if (ogAudionalDropdown && ogAudionalDropdown.value) {
+        // Fallback to the OG Audional Dropdown if no other inputs are filled
+        url = ogAudionalDropdown.value;
+        sampleName = ogAudionalDropdown.options[ogAudionalDropdown.selectedIndex].text;
+        processLoad(url, sampleName, index, loadSampleButton, modal);
+    } else {
+        console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
+        alert("Please enter an ID or select a file.");
+    }
+}
+
+function processLoad(url, sampleName, index, loadSampleButton, modal) {
+    if (url) {
+        fetchAudio(url, index, sampleName).then(() => {
+            updateProjectChannelNamesUI(index, sampleName);
+            loadSampleButton.textContent = sampleName;
+            closeAllModals();  // Close all modals upon successful loading
+        }).catch(error => {
+            console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
+            alert("Failed to load audio. Please check the console for details.");
+        });
+    }
+}
+
+
+function handleUpdate(index, modal, loadSampleButton) {
+    // Assuming nameInput is the input field for the channel name
+    const nameInput = document.querySelector('.channel-name-input');
+    if (nameInput && nameInput.value) {
+        updateProjectChannelNamesUI(index, nameInput.value);
+        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
+        loadSampleButton.textContent = nameInput.value;
+        closeAllModals();  // Ensure to close all modals when update is successful
+    }
 }
 
 
@@ -140,266 +405,9 @@ function createButton(text, onClick) {
 //     return container;
 // }
 
- // New Dropdown for Og audience samples
- const ogSampleUrls = [
-    { value: 'https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0#', text: 'MS10 Woop.mp3' },
-    { value: 'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0', text: 'audinalSample#1' },
-    { value: 'https://ordinals.com/content/0b8eff3f39f4095d0f129bb8dd75f29159f8725c7e66046bf41f70ebb9f60d93i0', text: 'melophonicSynthBassSample1' },
-    { value: 'https://ordinals.com/content/6d8be8186e63b4557e51edd66184a567bc6f5f9f5ba4bb34ba8c67e652c1934ei0', text: 'Step for man.mp3' },
-    { value: 'https://ordinals.com/content/6c01b1214fc4d4016d683380d066849e6bc645276b102604c098bd35fd77f791i0', text: 'melophonic_Snare_1.mp3' },
-    { value: 'https://ordinals.com/content/43efcebb84113c6df56bf5b8a455685c043492de9f5635d4108c4211c1f6841fi0', text: 'PumpIt_COLOR.mp3' },
-    { value: 'https://ordinals.com/content/3364803cb3032ce95f4138a214c15a9b36dcb70f574a477f27615d448e1cdeb8i0', text: 'Drums 8 bit beat - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/fef956676f3cbd6019a03d75c1a4a295c25b33653644b8f6ebde387971f9a677i0', text: 'wobble-bass.mp3' },
-    { value: 'https://ordinals.com/content/8fa54ad2d9e297c79b225eff67a481ebc8682dacf4fe9dbf5b692a60b237c163i0', text: 'Entertainment - Quiet Loop (2) (1).mp3' },
-    { value: 'https://ordinals.com/content/695368ae1092c0633ef959dc795ddb90691648e43f560240d96da0e2753a0a08i0', text: 'Melody O  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/d4ce1d1e80e90378d8fc49fd7e0e24e7f2310b2f5eb95d0c2318c47b6c9cd645i0', text: 'Melody K - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/e4cb3caff3b4a5192adf0f2ab5cd9da378bacfbafce56c3d4fb678a313607970i0', text: 'Melody I - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/898cba6dc32faab5be09f13092b7500b13eb22f1e7b3d604c8e6e47b0becd139i0', text: 'Melody C-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/ed13d5389ae6273839342698b6d5bd3342c51eb472f32b8306e60f8e1e903ce8i0', text: 'Mel Fill 3 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/c41587924f9d93d01cb71ca925fd664d6e50f1ac8e3c975d5e1e1f1bb0ff11b3i0', text: 'Audional-Jim.mp3' },
-    { value: 'https://ordinals.com/content/b0fb7f9eb0fe6c368a8d140b1117234431da0cd8725e9f78e6573bb7f0f61dadi0', text: 'Melody N  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/0e38f29c76b29e471f5f0022a5e98f9ae64b5b1d8f25673f85e02851daf22526i0', text: 'Mel Fill 4 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/244c785d6df173f8425d654cfc6d2b006c7bb47a605c7de576ed87022e42c7dfi0', text: 'Melody D - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/a72adee5a07200a623c40831ae5979bc7562b542788c3ded35d9e81e39c6014fi0', text: 'Melody B-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/6a84401579707b76d9b9a77cc461e767f7ea8f08cc0e46dee0d21e5023cdde33i0', text: 'Melody J - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/c6decce29948ea64df9a24e689340c5907b6da207d74d13973fc5ca4dd3bd80ai0', text: 'Melody G - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/83174080310b0ab71c7a725461f3bd9e486bb62727b73134ee2c67f191d9d586i0', text: 'Mel Fill 5 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/4f9bed6449d99ef3cbb0fabefac6890c20ef17db2bfe7c07f1386cb43277f220i0', text: 'Melody H - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/e9885c35376ae95dd291bb02075b0763fb3e655d51dc981984130b8366a6d3c8i0', text: 'Mel Fill 2 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/34e73ef718034a3c0fdeba53899a2af8ee7771f252c419ab63cd13b0a39f6b10i0', text: 'Mel Fill 1 - 2.429 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/435c5c22eaf0c1791e09cb46d56ce942eb312372376abf5b5420200b1424ff7fi0', text: 'Melody E - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/ccf99852fb85d63b5f65124fe506b08c11eb400a7b1da75cd3e0c9538fc49977i0', text: 'Drums Beat - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/ef8fdd599beee731e06aba4a9ed02d9c7bfe62147b27f6b6deaf22c8c067ab11i0', text: 'Melody A-MP3 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/187a8c18ebfe07c18aea0e86cd99b3100474c1c53f56f02ee096723f1a35ce70i0', text: 'Drums Crash  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/2b6b23199eae0760ee26650a0cc02c49b94fc8fd1f519a95417f0f8478246610i0', text: 'Melody M  - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/474f2b0aab9020757826b168ce58725871fd2abb26c6ca805de4b07e314416d1i0', text: 'Outro Fill 1 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/1aa69c9d3b451ab3b584dba57ba6d6fedc6e9cb3df6830b9da270e84e51ea72di0', text: 'Melody L - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/81f9e6afc38b8c647d4ea258c29f13b81f6c1a2d40afd9c0a385d03126b4d11di0', text: 'Melody F - 1.254 - Bitcoin Step - Longstreet.btc.mp3' },
-    { value: 'https://ordinals.com/content/4c40da69e783cfa96d2900bd15622c1ea60ad31e8ce9459cec13d155f39c463fi0', text: 'Intro Fill 1 - 1.254 - Bitcoin Step - Longstreet.btc.mp3' }
-];
+ 
 
 
-
-function openModal(index, loadSampleButton) {
-    const modal = createElement('div', 'loadSampleModalButton');
-    const modalContent = createElement('div', 'loadSampleModalButton-content');
-    modal.appendChild(modalContent);
-    openModals.push(modal);
-
-    // Define inputs with types, placeholders, and classes for uniform creation
-    const inputs = [
-        { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
-        { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
-        { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
-        { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
-    ];
-
-    // Create and append each input section to the modal
-    inputs.forEach(({ text, placeholder, type, className }) => {
-        modalContent.appendChild(createTextParagraph(text));
-        modalContent.appendChild(createElement('input', className, { type: type, placeholder: placeholder }));
-    });
-
-    // Create and append the OG Audience Dropdown
-    const ogAudienceDropdown = createDropdown('OG Audience Samples:', ogSampleUrls);
-    ogAudienceDropdown.querySelector('select').id = `og-audience-dropdown-${index}`;
-    modalContent.appendChild(ogAudienceDropdown);
-    ogAudienceDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, loadSampleButton));
-
-    // Create action buttons
-    const actions = [
-        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
-        { text: 'Cancel', action: () => closeModal(modal) },
-        { text: 'Update Channel Name', action: () => handleUpdate(index, modal, loadSampleButton) }
-    ];
-
-    // Append buttons to the modal
-    actions.forEach(({ text, action }) => {
-        modalContent.appendChild(createButton(text, action));
-    });
-
-    document.body.appendChild(modal);
-    return modal; // Return the modal for further manipulation if necessary
-}
-
-
-
-function handleAction(index, modal, loadSampleButton) {
-    const audionalInput = modal.querySelector('.audional-input');
-    const ipfsInput = modal.querySelector('.ipfs-input');
-    const fileInput = modal.querySelector('.file-input');
-
-    console.log('File Input:', fileInput);
-    console.log('Files Available:', fileInput.files);
-
-    handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton);
-}
-
-// Simplified createElement function to reduce redundancy
-function createElement(type, className, attributes = {}) {
-    const element = document.createElement(type);
-    element.className = className;
-    Object.keys(attributes).forEach(key => {
-        element[key] = attributes[key];
-    });
-    return element;
-}
-// function createElement(type, className, properties = {}) {
-//     const element = document.createElement(type);
-//     element.className = className;
-//     Object.keys(properties).forEach(key => element[key] = properties[key]);
-//     return element;
-// }
-
-function createTextParagraph(text) {
-    const p = document.createElement('p');
-    p.textContent = text;
-    return p;
-}
-
-function createDropdown(label, options) {
-    const container = createElement('div', 'dropdown-container');
-    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
-    const select = createElement('select', 'dropdown-select');
-
-    options.forEach(({ value, text }) => {
-        const option = createElement('option', '', { value: value, textContent: text });
-        select.appendChild(option);
-    });
-
-    container.appendChild(labelElement);
-    container.appendChild(select);
-    return container;
-}
-
-function closeModal(modal) {
-    if (modal && document.body.contains(modal)) {
-        document.body.removeChild(modal);
-        openModals = openModals.filter(m => m !== modal);  // Update the openModals array
-    }
-}
-
-function closeAllModals() {
-    console.log('Closing all modals. Current open modals:', openModals);
-    openModals.forEach(modal => {
-        if (document.body.contains(modal)) {
-            document.body.removeChild(modal);
-        }
-    });
-    openModals = [];  // Clear the array after removing all modals
-    console.log('All modals closed. Current open modals:', openModals);
-}
-
-function handleDropdownChange(event) {
-    const selectedUrl = event.target.value;
-    const selectedText = event.target.options[event.target.selectedIndex].text;
-    // Handle fetching and updating logic here...
-}
-
-function updateProjectChannelNamesUI(channelIndex, name) {
-    console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
-    const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
-    if (nameDisplay) {
-        nameDisplay.textContent = name;
-    }
-}
-
-function showChannelNamingModal(channelIndex, loadSampleButton) {
-    // Close any existing modals first
-    closeAllModals();  // Ensure all modals are closed before opening a new one
-
-    // Create the channel naming modal
-    const modal = createElement('div', 'channel-naming-modal');
-    openModals.push(modal); // Add this modal to the tracking array
-    const input = createInputField('Give this channel a name', 'text');
-
-    const submitFunction = () => {
-        if (input.value.trim()) {
-            window.unifiedSequencerSettings.setChannelName(channelIndex, input.value.trim());
-            updateProjectChannelNamesUI(channelIndex, input.value.trim());
-            loadSampleButton.textContent = input.value.trim();  // Update the button text
-            closeAllModals();  // Close all modals after submitting
-            closeCustomContextMenu(); // Close any custom context menu
-        }
-    };
-
-    const submitButton = createButton('Submit', submitFunction);
-
-    const cancelButton = createButton('Cancel', () => closeAllModals());
-
-    // Append elements to the modal
-    modal.appendChild(input);
-    modal.appendChild(submitButton);
-    modal.appendChild(cancelButton);
-
-    // Listen for Enter key press event
-    input.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            submitFunction(); // Call the submit function when Enter is pressed
-        }
-    });
-
-    // Append the modal to the document
-    document.body.appendChild(modal);
-    input.focus();  // Focus the input for user convenience
-}
-
-function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
-    console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
-    let url = '';
-    let sampleName = '';
-
-    // Retrieve the OG Audience Dropdown from the modal
-    const ogAudienceDropdown = modal.querySelector(`#og-audience-dropdown-${index}`);
-
-    // Check first if there is a value in the ordinal ID input field
-    if (audionalInput && audionalInput.value.trim()) {
-        url = 'https://ordinals.com/content/' + audionalInput.value.trim();
-        sampleName = audionalInput.value.trim().split('/').pop();
-        processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else if (ipfsInput && ipfsInput.value.trim()) {
-        url = 'https://ipfs.io/ipfs/' + ipfsInput.value.trim();
-        sampleName = ipfsInput.value.trim().split('/').pop();
-        processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else if (fileInput && fileInput.files.length > 0) {
-        url = URL.createObjectURL(fileInput.files[0]);
-        sampleName = fileInput.files[0].name;
-        processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else if (ogAudienceDropdown && ogAudienceDropdown.value) {
-        // Fallback to the OG Audience Dropdown if no other inputs are filled
-        url = ogAudienceDropdown.value;
-        sampleName = ogAudienceDropdown.options[ogAudienceDropdown.selectedIndex].text;
-        processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else {
-        console.error("[HTML Debugging] [handleLoad] No input value or file selected.");
-        alert("Please enter an ID or select a file.");
-    }
-}
-
-function processLoad(url, sampleName, index, loadSampleButton, modal) {
-    if (url) {
-        fetchAudio(url, index, sampleName).then(() => {
-            updateProjectChannelNamesUI(index, sampleName);
-            loadSampleButton.textContent = sampleName;
-            closeAllModals();  // Close all modals upon successful loading
-        }).catch(error => {
-            console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
-            alert("Failed to load audio. Please check the console for details.");
-        });
-    }
-}
-
-
-function handleUpdate(index, modal, loadSampleButton) {
-    // Assuming nameInput is the input field for the channel name
-    const nameInput = document.querySelector('.channel-name-input');
-    if (nameInput && nameInput.value) {
-        updateProjectChannelNamesUI(index, nameInput.value);
-        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
-        loadSampleButton.textContent = nameInput.value;
-        closeAllModals();  // Ensure to close all modals when update is successful
-    }
-}
 function appendChildren(parent, children) {
     children.forEach(child => parent.appendChild(child));
     return parent;
