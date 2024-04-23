@@ -9,45 +9,50 @@ class UnifiedSequencerSettings {
                 projectBPM: 120,
                 currentSequence: 0,
                 channelURLs: new Array(16).fill(''),
-                channelVolume: new Array(16).fill(1),  // Default volume set to 1
-                trimSettings: Array.from({ length: 16 }, () => ({
-                    start: 0.01,
-                    end: 100.00,
-                    length: 0
-                })),
-                projectChannelNames: new Array(16).fill('Load Sample'),  // Default names set here
+                channelVolume: new Array(16).fill(1),
+                channelPlaybackSpeed: new Array(16).fill(1),
+                trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100.00, length: 0 })),
+                projectChannelNames: new Array(16).fill('Load Sample'),
                 projectSequences: this.initializeSequences(16, 16, 64)
             }
         };
 
-        this.initializeGainNodes();  // Ensure gain nodes are initialized on construction
-        // Bind methods
+        this.initializeGainNodes();
         this.checkSettings = this.checkSettings.bind(this);
         this.clearMasterSettings = this.clearMasterSettings.bind(this);
         this.loadSettings = this.loadSettings.bind(this);
         this.formatURL = this.formatURL.bind(this);
+        this.setChannelVolume = this.setChannelVolume.bind(this);
     }
-
-    // Method to log the current settings to the console
-    checkSettings() {
-        console.log("Current Global Settings:", this.settings);
-        console.log("[checkSettings] Current masterSettings:", this.settings.masterSettings);
-
-    }
-
 
     initializeGainNodes() {
-        // Initialize gain nodes for each channel based on the default or specified volume
-        this.gainNodes = this.settings.masterSettings.channelVolume.map((volume, index) => {
-            const gainNode = this.audioContext.createGain();
-            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
-            gainNode.connect(this.audioContext.destination);
-            return gainNode;
-        });
-
-        console.log("GainNodes initialized for all channels");
+        this.gainNodes = [];
+        try {
+            for (let i = 0; i < 16; i++) {
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
+                gainNode.connect(this.audioContext.destination);
+                this.gainNodes.push(gainNode);
+            }
+            console.log("GainNodes initialized for all channels");
+        } catch (error) {
+            console.error("Failed to initialize gain nodes:", error);
+        }
     }
 
+    setChannelVolume(channelIndex, volume) {
+        if (channelIndex >= 0 && channelIndex < this.gainNodes.length) {
+            this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
+            this.settings.masterSettings.channelVolume[channelIndex] = volume; // Update the settings as well
+            console.log(`Volume for channel ${channelIndex} set to ${volume}`);
+        } else {
+            console.error("Invalid channel index:", channelIndex);
+        }
+    }
+
+    checkSettings() {
+        console.log("Current Global Settings:", this.settings);
+    }
 
         initializeSequences(numSequences, numChannels, numSteps) {
             let sequenceData = {};
@@ -195,18 +200,18 @@ class UnifiedSequencerSettings {
                 return step.pitch;
             }
 
-            setChannelVolume(channelIndex, volume) {
-                if (!this.settings.masterSettings.channelSettings) {
-                    this.settings.masterSettings.channelSettings = {};
-                }
-                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
-                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
-                }
-                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
+            // setChannelVolume(channelIndex, volume) {
+            //     if (!this.settings.masterSettings.channelSettings) {
+            //         this.settings.masterSettings.channelSettings = {};
+            //     }
+            //     if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
+            //         this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
+            //     }
+            //     this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
                 
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
+            //     // Notify observers to update the UI or other components if necessary
+            //     this.notifyObservers();
+            // }
 
             setChannelPitch(channelIndex, pitch) {
                 if (!this.settings.masterSettings.channelSettings) {
