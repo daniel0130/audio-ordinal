@@ -1,6 +1,7 @@
 class UnifiedSequencerSettings {
     constructor(audioContext) {
         this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        this.globalPlaybackSpeed = 1.5; // Default speed is normal (1x)
         this.observers = [];
         this.gainNodes = [];
         this.sourceNodes = []; // Array to hold source nodes
@@ -28,6 +29,17 @@ class UnifiedSequencerSettings {
         this.setChannelVolume = this.setChannelVolume.bind(this);
         this.setChannelSpeed = this.setChannelSpeed.bind(this); // Bind the new method
     }
+
+    setGlobalPlaybackSpeed(speed) {
+        this.globalPlaybackSpeed = speed;
+        this.sourceNodes.forEach(sourceNode => {
+            if (sourceNode && sourceNode.buffer) { // Ensure the node is initialized and has a buffer
+                sourceNode.playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+            }
+        });
+        console.log(`Global playback speed set to ${speed}x`);
+    }
+
 
     initializeGainNodes() {
         for (let i = 0; i < 16; i++) {

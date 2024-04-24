@@ -116,6 +116,14 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
 
       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
 
+      // Assign the decoded audio buffer to the source node for immediate use
+      if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+          window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
+          console.log("[decodeAndStoreAudio] Source node buffer set.");
+      } else {
+          console.error("[decodeAndStoreAudio] Source node not available for channel", channelIndex);
+      }
+
       // Update UI or other components that depend on these buffers
       window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
 
@@ -262,22 +270,22 @@ function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReverse
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
 
-  // Use the GainNode assigned to the channel from the unified settings
   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
   if (!gainNode) {
-    console.error("No gain node found for channel", channelIndex);
-    return;
+      console.error("No gain node found for channel", channelIndex);
+      return;
   }
 
-  const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
-  
-  // No need to set volume here as it should be managed via user input directly affecting the GainNode
+  // Apply global playback speed to the current source node
+  const currentSpeed = window.unifiedSequencerSettings.globalPlaybackSpeed;
+  source.playbackRate.setValueAtTime(currentSpeed, audioContext.currentTime);
+
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
-  source.playbackRate.value = isFinite(pitch) ? pitch : 1;
   source.start(0, trimStart, duration);
+  console.log(`Played audio at channel ${channelIndex} with playback speed of ${currentSpeed}x`);
 }
 
 
