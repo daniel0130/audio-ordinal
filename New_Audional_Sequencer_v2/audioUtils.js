@@ -240,32 +240,20 @@ function playSound(currentSequence, channel, currentStep) {
   const channelIndex = getChannelIndex(channel);
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
 
-  // Log debugging to check state
-  console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
-
-  // Check if the step is either active or marked for reverse playback.
   if (!isActive && !isReverse) {
-      console.log("[playSound Debugging] Current step is neither active nor reverse. Skipping playback.");
-      return;
+    // Skip playback if the current step is not active and not marked for reverse playback.
+    return;
   }
 
-  // Construct the key to retrieve the appropriate buffer
   const bufferKey = `channel_${channelIndex}_${isReverse ? 'reverse' : 'forward'}`;
   const audioBuffer = audioBuffers.get(bufferKey);
 
-  // Log the buffer retrieval status
   if (!audioBuffer) {
-      console.error(`[playSound] No audio buffer found for ${bufferKey}`);
-      return;
+    console.error(`[playSound] No audio buffer found for ${bufferKey}`);
+    return;
   }
 
-  // Play the audio buffer using a function designed to handle audio playback
-  playTrimmedAudio(channelIndex, audioBuffer, bufferKey, currentStep, isReverse);
-}
-
-
-// Example modification in playTrimmedAudio function
-function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
+  // Instead of calling another function, handle playback directly here for efficiency.
   const audioContext = window.unifiedSequencerSettings.audioContext;
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
@@ -276,19 +264,51 @@ function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReverse
     return;
   }
 
-  // Retrieve the specific playback speed for this channel
+  // Assign playback rate and connect source to gain node immediately before starting playback.
   const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
-
-  // Apply the specific channel playback speed to the current source node
   source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
-
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
+  // Calculate trim values directly here and start playback.
+  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReverse);
   source.start(0, trimStart, duration);
+
+  // Dispose of the source node after playback finishes.
+  source.onended = () => {
+    source.disconnect();
+  };
+
   console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
 }
+
+
+
+// // Example modification in playTrimmedAudio function
+// function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
+//   const audioContext = window.unifiedSequencerSettings.audioContext;
+//   const source = audioContext.createBufferSource();
+//   source.buffer = audioBuffer;
+
+//   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+//   if (!gainNode) {
+//     console.error("No gain node found for channel", channelIndex);
+//     return;
+//   }
+
+//   // Retrieve the specific playback speed for this channel
+//   const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
+
+//   // Apply the specific channel playback speed to the current source node
+//   source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
+
+//   source.connect(gainNode);
+//   gainNode.connect(audioContext.destination);
+
+//   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
+//   source.start(0, trimStart, duration);
+//   console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
+// }
 
 
 

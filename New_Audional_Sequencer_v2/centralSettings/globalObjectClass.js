@@ -31,6 +31,35 @@ class UnifiedSequencerSettings {
         this.setChannelPlaybackSpeed = this.setChannelPlaybackSpeed.bind(this); // Bind the new method
     }
 
+   
+
+    initializeSourceNodes() {
+        for (let i = 0; i < 16; i++) {
+            const source = this.audioContext.createBufferSource(); // Create a new buffer source node
+            source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
+            source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
+            this.sourceNodes.push(source);
+        }
+    }
+
+
+
+    initializeGainNodes() {
+        for (let i = 0; i < 16; i++) {
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
+            gainNode.connect(this.audioContext.destination);
+            this.gainNodes.push(gainNode);
+        }
+    }
+
+    setChannelVolume(channelIndex, volume) {
+        if (channelIndex >= 0 && channelIndex < this.gainNodes.length) {
+            this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
+            this.settings.masterSettings.channelVolume[channelIndex] = volume;
+        }
+    }
+
     setGlobalPlaybackSpeed(speed) {
         this.globalPlaybackSpeed = speed;
         this.sourceNodes.forEach(sourceNode => {
@@ -60,31 +89,6 @@ class UnifiedSequencerSettings {
         }
     }
 
-
-    initializeGainNodes() {
-        for (let i = 0; i < 16; i++) {
-            const gainNode = this.audioContext.createGain();
-            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
-            gainNode.connect(this.audioContext.destination);
-            this.gainNodes.push(gainNode);
-        }
-    }
-
-    initializeSourceNodes() {
-        for (let i = 0; i < 16; i++) {
-            const source = this.audioContext.createBufferSource(); // Create a new buffer source node
-            source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
-            source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
-            this.sourceNodes.push(source);
-        }
-    }
-
-    setChannelVolume(channelIndex, volume) {
-        if (channelIndex >= 0 && channelIndex < this.gainNodes.length) {
-            this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
-            this.settings.masterSettings.channelVolume[channelIndex] = volume;
-        }
-    }
 
     // setChannelSpeed(channelIndex, speed) {
     //     if (channelIndex >= 0 && channelIndex < this.sourceNodes.length) {
@@ -367,10 +371,10 @@ class UnifiedSequencerSettings {
                     this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
             
                     if (parsedSettings.channelURLs) {
-                        for (let i = 0; i < parsedSettings.channelURLs.length; i++) {
-                            this.settings.masterSettings.channelURLs[i] = await this.formatURL(parsedSettings.channelURLs[i]);
-                        }
+                        const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
+                        this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
                     }
+                    
             
                     this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
                     this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
