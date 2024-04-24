@@ -272,20 +272,22 @@ function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReverse
 
   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
   if (!gainNode) {
-      console.error("No gain node found for channel", channelIndex);
-      return;
+    console.error("No gain node found for channel", channelIndex);
+    return;
   }
 
-  // Apply global playback speed to the current source node
-  const currentSpeed = window.unifiedSequencerSettings.globalPlaybackSpeed;
-  source.playbackRate.setValueAtTime(currentSpeed, audioContext.currentTime);
+  // Retrieve the specific playback speed for this channel
+  const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
+
+  // Apply the specific channel playback speed to the current source node
+  source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
 
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
   source.start(0, trimStart, duration);
-  console.log(`Played audio at channel ${channelIndex} with playback speed of ${currentSpeed}x`);
+  console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
 }
 
 

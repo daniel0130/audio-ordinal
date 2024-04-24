@@ -1,7 +1,8 @@
 class UnifiedSequencerSettings {
     constructor(audioContext) {
         this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-        this.globalPlaybackSpeed = 1.5; // Default speed is normal (1x)
+        this.globalPlaybackSpeed = 1; // Default speed is normal (1x)
+        this.channelPlaybackSpeed = new Array(16).fill(1); // Default speed is normal (1x)
         this.observers = [];
         this.gainNodes = [];
         this.sourceNodes = []; // Array to hold source nodes
@@ -13,7 +14,7 @@ class UnifiedSequencerSettings {
                 currentSequence: 0,
                 channelURLs: new Array(16).fill(''),
                 channelVolume: new Array(16).fill(1),
-                channelPlaybackSpeed: new Array(16).fill(1),
+                channelPlaybackSpeed: new Array(16).fill(1), // Default speed is normal (1x)
                 trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100.00, length: 0 })),
                 projectChannelNames: new Array(16).fill('Load Sample'),
                 projectSequences: this.initializeSequences(16, 16, 64)
@@ -27,7 +28,7 @@ class UnifiedSequencerSettings {
         this.loadSettings = this.loadSettings.bind(this);
         this.formatURL = this.formatURL.bind(this);
         this.setChannelVolume = this.setChannelVolume.bind(this);
-        this.setChannelSpeed = this.setChannelSpeed.bind(this); // Bind the new method
+        this.setChannelPlaybackSpeed = this.setChannelPlaybackSpeed.bind(this); // Bind the new method
     }
 
     setGlobalPlaybackSpeed(speed) {
@@ -38,6 +39,25 @@ class UnifiedSequencerSettings {
             }
         });
         console.log(`Global playback speed set to ${speed}x`);
+    }
+
+    setChannelPlaybackSpeed(channelIndex, speed) {
+        if (channelIndex < 0 || channelIndex >= this.channelPlaybackSpeed.length) {
+            console.error("Channel index out of bounds");
+            return;
+        }
+
+        // Update the channel-specific playback speed
+        this.channelPlaybackSpeed[channelIndex] = speed;
+        const sourceNode = this.sourceNodes[channelIndex];
+
+        if (sourceNode && sourceNode.buffer) {
+            // Apply the new speed setting to the source node
+            sourceNode.playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+            console.log(`Playback speed for channel ${channelIndex} set to ${speed}x`);
+        } else {
+            console.log(`Source node for channel ${channelIndex} is not initialized or lacks a buffer.`);
+        }
     }
 
 
@@ -66,12 +86,12 @@ class UnifiedSequencerSettings {
         }
     }
 
-    setChannelSpeed(channelIndex, speed) {
-        if (channelIndex >= 0 && channelIndex < this.sourceNodes.length) {
-            this.sourceNodes[channelIndex].playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
-            this.settings.masterSettings.channelPlaybackSpeed[channelIndex] = speed; // Update setting
-        }
-    }
+    // setChannelSpeed(channelIndex, speed) {
+    //     if (channelIndex >= 0 && channelIndex < this.sourceNodes.length) {
+    //         this.sourceNodes[channelIndex].playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+    //         this.settings.masterSettings.channelPlaybackSpeed[channelIndex] = speed; // Update setting
+    //     }
+    // }
 
     checkSettings() {
         console.log("Current Global Settings:", this.settings);

@@ -128,19 +128,28 @@ document.body.appendChild(modal);
 resetVolumeModalTimeout(); // Use the same timeout reset function
 }
 
-function setChannelSpeed(channelIndex, speed) {
-console.log(`Setting playback speed for channel ${channelIndex} to ${speed}`);
-const audioContext = window.unifiedSequencerSettings.audioContext;
-const sourceNode = window.unifiedSequencerSettings.sourceNodes[channelIndex]; // Assume similar management for source nodes
-sourceNode.playbackRate.setValueAtTime(speed, audioContext.currentTime);
+function closeSpeedModal() {
+    clearTimeout(volumeModalTimeout);
+    document.querySelectorAll('.speed-modal').forEach(modal => modal.remove());
 }
 
 function getChannelSpeed(channelIndex) {
-const sourceNode = window.unifiedSequencerSettings.sourceNodes[channelIndex];
-return sourceNode ? sourceNode.playbackRate.value : 1.0; // Default speed if undefined
+    // Access the current speed setting from the UnifiedSequencerSettings
+    if (channelIndex >= 0 && channelIndex < window.unifiedSequencerSettings.channelPlaybackSpeed.length) {
+        return window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
+    } else {
+        console.error("Channel index out of bounds");
+        return 1.0; // Return default speed if out of bounds
+    }
 }
 
-function closeSpeedModal() {
-clearTimeout(volumeModalTimeout); // Use the same timeout variable for simplicity
-document.querySelectorAll('.speed-modal').forEach(modal => modal.remove());
+function setChannelSpeed(channelIndex, speed) {
+    console.log(`Setting playback speed for channel ${channelIndex} to ${speed}`);
+    // Call the method from UnifiedSequencerSettings to ensure proper handling
+    window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, speed);
 }
+
+// function closeSpeedModal() {
+// clearTimeout(volumeModalTimeout); // Use the same timeout variable for simplicity
+// document.querySelectorAll('.speed-modal').forEach(modal => modal.remove());
+// }
