@@ -304,6 +304,10 @@ class UnifiedSequencerSettings {
                 const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
                 settingsClone.currentSequence = 0;
             
+                // Include global and channel-specific playback speeds
+                settingsClone.globalPlaybackSpeed = this.globalPlaybackSpeed;
+                settingsClone.channelPlaybackSpeed = [...this.channelPlaybackSpeed]; // Clone array to prevent reference issues
+            
                 for (let sequenceKey in settingsClone.projectSequences) {
                     const sequence = settingsClone.projectSequences[sequenceKey];
                     for (let channelKey in sequence) {
@@ -315,7 +319,7 @@ class UnifiedSequencerSettings {
                             // Proceed if the step is active or in reverse
                             if (step.isActive || step.isReverse) {
                                 const stepData = { index: index + 1 }; // Store step index (1-based)
-                                
+            
                                 // Include 'reverse' only if true
                                 if (step.isReverse) stepData.reverse = true;
             
@@ -343,6 +347,7 @@ class UnifiedSequencerSettings {
                 return exportedSettings;
             }
             
+            
     
             async loadSettings(jsonSettings) {
                 console.log("[internalPresetDebug] loadSettings entered");
@@ -357,39 +362,35 @@ class UnifiedSequencerSettings {
                     this.settings.masterSettings.projectName = parsedSettings.projectName;
                     this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
             
-                    // if (parsedSettings.channelURLs) {
-                    //     const formattedURLs = await Promise.all(parsedSettings.channelURLs.map(url => this.formatURL(url)));
-                    //     this.settings.masterSettings.channelURLs = formattedURLs;
-                    // }
-             
-                    // Process and apply channel URLs with proper formatting
+                    // Load global and channel-specific playback speeds
+                    this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
+                    this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
+            
                     if (parsedSettings.channelURLs) {
                         for (let i = 0; i < parsedSettings.channelURLs.length; i++) {
-                            this.settings.masterSettings.channelURLs[i] = formatURL(parsedSettings.channelURLs[i]);
+                            this.settings.masterSettings.channelURLs[i] = await this.formatURL(parsedSettings.channelURLs[i]);
                         }
                     }
-                    // Process and assign other settings
+            
                     this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
                     this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
                     this.deserializeAndApplyProjectSequences(parsedSettings);
             
                     console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
-                // Immediately update UI for the project name and BPM
                     this.updateProjectNameUI(this.settings.masterSettings.projectName);
                     this.updateBPMUI(this.settings.masterSettings.projectBPM);
                     this.updateAllLoadSampleButtonTexts();
                     this.updateProjectChannelNamesUI(this.settings.masterSettings.projectChannelNames);
-
-                    // Set current sequence to zero and update UI accordingly
+            
                     this.setCurrentSequence(0);
                     this.updateUIForSequence(this.settings.masterSettings.currentSequence);
-                    handleSequenceTransition(0); // Explicitly set to 0 or use parsedSettings.currentSequence if available
-
+                    handleSequenceTransition(0);
             
                 } catch (error) {
                     console.error('[internalPresetDebug] Error loading settings:', error);
                 }
             }
+            
             
             deserializeAndApplyProjectSequences(parsedSettings) {
                 if (parsedSettings.projectSequences) {
