@@ -1,13 +1,6 @@
 // stepSchedulers.js
 
 function startScheduler() {
-    channels.forEach(channel => {
-        const channelIndex = parseInt(channel.dataset.id.split('-')[1]);
-        if (!channelMutes[channelIndex]) {  // If channel is not muted
-            setChannelVolume(channelIndex, 1);
-        }
-    });
-
     clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
     window.unifiedSequencerSettings.audioContext.resume();
     startTime = window.unifiedSequencerSettings.audioContext.currentTime;
@@ -55,9 +48,6 @@ function scheduleNextStep() {
 
 function stopScheduler() {
     console.log('[SequenceChangeDebug] Stopping scheduler.');
-    channels.forEach(channel => {
-        setChannelVolume(parseInt(channel.dataset.id.split('-')[1]), 0);
-      });
     clearTimeout(timeoutId);
     // Reset counters
     currentStep = 0;
@@ -67,6 +57,7 @@ function stopScheduler() {
     isPaused = false;
     pauseTime = 0;
 }
+
 
 function resetStepLights() {
   const buttons = document.querySelectorAll('.step-button');

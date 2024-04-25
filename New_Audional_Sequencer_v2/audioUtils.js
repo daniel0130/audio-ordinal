@@ -95,45 +95,52 @@ async function processHTMLResponse(htmlText) {
 async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
   try {
-      // Decode the audio data into a buffer
-      const audioBuffer = await decodeAudioData(audioData);
-      console.log("[decodeAndStoreAudio] Audio data decoded");
+    // Decode the audio data into a buffer
+    const audioBuffer = await decodeAudioData(audioData);
+    console.log("[decodeAndStoreAudio] Audio data decoded");
 
-      // Create a reverse buffer by copying and reversing the audioBuffer
-      const reverseBuffer = await createReverseBuffer(audioBuffer);
+    // Create a reverse buffer by copying and reversing the audioBuffer
+    const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Store buffers using both channel-specific keys and URL-based keys
-      const forwardKey = `channel_${channelIndex}_forward`;
-      const reverseKey = `channel_${channelIndex}_reverse`;
-      const forwardUrlKey = `${fullUrl}`;
-      const reverseUrlKey = `${fullUrl}_reverse`;
+    // Store buffers using both channel-specific keys and URL-based keys
+    const forwardKey = `channel_${channelIndex}_forward`;
+    const reverseKey = `channel_${channelIndex}_reverse`;
+    const forwardUrlKey = `${fullUrl}`;
+    const reverseUrlKey = `${fullUrl}_reverse`;
 
-      // Use a global buffer storage (adjust according to your actual storage method)
-      audioBuffers.set(forwardKey, audioBuffer);
-      audioBuffers.set(reverseKey, reverseBuffer);
-      audioBuffers.set(forwardUrlKey, audioBuffer);
-      audioBuffers.set(reverseUrlKey, reverseBuffer);
+    // Use a global buffer storage (adjust according to your actual storage method)
+    audioBuffers.set(forwardKey, audioBuffer);
+    audioBuffers.set(reverseKey, reverseBuffer);
+    audioBuffers.set(forwardUrlKey, audioBuffer);
+    audioBuffers.set(reverseUrlKey, reverseBuffer);
 
-      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+    console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+     
+    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+        window.unifiedSequencerSettings.sourceNodes[channelIndex].disconnect();
+    }
 
-      // Assign the decoded audio buffer to the source node for immediate use
-      if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
-          window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
-          console.log("[decodeAndStoreAudio] Source node buffer set.");
-      } else {
-          console.error("[decodeAndStoreAudio] Source node not available for channel", channelIndex);
-      }
+    // If the source node is already created and has a buffer, create a new one.
+    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+        if (window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer) {
+            console.log(`[decodeAndStoreAudio] Source node for channel ${channelIndex} is already in use. Creating a new one.`);
+            window.unifiedSequencerSettings.sourceNodes[channelIndex] = window.unifiedSequencerSettings.audioContext.createBufferSource();
+        }
+        window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
+    } else {
+        console.error(`[decodeAndStoreAudio] Source node not initialized for channel ${channelIndex}.`);
+    }
 
-      // Update UI or other components that depend on these buffers
-      window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+    // Update UI or other components that depend on these buffers
+    window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
 
-      // Optionally, trigger any UI updates or callbacks that need these buffers
-      if (typeof updateWaveformDisplay === "function") {
-          updateWaveformDisplay(channelIndex, audioBuffer);
-      }
+    // Optionally, trigger any UI updates or callbacks that need these buffers
+    if (typeof updateWaveformDisplay === "function") {
+      updateWaveformDisplay(channelIndex, audioBuffer);
+    }
 
   } catch (error) {
-      console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+    console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
 

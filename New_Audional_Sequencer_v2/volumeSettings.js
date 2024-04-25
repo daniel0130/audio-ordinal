@@ -57,8 +57,25 @@ function setChannelVolume(channelIndex, volume) {
     console.log(`Setting volume for channel ${channelIndex} to ${volume}`);
     const audioContext = window.unifiedSequencerSettings.audioContext;
     const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+
+    if (!gainNode) {
+        console.error(`No gain node found for channel ${channelIndex}`);
+        return;
+    }
+
     gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    
+    // Ensure the channelVolume array exists and has the correct length
+    if (!window.unifiedSequencerSettings.settings.masterSettings.channelVolume) {
+        window.unifiedSequencerSettings.settings.masterSettings.channelVolume = new Array(16).fill(1);
+    }
+    
+    window.unifiedSequencerSettings.settings.masterSettings.channelVolume[channelIndex] = volume;
+
+    // Save the volume setting to localStorage to maintain across sessions
+    localStorage.setItem(`channelVolume_${channelIndex}`, volume.toString());
 }
+
 
 function getChannelVolume(channelIndex) {
     const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
@@ -74,6 +91,20 @@ function resetVolumeModalTimeout() {
     clearTimeout(volumeModalTimeout);
     volumeModalTimeout = setTimeout(closeVolumeModal, 3000); // Adjust modal close timeout as needed
 }
+
+function applySavedVolume() {
+    console.log('Applying saved volume settings from global settings');
+    // Iterate over the gain nodes and set their volume based on the masterSettings
+    for (let i = 0; i < window.unifiedSequencerSettings.gainNodes.length; i++) {
+        const savedVolume = window.unifiedSequencerSettings.settings.masterSettings.channelVolume[i];
+        window.unifiedSequencerSettings.setChannelVolume(i, savedVolume);
+    }
+    console.log('Volume settings applied successfully');
+}
+
+
+
+////////////////////////////////////////////////////////////////
 
 // Setup for playback speed buttons
 const speedButtons = document.querySelectorAll('.playback-speed-button');

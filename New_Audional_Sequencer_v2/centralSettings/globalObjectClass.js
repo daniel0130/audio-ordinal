@@ -302,35 +302,39 @@ class UnifiedSequencerSettings {
             }
             
             
-          
-      
             exportSettings() {
                 const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
                 settingsClone.currentSequence = 0;
-            
+                
                 // Include global and channel-specific playback speeds
                 settingsClone.globalPlaybackSpeed = this.globalPlaybackSpeed;
-                settingsClone.channelPlaybackSpeed = [...this.channelPlaybackSpeed]; // Clone array to prevent reference issues
+                settingsClone.channelPlaybackSpeed = Array.isArray(this.channelPlaybackSpeed) ? [...this.channelPlaybackSpeed] : new Array(16).fill(1);
+                
+                // Ensure that channelVolume is an array before trying to spread it
+                settingsClone.channelVolume = Array.isArray(this.settings.masterSettings.channelVolume) ? [...this.settings.masterSettings.channelVolume] : new Array(16).fill(1);
+
             
                 for (let sequenceKey in settingsClone.projectSequences) {
                     const sequence = settingsClone.projectSequences[sequenceKey];
                     for (let channelKey in sequence) {
                         const channel = sequence[channelKey];
                         const activeSteps = []; // Array to hold active or reversed steps with non-default settings
-            
+                    
                         // Iterate over steps
                         channel.steps.forEach((step, index) => {
                             // Proceed if the step is active or in reverse
                             if (step.isActive || step.isReverse) {
                                 const stepData = { index: index + 1 }; // Store step index (1-based)
-            
+                    
                                 // Include 'reverse' only if true
                                 if (step.isReverse) stepData.reverse = true;
-            
+                    
                                 // Include 'volume' and 'pitch' only if they deviate from 1
-                                if (step.volume !== 1) stepData.volume = step.volume;
+                                // Assume default volume is 1 if not present
+                                const stepVolume = step.volume !== undefined ? step.volume : 1;
+                                if (stepVolume !== 1) stepData.volume = stepVolume;
                                 if (step.pitch !== 1) stepData.pitch = step.pitch;
-            
+                    
                                 // Add to activeSteps only if there's more data beyond 'index'
                                 if (Object.keys(stepData).length > 1) {
                                     activeSteps.push(stepData);
@@ -340,7 +344,7 @@ class UnifiedSequencerSettings {
                                 }
                             }
                         });
-            
+                    
                         // Replace original steps array with the compact activeSteps array
                         channel.steps = activeSteps;
                     }
@@ -350,8 +354,6 @@ class UnifiedSequencerSettings {
                 console.log("[exportSettings] Exported Settings:", exportedSettings);
                 return exportedSettings;
             }
-            
-            
     
             async loadSettings(jsonSettings) {
                 console.log("[internalPresetDebug] loadSettings entered");
@@ -374,6 +376,12 @@ class UnifiedSequencerSettings {
                         const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
                         this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
                     }
+
+                    // if (parsedSettings.channelVolume) {
+                    //     for (let i = 0; i < parsedSettings.channelVolume.length; i++) {
+                    //         this.setChannelVolume(i, parsedSettings.channelVolume[i]);
+                    //     }
+                    // }
                     
             
                     this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
