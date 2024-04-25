@@ -77,7 +77,7 @@ function openModal(index, loadSampleButton) {
         { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
-        { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
+        // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
 
     inputs.forEach(({ text, placeholder, type, className }) => {
@@ -86,7 +86,7 @@ function openModal(index, loadSampleButton) {
     });
 
 
-    const ogAudionalDropdown = createDropdown('OG Audional Sample Imnscriptions:', ogSampleUrls);
+    const ogAudionalDropdown = createDropdown('Load an OG Audional Text Inscription:', ogSampleUrls);
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
     modalContent.appendChild(ogAudionalDropdown);
     ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, loadSampleButton));
@@ -110,12 +110,12 @@ function openModal(index, loadSampleButton) {
 function handleAction(index, modal, loadSampleButton) {
     const audionalInput = modal.querySelector('.audional-input');
     const ipfsInput = modal.querySelector('.ipfs-input');
-    const fileInput = modal.querySelector('.file-input');
+    // const fileInput = modal.querySelector('.file-input');
 
-    console.log('File Input:', fileInput);
-    console.log('Files Available:', fileInput.files);
+    // console.log('File Input:', fileInput);
+    // console.log('Files Available:', fileInput.files);
 
-    handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton);
+    handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton);
 }
 
 // Simplified createElement function to reduce redundancy
@@ -142,6 +142,8 @@ function createTextParagraph(text) {
 
 function createDropdown(label, options) {
     const container = createElement('div', 'dropdown-container');
+    container.style.marginTop = '20px';  // Add 20px space above the dropdown
+
     const labelElement = createElement('label', 'dropdown-label', { textContent: label });
     const select = createElement('select', 'dropdown-select');
 
@@ -238,7 +240,7 @@ function showChannelNamingModal(channelIndex, loadSampleButton) {
     input.focus();  // Focus the input for user convenience
 }
 
-function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampleButton) {
+function handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton) {
     console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
     let url = '';
     let sampleName = '';
@@ -255,10 +257,10 @@ function handleLoad(index, audionalInput, ipfsInput, fileInput, modal, loadSampl
         url = 'https://ipfs.io/ipfs/' + ipfsInput.value.trim();
         sampleName = ipfsInput.value.trim().split('/').pop();
         processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else if (fileInput && fileInput.files.length > 0) {
-        url = URL.createObjectURL(fileInput.files[0]);
-        sampleName = fileInput.files[0].name;
-        processLoad(url, sampleName, index, loadSampleButton, modal);
+    // } else if (fileInput && fileInput.files.length > 0) {
+    //     url = URL.createObjectURL(fileInput.files[0]);
+    //     sampleName = fileInput.files[0].name;
+    //     processLoad(url, sampleName, index, loadSampleButton, modal);
     } else if (ogAudionalDropdown && ogAudionalDropdown.value) {
         // Fallback to the OG Audional Dropdown if no other inputs are filled
         url = ogAudionalDropdown.value;
@@ -365,6 +367,18 @@ function getButtonText(index) {
     return 'Load New Audio into Channel'; // Default text if no name is set
 }
 
+function createInputField(placeholder, type = 'text') {
+    return createElement('input', 'loadSampleModalButton-input', {type: type, placeholder: placeholder});
+}
+
+function createButton(text, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.onclick = onClick;
+    return button;
+}
+
+
 
 
 // function createElement(type, className, properties = {}) {
@@ -378,20 +392,12 @@ function getButtonText(index) {
 //     return createElement('p', 'loadSampleModalButton-text', {textContent: text});
 // }
 
-function createInputField(placeholder, type = 'text') {
-    return createElement('input', 'loadSampleModalButton-input', {type: type, placeholder: placeholder});
-}
+
 
 // function createButton(text, onClick) {
 //     return createElement('button', '', {textContent: text, onclick: onClick});
 // }
 
-function createButton(text, onClick) {
-    const button = document.createElement('button');
-    button.textContent = text;
-    button.onclick = onClick;
-    return button;
-}
 
 // function createDropdown(label, options) {
 //     const container = createElement('div', 'dropdown-container');
