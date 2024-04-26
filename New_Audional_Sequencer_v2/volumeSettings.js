@@ -139,8 +139,8 @@ modal.style.zIndex = 1000;
 // Create the speed slider inside the modal
 const slider = document.createElement('input');
 slider.type = 'range';
-slider.min = 0.5;
-slider.max = 2;
+slider.min = 0.1;
+slider.max = 10;
 slider.step = 0.01;
 slider.value = getChannelSpeed(channelIndex).toString(); // Assume a similar getter for speed
 modal.appendChild(slider);
