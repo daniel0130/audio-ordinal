@@ -30,3 +30,7 @@
 .paste-button:hover {
     background-color: #ffb300; /* Darker amber on hover */
 }
+
+.instruction-button {
+    background-color: #4CAF50; /* Green background */
+}

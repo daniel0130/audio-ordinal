@@ -53,3 +53,42 @@ h3:hover .subtext {
 .bright-orange {
     color: #f7931a;
 }
+
+/* Additional font size settings for modal content */
+.modal-text-small {
+    font-size: 0.9em; /* Slightly smaller than default */
+}
+
+.modal-text-smaller {
+    font-size: 0.8em; /* Even smaller for more content fit */
+}
+
+.modal-title-small {
+    font-size: 1.2em; /* Smaller title font size */
+}
+
+.modal-header {
+    font-size: 1em; /* Reduced size for section headers */
+}
+  
+  .modal-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-column {
+    width: 48%; /* Adjust width as needed */
+    padding: 1%; /* Provides some spacing between columns */
+    box-sizing: border-box; /* Includes padding in the width */
+}
+
+.control-button-demo {
+    display: inline-block;
+    width: 20px; /* Width of the button */
+    height: 20px; /* Height of the button */
+    color: white; /* Text color */
+    text-align: center; /* Center the text inside the button */
+    margin-right: 5px; /* Margin to separate button from text */
+    font-weight: bold; /* Bold text */
+    border-radius: 3px; /* Rounded corners if your buttons have them */
+}
