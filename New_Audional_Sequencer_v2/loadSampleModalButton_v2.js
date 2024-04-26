@@ -2,6 +2,33 @@
 // loadSampleModalButton_v2.js
 let openModals = [];
 
+// Define the array of URLs
+const ob1SampleUrls = [
+    'https://magiceden.io/ordinals/item-details/e7d344ef3098d0889856978c4d2e81ccf2358f7f8b66feecc71e03036c59ad48i0',
+    'https://magiceden.io/ordinals/item-details/ef5707e6ecf4d5b6edb4c3a371ca1c57b5d1057c6505ccb5f8bdc8918b0c4d94i0',
+    'https://magiceden.io/ordinals/item-details/d030eb3d8bcd68b0ed02b0c67fdb981342eea40b0383814f179a48e76927db93i0',
+    'https://magiceden.io/ordinals/item-details/3b7482a832c4f27c32fc1da7cc4249bbbac1cbdfbdb8673079cad0c33486d233i0',
+    'https://magiceden.io/ordinals/item-details/5a42d7b2e2fe01e4f31cbad5dd671997f87339d970faaab37f6355c4a2f3be5ai0',
+    'https://magiceden.io/ordinals/item-details/ddc1838c1a6a3c45b2c6e19ff278c3b51b0797c3f1339c533370442d23687a68i0',
+    'https://magiceden.io/ordinals/item-details/91f52a4ca00bb27383ae149f24b605d75ea99df033a6cbb6de2389455233bf51i0',
+    'https://magiceden.io/ordinals/item-details/1e3c2571e96729153e4b63e2b561d85aec7bc5ba372d293af469a525dfa3ed59i0',
+    'https://magiceden.io/ordinals/item-details/437868aecce108d49f9b29c2f477987cb5834ffdf639a650335af7f0fdd5e55bi0',
+    'https://magiceden.io/ordinals/item-details/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0',
+    'https://magiceden.io/ordinals/item-details/1bda678460ef08fb64435b57c9b69fd78fd4556822ccd8e9839b4eb71b3621edi0'
+  ];
+  
+  
+  
+//   // Helper function to create elements with classes
+//   function createElement(type, className) {
+//       const element = document.createElement(type);
+//       element.className = className;
+//       return element;
+//   }
+  
+
+  
+
 // New Dropdown for Og Audional sample inscriptions
 const ogSampleUrls = [
     { value: 'https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0#', text: 'MS10 Woop.mp3' },
@@ -85,12 +112,15 @@ function openModal(index, loadSampleButton) {
         modalContent.appendChild(createElement('input', className, { type: type, placeholder: placeholder }));
     });
 
+      // Append the dropdown to a specific element on the page
+    modalContent.appendChild(createOb1Dropdown());
 
-    const ogAudionalDropdown = createDropdown('Load an OG Audional Text Inscription:', ogSampleUrls);
+
+    const ogAudionalDropdown = createOGDropdown('Load an OG Audional Text Inscription:', ogSampleUrls);
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
     modalContent.appendChild(ogAudionalDropdown);
-    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, loadSampleButton));
-
+    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
+    
     const actions = [
         { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
         { text: 'Cancel', action: () => closeModal(modal) },
@@ -105,6 +135,29 @@ function openModal(index, loadSampleButton) {
     return modal;
 }
 
+function createOGDropdown(label, options) {
+    const container = createElement('div', 'dropdown-container');
+    container.style.marginTop = '20px';  // Add 20px space above the dropdown
+
+    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
+    const select = createElement('select', 'dropdown-select');
+
+    // Add a default, non-selectable option as the first item
+    const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
+    defaultOption.disabled = true;  // Make it non-selectable
+    defaultOption.selected = true;  // Make it selected by default
+    select.appendChild(defaultOption);
+
+    // Append other options from the provided array
+    options.forEach(({ value, text }) => {
+        const option = createElement('option', '', { value: value, textContent: text });
+        select.appendChild(option);
+    });
+
+    container.appendChild(labelElement);
+    container.appendChild(select);
+    return container;
+}
 
 
 function handleAction(index, modal, loadSampleButton) {
@@ -140,29 +193,27 @@ function createTextParagraph(text) {
     return p;
 }
 
-function createDropdown(label, options) {
+// Create dropdown element
+function createOb1Dropdown() {
     const container = createElement('div', 'dropdown-container');
-    container.style.marginTop = '20px';  // Add 20px space above the dropdown
-
-    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
+    const label = createElement('label', 'dropdown-label');
+    label.textContent = 'Load Obi-One Sample:';
     const select = createElement('select', 'dropdown-select');
+    select.id = 'ob1-dropdown';
 
-    // Add a default, non-selectable option as the first item
-    const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
-    defaultOption.disabled = true;  // Make it non-selectable
-    defaultOption.selected = true;  // Make it selected by default
-    select.appendChild(defaultOption);
-
-    // Append other options from the provided array
-    options.forEach(({ value, text }) => {
-        const option = createElement('option', '', { value: value, textContent: text });
+    ob1SampleUrls.forEach((url, index) => {
+        const option = createElement('option', 'dropdown-option');
+        option.value = url;
+        option.textContent = `Sample ${index + 1}`; // Giving each option a text like "Sample 1", "Sample 2", etc.
         select.appendChild(option);
     });
 
-    container.appendChild(labelElement);
+    container.appendChild(label);
     container.appendChild(select);
     return container;
 }
+
+
 
 
 function closeModal(modal) {
@@ -183,10 +234,16 @@ function closeAllModals() {
     console.log('All modals closed. Current open modals:', openModals);
 }
 
-function handleDropdownChange(event) {
-    const selectedUrl = event.target.value;
-    const selectedText = event.target.options[event.target.selectedIndex].text;
-    // Handle fetching and updating logic here...
+function handleDropdownChange(event, index, modal, loadSampleButton) {
+    const selectedValue = event.target.value;
+    const audionalInput = modal.querySelector('.audional-input');
+    const ipfsInput = modal.querySelector('.ipfs-input');
+
+    // Check if the selected value is valid (not the default disabled option)
+    if (selectedValue) {
+        // Call handleLoad directly from here, assuming you have a valid URL or input
+        handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton);
+    }
 }
 
 function updateProjectChannelNamesUI(channelIndex, name) {
