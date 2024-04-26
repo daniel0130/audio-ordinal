@@ -1,7 +1,11 @@
 class UnifiedSequencerSettings {
     constructor(audioContext) {
         this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        this.globalPlaybackSpeed = 1; // Default speed is normal (1x)
+        this.channelPlaybackSpeed = new Array(16).fill(1); // Default speed is normal (1x)
         this.observers = [];
+        this.gainNodes = [];
+        this.sourceNodes = []; // Array to hold source nodes
 
         this.settings = {
             masterSettings: {
@@ -9,45 +13,96 @@ class UnifiedSequencerSettings {
                 projectBPM: 120,
                 currentSequence: 0,
                 channelURLs: new Array(16).fill(''),
-                channelVolume: new Array(16).fill(1),  // Default volume set to 1
-                trimSettings: Array.from({ length: 16 }, () => ({
-                    start: 0.01,
-                    end: 100.00,
-                    length: 0
-                })),
-                projectChannelNames: new Array(16).fill('Load Sample'),  // Default names set here
+                channelVolume: new Array(16).fill(1),
+                channelPlaybackSpeed: new Array(16).fill(1), // Default speed is normal (1x)
+                trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100.00, length: 0 })),
+                projectChannelNames: new Array(16).fill('Load Sample'),
                 projectSequences: this.initializeSequences(16, 16, 64)
             }
         };
 
-        this.initializeGainNodes();  // Ensure gain nodes are initialized on construction
-        // Bind methods
+        this.initializeGainNodes();
+        this.initializeSourceNodes(); // Initialize source nodes
         this.checkSettings = this.checkSettings.bind(this);
         this.clearMasterSettings = this.clearMasterSettings.bind(this);
         this.loadSettings = this.loadSettings.bind(this);
         this.formatURL = this.formatURL.bind(this);
+        this.setChannelVolume = this.setChannelVolume.bind(this);
+        this.setChannelPlaybackSpeed = this.setChannelPlaybackSpeed.bind(this); // Bind the new method
     }
 
-    // Method to log the current settings to the console
-    checkSettings() {
-        console.log("Current Global Settings:", this.settings);
-        console.log("[checkSettings] Current masterSettings:", this.settings.masterSettings);
+   
 
+    initializeSourceNodes() {
+        for (let i = 0; i < 16; i++) {
+            const source = this.audioContext.createBufferSource(); // Create a new buffer source node
+            source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
+            source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
+            this.sourceNodes.push(source);
+        }
     }
+
 
 
     initializeGainNodes() {
-        // Initialize gain nodes for each channel based on the default or specified volume
-        this.gainNodes = this.settings.masterSettings.channelVolume.map((volume, index) => {
+        for (let i = 0; i < 16; i++) {
             const gainNode = this.audioContext.createGain();
-            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
             gainNode.connect(this.audioContext.destination);
-            return gainNode;
-        });
-
-        console.log("GainNodes initialized for all channels");
+            this.gainNodes.push(gainNode);
+        }
     }
 
+    setChannelVolume(channelIndex, volume) {
+        if (channelIndex >= 0 && channelIndex < this.gainNodes.length && this.gainNodes[channelIndex]) {
+            this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
+            this.settings.masterSettings.channelVolume[channelIndex] = volume;
+        } else {
+            console.error(`Cannot set volume for channel ${channelIndex}: Gain node is undefined.`);
+        }
+    }
+    
+
+    setGlobalPlaybackSpeed(speed) {
+        this.globalPlaybackSpeed = speed;
+        this.sourceNodes.forEach(sourceNode => {
+            if (sourceNode && sourceNode.buffer) { // Ensure the node is initialized and has a buffer
+                sourceNode.playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+            }
+        });
+        console.log(`Global playback speed set to ${speed}x`);
+    }
+
+    setChannelPlaybackSpeed(channelIndex, speed) {
+        if (channelIndex < 0 || channelIndex >= this.channelPlaybackSpeed.length) {
+            console.error("Channel index out of bounds");
+            return;
+        }
+
+        // Update the channel-specific playback speed
+        this.channelPlaybackSpeed[channelIndex] = speed;
+        const sourceNode = this.sourceNodes[channelIndex];
+
+        if (sourceNode && sourceNode.buffer) {
+            // Apply the new speed setting to the source node
+            sourceNode.playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+            console.log(`Playback speed for channel ${channelIndex} set to ${speed}x`);
+        } else {
+            console.log(`Source node for channel ${channelIndex} is not initialized or lacks a buffer.`);
+        }
+    }
+
+
+    // setChannelSpeed(channelIndex, speed) {
+    //     if (channelIndex >= 0 && channelIndex < this.sourceNodes.length) {
+    //         this.sourceNodes[channelIndex].playbackRate.setValueAtTime(speed, this.audioContext.currentTime);
+    //         this.settings.masterSettings.channelPlaybackSpeed[channelIndex] = speed; // Update setting
+    //     }
+    // }
+
+    checkSettings() {
+        console.log("Current Global Settings:", this.settings);
+    }
 
         initializeSequences(numSequences, numChannels, numSteps) {
             let sequenceData = {};
@@ -195,18 +250,18 @@ class UnifiedSequencerSettings {
                 return step.pitch;
             }
 
-            setChannelVolume(channelIndex, volume) {
-                if (!this.settings.masterSettings.channelSettings) {
-                    this.settings.masterSettings.channelSettings = {};
-                }
-                if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
-                    this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
-                }
-                this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
+            // setChannelVolume(channelIndex, volume) {
+            //     if (!this.settings.masterSettings.channelSettings) {
+            //         this.settings.masterSettings.channelSettings = {};
+            //     }
+            //     if (!this.settings.masterSettings.channelSettings[`ch${channelIndex}`]) {
+            //         this.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {};
+            //     }
+            //     this.settings.masterSettings.channelSettings[`ch${channelIndex}`].volume = volume;
                 
-                // Notify observers to update the UI or other components if necessary
-                this.notifyObservers();
-            }
+            //     // Notify observers to update the UI or other components if necessary
+            //     this.notifyObservers();
+            // }
 
             setChannelPitch(channelIndex, pitch) {
                 if (!this.settings.masterSettings.channelSettings) {
@@ -250,31 +305,39 @@ class UnifiedSequencerSettings {
             }
             
             
-          
-      
             exportSettings() {
                 const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
                 settingsClone.currentSequence = 0;
+                
+                // Include global and channel-specific playback speeds
+                settingsClone.globalPlaybackSpeed = this.globalPlaybackSpeed;
+                settingsClone.channelPlaybackSpeed = Array.isArray(this.channelPlaybackSpeed) ? [...this.channelPlaybackSpeed] : new Array(16).fill(1);
+                
+                // Ensure that channelVolume is an array before trying to spread it
+                settingsClone.channelVolume = Array.isArray(this.settings.masterSettings.channelVolume) ? [...this.settings.masterSettings.channelVolume] : new Array(16).fill(1);
+
             
                 for (let sequenceKey in settingsClone.projectSequences) {
                     const sequence = settingsClone.projectSequences[sequenceKey];
                     for (let channelKey in sequence) {
                         const channel = sequence[channelKey];
                         const activeSteps = []; // Array to hold active or reversed steps with non-default settings
-            
+                    
                         // Iterate over steps
                         channel.steps.forEach((step, index) => {
                             // Proceed if the step is active or in reverse
                             if (step.isActive || step.isReverse) {
                                 const stepData = { index: index + 1 }; // Store step index (1-based)
-                                
+                    
                                 // Include 'reverse' only if true
                                 if (step.isReverse) stepData.reverse = true;
-            
+                    
                                 // Include 'volume' and 'pitch' only if they deviate from 1
-                                if (step.volume !== 1) stepData.volume = step.volume;
+                                // Assume default volume is 1 if not present
+                                const stepVolume = step.volume !== undefined ? step.volume : 1;
+                                if (stepVolume !== 1) stepData.volume = stepVolume;
                                 if (step.pitch !== 1) stepData.pitch = step.pitch;
-            
+                    
                                 // Add to activeSteps only if there's more data beyond 'index'
                                 if (Object.keys(stepData).length > 1) {
                                     activeSteps.push(stepData);
@@ -284,7 +347,7 @@ class UnifiedSequencerSettings {
                                 }
                             }
                         });
-            
+                    
                         // Replace original steps array with the compact activeSteps array
                         channel.steps = activeSteps;
                     }
@@ -294,7 +357,6 @@ class UnifiedSequencerSettings {
                 console.log("[exportSettings] Exported Settings:", exportedSettings);
                 return exportedSettings;
             }
-            
     
             async loadSettings(jsonSettings) {
                 console.log("[internalPresetDebug] loadSettings entered");
@@ -303,45 +365,53 @@ class UnifiedSequencerSettings {
                     console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
             
                     const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-                    console.log("[internalPresetDebug] Parsed Settings:", parsedSettings);
             
+                    // Set up basic settings first
                     this.settings.masterSettings.currentSequence = 0;
                     this.settings.masterSettings.projectName = parsedSettings.projectName;
                     this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
             
-                    // if (parsedSettings.channelURLs) {
-                    //     const formattedURLs = await Promise.all(parsedSettings.channelURLs.map(url => this.formatURL(url)));
-                    //     this.settings.masterSettings.channelURLs = formattedURLs;
-                    // }
-             
-                    // Process and apply channel URLs with proper formatting
+                    // Ensure playback speeds are set
+                    this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
+                    this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
+            
+                    // Initialize gain nodes early with default values
+                    this.initializeGainNodes();
+            
+                    // Then update URL and volume settings
                     if (parsedSettings.channelURLs) {
-                        for (let i = 0; i < parsedSettings.channelURLs.length; i++) {
-                            this.settings.masterSettings.channelURLs[i] = formatURL(parsedSettings.channelURLs[i]);
-                        }
+                        const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
+                        this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
                     }
-                    // Process and assign other settings
+            
+                    // Update volumes from settings, ensuring gain nodes are ready
+                    if (parsedSettings.channelVolume) {
+                        parsedSettings.channelVolume.forEach((volume, index) => {
+                            this.setChannelVolume(index, volume);
+                        });
+                    }
+            
                     this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
                     this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
                     this.deserializeAndApplyProjectSequences(parsedSettings);
             
                     console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
-                // Immediately update UI for the project name and BPM
                     this.updateProjectNameUI(this.settings.masterSettings.projectName);
                     this.updateBPMUI(this.settings.masterSettings.projectBPM);
                     this.updateAllLoadSampleButtonTexts();
                     this.updateProjectChannelNamesUI(this.settings.masterSettings.projectChannelNames);
-
-                    // Set current sequence to zero and update UI accordingly
+            
                     this.setCurrentSequence(0);
                     this.updateUIForSequence(this.settings.masterSettings.currentSequence);
-                    handleSequenceTransition(0); // Explicitly set to 0 or use parsedSettings.currentSequence if available
-
+                    handleSequenceTransition(0);
             
                 } catch (error) {
                     console.error('[internalPresetDebug] Error loading settings:', error);
                 }
             }
+            
+            
+            
             
             deserializeAndApplyProjectSequences(parsedSettings) {
                 if (parsedSettings.projectSequences) {
@@ -559,27 +629,39 @@ class UnifiedSequencerSettings {
 
      
 
-        clearMasterSettings() {
-            console.log("[clearMasterSettings] Current masterSettings before clearing:", this.settings.masterSettings);
-
-            this.settings.masterSettings = {
-                projectName: '',
-                projectBPM: 120,
-                currentSequence: 0, // Initialize with a default value
-                channelURLs: new Array(16).fill(''), // Initialize with empty strings or appropriate defaults
-
-                // projectURLs: new Array(16).fill(''),
-                trimSettings: Array.from({ length: 16 }, () => ({
-                    start: 0.01,
-                    end: 100.00,
-                    length: 0
-                })),
-                projectChannelNames: new Array(16).fill(''),
-                projectSequences: this.initializeSequences(16, 16, 64)
-            };
-            console.log("[clearMasterSettings] Master settings cleared.");
-        }
-
+    clearMasterSettings() {
+        console.log("[clearMasterSettings] Current masterSettings before clearing:", this.settings.masterSettings);
+    
+        // Reset basic project settings to defaults
+        this.settings.masterSettings.projectName = 'New Audx Project';
+        this.settings.masterSettings.projectBPM = 120; // Default BPM
+        this.settings.masterSettings.currentSequence = 0; // Initialize to first sequence
+    
+        // Ensure channel URLs are reset to defaults
+        this.settings.masterSettings.channelURLs = new Array(16).fill('');
+    
+        // Reset channel names to a default or empty value
+        this.settings.masterSettings.projectChannelNames = new Array(16).fill('Load Sample');
+    
+        // Maintain the volume settings to avoid undefined errors when accessed
+        this.settings.masterSettings.channelVolume = new Array(16).fill(1);
+    
+        // Reset trim settings for each channel
+        this.settings.masterSettings.trimSettings = Array.from({ length: 16 }, () => ({
+            start: 0.01, 
+            end: 100.00, 
+            length: 0
+        }));
+    
+        // Maintain default playback speeds
+        this.settings.masterSettings.channelPlaybackSpeed = new Array(16).fill(1); // Default speed is normal (1x)
+    
+        // Reinitialize sequences to default state
+        this.settings.masterSettings.projectSequences = this.initializeSequences(16, 16, 64);
+    
+        console.log("[clearMasterSettings] Master settings cleared.");
+    }
+    
 
 
 

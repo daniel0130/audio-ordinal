@@ -95,37 +95,52 @@ async function processHTMLResponse(htmlText) {
 async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
   try {
-      // Decode the audio data into a buffer
-      const audioBuffer = await decodeAudioData(audioData);
-      console.log("[decodeAndStoreAudio] Audio data decoded");
+    // Decode the audio data into a buffer
+    const audioBuffer = await decodeAudioData(audioData);
+    console.log("[decodeAndStoreAudio] Audio data decoded");
 
-      // Create a reverse buffer by copying and reversing the audioBuffer
-      const reverseBuffer = await createReverseBuffer(audioBuffer);
+    // Create a reverse buffer by copying and reversing the audioBuffer
+    const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Store buffers using both channel-specific keys and URL-based keys
-      const forwardKey = `channel_${channelIndex}_forward`;
-      const reverseKey = `channel_${channelIndex}_reverse`;
-      const forwardUrlKey = `${fullUrl}`;
-      const reverseUrlKey = `${fullUrl}_reverse`;
+    // Store buffers using both channel-specific keys and URL-based keys
+    const forwardKey = `channel_${channelIndex}_forward`;
+    const reverseKey = `channel_${channelIndex}_reverse`;
+    const forwardUrlKey = `${fullUrl}`;
+    const reverseUrlKey = `${fullUrl}_reverse`;
 
-      // Use a global buffer storage (adjust according to your actual storage method)
-      audioBuffers.set(forwardKey, audioBuffer);
-      audioBuffers.set(reverseKey, reverseBuffer);
-      audioBuffers.set(forwardUrlKey, audioBuffer);
-      audioBuffers.set(reverseUrlKey, reverseBuffer);
+    // Use a global buffer storage (adjust according to your actual storage method)
+    audioBuffers.set(forwardKey, audioBuffer);
+    audioBuffers.set(reverseKey, reverseBuffer);
+    audioBuffers.set(forwardUrlKey, audioBuffer);
+    audioBuffers.set(reverseUrlKey, reverseBuffer);
 
-      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+    console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+     
+    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+        window.unifiedSequencerSettings.sourceNodes[channelIndex].disconnect();
+    }
 
-      // Update UI or other components that depend on these buffers
-      window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+    // If the source node is already created and has a buffer, create a new one.
+    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+        if (window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer) {
+            console.log(`[decodeAndStoreAudio] Source node for channel ${channelIndex} is already in use. Creating a new one.`);
+            window.unifiedSequencerSettings.sourceNodes[channelIndex] = window.unifiedSequencerSettings.audioContext.createBufferSource();
+        }
+        window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
+    } else {
+        console.error(`[decodeAndStoreAudio] Source node not initialized for channel ${channelIndex}.`);
+    }
 
-      // Optionally, trigger any UI updates or callbacks that need these buffers
-      if (typeof updateWaveformDisplay === "function") {
-          updateWaveformDisplay(channelIndex, audioBuffer);
-      }
+    // Update UI or other components that depend on these buffers
+    window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+
+    // Optionally, trigger any UI updates or callbacks that need these buffers
+    if (typeof updateWaveformDisplay === "function") {
+      updateWaveformDisplay(channelIndex, audioBuffer);
+    }
 
   } catch (error) {
-      console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+    console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
 
@@ -232,53 +247,75 @@ function playSound(currentSequence, channel, currentStep) {
   const channelIndex = getChannelIndex(channel);
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
 
-  // Log debugging to check state
-  console.log(`[playSound Debugging] Step ${currentStep} isActive: ${isActive}, isReverse: ${isReverse}`);
-
-  // Check if the step is either active or marked for reverse playback.
   if (!isActive && !isReverse) {
-      console.log("[playSound Debugging] Current step is neither active nor reverse. Skipping playback.");
-      return;
+    // Skip playback if the current step is not active and not marked for reverse playback.
+    return;
   }
 
-  // Construct the key to retrieve the appropriate buffer
   const bufferKey = `channel_${channelIndex}_${isReverse ? 'reverse' : 'forward'}`;
   const audioBuffer = audioBuffers.get(bufferKey);
 
-  // Log the buffer retrieval status
   if (!audioBuffer) {
-      console.error(`[playSound] No audio buffer found for ${bufferKey}`);
-      return;
+    console.error(`[playSound] No audio buffer found for ${bufferKey}`);
+    return;
   }
 
-  // Play the audio buffer using a function designed to handle audio playback
-  playTrimmedAudio(channelIndex, audioBuffer, bufferKey, currentStep, isReverse);
-}
-
-
-// Example modification in playTrimmedAudio function
-function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
+  // Instead of calling another function, handle playback directly here for efficiency.
   const audioContext = window.unifiedSequencerSettings.audioContext;
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
 
-  // Use the GainNode assigned to the channel from the unified settings
   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
   if (!gainNode) {
     console.error("No gain node found for channel", channelIndex);
     return;
   }
 
-  const { volume, pitch } = window.unifiedSequencerSettings.getStepSettings(currentSequence, channelIndex, currentStep);
-  
-  // No need to set volume here as it should be managed via user input directly affecting the GainNode
+  // Assign playback rate and connect source to gain node immediately before starting playback.
+  const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
+  source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
-  source.playbackRate.value = isFinite(pitch) ? pitch : 1;
+  // Calculate trim values directly here and start playback.
+  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReverse);
   source.start(0, trimStart, duration);
+
+  // Dispose of the source node after playback finishes.
+  source.onended = () => {
+    source.disconnect();
+  };
+
+  console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
 }
+
+
+
+// // Example modification in playTrimmedAudio function
+// function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
+//   const audioContext = window.unifiedSequencerSettings.audioContext;
+//   const source = audioContext.createBufferSource();
+//   source.buffer = audioBuffer;
+
+//   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
+//   if (!gainNode) {
+//     console.error("No gain node found for channel", channelIndex);
+//     return;
+//   }
+
+//   // Retrieve the specific playback speed for this channel
+//   const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
+
+//   // Apply the specific channel playback speed to the current source node
+//   source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
+
+//   source.connect(gainNode);
+//   gainNode.connect(audioContext.destination);
+
+//   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
+//   source.start(0, trimStart, duration);
+//   console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
+// }
 
 
 
