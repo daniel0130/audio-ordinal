@@ -100,3 +100,15 @@ h3:hover .subtext {
     border: 1px solid #555;
     /* Additional styles to match your step buttons */
 }
+
+#project-name {
+    z-index: 1000; /* 1000 is arbitrary, it just needs to be higher than other elements */
+    position: relative; /* z-index only works on positioned elements */
+}
+
+/* If the label also needs to be visible */
+label[for="project-name"] {
+    z-index: 1000; /* Same z-index as the input for consistency */
+    position: relative;
+}
+
