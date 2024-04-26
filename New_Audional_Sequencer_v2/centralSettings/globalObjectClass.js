@@ -222,7 +222,7 @@ class UnifiedSequencerSettings {
                     const step = channel.steps[stepIndex];
                     step.isActive = isActive;
                     step.isReverse = isReverse;
-                    console.log(`Step at Seq: ${currentSequence}, Ch: ${channelIndex}, Step: ${stepIndex} updated to Active: ${isActive}, Reverse: ${isReverse}`);
+                    // console.log(`Step at Seq: ${currentSequence}, Ch: ${channelIndex}, Step: ${stepIndex} updated to Active: ${isActive}, Reverse: ${isReverse}`);
                 } else {
                     console.error('Invalid sequence, channel, or step index in updateStepStateAndReverse');
                 }
