@@ -17,7 +17,7 @@
     font-weight: bold;
     margin: 0;
     position: relative;
-    z-index: 10;
+    z-index: 5;
 }
 
 .play-button, .stop-button {
