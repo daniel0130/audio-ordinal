@@ -92,3 +92,11 @@ h3:hover .subtext {
     font-weight: bold; /* Bold text */
     border-radius: 3px; /* Rounded corners if your buttons have them */
 }
+.step-button.demo {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+    border: 1px solid #555;
+    /* Additional styles to match your step buttons */
+}

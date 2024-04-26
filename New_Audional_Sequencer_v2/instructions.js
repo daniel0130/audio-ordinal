@@ -13,8 +13,8 @@ const instructionsContent = {
             <button class="control-button stop-button tooltip">&#9632;</button>
             <strong>Stop:</strong> Stop the sequence. <span class="tooltiptext">Click to stop the current sequence.</span>
         </p>
+
         <p class="modal-text-small">
-           
             <strong>BPM (Beats Per Minute):</strong> Drag to adjust the BPM of the sequence. <span class="tooltiptext">Drag the slider to adjust the tempo of the sequence.</span>
         </p>
         <p class="modal-text-small">
@@ -31,6 +31,13 @@ const instructionsContent = {
     </p>
     `,
     rightColumnContent: `
+        <h3 class="modal-header">Step Button Functions</h3>
+        <p class="modal-text-small">
+            <span class="step-button demo" style="background-color: red;"></span>
+            <span class="step-button demo" style="background-color: green;"></span>
+            <strong>Step Buttons:</strong> 
+            Left-click to activate a step (red square). Right-click to set reverse play (green square). Grey indicates inactive.
+        </p>
         <h3 class="modal-header">Channel Control Buttons</h3>
         <p class="modal-text-small">
             <button class="control-button volume-button tooltip" style="background-color: rgb(255, 145, 0);">V</button>
@@ -56,6 +63,7 @@ const instructionsContent = {
             <button class="control-button solo-button tooltip">S</button>
             <strong>Solo Channel (S):</strong><span class="tooltiptext">Click to solo the current channel.</span>
         </p>
+       
     `
 };
 
