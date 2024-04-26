@@ -286,7 +286,7 @@ function playSound(currentSequence, channel, currentStep) {
     source.disconnect();
   };
 
-  console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
+  // console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
 }
 
 
