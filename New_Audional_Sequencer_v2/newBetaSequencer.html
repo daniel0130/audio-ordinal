@@ -72,6 +72,25 @@
             <button id="paste-button" class="action-button tooltip paste-button">Paste
                 <span class="tooltiptext">Paste the sequence settings from clipboard.</span>
             </button>
+
+            <!-- Instructions Button -->
+            <button id="instruction-button" class="action-button tooltip instruction-button">Instructions
+                <span class="tooltiptext">Basic instructions for operation of the Audional Sequencer</span>
+            </button>
+                        
+            <!-- Help Modal -->
+            <div id="help-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2 id="modal-title">Help - Audional Sequencer Instructions</h2>
+                    <div id="modal-left-column" class="modal-column"></div>
+                    <div id="modal-right-column" class="modal-column">                
+                        
+                    </div>
+            </div>
+
+
+
             <!-- Project Name Text Box -->
             <label for="project-name" class="tooltip">Project Name
                 <span class="tooltiptext">Enter the project name</span>
@@ -208,6 +227,7 @@
 <script type="module" src="loadSampleModalButton_v2.js"></script>
 <script src="index.js"></script>
 <script src="volumeSettings.js"></script> 
+<script src="instructions.js"></script>
 
 
 
