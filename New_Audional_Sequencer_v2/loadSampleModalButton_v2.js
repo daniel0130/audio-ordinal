@@ -78,7 +78,6 @@ function setupLoadSampleButton(channel, index) {
     };
 }
 
-
 function openModal(index, loadSampleButton) {
     const modal = createElement('div', 'loadSampleModalButton');
     const modalContent = createElement('div', 'loadSampleModalButton-content');
@@ -91,11 +90,33 @@ function openModal(index, loadSampleButton) {
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
         // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
+    
 
-  
+// Find the dropdown element
+const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
+ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
 
+// Inject CSS for pulsing effect into the head of the document
+const style = document.createElement('style');
+style.type = 'text/css';
+style.innerHTML = `
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+    }
+    .pulse-green {
+        animation: pulse-green 2s infinite;
+    }
+`;
+document.head.appendChild(style);
 
-    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
+// Add the 'pulse-green' class to the dropdown
+ogAudionalDropdown.classList.add('pulse-green');
+
+modalContent.appendChild(ogAudionalDropdown);
+ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
+
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
     modalContent.appendChild(ogAudionalDropdown);
     ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
@@ -107,8 +128,19 @@ function openModal(index, loadSampleButton) {
     ];
 
     inputs.forEach(({ text, placeholder, type, className }) => {
-        modalContent.appendChild(createTextParagraph(text));
-        modalContent.appendChild(createElement('input', className, { type: type, placeholder: placeholder }));
+        const textPara = createTextParagraph(text);
+        textPara.style.display = 'inline-block'; // Change display to inline-block
+        textPara.style.width = 'auto'; // Auto width to adjust with content
+        textPara.style.marginRight = '20px'; // Space between text and input
+        
+        const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
+        inputElement.style.width = '300px'; // Set the width of the input
+        inputElement.style.display = 'inline-block'; // Display inline-block for alignment
+
+        const containerDiv = document.createElement('div'); // Create a container div for each input group
+        containerDiv.appendChild(textPara);
+        containerDiv.appendChild(inputElement);
+        modalContent.appendChild(containerDiv);
     });
 
     actions.forEach(({ text, action }) => {
@@ -118,6 +150,7 @@ function openModal(index, loadSampleButton) {
     document.body.appendChild(modal);
     return modal;
 }
+
 
 function createOGDropdown(label, options) {
     const container = createElement('div', 'dropdown-container');
