@@ -2,18 +2,10 @@
 
 // Define the instructional content
 const instructionsContent = {
-    title: "Help - Audional Sequencer Instructions",
+    title: "Help - Audional Sequencer Instructions"
+    ,
     leftColumnContent: `
-        <h3 class="modal-header">Operational Instructions</h3>
-        <p class="modal-text-small">
-            <button class="control-button play-button tooltip">&#9658;</button>
-            <strong>Play:</strong> Start the sequence. <span class="tooltiptext">Click to start playing the current sequence.</span>
-        </p>
-        <p class="modal-text-small">
-            <button class="control-button stop-button tooltip">&#9632;</button>
-            <strong>Stop:</strong> Stop the sequence. <span class="tooltiptext">Click to stop the current sequence.</span>
-        </p>
-
+      
         <p class="modal-text-small">
             <strong>BPM (Beats Per Minute):</strong> Drag to adjust the BPM of the sequence. <span class="tooltiptext">Drag the slider to adjust the tempo of the sequence.</span>
         </p>
@@ -21,7 +13,7 @@ const instructionsContent = {
             <strong>Save:</strong> Save your work. <span class="tooltiptext">Click to save the current sequence into a JSON file.</span>
         </p>
         <p class="modal-text-small">
-            <strong>Load:</strong> Load a sequence. <span class="tooltiptext">Click to load a sequence from a JSON file.</span>
+            <strong>Load:</strong><span class="tooltiptext">Load a preset sequence from the dropdown or your own JSON settings file from your local drive.</span>
         </p>
         <p class="modal-text-small">
         <strong>Copy:</strong> Copy current sequence. <span class="tooltiptext">Click to copy the current sequence steps for pasting to a new sequence.</span>
@@ -29,15 +21,16 @@ const instructionsContent = {
     <p class="modal-text-small">
         <strong>Paste:</strong> Paste a sequence. <span class="tooltiptext">Click to paste a copied sequence to a new empty sequence.</span>
     </p>
+    <h3 class="modal-header">Step Button Functions</h3>
+    <p class="modal-text-small">
+        <span class="step-button demo" style="background-color: red;"></span>
+        <span class="step-button demo" style="background-color: green;"></span>
+        <strong>Step Buttons:</strong> 
+        Left-click to activate a step (red square). Right-click to set reverse play (green square). Grey indicates inactive.
+    </p>
     `,
     rightColumnContent: `
-        <h3 class="modal-header">Step Button Functions</h3>
-        <p class="modal-text-small">
-            <span class="step-button demo" style="background-color: red;"></span>
-            <span class="step-button demo" style="background-color: green;"></span>
-            <strong>Step Buttons:</strong> 
-            Left-click to activate a step (red square). Right-click to set reverse play (green square). Grey indicates inactive.
-        </p>
+       
         <h3 class="modal-header">Channel Control Buttons</h3>
         <p class="modal-text-small">
             <button class="control-button volume-button tooltip" style="background-color: rgb(255, 145, 0);">V</button>
@@ -63,7 +56,19 @@ const instructionsContent = {
             <button class="control-button solo-button tooltip">S</button>
             <strong>Solo Channel (S):</strong><span class="tooltiptext">Click to solo the current channel.</span>
         </p>
-       
+        <h3 class="modal-header">Pattern Manipulation</h3>
+        <p class="modal-text-small">
+            <button class="control-button fwd-pattern-selection tooltip">
+                <span class="emoji">🔲</span>
+            </button>
+            <strong>Auto-draw Patterns:</strong> Automatically generate trigger patterns. <span class="tooltiptext">Click to auto-draw a pattern for the current channel. Click multiple times to scroll through options. Right click to reverse all inactive steps for siren effect</span>
+        </p>
+        <p class="modal-text-small">
+            <button class="control-button pattern-shift-right tooltip">
+                <span class="emoji">➡️</span>
+            </button>
+            <strong>Pattern Shift:</strong> Shifts the entire pattern one step to the right. <span class="tooltiptext">Click to shift the pattern of the current channel one step to the right.</span>
+        </p>
     `
 };
 

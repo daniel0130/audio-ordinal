@@ -214,21 +214,34 @@ class UnifiedSequencerSettings {
                 this.notifyObservers();
             }
         
-            updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, isReverse) {
-                const sequence = this.settings.masterSettings.projectSequences[`Sequence${currentSequence}`];
-                const channel = sequence && sequence[`ch${channelIndex}`];
-                if (channel && stepIndex < channel.steps.length) {
-                    // Directly modify the step object properties
-                    const step = channel.steps[stepIndex];
-                    step.isActive = isActive;
-                    step.isReverse = isReverse;
-                    // console.log(`Step at Seq: ${currentSequence}, Ch: ${channelIndex}, Step: ${stepIndex} updated to Active: ${isActive}, Reverse: ${isReverse}`);
-                } else {
-                    console.error('Invalid sequence, channel, or step index in updateStepStateAndReverse');
-                }
-            }
-            
-            
+           /**
+ * Updates the activation state and direction of a specific step in a project sequence.
+ * @param {number} currentSequence - The current sequence index.
+ * @param {number} channelIndex - The index of the channel within the sequence.
+ * @param {number} stepIndex - The index of the step within the channel.
+ * @param {boolean} isActive - Whether the step should be active.
+ * @param {boolean} isReverse - Whether the step should be in reverse mode.
+ * @throws {Error} If any input is invalid or the step cannot be found.
+ */
+updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, isReverse) {
+    // Validate inputs
+    if (typeof currentSequence !== 'number' || typeof channelIndex !== 'number' || typeof stepIndex !== 'number' ||
+        typeof isActive !== 'boolean' || typeof isReverse !== 'boolean') {
+        throw new Error('Invalid input types');
+    }
+
+    // Using optional chaining to simplify object navigation
+    const step = this.settings?.masterSettings?.projectSequences?.[`Sequence${currentSequence}`]?.[`ch${channelIndex}`]?.steps?.[stepIndex];
+
+    // Check if the step exists
+    if (step) {
+        step.isActive = isActive;
+        step.isReverse = isReverse;
+    } else {
+        throw new Error('Invalid sequence, channel, or step index in updateStepStateAndReverse');
+    }
+}
+
 
             getChannelVolume(channelIndex) {
                 const channelSettings = this.settings.masterSettings.channelSettings || {};

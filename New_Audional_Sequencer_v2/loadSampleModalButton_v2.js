@@ -425,12 +425,25 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
 
     document.body.appendChild(menu);
 
-    // // Timeout to avoid immediate closing due to the current click event
-    // setTimeout(() => {
-    //     // Listen for clicks outside the menu to close it
-    //     document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
-    // }, 0);
-}
+   // Set a timeout to automatically close the menu after 3 seconds (3000 milliseconds)
+    setTimeout(() => {
+        closeCustomContextMenu();
+    }, 3000);
+
+    // Timeout to avoid immediate closing due to the current click event
+    setTimeout(() => {
+        // Listen for clicks outside the menu to close it
+        document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
+    }, 0);
+    }
+
+    function handleClickOutsideMenu(event, menu) {
+        // Close the menu if the click is outside of the menu
+        if (!menu.contains(event.target)) {
+            closeCustomContextMenu();
+            // document.removeEventListener('click', handleClickOutsideMenu);
+        }
+    }
 
  
 function closeCustomContextMenu() {
@@ -809,13 +822,7 @@ export { setupLoadSampleButton };
     //     return option;
     // }
     
-//     function handleClickOutsideMenu(event, menu) {
-//         // Close the menu if the click is outside of the menu
-//         if (!menu.contains(event.target)) {
-//             menu.remove();
-//             document.removeEventListener('click', handleClickOutsideMenu);
-//         }
-//     }
+
     
     // function closeCustomContextMenu() {
     //     // Remove any existing context menus
