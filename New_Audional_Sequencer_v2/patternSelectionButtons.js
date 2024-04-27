@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     patternButtons.forEach((patternButton, channelIndex) => {
         let clickCount = 0;
+        let rightClickCount = 0; // Right-click counter for reverse patterns
+
 
         patternButton.addEventListener('click', function () {
             const currentSequence = window.unifiedSequencerSettings.getCurrentSequence(); // Current sequence
@@ -54,7 +56,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
             console.log(`Pattern applied for channel ${channelIndex} with click count: ${clickCount}`);
         });
+
+        patternButton.addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Prevent showing the context menu
+            rightClickCount = (rightClickCount + 1) % 7;
+            applyReversePattern(channelIndex, rightClickCount);
+        });
     });
+
+    function applyReversePattern(channelIndex, rightClickCount) {
+    const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+    const numSteps = window.unifiedSequencerSettings.settings.masterSettings.projectSequences[`Sequence${currentSequence}`][`ch${channelIndex}`].steps.length;
+
+    for (let i = 0; i < numSteps; i++) {
+        const buttonId = `Sequence${currentSequence}-ch${channelIndex}-step-${i}`;
+        const button = document.getElementById(buttonId);
+        if (button && !button.classList.contains('selected')) {
+            let isReverse = false;
+            switch (rightClickCount) {
+                case 1: isReverse = true; break;                          // All steps reverse
+                case 2: isReverse = i % 2 === 0; break;                   // Every second step reverse
+                case 3: isReverse = i % 4 === 0; break;                   // Every fourth step reverse
+                case 4: isReverse = i % 8 === 0; break;                   // Every eighth step reverse
+                case 5: isReverse = i % 16 === 0; break;                  // Every sixteenth step reverse
+                case 6: isReverse = false; break;                         // Clear all reverse
+                default: break;
+            }
+            window.unifiedSequencerSettings.updateStepStateAndReverse(currentSequence, channelIndex, i, button.classList.contains('selected'), isReverse);
+            updateButtonState(button, currentSequence, channelIndex, i);
+        }
+    }
+}
+
 
     shiftButtons.forEach((shiftButton, channelIndex) => {
         shiftButton.addEventListener('click', () => {

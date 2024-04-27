@@ -74,6 +74,7 @@ h3:hover .subtext {
   .modal-content {
     display: flex;
     justify-content: space-between;
+    
 }
 
 .modal-column {

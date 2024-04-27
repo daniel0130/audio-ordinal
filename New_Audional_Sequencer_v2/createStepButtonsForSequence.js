@@ -59,5 +59,4 @@ function updateButtonState(button, sequence, channelIndex, stepIndex) {
     if (isReverse) button.style.backgroundColor = 'green';
 }
 
-
 document.addEventListener('DOMContentLoaded', createStepButtonsForSequence);
