@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synth App with Tone.js</title>
+<script src="https://cdn.jsdelivr.net/npm/tone@next"></script>
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+    #keyboard {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    button {
+        width: 60px;
+        height: 120px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        cursor: pointer;
+    }
+    button:active {
+        background-color: #ccc;
+    }
+    label, input, select {
+        margin: 10px;
+    }
+</style>
+</head>
+<body>
+<h1>Synth Keyboard</h1>
+<div id="keyboard"></div>
+<div>
+    <label for="waveType">Wave Type:</label>
+    <select id="waveType">
+        <option value="sine">Sine</option>
+        <option value="sawtooth">Sawtooth</option>
+        <option value="triangle">Triangle</option>
+        <option value="square">Square</option>
+    </select>
+    <label for="volume">Volume:</label>
+    <input type="range" id="volume" min="-12" max="12" value="0" step="0.1">
+    <label for="attack">Attack:</label>
+    <input type="range" id="attack" min="0.1" max="2" value="0.5" step="0.1">
+    <label for="release">Release:</label>
+    <input type="range" id="release" min="0.1" max="2" value="0.5" step="0.1">
+    <label for="filterFreq">Filter Frequency:</label>
+    <input type="range" id="filterFreq" min="100" max="10000" value="1000" step="10">
+</div>
+
+<script>
+    const synth = new Tone.Synth({
+        oscillator: {
+            type: 'sine'
+        },
+        envelope: {
+            attack: 0.5,
+            release: 0.5
+        }
+    }).toDestination();
+
+    const filter = new Tone.Filter(1000, 'lowpass').toDestination();
+    synth.connect(filter);
+
+    document.getElementById('volume').addEventListener('change', function() {
+        synth.volume.value = this.value;
+    });
+
+    document.getElementById('attack').addEventListener('change', function() {
+        synth.envelope.attack = parseFloat(this.value);
+    });
+
+    document.getElementById('release').addEventListener('change', function() {
+        synth.envelope.release = parseFloat(this.value);
+    });
+
+    document.getElementById('filterFreq').addEventListener('change', function() {
+        filter.frequency.value = this.value;
+    });
+
+    document.getElementById('waveType').addEventListener('change', function() {
+        synth.oscillator.type = this.value;
+        synth.oscillator = new Tone.Oscillator({
+            type: this.value,
+            frequency: 440
+        }).toDestination();
+    });
+
+    function playNote(note) {
+        synth.triggerAttackRelease(note, "8n");
+    }
+
+    function generateKeyboard() {
+        const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        const container = document.getElementById('keyboard');
+        let octave = 3;
+        for (let i = 0; i < 14; i++) {
+            let note = notes[i % 7] + octave;
+            let btn = document.createElement('button');
+            btn.textContent = note;
+            btn.addEventListener('mousedown', () => playNote(note));
+            container.appendChild(btn);
+            if (i === 6 || i === 13) octave++; // Increment the octave at the end of each octave
+        }
+    }
+
+    generateKeyboard();
+    Tone.start(); // Important to interact with the page before playing audio
+</script>
+</body>
+</html>

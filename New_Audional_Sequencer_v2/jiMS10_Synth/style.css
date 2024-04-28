@@ -1,0 +1,70 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.synth {
+    width: 90%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.controls {
+    width: 90%;
+
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.control {
+    text-align: center;
+}
+
+.slider input {
+    width: 200px;
+}
+
+.key {
+    width: 90%;
+
+    display: inline-block;
+    margin: 1px;
+    width: 23px;
+    height: 120px;
+    line-height: 120px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid black;
+}
+
+.white {
+    background-color: #fff;
+    height: 120px;
+    width: 21px; /* Width can be adjusted for aesthetic */
+}
+
+.black {
+    background-color: black;
+    width: 13.5px;
+    height: 80px;
+    position: relative;
+    left: -7.5px;
+    z-index: 1;
+}
+
+.keyboard {
+    width: 90%;
+    height: fit-content;
+    position: relative;
+    display: flex;
+    border: 1px solid #000;
+}
