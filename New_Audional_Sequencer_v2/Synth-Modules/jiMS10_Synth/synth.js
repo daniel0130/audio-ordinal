@@ -6,8 +6,6 @@ window.gainNode = context.createGain();
 window.gainNode.connect(context.destination);
 let noteCount = 0; // Counter for notes played
 
-let globalSequencerChannelIndex = null;
-
 // Global objects to track oscillators by frequency
 const activeOscillators = {};
 
@@ -20,19 +18,6 @@ function resumeAudioContext() {
     }
 }
 
-    // Listen for messages from the parent window
-    window.addEventListener('message', event => {
-        if (event.origin !== window.location.origin) return;
-    
-        // Check for the correct property key based on what you send from the parent
-        if (typeof event.data.channelIndex !== 'undefined') {
-            globalSequencerChannelIndex = event.data.channelIndex;
-            console.log('[synth.js] Received channel index:', globalSequencerChannelIndex);
-        } else {
-            console.error('Channel index was not provided in the message');
-        }
-    });
-
 // Function to purge old oscillators if there are too many
 function purgeAudioNodes() {
     console.log("Purging unused audio nodes");
@@ -44,65 +29,38 @@ function purgeAudioNodes() {
 }
 
 function playMS10TriangleBass(frequency = null) {
-        console.log(`playMS10TriangleBass called with Frequency: ${frequency},`);
+    resumeAudioContext(); // Ensure the AudioContext is active
+    console.log(`playMS10TriangleBass called with Frequency: ${frequency}`);
+
+    // Increment note count and check for purge
+    noteCount++;
+    if (noteCount >= 5) { // Purge every 40 notes
+        purgeAudioNodes();
+    }
+
+    // Stop and clear the previous oscillator if it exists
     if (currentOscillator) {
         currentOscillator.stop();
+        currentOscillator.disconnect();
         currentOscillator = null;
     }
 
+    // Create and setup audio components as before
     let oscillator = context.createOscillator();
     let gainNode = context.createGain();
     let filter = context.createBiquadFilter();
+    let distortion = context.createWaveShaper();
+    setupOscillatorAndComponents(oscillator, gainNode, filter, distortion, frequency);
 
-    let waveformType = document.getElementById("waveform").value;
-    oscillator.type = waveformType;
-
-    if (frequency === null) {
-        frequency = parseFloat(document.getElementById("note").value);
-        if (!isFinite(frequency)) {
-            console.error("Invalid frequency value:", frequency);
-            return;
-        }
-    }
-
-    oscillator.frequency.setValueAtTime(frequency, context.currentTime);
-
-    let attackTime = document.getElementById("attack").value / 1000;
-    let releaseTime = document.getElementById("release").value / 1000;
-    let cutoffFrequency = document.getElementById("cutoff").value;
-    let resonance = document.getElementById("resonance").value;
-
-    filter.type = "lowpass";
-    filter.frequency.value = cutoffFrequency;
-    filter.Q.value = resonance;
-
-    gainNode.gain.setValueAtTime(0, context.currentTime);
-    const volume = getVolume();
-
-    gainNode.gain.linearRampToValueAtTime(2 * volume, context.currentTime + attackTime);
-    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + attackTime + releaseTime);
-
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(context.destination);
-
+    // Start and stop the oscillator based on the attack and release times
     oscillator.start();
-    oscillator.stop(context.currentTime + attackTime + releaseTime);
+    oscillator.stop(context.currentTime + parseFloat(document.getElementById("release").value) / 1000);
 
+    // Keep track of the current oscillator
     currentOscillator = oscillator;
-    }
-
-    let nextNoteTime = context.currentTime;
-
+}
 
 function setupOscillatorAndComponents(oscillator, gainNode, filter, distortion, frequency) {
-    let attackTime = parseFloat(document.getElementById("attack").value) / 1000;
-    let releaseTime = parseFloat(document.getElementById("release").value) / 1000;
-
-    // Apply ADSR envelope based on the current UI settings
-    gainNode.gain.setValueAtTime(0, context.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + attackTime + releaseTime);
-
     // Configuration and setup logic as previously defined
     let waveformType = document.getElementById("waveform").value;
     let distortionAmount = parseFloat(document.getElementById("distortion").value);
@@ -136,4 +94,3 @@ function makeDistortionCurve(amount) {
     }
     return curve;
 }
-
