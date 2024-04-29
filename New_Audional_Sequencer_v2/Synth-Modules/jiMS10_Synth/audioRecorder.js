@@ -12,7 +12,9 @@ window.gainNode.connect(context.destination);
 const mimeType = MediaRecorder.isTypeSupported('audio/webm; codecs=opus') ? 'audio/webm; codecs=opus' : 'audio/webm';
 const recorder = new MediaRecorder(mediaStreamDestination.stream, { mimeType });
 const audioChunks = [];
-let audioUrl;
+
+
+// let audioUrl;
 
 recorder.ondataavailable = event => {
     if (event.data.size > 0) {
@@ -28,8 +30,22 @@ recorder.onstop = () => {
     if (audioChunks.length > 0) {
         const audioBlob = new Blob(audioChunks, { type: mimeType });
         console.log('Blob size:', audioBlob.size);
-        audioUrl = URL.createObjectURL(audioBlob);
-        console.log('Recording stopped and processed, URL created:', audioUrl);
+
+        // Convert Blob to ArrayBuffer and send to parent
+        const reader = new FileReader();
+        reader.onload = function() {
+            const arrayBuffer = reader.result;
+            window.parent.postMessage({
+                type: 'audioData',
+                data: arrayBuffer,
+                channelIndex: 0 // Assuming channel index is 0; adjust as needed
+            }, '*');
+            console.log('Audio data sent to parent.');
+        };
+        reader.onerror = function(err) {
+            console.error('Error reading audio blob:', err);
+        };
+        reader.readAsArrayBuffer(audioBlob);
     } else {
         console.error('No audio data recorded.');
     }
@@ -79,9 +95,6 @@ function playRecordedAudio() {
         console.error('Audio URL is not defined.');
     }
 }
-
-
-
 
 document.getElementById('recordButton').addEventListener('click', () => {
     console.log('Recording started');
