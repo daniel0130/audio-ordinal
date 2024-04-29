@@ -58,6 +58,68 @@
                 <label for="loadMidiJsonFile" id="loadMidiJsonFileLabel">Load MIDI Recording</label>
             </div>
     </div>
+
+    <script>
+        // Add this script at the end of your HTML or after the elements are defined
+document.addEventListener('DOMContentLoaded', function() {
+    const sliders = document.querySelectorAll('.fader-controls input[type="range"]');
+    sliders.forEach(slider => {
+        slider.addEventListener('input', handleSliderChange);
+    });
+});
+
+function handleSliderChange() {
+    console.log(`${this.id} value changed to: ${this.value}`);
+    switch(this.id) {
+        case 'attack':
+        case 'release':
+            updateEnvelope();
+            break;
+        case 'cutoff':
+        case 'resonance':
+            updateFilter();
+            break;
+        case 'distortion':
+            updateDistortion();
+            break;
+        case 'volume':
+            updateVolume();
+            break;
+        default:
+            console.error('Unexpected slider ID');
+    }
+}
+
+function updateEnvelope() {
+    // Assuming there's a global envelope or synthesizer object you can adjust
+    const attack = parseFloat(document.getElementById('attack').value);
+    const release = parseFloat(document.getElementById('release').value);
+    console.log(`Updated envelope with Attack: ${attack}, Release: ${release}`);
+    // Adjust the synthesizer's envelope parameters here
+}
+
+function updateFilter() {
+    const cutoff = parseFloat(document.getElementById('cutoff').value);
+    const resonance = parseFloat(document.getElementById('resonance').value);
+    console.log(`Updated filter with Cutoff: ${cutoff}, Resonance: ${resonance}`);
+    // Adjust the synthesizer's filter parameters here
+}
+
+function updateDistortion() {
+    const distortionAmount = parseFloat(document.getElementById('distortion').value);
+    console.log(`Updated distortion with amount: ${distortionAmount}`);
+    // Adjust the synthesizer's distortion parameters here
+}
+
+function updateVolume() {
+    const volume = parseFloat(document.getElementById('volume').value);
+    console.log(`Updated volume with level: ${volume}`);
+    // Adjust the synthesizer's volume here
+}
+
+// Ensure all your synthesizer component updates (envelope, filter, distortion, etc.) are implemented
+
+    </script>
     <script src="synth.js"></script>
     <script src="audioRecorder.js"></script>
     <script src="controlChannels.js"></script>
