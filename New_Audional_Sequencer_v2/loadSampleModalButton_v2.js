@@ -88,6 +88,7 @@ function openModal(index, loadSampleButton) {
         { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
+        { placeholder: '', type: 'file', className: 'file-input', text: 'Load plug-in into iframe:' }
         // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
     
@@ -151,7 +152,6 @@ ogAudionalDropdown.querySelector('select').addEventListener('change', (event) =>
     return modal;
 }
 
-
 function createOGDropdown(label, options) {
     const container = createElement('div', 'dropdown-container');
     container.style.marginTop = '20px';  // Add 20px space above the dropdown
@@ -175,43 +175,6 @@ function createOGDropdown(label, options) {
     container.appendChild(select);
     return container;
 }
-
-
-// // Create dropdown element
-// function createOb1Dropdown(index, modal, loadSampleButton) {
-//     const container = createElement('div', 'dropdown-container');
-//     const label = createElement('label', 'dropdown-label');
-//     label.textContent = 'Load Obi-One Sample:';
-//     const select = createElement('select', 'dropdown-select');
-//     select.id = 'ob1-dropdown';
-
-//     const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
-//     defaultOption.disabled = true;
-//     defaultOption.selected = true;
-//     select.appendChild(defaultOption);
-
-//     ob1SampleUrls.forEach((url, idx) => {
-//         const option = createElement('option', 'dropdown-option', { value: url, textContent: `Obi-One Number ${idx + 1}` });
-//         select.appendChild(option);
-//     });
-
-//     // Use handleLoad directly with the URL and sample name as parameters
-//     select.addEventListener('change', event => {
-//         if (event.target.value) {
-//             const sampleName = `Obi-One Number ${event.target.selectedIndex}`; // Ensures the sample name is set
-//             handleLoad(index, null, null, modal, loadSampleButton, event.target.value, sampleName);
-//         }
-//     });
-
-//     container.appendChild(label);
-//     container.appendChild(select);
-//     return container;
-// }
-
-
-
-
-
 
 function handleAction(index, modal, loadSampleButton) {
     const audionalInput = modal.querySelector('.audional-input');
@@ -491,6 +454,53 @@ function createButton(text, onClick) {
 }
 
 
+export { setupLoadSampleButton };
+
+
+
+
+
+// // Create dropdown element
+// function createOb1Dropdown(index, modal, loadSampleButton) {
+//     const container = createElement('div', 'dropdown-container');
+//     const label = createElement('label', 'dropdown-label');
+//     label.textContent = 'Load Obi-One Sample:';
+//     const select = createElement('select', 'dropdown-select');
+//     select.id = 'ob1-dropdown';
+
+//     const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
+//     defaultOption.disabled = true;
+//     defaultOption.selected = true;
+//     select.appendChild(defaultOption);
+
+//     ob1SampleUrls.forEach((url, idx) => {
+//         const option = createElement('option', 'dropdown-option', { value: url, textContent: `Obi-One Number ${idx + 1}` });
+//         select.appendChild(option);
+//     });
+
+//     // Use handleLoad directly with the URL and sample name as parameters
+//     select.addEventListener('change', event => {
+//         if (event.target.value) {
+//             const sampleName = `Obi-One Number ${event.target.selectedIndex}`; // Ensures the sample name is set
+//             handleLoad(index, null, null, modal, loadSampleButton, event.target.value, sampleName);
+//         }
+//     });
+
+//     container.appendChild(label);
+//     container.appendChild(select);
+//     return container;
+// }
+
+
+
+
+
+
+  
+// function appendChildren(parent, children) {
+//     children.forEach(child => parent.appendChild(child));
+//     return parent;
+// }
 
 
 // function createElement(type, className, properties = {}) {
@@ -529,15 +539,7 @@ function createButton(text, onClick) {
  
 
 
-function appendChildren(parent, children) {
-    children.forEach(child => parent.appendChild(child));
-    return parent;
-}
 
-export { setupLoadSampleButton };
-
-
-  
 
 // // loadSampleModalButton_v2.js
 // let openModals = [];
