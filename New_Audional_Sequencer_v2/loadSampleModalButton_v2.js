@@ -88,7 +88,6 @@ function openModal(index, loadSampleButton) {
         { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' },
-        { placeholder: '', type: 'file', className: 'file-input', text: 'Load plug-in into iframe:' }
         // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
     
@@ -151,6 +150,7 @@ ogAudionalDropdown.querySelector('select').addEventListener('change', (event) =>
     document.body.appendChild(modal);
     return modal;
 }
+
 
 function createOGDropdown(label, options) {
     const container = createElement('div', 'dropdown-container');
@@ -374,6 +374,7 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
     // Define menu options
     const options = [
         { label: 'Add User Channel Name', action: () => showChannelNamingModal(channelIndex, loadSampleButton) },
+        { label: 'Load Synth', action: () => loadSynth(channelIndex, loadSampleButton) }, // New menu option to load a synth
         // { label: 'Copy Ordinal ID', action: () => { console.log('Copy Ordinal ID clicked'); copyOrdinalId(channelIndex); } },
         // { label: 'Copy Channel Settings (coming soon)', action: () => console.log('Copy Channel Settings clicked') },
         // { label: 'Set Channel Colour', action: () => showColorPicker(contextEvent, button) },
