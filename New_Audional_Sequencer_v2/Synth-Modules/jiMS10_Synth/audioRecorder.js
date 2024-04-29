@@ -30,10 +30,24 @@ recorder.onstop = () => {
         console.log('Blob size:', audioBlob.size);
         audioUrl = URL.createObjectURL(audioBlob);
         console.log('Recording stopped and processed, URL created:', audioUrl);
+
+        // Convert Blob to ArrayBuffer to send via postMessage
+        const reader = new FileReader();
+        reader.onload = () => {
+            const arrayBuffer = reader.result;
+            sendAudioToParent(arrayBuffer, globalSequencerChannelIndex);
+            console.log('Audio data sent to parent.');
+        };
+        reader.onerror = (e) => {
+            console.error('Failed to read audio blob:', e);
+        };
+        reader.readAsArrayBuffer(audioBlob);
+
     } else {
         console.error('No audio data recorded.');
     }
 };
+
 
 recorder.onerror = event => {
     console.error('Recorder Error:', event.error);
@@ -82,18 +96,28 @@ function playRecordedAudio() {
     }
 }
 
+// Ensure the correct channel index is used when sending audio data
+function sendAudioToParent(audioData, channelIndex) {
+    console.log(`Sending audio to parent with channel index: ${channelIndex}`);
+    // Make sure to use 'parent' directly
+    parent.postMessage({
+        type: 'audioData',
+        data: audioData,
+        channelIndex: channelIndex
+    }, '*');  // Consider specifying a more restrictive target origin for security
+}
 
 
-
-// document.getElementById('recordButton').addEventListener('click', () => {
-//     console.log('Recording started');
-//     audioChunks.length = 0;
-//     recorder.start();
-// });
-
-// document.getElementById('stopRecordButton').addEventListener('click', () => {
-//     console.log('Stopping recording');
-//     recorder.stop();
-// });
-
+// Listen for messages in the synthesizer iframe
+window.addEventListener('message', function(event) {
+    // Check if the message is intended for this iframe and is from the trusted parent
+    if (event.origin === window.location.origin) { // Replace with the actual expected origin
+        if (event.data.channelIndex !== undefined) {
+            console.log(`Synthesizer loaded for channel index: ${event.data.channelIndex}`);
+            // You can now use this channelIndex to tag any audio data or processing
+        }
+    } else {
+        console.error('Received message from untrusted source');
+    }
+}, false);
 

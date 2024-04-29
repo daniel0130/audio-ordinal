@@ -6,6 +6,8 @@ window.gainNode = context.createGain();
 window.gainNode.connect(context.destination);
 let noteCount = 0; // Counter for notes played
 
+let globalSequencerChannelIndex = null;
+
 // Global objects to track oscillators by frequency
 const activeOscillators = {};
 
@@ -17,6 +19,19 @@ function resumeAudioContext() {
         }).catch(e => console.error("Error resuming AudioContext:", e));
     }
 }
+
+    // Listen for messages from the parent window
+    window.addEventListener('message', event => {
+        if (event.origin !== window.location.origin) return;
+    
+        // Check for the correct property key based on what you send from the parent
+        if (typeof event.data.channelIndex !== 'undefined') {
+            globalSequencerChannelIndex = event.data.channelIndex;
+            console.log('[synth.js] Received channel index:', globalSequencerChannelIndex);
+        } else {
+            console.error('Channel index was not provided in the message');
+        }
+    });
 
 // Function to purge old oscillators if there are too many
 function purgeAudioNodes() {
