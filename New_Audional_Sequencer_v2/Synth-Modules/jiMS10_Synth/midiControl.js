@@ -27,26 +27,36 @@ function onMIDIFailure() {
 const MIDI_NOTE_ON = 0x90;
 const MIDI_NOTE_OFF = 0x80;
 
-function onMIDIMessage(e) {
-    const data = e.data;
-    if (data.length < 3) {
-        console.error("Incomplete MIDI message received:", data);
-        return;
-    }
-
-    const [statusByte, noteNumber, velocity] = data;
+function onMIDIMessage(event) {
+    const [statusByte, noteNumber, velocity] = event.data;
     const messageType = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
 
-    // Optionally, adjust or remove channel filtering if necessary
-    if (channel >= 1 && channel <= 7) {
-        console.log(`Ignoring MIDI message from channel: ${channel}`);
-        return;
-    }
+    // Ignore messages from unwanted MIDI channels (2-8)
+    if (channel >= 1 && channel <= 7) return;
 
-    handleMIDIRecording(messageType, data);
-    processMIDIMessage(messageType, noteNumber, velocity);
+    switch (messageType) {
+        case MIDI_NOTE_ON:
+            if (velocity > 0) {
+                playMS10TriangleBass(midiNoteToFrequency(noteNumber), velocity / 127);
+    
+                // Start audio recording when MIDI recording starts
+                if (!isRecordingStarted) {
+                    window.startAudioRecording();
+                    isRecordingStarted = true;
+                    console.log('Audio recording started with first MIDI note.');
+                }
+            }
+            break;
+        case MIDI_NOTE_OFF:
+        case MIDI_NOTE_ON & velocity === 0:
+            playMS10TriangleBass(midiNoteToFrequency(noteNumber), 0);
+            break;
+        default:
+            console.log(`Unhandled MIDI message type: ${messageType.toString(16)}`);
+    }
 }
+
 
 function handleMIDIRecording(messageType, data) {
     if (!isRecordingMIDI) return;
@@ -118,14 +128,8 @@ navigator.requestMIDIAccess ? navigator.requestMIDIAccess().then(onMIDISuccess, 
 function startMIDIRecording() {
     isRecordingMIDI = true;
     midiRecording = []; // Reset the recording
-    isRecordingStarted = false; // Reset recording started flag
-    console.log('MIDI Recording started');
-
-    // Start audio recording when MIDI recording starts
-    if (window.startAudioRecording) {
-        window.startAudioRecording();
-        console.log('Audio recording started with MIDI recording.');
-    }
+    console.log('MIDI Recording Active');
+   
 }
 
 function stopMIDIRecording() {
