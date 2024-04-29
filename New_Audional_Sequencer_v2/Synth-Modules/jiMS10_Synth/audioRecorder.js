@@ -48,11 +48,7 @@ window.startAudioRecording = function() {
 
 window.stopAudioRecording = function() {
     console.log('Global stop recording triggered');
-    // Wait for a few seconds to capture the tail of the last note
-    setTimeout(() => {
         recorder.stop();
-        console.log('Recorder stopped after delay to capture tail sounds.');
-    }, 3000); // Delay of 3000 ms (3 seconds)
 };
 
 
