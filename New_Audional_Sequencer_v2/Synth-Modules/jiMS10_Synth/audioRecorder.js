@@ -49,15 +49,13 @@ window.startAudioRecording = function() {
 window.stopAudioRecording = function() {
     console.log('Global stop recording triggered');
     // Wait for a few seconds to capture the tail of the last note
-    setTimeout(() => {
         recorder.stop();
         console.log('Recorder stopped after delay to capture tail sounds.');
-    }, 3000); // Delay of 3000 ms (3 seconds)
 };
 
 
-document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
-document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
+// document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
+// document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
 
 document.getElementById('playRecordButton').addEventListener('click', () => {
     if (context.state === 'suspended') {
@@ -87,15 +85,15 @@ function playRecordedAudio() {
 
 
 
-document.getElementById('recordButton').addEventListener('click', () => {
-    console.log('Recording started');
-    audioChunks.length = 0;
-    recorder.start();
-});
+// document.getElementById('recordButton').addEventListener('click', () => {
+//     console.log('Recording started');
+//     audioChunks.length = 0;
+//     recorder.start();
+// });
 
-document.getElementById('stopRecordButton').addEventListener('click', () => {
-    console.log('Stopping recording');
-    recorder.stop();
-});
+// document.getElementById('stopRecordButton').addEventListener('click', () => {
+//     console.log('Stopping recording');
+//     recorder.stop();
+// });
 
 

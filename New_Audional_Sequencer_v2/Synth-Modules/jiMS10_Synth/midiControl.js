@@ -38,6 +38,10 @@ function onMIDIMessage(e) {
     const messageType = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
 
+    if (isRecordingMIDI && messageType === MIDI_NOTE_ON && velocity > 0 && !isRecordingStarted) {
+        window.startAudioRecording();
+    }
+
     // Optionally, adjust or remove channel filtering if necessary
     if (channel >= 1 && channel <= 7) {
         console.log(`Ignoring MIDI message from channel: ${channel}`);
@@ -121,11 +125,11 @@ function startMIDIRecording() {
     isRecordingStarted = false; // Reset recording started flag
     console.log('MIDI Recording started');
 
-    // Start audio recording when MIDI recording starts
-    if (window.startAudioRecording) {
-        window.startAudioRecording();
-        console.log('Audio recording started with MIDI recording.');
-    }
+    // // Start audio recording when MIDI recording starts
+    // if (window.startAudioRecording) {
+    //     window.startAudioRecording();
+    //     console.log('Audio recording started with MIDI recording.');
+    // }
 }
 
 function stopMIDIRecording() {
@@ -203,11 +207,11 @@ function manageMIDIResources() {
 function addMIDIControlEventListeners() {
     const recordButton = document.getElementById('recordMIDIButton');
     const stopRecordButton = document.getElementById('stopMIDIRecordButton');
-    const playRecordButton = document.getElementById('playMIDIRecordButton');
+    // const playRecordButton = document.getElementById('playMIDIRecordButton');
 
     if (recordButton) recordButton.addEventListener('click', startMIDIRecording);
     if (stopRecordButton) stopRecordButton.addEventListener('click', stopMIDIRecording);
-    if (playRecordButton) playRecordButton.addEventListener('click', playBackMIDI);
+    // if (playRecordButton) playRecordButton.addEventListener('click', playBackMIDI);
 }
 
 addMIDIControlEventListeners();
