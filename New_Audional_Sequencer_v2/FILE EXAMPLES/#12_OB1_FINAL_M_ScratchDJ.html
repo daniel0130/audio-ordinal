@@ -1,10 +1,10 @@
 <CommonHtml>
-    <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OB1 #3 - Audional Art</title><style>body{background-color:#000000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}img {width: auto;height: auto;max-width: 60%;max-height: 80vh;object-fit: contain;aspect-ratio: 1 / 1;}
+    <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OB1 #12 - Audional Art</title><style>body{background-color:#000000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}img {width: auto;height: auto;max-width: 60%;max-height: 80vh;object-fit: contain;aspect-ratio: 1 / 1;}
     </style></head>
 </CommonHtml>
 
-<div id="ob1Number" style="display: none;">3</div> <!--PLACE COLLECTION NUMBER HERE-->
-<div id="sampleName" style="display: none;">808 Closed Hat</div><!--PLACE SAMPLE NAME HERE-->
+<div id="ob1Number" style="display: none;">12</div> <!--PLACE COLLECTION NUMBER HERE-->
+<div id="sampleName" style="display: none;">Scratch DJ</div><!--PLACE SAMPLE NAME HERE-->
 <div id= "BPM">78 BPM</div> 
 
 <OB1_Base64_Image_Text>
@@ -96,9 +96,21 @@ const audioContext=new(window.AudioContext||window.webkitAudioContext),gainNode=
     </timing>
     
     <scheduling>
-    <script>
-    let beatCounter=0;function scheduleNextNote(){if(!state.isLooping||!state.audioBuffer)return;const e=audioContext.currentTime;e>=state.nextNoteTime&&(playNote(),console.log(`Beat ${++beatCounter}: Scheduled at ${state.nextNoteTime.toFixed(3)} seconds.`),state.nextNoteTime+=calculateBeatDuration(state.bpm)/state.scheduleMultiplier);const t=Math.max(1e3*(state.nextNoteTime-e),10);setTimeout(scheduleNextNote,t)}
-    </script>
+        <script>
+            let beatCounter = 0;
+            function scheduleNextNote(){
+                if(!state.isLooping || !state.audioBuffer) return;
+                const e = audioContext.currentTime;
+                if(e >= state.nextNoteTime){
+                    playNote();  // Ensures sample is played once it's time
+                    console.log(`Beat ${++beatCounter}: Scheduled at ${state.nextNoteTime.toFixed(3)} seconds.`);
+                    state.nextNoteTime += calculateBeatDuration(state.bpm) * 8;  // Scheduling next note to play in one bar, which is 4 beats later
+                }
+                const t = Math.max(1e3 * (state.nextNoteTime - e), 10);
+                setTimeout(scheduleNextNote, t);
+            }
+            </script>
+            
     </scheduling>
     
     <display>
