@@ -37,75 +37,7 @@ const audioContext=new(window.AudioContext||window.webkitAudioContext),gainNode=
     
     <parentChildMessages>
         <script>
-            function sendCurrentSettingsToParent(){
-                const e = {
-                    scheduleMultiplier: state.scheduleMultiplier,
-                    currentVolume: gainNode.gain.value,
-                    isLooping: state.isLooping,
-                    bpm: state.bpm
-                };
-                console.log("Sending current settings to parent window", {data:e});
-                window.parent.postMessage({type: "currentSettingsResponse", data: e}, "*");
-            }
-            
-            function sendMessageToParent(e, t){
-                const a = {
-                    action: e,
-                    ob1Number: document.getElementById("ob1Number").innerText,
-                    sampleName: t,
-                    timestamp: (new Date()).toISOString()
-                };
-                window.parent.postMessage(a, "*");
-                console.log("sending action message to parent window", {message: a});
-            }
-            
-            function simulateKeyPress(e, t, a){
-                console.log(`Simulating keypress: key=${e}, shiftKey=${t}, ctrlKey=${a}`);
-                const n = new KeyboardEvent("keydown", {key: e, shiftKey: t, ctrlKey: a, bubbles: !0});
-                document.dispatchEvent(n);
-            }
-            
-            window.addEventListener("message", (e => {
-                const {type: t, data: a} = e.data;
-                switch (t) {
-                    case "updateBPM":
-                        const e = Math.max(60, Math.min(240, a.bpm));
-                        updateBPM(e);
-                        break;
-                    case "muteControl":
-                        a.mute ? applyVolumeFade(0, audioContext.currentTime, .03) : applyVolumeFade(previousVolume, audioContext.currentTime, .03);
-                        break;
-                    case "increaseVolume":
-                        increaseVolume();
-                        break;
-                    case "decreaseVolume":
-                        decreaseVolume();
-                        break;
-                    case "playLoop":
-                        playLoop();
-                        break;
-                    case "playOnce":
-                        playOnce();
-                        break;
-                    case "playAtSpeed":
-                        playAtSpeed(a.speed);
-                        break;
-                    case "increaseScheduleMultiplier":
-                        simulateKeyPress("=", false, false);
-                        break;
-                    case "decreaseScheduleMultiplier":
-                        simulateKeyPress("-", false, false);
-                        break;
-                    case "requestCurrentSettings":
-                        sendCurrentSettingsToParent();
-                        break;
-                    case "stopPlayback":
-                        stopAudioPlayback();
-                        break;
-                    default:
-                        console.log("Unknown message type:", t);
-                }
-            }));
+          function sendCurrentSettingsToParent(){const e={scheduleMultiplier:state.scheduleMultiplier,currentVolume:gainNode.gain.value,isLooping:state.isLooping,bpm:state.bpm};console.log("Sending current settings to parent window",{data:e}),window.parent.postMessage({type:"currentSettingsResponse",data:e},"*")}function sendMessageToParent(e,t){const a={action:e,ob1Number:document.getElementById("ob1Number").innerText,sampleName:t,timestamp:(new Date).toISOString()};window.parent.postMessage(a,"*"),console.log("sending action message to parent window",{message:a})}function simulateKeyPress(e,t,a){console.log(`Simulating keypress: key=${e}, shiftKey=${t}, ctrlKey=${a}`);const s=new KeyboardEvent("keydown",{key:e,shiftKey:t,ctrlKey:a,bubbles:!0});document.dispatchEvent(s)}window.addEventListener("message",(e=>{const{type:t,data:a}=e.data;switch(t){case"updateBPM":const e=Math.max(60,Math.min(240,a.bpm));updateBPM(e);break;case"muteControl":a.mute?applyVolumeFade(0,audioContext.currentTime,.03):applyVolumeFade(previousVolume,audioContext.currentTime,.03);break;case"increaseVolume":increaseVolume();break;case"decreaseVolume":decreaseVolume();break;case"playLoop":playLoop();break;case"playOnce":playOnce();break;case"playAtSpeed":playAtSpeed(a.speed);break;case"increaseScheduleMultiplier":simulateKeyPress("=",!1,!1);break;case"decreaseScheduleMultiplier":simulateKeyPress("-",!1,!1);break;case"requestCurrentSettings":sendCurrentSettingsToParent();break;case"stopPlayback":stopAudioPlayback();break;default:console.log("Unknown message type:",t)}}));
             </script>
             
     </parentChildMessages>
@@ -124,45 +56,7 @@ const audioContext=new(window.AudioContext||window.webkitAudioContext),gainNode=
     
     <playback>
         <script>
-            function playSampleOnce(){
-                const e = createAndConnectBufferSource(state.audioBuffer);
-                const t = document.getElementById("sampleName").innerText;
-                startAnimation("OB1_Image");
-                e.start();
-                sendMessageToParent("playSampleOnce", t);
-                e.onended = () => {
-                    sendMessageToParent("sampleEnded", t);
-                };
-            }
-            
-            function playNote(){
-                const e = createAndConnectBufferSource(state.audioBuffer);
-                startAnimation("OB1_Image");
-                e.start(audioContext.currentTime);
-                e.onended = () => {
-                    e.disconnect();
-                    state.scheduledNotes.push(e);
-                    sendMessageToParent("notePlayed", document.getElementById("sampleName").innerText);
-                };
-            }
-            
-            function stopAudioPlayback(){
-                if(state.isLooping){
-                    state.isLooping = false;
-                    fadeOutAndStopSources();
-                    sendMessageToParent("playbackStopped", "Loop stopped");
-                }
-            }
-            
-            function playAudioBuffer(){
-                if(!state.isLooping){
-                    const e = document.getElementById("sampleName").innerText;
-                    state.isLooping = true;
-                    state.startTime = state.nextNoteTime = audioContext.currentTime;
-                    scheduleNextNote();
-                    sendMessageToParent("playAudioBuffer", e);
-                }
-            }
+           function playSampleOnce(){const e=createAndConnectBufferSource(state.audioBuffer),t=document.getElementById("sampleName").innerText;startAnimation("OB1_Image"),e.start(),sendMessageToParent("playSampleOnce",t),e.onended=()=>{sendMessageToParent("sampleEnded",t)}}function playNote(){const e=createAndConnectBufferSource(state.audioBuffer);startAnimation("OB1_Image"),e.start(audioContext.currentTime),e.onended=()=>{e.disconnect(),state.scheduledNotes.push(e),sendMessageToParent("notePlayed",document.getElementById("sampleName").innerText)}}function stopAudioPlayback(){state.isLooping&&(state.isLooping=!1,fadeOutAndStopSources(),sendMessageToParent("playbackStopped","Loop stopped"))}function playAudioBuffer(){if(!state.isLooping){const e=document.getElementById("sampleName").innerText;state.isLooping=!0,state.startTime=state.nextNoteTime=audioContext.currentTime,scheduleNextNote(),sendMessageToParent("playAudioBuffer",e)}}
             </script>
             
     </playback>
@@ -205,18 +99,7 @@ const audioContext=new(window.AudioContext||window.webkitAudioContext),gainNode=
     
     <scheduling>
         <script>
-            let beatCounter = 0;
-            function scheduleNextNote(){
-                if(!state.isLooping || !state.audioBuffer) return;
-                const e = audioContext.currentTime;
-                if(e >= state.nextNoteTime){
-                    playNote();  // Ensures sample is played once it's time
-                    console.log(`Beat ${++beatCounter}: Scheduled at ${state.nextNoteTime.toFixed(3)} seconds.`);
-                    state.nextNoteTime += calculateBeatDuration(state.bpm) * 8;  // Scheduling next note to play in one bar, which is 4 beats later
-                }
-                const t = Math.max(1e3 * (state.nextNoteTime - e), 10);
-                setTimeout(scheduleNextNote, t);
-            }
+          let beatCounter=0;function scheduleNextNote(){if(!state.isLooping||!state.audioBuffer)return;const e=audioContext.currentTime;e>=state.nextNoteTime&&(playNote(),console.log(`Beat ${++beatCounter}: Scheduled at ${state.nextNoteTime.toFixed(3)} seconds.`),state.nextNoteTime+=8*calculateBeatDuration(state.bpm));const t=Math.max(1e3*(state.nextNoteTime-e),10);setTimeout(scheduleNextNote,t)}
             </script>
             
     </scheduling>
