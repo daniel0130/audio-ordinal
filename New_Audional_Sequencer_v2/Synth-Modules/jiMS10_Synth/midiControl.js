@@ -21,74 +21,84 @@ function onMIDISuccess(e) {
 
 function onMIDIFailure() {
     console.warn("Could not access your MIDI devices.");
+    manageMIDIResources();  // Clear resources on failure
 }
+// Constants for MIDI message types
+const MIDI_NOTE_ON = 0x90;
+const MIDI_NOTE_OFF = 0x80;
 
 function onMIDIMessage(e) {
-    let data = e.data;
-    console.log("Received MIDI message:", e.data);
-    console.log('playbackRecordingDEBUG: Received MIDI message:', e.data);
-
-    // Check if data is in object format and convert to array if necessary
-    if (!Array.isArray(data)) {
-        data = [data[0], data[1], data[2]];
+    const data = e.data;
+    if (data.length < 3) {
+        console.error("Incomplete MIDI message received:", data);
+        return;
     }
 
-    let statusByte = e.data[0];
-    let messageType = statusByte & 0xF0; // Get the message type
-    let channel = statusByte & 0x0F; // Get the MIDI channel
+    const [statusByte, noteNumber, velocity] = data;
+    const messageType = statusByte & 0xF0;
+    const channel = statusByte & 0x0F;
 
-  
-    // Filter out messages from channels 2-8
+    // Optionally, adjust or remove channel filtering if necessary
     if (channel >= 1 && channel <= 7) {
-        return; // Ignore messages from these channels
+        console.log(`Ignoring MIDI message from channel: ${channel}`);
+        return;
     }
 
-    if (isRecordingMIDI && messageType === 144 && !isRecordingStarted) {
-        // Start recording from the first note-on message
+    handleMIDIRecording(messageType, data);
+    processMIDIMessage(messageType, noteNumber, velocity);
+}
+
+function handleMIDIRecording(messageType, data) {
+    if (!isRecordingMIDI) return;
+
+    const messageTime = performance.now() - (recordingStartTime || performance.now());
+    if (messageType === MIDI_NOTE_ON && !isRecordingStarted) {
         recordingStartTime = performance.now();
         isRecordingStarted = true;
     }
 
-    if (isRecordingMIDI && isRecordingStarted) {
-        let messageTime = performance.now() - recordingStartTime;
-        midiRecording.push({ timestamp: messageTime, message: e.data });
-    }
+    midiRecording.push({ timestamp: messageTime, message: data });
+}
 
-    let noteNumber = e.data[1];
-    let velocity = e.data.length > 2 ? e.data[2] : 0;
-
-    console.log(`Status Byte: ${statusByte}, Message Type: ${messageType}, Channel: ${channel}`);
-    console.log(`Note Number: ${noteNumber}, Velocity: ${velocity}`);
-
-    // Process Note On/Off messages
+function processMIDIMessage(messageType, noteNumber, velocity) {
     switch (messageType) {
-        case 144: // Note On
-            if (velocity > 0) {
-                let frequency = midiNoteToFrequency(noteNumber);
-                console.log(`Note On. MIDI note: ${noteNumber}, Frequency: ${frequency}`);
-                if (isArpeggiatorOn) {
-                    arpNotes.push(frequency);
-                    updateArpNotesDisplay();
-                } else {
-                    playMS10TriangleBass(frequency, velocity / 127);
-                }
-            }
+        case MIDI_NOTE_ON:
+            handleNoteOn(noteNumber, velocity);
             break;
-        case 128: // Note Off
-            console.log(`Note Off. MIDI note: ${noteNumber}`);
-            if (isArpeggiatorOn) {
-                let frequency = midiNoteToFrequency(noteNumber);
-                let index = arpNotes.indexOf(frequency);
-                if (index !== -1) arpNotes.splice(index, 1);
-            }
+        case MIDI_NOTE_OFF:
+            handleNoteOff(noteNumber);
             break;
         default:
-            console.log(`Unhandled MIDI message type: ${messageType}`);
+            console.log(`Unhandled MIDI message type: ${messageType.toString(16)}`);
     }
 }
 
-function midiNoteToFrequency(e) {
-    return e < 0 || e > 127 ? (console.error("Invalid MIDI note:", e), null) : Math.pow(2, (e - A4_MIDI_NUMBER) / 12) * A4_FREQUENCY;
+function handleNoteOn(noteNumber, velocity) {
+    if (velocity === 0) {
+        handleNoteOff(noteNumber); // Some devices use a Note On with 0 velocity as Note Off
+        return;
+    }
+    const frequency = midiNoteToFrequency(noteNumber);
+    console.log(`Note On. MIDI note: ${noteNumber}, Frequency: ${frequency}`);
+    if (isArpeggiatorOn) {
+        arpNotes.push(frequency);
+        updateArpNotesDisplay();
+    } else {
+        playMS10TriangleBass(frequency, velocity / 127);
+    }
+}
+
+function handleNoteOff(noteNumber) {
+    console.log(`Note Off. MIDI note: ${noteNumber}`);
+    if (isArpeggiatorOn) {
+        const frequency = midiNoteToFrequency(noteNumber);
+        const index = arpNotes.indexOf(frequency);
+        if (index !== -1) arpNotes.splice(index, 1);
+    }
+}
+
+function midiNoteToFrequency(note) {
+    return note < 0 || note > 127 ? null : Math.pow(2, (note - A4_MIDI_NUMBER) / 12) * A4_FREQUENCY;
 }
 
 function playNote(e, o = 1) {
@@ -114,9 +124,11 @@ function startMIDIRecording() {
 
 function stopMIDIRecording() {
     isRecordingMIDI = false;
+    clearAllIntervals();  // Clear any playback intervals
     console.log('MIDI Recording stopped');
     isRecordingStarted = false; // Reset recording started flag
 }
+
 
 // Function to record keyboard-triggered notes
 function recordKeyboardNoteEvent(noteNumber, velocity, isNoteOn) {
@@ -129,17 +141,33 @@ function recordKeyboardNoteEvent(noteNumber, velocity, isNoteOn) {
     }
 }
 
-// Playback functionality
-function playBackMIDI() {
-    if (midiRecording.length > 0) {
-        playbackStartTime = performance.now(); // Update playbackStartTime
-        nextEventIndex = 0; // Reset the nextEventIndex
-        playbackInterval = setInterval(playbackNextMIDIEvent, 0);
-        console.log('playbackRecordingDEBUG: Playback started with ' + midiRecording.length + ' events.');
-    } else {
-        console.log('playbackRecordingDEBUG: No MIDI events to play back.');
+function clearAllIntervals() {
+    if (playbackInterval) {
+        clearInterval(playbackInterval);
+        playbackInterval = null;
+        console.log('All playback intervals cleared.');
     }
 }
+
+function manageMIDIResources() {
+    clearAllIntervals();  // Add more resource management as needed
+}
+
+
+// Playback functionality
+function playBackMIDI() {
+    clearAllIntervals();  // Ensures no intervals are running before starting a new one
+
+    if (midiRecording.length > 0) {
+        playbackStartTime = performance.now();
+        nextEventIndex = 0;
+        playbackInterval = setInterval(playbackNextMIDIEvent, 0);
+        console.log('Playback started with ' + midiRecording.length + ' events.');
+    } else {
+        console.log('No MIDI events to play back.');
+    }
+}
+
 
 function playbackNextMIDIEvent() {
     if (nextEventIndex < midiRecording.length) {
