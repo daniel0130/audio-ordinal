@@ -84,22 +84,14 @@ function handleNoteOn(noteNumber, velocity) {
     }
     const frequency = midiNoteToFrequency(noteNumber);
     console.log(`Note On. MIDI note: ${noteNumber}, Frequency: ${frequency}`);
-    if (isArpeggiatorOn) {
-        arpNotes.push(frequency);
-        updateArpNotesDisplay();
-    } else {
-        playMS10TriangleBass(frequency, velocity / 127);
-    }
+    playMS10TriangleBass(frequency, velocity / 127);
 }
 
 function handleNoteOff(noteNumber) {
     console.log(`Note Off. MIDI note: ${noteNumber}`);
-    if (isArpeggiatorOn) {
-        const frequency = midiNoteToFrequency(noteNumber);
-        const index = arpNotes.indexOf(frequency);
-        if (index !== -1) arpNotes.splice(index, 1);
-    }
+    playMS10TriangleBass(midiNoteToFrequency(noteNumber), 0); // Note off with zero velocity
 }
+
 
 function midiNoteToFrequency(note) {
     return note < 0 || note > 127 ? null : Math.pow(2, (note - A4_MIDI_NUMBER) / 12) * A4_FREQUENCY;
