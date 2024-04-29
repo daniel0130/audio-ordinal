@@ -4,6 +4,10 @@ window.context = new (window.AudioContext || window.webkitAudioContext)();
 let currentOscillator = null;
 window.gainNode = context.createGain();
 window.gainNode.connect(context.destination);
+let noteCount = 0; // Counter for notes played
+
+// Global objects to track oscillators by frequency
+const activeOscillators = {};
 
 // Function to ensure AudioContext is resumed
 function resumeAudioContext() {
@@ -14,70 +18,68 @@ function resumeAudioContext() {
     }
 }
 
+// Function to purge old oscillators if there are too many
+function purgeAudioNodes() {
+    console.log("Purging unused audio nodes");
+    Object.keys(activeOscillators).forEach(key => {
+        activeOscillators[key].stop();
+        activeOscillators[key].disconnect();
+        delete activeOscillators[key];
+    });
+}
+
 function playMS10TriangleBass(frequency = null) {
     resumeAudioContext(); // Ensure the AudioContext is active
     console.log(`playMS10TriangleBass called with Frequency: ${frequency}`);
 
+    // Increment note count and check for purge
+    noteCount++;
+    if (noteCount >= 5) { // Purge every 40 notes
+        purgeAudioNodes();
+    }
+
     // Stop and clear the previous oscillator if it exists
     if (currentOscillator) {
         currentOscillator.stop();
-        currentOscillator.disconnect(); // Disconnect from the audio graph
+        currentOscillator.disconnect();
         currentOscillator = null;
     }
-    // Create audio components
+
+    // Create and setup audio components as before
     let oscillator = context.createOscillator();
     let gainNode = context.createGain();
     let filter = context.createBiquadFilter();
     let distortion = context.createWaveShaper();
-
-    // Get user input from the HTML controls
-    let waveformType = document.getElementById("waveform").value;
-    let distortionAmount = parseFloat(document.getElementById("distortion").value);
-
-    // Check if the waveform type is supported
-    if (['sine', 'triangle', 'square', 'sawtooth'].includes(waveformType)) {
-        oscillator.type = waveformType;
-    } else {
-        console.error("Unsupported waveform type: " + waveformType);
-        return; // Exit the function if the waveform type is not supported
-    }
-
-    // Set oscillator frequency from the provided frequency or from the user interface
-    oscillator.frequency.setValueAtTime(frequency || parseFloat(document.getElementById("note").value), context.currentTime);
-
-    // Envelope and filter settings
-    let attackTime = parseFloat(document.getElementById("attack").value) / 1000;
-    let releaseTime = parseFloat(document.getElementById("release").value) / 1000;
-    let cutoffFrequency = parseFloat(document.getElementById("cutoff").value);
-    let resonance = parseFloat(document.getElementById("resonance").value);
-
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(cutoffFrequency, context.currentTime);
-    filter.Q.setValueAtTime(resonance, context.currentTime);
-
-    distortion.curve = makeDistortionCurve(distortionAmount);
-    distortion.oversample = '4x';
-
-    // Gain control with attack and release envelope
-    gainNode.gain.setValueAtTime(0, context.currentTime);
-    const volume = getVolume(); // Assuming getVolume() is a function you've defined elsewhere
-
-    gainNode.gain.linearRampToValueAtTime(volume, context.currentTime + attackTime);
-    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + attackTime + releaseTime);
-
-    // Connect the audio processing graph
-    oscillator.connect(distortion);
-    distortion.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(window.gainNode);
+    setupOscillatorAndComponents(oscillator, gainNode, filter, distortion, frequency);
 
     // Start and stop the oscillator based on the attack and release times
     oscillator.start();
-    oscillator.stop(context.currentTime + attackTime + releaseTime);
+    oscillator.stop(context.currentTime + parseFloat(document.getElementById("release").value) / 1000);
 
     // Keep track of the current oscillator
     currentOscillator = oscillator;
 }
+
+function setupOscillatorAndComponents(oscillator, gainNode, filter, distortion, frequency) {
+    // Configuration and setup logic as previously defined
+    let waveformType = document.getElementById("waveform").value;
+    let distortionAmount = parseFloat(document.getElementById("distortion").value);
+    oscillator.type = waveformType;
+    oscillator.frequency.setValueAtTime(frequency || parseFloat(document.getElementById("note").value), context.currentTime);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(parseFloat(document.getElementById("cutoff").value), context.currentTime);
+    filter.Q.setValueAtTime(parseFloat(document.getElementById("resonance").value), context.currentTime);
+    distortion.curve = makeDistortionCurve(distortionAmount);
+    distortion.oversample = '4x';
+    gainNode.gain.setValueAtTime(0, context.currentTime);
+    gainNode.gain.linearRampToValueAtTime(getVolume(), context.currentTime + parseFloat(document.getElementById("attack").value) / 1000);
+    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + (parseFloat(document.getElementById("attack").value) + parseFloat(document.getElementById("release").value)) / 1000);
+    oscillator.connect(distortion);
+    distortion.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(window.gainNode);
+}
+
 
 
 function makeDistortionCurve(amount) {

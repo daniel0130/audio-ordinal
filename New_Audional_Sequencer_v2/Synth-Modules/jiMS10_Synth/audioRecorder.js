@@ -17,13 +17,14 @@ let audioUrl;
 recorder.ondataavailable = event => {
     if (event.data.size > 0) {
         audioChunks.push(event.data);
-        console.log(`Received audio data size: ${event.data.size}`);
+        console.log(`Received audio data size: ${event.data.size}, chunks count: ${audioChunks.length}`);
     } else {
         console.log('Received an empty audio chunk.');
     }
 };
 
 recorder.onstop = () => {
+    console.log(`Recorder stopped, total chunks: ${audioChunks.length}`);
     if (audioChunks.length > 0) {
         const audioBlob = new Blob(audioChunks, { type: mimeType });
         console.log('Blob size:', audioBlob.size);
@@ -38,16 +39,25 @@ recorder.onerror = event => {
     console.error('Recorder Error:', event.error);
 };
 
-document.getElementById('recordButton').addEventListener('click', () => {
-    console.log('Recording started');
-    audioChunks.length = 0;
+// Expose the start and stop recording functions globally
+window.startAudioRecording = function() {
+    console.log('Global start recording triggered');
+    audioChunks.length = 0;  // Clear the previous recordings
     recorder.start();
-});
+};
 
-document.getElementById('stopRecordButton').addEventListener('click', () => {
-    console.log('Stopping recording');
-    recorder.stop();
-});
+window.stopAudioRecording = function() {
+    console.log('Global stop recording triggered');
+    // Wait for a few seconds to capture the tail of the last note
+    setTimeout(() => {
+        recorder.stop();
+        console.log('Recorder stopped after delay to capture tail sounds.');
+    }, 3000); // Delay of 3000 ms (3 seconds)
+};
+
+
+document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
+document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
 
 document.getElementById('playRecordButton').addEventListener('click', () => {
     if (context.state === 'suspended') {
@@ -73,3 +83,19 @@ function playRecordedAudio() {
         console.error('Audio URL is not defined.');
     }
 }
+
+
+
+
+document.getElementById('recordButton').addEventListener('click', () => {
+    console.log('Recording started');
+    audioChunks.length = 0;
+    recorder.start();
+});
+
+document.getElementById('stopRecordButton').addEventListener('click', () => {
+    console.log('Stopping recording');
+    recorder.stop();
+});
+
+

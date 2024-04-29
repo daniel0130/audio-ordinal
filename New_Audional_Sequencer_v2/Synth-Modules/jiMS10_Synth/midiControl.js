@@ -120,14 +120,58 @@ function startMIDIRecording() {
     midiRecording = []; // Reset the recording
     isRecordingStarted = false; // Reset recording started flag
     console.log('MIDI Recording started');
+
+    // Start audio recording when MIDI recording starts
+    if (window.startAudioRecording) {
+        window.startAudioRecording();
+        console.log('Audio recording started with MIDI recording.');
+    }
 }
 
 function stopMIDIRecording() {
-    isRecordingMIDI = false;
-    clearAllIntervals();  // Clear any playback intervals
-    console.log('MIDI Recording stopped');
-    isRecordingStarted = false; // Reset recording started flag
+    if (isRecordingMIDI) {
+        isRecordingMIDI = false;
+        clearAllIntervals();  // Clear any playback intervals
+        console.log('MIDI Recording stopped');
+        isRecordingStarted = false; // Reset recording started flag
+
+        // Stop audio recording with MIDI recording
+        if (window.stopAudioRecording) {
+            window.stopAudioRecording();
+            console.log('Audio recording stopped with MIDI recording.');
+        }
+    }
 }
+
+// Playback functionality
+function playBackMIDI() {
+    clearAllIntervals();
+    if (midiRecording.length > 0) {
+        playbackStartTime = performance.now();
+        nextEventIndex = 0;
+        playbackInterval = setInterval(playbackNextMIDIEvent, 0);
+        console.log('Playback started with ' + midiRecording.length + ' events.');
+    } else {
+        console.log('No MIDI events to play back.');
+    }
+}
+
+function playbackNextMIDIEvent() {
+    if (nextEventIndex < midiRecording.length) {
+        const now = performance.now() - playbackStartTime;
+        const nextEvent = midiRecording[nextEventIndex];
+        if (now >= nextEvent.timestamp) {
+            let midiMessage = new Uint8Array(Object.values(nextEvent.message));
+            console.log('Converted MIDI message:', midiMessage);
+            onMIDIMessage({ data: midiMessage });
+            nextEventIndex++;
+        }
+    } else {
+        clearInterval(playbackInterval);
+        console.log('Playback stopped');
+    }
+}
+
 
 
 // Function to record keyboard-triggered notes
@@ -153,37 +197,6 @@ function manageMIDIResources() {
     clearAllIntervals();  // Add more resource management as needed
 }
 
-
-// Playback functionality
-function playBackMIDI() {
-    clearAllIntervals();  // Ensures no intervals are running before starting a new one
-
-    if (midiRecording.length > 0) {
-        playbackStartTime = performance.now();
-        nextEventIndex = 0;
-        playbackInterval = setInterval(playbackNextMIDIEvent, 0);
-        console.log('Playback started with ' + midiRecording.length + ' events.');
-    } else {
-        console.log('No MIDI events to play back.');
-    }
-}
-
-
-function playbackNextMIDIEvent() {
-    if (nextEventIndex < midiRecording.length) {
-        const now = performance.now() - playbackStartTime;
-        const nextEvent = midiRecording[nextEventIndex];
-    if (now >= nextEvent.timestamp) {
-        let midiMessage = new Uint8Array(Object.values(nextEvent.message));
-        console.log('Converted MIDI message:', midiMessage);
-        onMIDIMessage({ data: midiMessage }); // Adjusted to pass Uint8Array
-        nextEventIndex++;
-    }
-    } else {
-        clearInterval(playbackInterval);
-        console.log('playbackRecordingDEBUG: Playback stopped');
-    }
-}
 
 
 // Event listener setup with error checking
