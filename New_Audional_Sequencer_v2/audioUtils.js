@@ -112,20 +112,12 @@ window.addEventListener('message', async (event) => {
 
 // Function to handle incoming audio data for both forward and reverse playback
 async function handleIncomingAudioData(arrayBuffer, channelIndex) {
-  console.log(`Handling incoming audio data for channel index: ${channelIndex}`); // Log the channel index being processed
-  try {
-      const audioBuffer = await decodeAudioData(arrayBuffer);
-      const reverseBuffer = await createReverseBuffer(audioBuffer);
-
-      // Simplified key management
-      const baseKey = `channel_${channelIndex}`;
-      audioBuffers.set(`${baseKey}_forward`, audioBuffer);
-      audioBuffers.set(`${baseKey}_reverse`, reverseBuffer);
-
-      console.log(`Audio buffers stored for channel ${channelIndex}`); // Confirm storage
-  } catch (error) {
-      console.error('Error processing incoming audio data:', error);
-  }
+  console.log(`Handling incoming synth audio data for channel index: ${channelIndex}`);
+  const sampleName = `SynthSample_${channelIndex}`;  // Example of assigning a sample name, adjust as needed
+  const fullUrl = `synth://${channelIndex}`;  // Simulating a URL structure for synth sources
+  
+  // Use the existing function to decode and store audio which handles forward and reverse buffers
+  await decodeAndStoreAudio(arrayBuffer, sampleName, fullUrl, channelIndex);
 }
 
 
