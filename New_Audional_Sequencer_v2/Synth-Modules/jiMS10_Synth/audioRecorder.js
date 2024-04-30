@@ -25,35 +25,68 @@ recorder.ondataavailable = event => {
     }
 };
 
-recorder.onstop = () => {
+recorder.onstop = async () => {
     console.log(`Recorder stopped, total chunks: ${audioChunks.length}`);
     if (audioChunks.length > 0) {
         const audioBlob = new Blob(audioChunks, { type: mimeType });
-        console.log('Blob size:', audioBlob.size);
-
-        // Convert Blob to ArrayBuffer and send to parent
-        const reader = new FileReader();
-        reader.onload = function() {
-            const arrayBuffer = reader.result;
-            window.parent.postMessage({
-                type: 'audioData',
-                data: arrayBuffer,
-                channelIndex: 0 // Assuming channel index is 0; adjust as needed
-            }, '*');
-            console.log('Audio data sent to parent.');
-        };
-        reader.onerror = function(err) {
-            console.error('Error reading audio blob:', err);
-        };
-        reader.readAsArrayBuffer(audioBlob);
+        const arrayBuffer = await blobToArrayBuffer(audioBlob);
+        
+        window.parent.postMessage({
+            type: 'audioData',
+            data: arrayBuffer,
+            mimeType: mimeType,
+            filename: 'SynthSample',
+            channelIndex: 0
+        }, '*');
+        console.log('Audio data sent to parent.');
     } else {
         console.error('No audio data recorded.');
     }
 };
 
+function blobToArrayBuffer(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            resolve(reader.result);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+    });
+}
+
 recorder.onerror = event => {
     console.error('Recorder Error:', event.error);
 };
+// recorder.onstop = () => {
+//     console.log(`Recorder stopped, total chunks: ${audioChunks.length}`);
+//     if (audioChunks.length > 0) {
+//         const audioBlob = new Blob(audioChunks, { type: mimeType });
+//         console.log('Blob size:', audioBlob.size);
+
+//         // Convert Blob to ArrayBuffer and send to parent
+//         const reader = new FileReader();
+//         reader.onload = function() {
+//             const arrayBuffer = reader.result;
+//             window.parent.postMessage({
+//                 type: 'audioData',
+//                 data: arrayBuffer,
+//                 channelIndex: 0 // Assuming channel index is 0; adjust as needed
+//             }, '*');
+//             console.log('Audio data sent to parent.');
+//         };
+//         reader.onerror = function(err) {
+//             console.error('Error reading audio blob:', err);
+//         };
+//         reader.readAsArrayBuffer(audioBlob);
+//     } else {
+//         console.error('No audio data recorded.');
+//     }
+// };
+
+// recorder.onerror = event => {
+//     console.error('Recorder Error:', event.error);
+// };
 
 // Expose the start and stop recording functions globally
 window.startAudioRecording = function() {
