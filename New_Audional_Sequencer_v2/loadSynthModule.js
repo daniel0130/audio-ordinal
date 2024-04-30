@@ -26,7 +26,7 @@ function loadSynth(channelIndex, loadSampleButton) {
         console.log("Synth iframe loaded successfully");
 
         // Send the channel index to the iframe once it is loaded
-        iframe.contentWindow.postMessage({ channelIndex: channelIndex }, '*');
+        iframe.contentWindow.postMessage({ type: 'setChannelIndex', channelIndex: channelIndex }, '*');
 
         // Access the document within the iframe
         const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;

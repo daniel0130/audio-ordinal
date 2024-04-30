@@ -91,21 +91,24 @@ async function processHTMLResponse(htmlText) {
 // Message handler for receiving ArrayBuffer formatted audio data from synth
 window.addEventListener('message', async (event) => {
   if (event.data.type === 'audioData') {
-      console.log(`Received audio data message with channel index: ${event.data.channelIndex}`);
+      const channelIndex = event.data.channelIndex;
+      console.log(`Received audio data message with channel index: ${channelIndex}`);
       if (event.data.data instanceof ArrayBuffer) {
-          console.log(`Processing ArrayBuffer audio data for channel ${event.data.channelIndex}`);
+          console.log(`Processing ArrayBuffer audio data for channel ${channelIndex}`);
           
-          // Create a persistent URL for the blob
-          const persistentUrl = URL.createObjectURL(new Blob([event.data.data], {type: event.data.mimeType}));
-          console.log(`Persistent URL created for logging and use: ${persistentUrl}`);
+          // Create a persistent URL for the blob, including the channel index in the URL
+          const blob = new Blob([event.data.data], {type: event.data.mimeType});
+          const persistentUrl = URL.createObjectURL(blob);
+          const uniquePersistentUrl = `${persistentUrl}?channel=${channelIndex}`;
+          console.log(`Persistent URL created for logging and use: ${uniquePersistentUrl}`);
 
-          // Pass this URL to decodeAndStoreAudio for processing and storage
+          // Pass this unique URL to decodeAndStoreAudio for processing and storage
           try {
-              await decodeAndStoreAudio(event.data.data, event.data.filename, persistentUrl, event.data.channelIndex);
-              console.log(`Audio data processed and stored for channel ${event.data.channelIndex}`);
+              await decodeAndStoreAudio(event.data.data, event.data.filename, uniquePersistentUrl, channelIndex);
+              console.log(`Audio data processed and stored for channel ${channelIndex}`);
 
-              // Store the URL for later access by other modules such as audio trimming
-              window.unifiedSequencerSettings.settings.masterSettings.channelURLs[event.data.channelIndex] = persistentUrl;
+              // Store the unique URL for later access by other modules such as audio trimming
+              window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = uniquePersistentUrl;
           } catch (error) {
               console.error('Error processing audio data:', error);
           }
@@ -114,6 +117,7 @@ window.addEventListener('message', async (event) => {
       }
   }
 });
+
 
 
 

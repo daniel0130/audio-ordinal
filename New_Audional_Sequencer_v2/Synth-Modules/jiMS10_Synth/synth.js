@@ -1,4 +1,16 @@
 // synth.js
+
+let currentChannelIndex = 0;  // Default to 0, update upon receiving message
+
+// Listen for messages from the parent
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'setChannelIndex') {
+        currentChannelIndex = event.data.channelIndex;
+        console.log(`[child] Channel index set to ${currentChannelIndex}`);
+    }
+}, false);
+
+
 const audioContextOptions = { sampleRate: 48000 }; // Example: Set to 48000 Hz
 window.context = new (window.AudioContext || window.webkitAudioContext)();
 let currentOscillator = null;

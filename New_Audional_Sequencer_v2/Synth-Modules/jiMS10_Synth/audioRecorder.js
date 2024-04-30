@@ -36,7 +36,7 @@ recorder.onstop = async () => {
             data: arrayBuffer,
             mimeType: mimeType,
             filename: 'SynthSample',
-            channelIndex: 0
+            channelIndex: currentChannelIndex  // Use the dynamically stored channelIndex
         }, '*');
         console.log('Audio data sent to parent.');
     } else {
