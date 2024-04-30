@@ -13,11 +13,20 @@ class AudioTrimmer {
 
         this.initializeSliderTrack(channelIndex);
 
-        const trimSettings = getTrimSettings(this.channelIndex);
-        console.log("getSettings read into trimSettings in AudioTrimmer class constructor", trimSettings);
-        this.startSliderValue = trimSettings.startSliderValue;
-        this.endSliderValue = trimSettings.endSliderValue;
+        // Fetch settings or use default values
+        const trimSettings = getTrimSettings(this.channelIndex) || { startSliderValue: 0, endSliderValue: 100 };
+        this.startSliderValue = trimSettings.startSliderValue !== undefined ? trimSettings.startSliderValue : 0;
+        this.endSliderValue = trimSettings.endSliderValue !== undefined ? trimSettings.endSliderValue : 100;
+        
+        this.displayTimeout = null;
         console.log("startSliderValue and endSliderValue in AudioTrimmer class constructor", this.startSliderValue, this.endSliderValue);
+    
+
+        // const trimSettings = getTrimSettings(this.channelIndex);
+        // console.log("getSettings read into trimSettings in AudioTrimmer class constructor", trimSettings);
+        // this.startSliderValue = trimSettings.startSliderValue;
+        // this.endSliderValue = trimSettings.endSliderValue;
+        // console.log("startSliderValue and endSliderValue in AudioTrimmer class constructor", this.startSliderValue, this.endSliderValue);
 
         this.displayTimeout = null;
 
@@ -168,22 +177,40 @@ displayValues() {
             this.updateTrimmedSampleDuration();
             this.debounceDisplayValues();
         }
-        
+
         updateDimmedAreas() {
             console.log("[Class Functions] updateDimmedAreas function entered into");
         
-            // Use the internal state values instead of the slider element values
-            const startSliderValue = this.startSliderValue;
-            const endSliderValue = this.endSliderValue;
+            if (this.startSliderValue === undefined || this.endSliderValue === undefined) {
+                console.error("Slider values are undefined, skipping update of dimmed areas.");
+                return;
+            }
         
-            const startDimmedWidth = `${startSliderValue}%`;
-            const endDimmedWidth = `${100 - endSliderValue}%`;
+            const startDimmedWidth = `${this.startSliderValue}%`;
+            const endDimmedWidth = `${100 - this.endSliderValue}%`;
         
             this.startDimmed.style.width = startDimmedWidth;
             this.startDimmed.style.left = '0';
             this.endDimmed.style.width = endDimmedWidth;
-            this.endDimmed.style.left = `${endSliderValue}%`; // Position the end dimmed area correctly
+            this.endDimmed.style.left = `${this.endSliderValue}%`; // Position the end dimmed area correctly
         }
+        
+        
+        // updateDimmedAreas() {
+        //     console.log("[Class Functions] updateDimmedAreas function entered into");
+        
+        //     // Use the internal state values instead of the slider element values
+        //     const startSliderValue = this.startSliderValue;
+        //     const endSliderValue = this.endSliderValue;
+        
+        //     const startDimmedWidth = `${startSliderValue}%`;
+        //     const endDimmedWidth = `${100 - endSliderValue}%`;
+        
+        //     this.startDimmed.style.width = startDimmedWidth;
+        //     this.startDimmed.style.left = '0';
+        //     this.endDimmed.style.width = endDimmedWidth;
+        //     this.endDimmed.style.left = `${endSliderValue}%`; // Position the end dimmed area correctly
+        // }
         
         
         

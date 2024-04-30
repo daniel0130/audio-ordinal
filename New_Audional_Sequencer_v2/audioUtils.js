@@ -205,7 +205,7 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
       // Create a reverse buffer by copying and reversing the audioBuffer
       const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-      // Keys for accessing buffers
+      // Store buffers using both channel-specific keys and URL-based keys
       const forwardKey = `channel_${channelIndex}_forward`;
       const reverseKey = `channel_${channelIndex}_reverse`;
 
@@ -222,16 +222,18 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
       // Disconnect existing connections if the source node is already created
       if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
           window.unifiedSequencerSettings.sourceNodes[channelIndex].disconnect();
+          window.unifiedSequencerSettings.sourceNodes[channelIndex] = null;  // Clear the existing source node if needed
       }
 
       // Check if the source node already exists and reassign the buffer
       if (!window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
           window.unifiedSequencerSettings.sourceNodes[channelIndex] = window.unifiedSequencerSettings.audioContext.createBufferSource();
-          console.log(`[decodeAndStoreAudio] Source node created for channel ${channelIndex}`);
       }
-      
-      window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
-      console.log(`[decodeAndStoreAudio] Buffer assigned to source node for channel ${channelIndex}`);
+
+      if (!window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer) {
+          window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
+          console.log(`[decodeAndStoreAudio] Buffer assigned to source node for channel ${channelIndex}`);
+      }
 
       // Update UI or other components that depend on these buffers
       window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
@@ -247,6 +249,7 @@ async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex)
       console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
+
 
 
 // Function to create a reverse buffer from an existing AudioBuffer
