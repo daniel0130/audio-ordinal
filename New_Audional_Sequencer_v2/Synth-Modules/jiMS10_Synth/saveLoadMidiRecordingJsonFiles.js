@@ -63,13 +63,36 @@ function loadMIDIRecording(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
         const data = toggleData(JSON.parse(event.target.result), 'expand');
         midiRecording = data.midiRecording;
         setSynthSettings(data.settings);
+
+        // Decode the audio file to an AudioBuffer
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await reader.result;
+        try {
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+            // Create a Blob from the AudioBuffer for consistency with the recording process
+            const audioBlob = new Blob([audioBuffer], { type: 'audio/webm; codecs=opus' });
+            const finalArrayBuffer = await blobToArrayBuffer(audioBlob);
+
+            // Mimic sending data to the parent as done in recorder.onstop
+            window.parent.postMessage({
+                type: 'audioData',
+                data: finalArrayBuffer,
+                mimeType: 'audio/webm; codecs=opus',
+                filename: 'LoadedAudioSample',
+                channelIndex: currentChannelIndex
+            }, '*');
+            console.log('Loaded audio data sent to parent.');
+        } catch (error) {
+            console.error('Error decoding audio file:', error);
+        }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
 }
+
 
 // Apply loaded settings to synth sliders
 function setSynthSettings(settings) {
@@ -78,6 +101,8 @@ function setSynthSettings(settings) {
         if (slider) {
             slider.value = value;
             slider.dispatchEvent(new Event('input'));
+        } else {
+            console.error('Slider not found for key:', key);
         }
     });
 }

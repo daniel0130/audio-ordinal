@@ -53,13 +53,6 @@ async function processJSONResponse(response, channelIndex) {
   const audioData = jsonResponse.audioData ? base64ToArrayBuffer(jsonResponse.audioData.split(',')[1]) : null;
   console.log("[processJSONResponse] audioData set from JSON");
 
-  // // Attempt to set the channel name using the provided method
-  // if (sampleName && window.unifiedSequencerSettings.setChannelName) {
-  //     window.unifiedSequencerSettings.setChannelName(channelIndex, sampleName);
-  // } else {
-  //     console.error("[processJSONResponse] Unable to update channel name, setChannelName method not found or sampleName is empty.");
-  // }
-
   return { audioData, sampleName };
 }
 
@@ -92,57 +85,176 @@ async function processHTMLResponse(htmlText) {
   return { audioData, sampleName };
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Import Audio buffers from jiMS10 Synthesizer
+
+// Message handler for receiving ArrayBuffer formatted audio data from synth
+window.addEventListener('message', async (event) => {
+  if (event.data.type === 'audioData') {
+      const channelIndex = event.data.channelIndex;
+      console.log(`Received audio data message with channel index: ${channelIndex}`);
+      if (event.data.data instanceof ArrayBuffer) {
+          console.log(`Processing ArrayBuffer audio data for channel ${channelIndex}`);
+          
+          // Create a persistent URL for the blob, including the channel index in the URL
+          const blob = new Blob([event.data.data], {type: event.data.mimeType});
+          const persistentUrl = URL.createObjectURL(blob);
+          const uniquePersistentUrl = `${persistentUrl}?channel=${channelIndex}`;
+          console.log(`Persistent URL created for logging and use: ${uniquePersistentUrl}`);
+
+          // Pass this unique URL to decodeAndStoreAudio for processing and storage
+          try {
+              await decodeAndStoreAudio(event.data.data, event.data.filename, uniquePersistentUrl, channelIndex);
+              console.log(`Audio data processed and stored for channel ${channelIndex}`);
+
+              // Store the unique URL for later access by other modules such as audio trimming
+              window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex] = uniquePersistentUrl;
+          } catch (error) {
+              console.error('Error processing audio data:', error);
+          }
+      } else {
+          console.error('Received data is not an ArrayBuffer as expected');
+      }
+  }
+});
+
+
+
+
+
+
+// // Message handler for receiving audio buffer from synth
+// window.addEventListener('message', async (event) => {
+//   if (event.data.type === 'audioData' && event.data.data instanceof ArrayBuffer) {
+//       console.log(`Received audio data message with channel index: ${event.data.channelIndex}`); // Log when the data is received
+//       try {
+//           // Correctly pass the ArrayBuffer and channel index to the handling function
+//           await handleIncomingAudioData(event.data.data, event.data.channelIndex);
+//       } catch (error) {
+//           console.error('Failed to process audio from synth:', error);
+//       }
+//   } else {
+//       console.error('Received data is not of type ArrayBuffer');
+//   }
+// });
+
+// // Function to handle incoming audio data for both forward and reverse playback
+// async function handleIncomingAudioData(arrayBuffer, channelIndex) {
+//   console.log(`Handling incoming synth audio data for channel index: ${channelIndex}`);
+//   const sampleName = `SynthSample_${channelIndex}`;  // Example of assigning a sample name, adjust as needed
+//   const fullUrl = `synth://${channelIndex}`;  // Simulating a URL structure for synth sources
+  
+//   // Use the existing function to decode and store audio which handles forward and reverse buffers
+//   await decodeAndStoreAudio(arrayBuffer, sampleName, fullUrl, channelIndex);
+// }
+
+
+// async function integrateAudioBuffer(audioBuffer, sampleName, fullUrl, channelIndex) {
+//   // Create reverse buffer
+//   const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//   // Store and manage the buffer similar to other sequence audio
+//   decodeAndStoreAudio(audioBuffer, sampleName, fullUrl, channelIndex);
+// }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Function to decode audio data
+const decodeAudioData = (audioData) => {
+  const audioContext = window.unifiedSequencerSettings.audioContext;
+  return new Promise((resolve, reject) => {
+      audioContext.decodeAudioData(audioData, decodedData => {
+          console.log('[HTML Debugging] [decodeAudioData] Audio data decoded successfully.');
+          resolve(decodedData);
+      }, error => {
+          console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
+          reject(error);
+      });
+  });
+};
+
+
+// async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
+//   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
+//   try {
+//       // Decode the audio data into a buffer
+//       const audioBuffer = await decodeAudioData(audioData);
+//       console.log("[decodeAndStoreAudio] Audio data decoded");
+
+//       // Create a reverse buffer by copying and reversing the audioBuffer
+//       const reverseBuffer = await createReverseBuffer(audioBuffer);
+
+//       // Store buffers using both channel-specific keys and URL-based keys
+//       const forwardKey = `channel_${channelIndex}_forward`;
+//       const reverseKey = `channel_${channelIndex}_reverse`;
+//       const forwardUrlKey = `${fullUrl}`;
+//       const reverseUrlKey = `${fullUrl}_reverse`;
+
+//       // Use a global buffer storage (adjust according to your actual storage method)
+//       audioBuffers.set(forwardKey, audioBuffer);
+//       audioBuffers.set(reverseKey, reverseBuffer);
+//       audioBuffers.set(forwardUrlKey, audioBuffer);
+//       audioBuffers.set(reverseUrlKey, reverseBuffer);
+
+//       console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
+
 async function decodeAndStoreAudio(audioData, sampleName, fullUrl, channelIndex) {
   console.log("[decodeAndStoreAudio] Attempting to decode audio data");
   try {
-    // Decode the audio data into a buffer
-    const audioBuffer = await decodeAudioData(audioData);
-    console.log("[decodeAndStoreAudio] Audio data decoded");
+      const audioBuffer = await decodeAudioData(audioData);
+      console.log("[decodeAndStoreAudio] Audio data decoded");
 
-    // Create a reverse buffer by copying and reversing the audioBuffer
-    const reverseBuffer = await createReverseBuffer(audioBuffer);
+      // Create a reverse buffer by copying and reversing the audioBuffer
+      const reverseBuffer = await createReverseBuffer(audioBuffer);
 
-    // Store buffers using both channel-specific keys and URL-based keys
-    const forwardKey = `channel_${channelIndex}_forward`;
-    const reverseKey = `channel_${channelIndex}_reverse`;
-    const forwardUrlKey = `${fullUrl}`;
-    const reverseUrlKey = `${fullUrl}_reverse`;
+      // Store buffers using both channel-specific keys and URL-based keys
+      const forwardKey = `channel_${channelIndex}_forward`;
+      const reverseKey = `channel_${channelIndex}_reverse`;
 
-    // Use a global buffer storage (adjust according to your actual storage method)
-    audioBuffers.set(forwardKey, audioBuffer);
-    audioBuffers.set(reverseKey, reverseBuffer);
-    audioBuffers.set(forwardUrlKey, audioBuffer);
-    audioBuffers.set(reverseUrlKey, reverseBuffer);
+      // Use a global buffer storage
+      audioBuffers.set(forwardKey, audioBuffer);
+      audioBuffers.set(reverseKey, reverseBuffer);
 
-    console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
-     
-    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
-        window.unifiedSequencerSettings.sourceNodes[channelIndex].disconnect();
-    }
+      // Associate URLs with the buffers
+      audioBuffers.set(`${fullUrl}`, audioBuffer);
+      audioBuffers.set(`${fullUrl}_reverse`, reverseBuffer);
 
-    // If the source node is already created and has a buffer, create a new one.
-    if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
-        if (window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer) {
-            console.log(`[decodeAndStoreAudio] Source node for channel ${channelIndex} is already in use. Creating a new one.`);
-            window.unifiedSequencerSettings.sourceNodes[channelIndex] = window.unifiedSequencerSettings.audioContext.createBufferSource();
-        }
-        window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
-    } else {
-        console.error(`[decodeAndStoreAudio] Source node not initialized for channel ${channelIndex}.`);
-    }
+      console.log(`[decodeAndStoreAudio] Forward and reverse audio buffers stored for channel ${channelIndex} and URL ${fullUrl}: ${sampleName}`);
 
-    // Update UI or other components that depend on these buffers
-    window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+      // Disconnect existing connections if the source node is already created
+      if (window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+          window.unifiedSequencerSettings.sourceNodes[channelIndex].disconnect();
+          window.unifiedSequencerSettings.sourceNodes[channelIndex] = null;  // Clear the existing source node if needed
+      }
 
-    // Optionally, trigger any UI updates or callbacks that need these buffers
-    if (typeof updateWaveformDisplay === "function") {
-      updateWaveformDisplay(channelIndex, audioBuffer);
-    }
+      // Check if the source node already exists and reassign the buffer
+      if (!window.unifiedSequencerSettings.sourceNodes[channelIndex]) {
+          window.unifiedSequencerSettings.sourceNodes[channelIndex] = window.unifiedSequencerSettings.audioContext.createBufferSource();
+      }
+
+      if (!window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer) {
+          window.unifiedSequencerSettings.sourceNodes[channelIndex].buffer = audioBuffer;
+          console.log(`[decodeAndStoreAudio] Buffer assigned to source node for channel ${channelIndex}`);
+      }
+
+      // Update UI or other components that depend on these buffers
+      window.unifiedSequencerSettings.updateProjectChannelNamesUI(channelIndex, sampleName);
+      console.log(`[decodeAndStoreAudio] UI updated with new sample name for channel ${channelIndex}`);
+
+      // Optionally, trigger any UI updates or callbacks that need these buffers
+      if (typeof updateWaveformDisplay === "function") {
+          updateWaveformDisplay(channelIndex, audioBuffer);
+          console.log("[decodeAndStoreAudio] Waveform display updated.");
+      }
 
   } catch (error) {
-    console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
+      console.error('[decodeAndStoreAudio] Error decoding and storing audio:', error);
   }
 }
+
+
 
 // Function to create a reverse buffer from an existing AudioBuffer
 // Accessibility: Both buffers can be accessed using their keys. 
@@ -167,19 +279,6 @@ async function createReverseBuffer(audioBuffer) {
 
 
 
-// Function to decode audio data
-const decodeAudioData = (audioData) => {
-  const audioContext = window.unifiedSequencerSettings.audioContext;
-  return new Promise((resolve, reject) => {
-      audioContext.decodeAudioData(audioData, decodedData => {
-          console.log('[HTML Debugging] [decodeAudioData] Audio data decoded successfully.');
-          resolve(decodedData);
-      }, error => {
-          console.error('[HTML Debugging] [decodeAudioData] Detailed Error:', { message: error.message, code: error.code });
-          reject(error);
-      });
-  });
-};
 
 
 async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = null) {
