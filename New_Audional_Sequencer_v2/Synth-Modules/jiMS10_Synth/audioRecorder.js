@@ -62,10 +62,6 @@ function setupMediaRecorder() {
         recorder.stop();
     };
 
-    // Additional event listeners for recording and playback control
-    document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
-    document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
-
     document.getElementById('playRecordButton').addEventListener('click', () => {
         if (context.state === 'suspended') {
             context.resume().then(() => {
@@ -93,8 +89,6 @@ function setupMediaRecorder() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', setupMediaRecorder);
-
 function blobToArrayBuffer(blob) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -106,32 +100,6 @@ function blobToArrayBuffer(blob) {
     });
 }
 
-
-// document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
-// document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
-
-// document.getElementById('playRecordButton').addEventListener('click', () => {
-//     if (context.state === 'suspended') {
-//         context.resume().then(() => {
-//             console.log("AudioContext resumed successfully");
-//             playRecordedAudio();
-//         }).catch(e => console.error('Error resuming the audio context:', e));
-//     } else {
-//         playRecordedAudio();
-//     }
-// });
-
-
-// document.getElementById('recordButton').addEventListener('click', () => {
-//     console.log('Recording started');
-//     audioChunks.length = 0;
-//     recorder.start();
-// });
-
-// document.getElementById('stopRecordButton').addEventListener('click', () => {
-//     console.log('Stopping recording');
-//     recorder.stop();
-// });
-
 // Delayed execution or tied to a user interaction
 document.addEventListener('DOMContentLoaded', setupMediaRecorder);
+

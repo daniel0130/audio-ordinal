@@ -133,8 +133,6 @@ function getVolume() {
     return document.getElementById("volume").value / 100;
 }
 
-navigator.requestMIDIAccess ? navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure) : console.warn("WebMIDI is not supported in this browser.");
-
 
 // Playback functionality
 function playBackMIDI() {

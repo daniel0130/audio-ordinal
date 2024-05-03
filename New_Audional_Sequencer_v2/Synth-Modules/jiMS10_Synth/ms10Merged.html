@@ -31,6 +31,8 @@
                 <select id="note"></select>
             </label>
             <button onclick="playMS10TriangleBass()">Play Note</button>
+            <div class="bpm-display" id="bpmDisplay">0 BPM</div>
+
         </div>
         <div class="control-container">
             <div class="fader-controls">
@@ -46,6 +48,7 @@
                 <button id="recordButton" onclick="resumeAudioContext();">Record Audio</button>
                 <button id="stopRecordButton">Stop Audio Recording</button>
                 <button id="playRecordButton" onclick="resumeAudioContext();">Play Audio Recording</button>
+                
                 <button id="recordMIDIButton">Record MIDI and Audio</button>
                 <button id="stopMIDIRecordButton">Stop and Buffer Audio Recording</button>
                 <button id="playMIDIRecordButton">Play MIDI Recording</button>
@@ -54,7 +57,7 @@
                 <button onclick="loadSettings()">Load Settings</button>
                 <button id="createMidiJsonFile">Download Json Recording</button>
                 <input type="file" id="loadMidiJsonFile" style="display: none;" />
-                <label for="loadMidiJsonFile" id="loadMidiJsonFileLabel">Load MIDI Recording</label>
+                <button id="quantizeRecording" >Quantize Recording</button>
             </div>
     </div>
     <script src="synth.js"></script>
