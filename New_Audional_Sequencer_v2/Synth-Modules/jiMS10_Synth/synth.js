@@ -67,7 +67,7 @@ function purgeAudioNodes() {
 
 function playMS10TriangleBass(frequency = null) {
     resumeAudioContext(); // Ensure the AudioContext is active
-    console.log(`playMS10TriangleBass called with Frequency: ${frequency}`);
+    console.log(`playMS10TriangleBass called with Frequency: ${frequency} at time: ${window.audioContext.currentTime}`);
 
     // Increment note count and check for purge
     noteCount++;
