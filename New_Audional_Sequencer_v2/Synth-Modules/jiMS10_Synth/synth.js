@@ -1,6 +1,37 @@
 // synth.js
 
+// Ensure context is not declared elsewhere
+let audioContextOptions = { sampleRate: 48000 };
+
+// Singleton pattern for audio context and gain node
+if (!window.audioContext) {
+    let _context;
+    let _gainNode;
+
+    Object.defineProperty(window, 'audioContext', {
+        get: function () {
+            if (!_context) {
+                _context = new (window.AudioContext || window.webkitAudioContext)(audioContextOptions);
+                _gainNode = _context.createGain();
+                _gainNode.connect(_context.destination);
+            }
+            return _context;
+        }
+    });
+
+    Object.defineProperty(window, 'gainNode', {
+        get: function () {
+            return _gainNode;
+        }
+    });
+}
+
+
+// let gainNode;
+let currentOscillator = null;
+let noteCount = 0; // Counter for notes played
 let currentChannelIndex = 0;  // Default to 0, update upon receiving message
+
 
 // Listen for messages from the parent
 window.addEventListener('message', function(event) {
@@ -11,18 +42,12 @@ window.addEventListener('message', function(event) {
 }, false);
 
 
-const audioContextOptions = { sampleRate: 48000 }; // Example: Set to 48000 Hz
-window.context = new (window.AudioContext || window.webkitAudioContext)();
-let currentOscillator = null;
-window.gainNode = context.createGain();
-window.gainNode.connect(context.destination);
-let noteCount = 0; // Counter for notes played
-
 // Global objects to track oscillators by frequency
 const activeOscillators = {};
 
 // Function to ensure AudioContext is resumed
 function resumeAudioContext() {
+    let context = window.audioContext;
     if (context.state === 'suspended') {
         context.resume().then(() => {
             console.log("AudioContext resumed successfully");
@@ -46,7 +71,7 @@ function playMS10TriangleBass(frequency = null) {
 
     // Increment note count and check for purge
     noteCount++;
-    if (noteCount >= 5) { // Purge every 40 notes
+    if (noteCount >= 40) { // Purge every 40 notes
         purgeAudioNodes();
     }
 
@@ -57,7 +82,8 @@ function playMS10TriangleBass(frequency = null) {
         currentOscillator = null;
     }
 
-    // Create and setup audio components as before
+    // Create and setup audio components
+    let context = window.audioContext;
     let oscillator = context.createOscillator();
     let gainNode = context.createGain();
     let filter = context.createBiquadFilter();
@@ -73,6 +99,7 @@ function playMS10TriangleBass(frequency = null) {
 }
 
 function setupOscillatorAndComponents(oscillator, gainNode, filter, distortion, frequency) {
+    let context = window.audioContext;
     // Configuration and setup logic as previously defined
     let waveformType = document.getElementById("waveform").value;
     let distortionAmount = parseFloat(document.getElementById("distortion").value);

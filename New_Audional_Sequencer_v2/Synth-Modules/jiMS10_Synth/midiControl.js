@@ -84,6 +84,12 @@ function onMIDIMessage(event) {
     // Correct handling of channel filtering
     if (channel >= 1 && channel <= 7) return;
 
+    // Ignore Control Change messages
+    if (messageType === 0xB0) {
+        // console.log('Control Change message ignored.');
+        return;
+    }
+
     // Handle MIDI messages based on type
     switch (messageType) {
         case MIDI_NOTE_ON:
