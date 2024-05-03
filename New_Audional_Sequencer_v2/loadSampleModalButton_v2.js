@@ -371,10 +371,14 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
     menu.style.top = `${y}px`;
     menu.className = 'custom-context-menu'; // Use a specific class for styling
 
+    // Fetch the current BPM value from the slider directly
+    const bpmValue = document.getElementById('bpm-slider').value;
+
+
     // Define menu options
     const options = [
         { label: 'Add User Channel Name', action: () => showChannelNamingModal(channelIndex, loadSampleButton) },
-        { label: 'Load Synth', action: () => loadSynth(channelIndex, loadSampleButton) }, // New menu option to load a synth
+        { label: 'Load Synth', action: () => loadSynth(channelIndex, loadSampleButton, bpmValue) }, // Updated to pass BPM
         // { label: 'Copy Ordinal ID', action: () => { console.log('Copy Ordinal ID clicked'); copyOrdinalId(channelIndex); } },
         // { label: 'Copy Channel Settings (coming soon)', action: () => console.log('Copy Channel Settings clicked') },
         // { label: 'Set Channel Colour', action: () => showColorPicker(contextEvent, button) },

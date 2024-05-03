@@ -97,3 +97,24 @@
      #playRecordButton {
          display: none;
      }
+
+     .button-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .button-container button {
+        margin-right: 10px; /* Adjust the margin as needed */
+    }
+    
+    .bpm-display {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        padding: 5px 10px;
+        border: 2px solid #333;
+        border-radius: 5px;
+        width: 100px;
+    }
+    

@@ -1,6 +1,6 @@
 // loadSynthModule.js
 
-function loadSynth(channelIndex, loadSampleButton) {
+function loadSynth(channelIndex, loadSampleButton, bpmValue) {
     console.log(`Loading synth for channel index: ${channelIndex}`);
     const iframe = document.createElement('iframe');
 
@@ -27,6 +27,10 @@ function loadSynth(channelIndex, loadSampleButton) {
 
         // Send the channel index to the iframe once it is loaded
         iframe.contentWindow.postMessage({ type: 'setChannelIndex', channelIndex: channelIndex }, '*');
+
+        // Fetch the BPM value from the input slider and send it to the iframe
+        iframe.contentWindow.postMessage({ type: 'setBPM', bpm: bpmValue }, '*');  // Send BPM value on load
+
 
         // Access the document within the iframe
         const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
