@@ -30,40 +30,54 @@ function saveSettings() {
 }
 
 
-        function loadSettings() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
+function loadSettings() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
 
-            input.onchange = event => {
-                const file = event.target.files[0];
-                if (!file) {
+    input.onchange = event => {
+        const file = event.target.files[0];
+        if (!file) {
+            console.error("No file selected.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const fullData = JSON.parse(e.target.result);
+                if (!fullData.settings || !fullData.midiRecording) {
+                    console.error("Invalid file format: Missing required data.");
                     return;
                 }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fullData = JSON.parse(e.target.result);
-                    const settings = fullData.settings;
-                    const midiData = fullData.midiRecording;
+                // Load settings
+                const settings = fullData.settings;
+                const ids = ["note", "waveform", "attack", "release", "cutoff", "resonance", "volume"];
+                ids.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = settings[id];
+                    } else {
+                        console.warn(`Element with ID ${id} not found.`);
+                    }
+                });
 
-                    // Load settings
-                    const ids = ["note", "waveform", "attack", "release", "cutoff", "resonance", "volume"];
-                    ids.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.value = settings[id];
-                        } else {
-                            console.warn(`Element with ID ${id} not found.`);
-                        }
-                    });
+                // Load MIDI data
+                if (Array.isArray(fullData.midiRecording)) {
+                    midiRecording = fullData.midiRecording; // Assuming midiRecording is used for playback
+                    console.log('MIDI data successfully loaded and set for playback.', midiRecording);
+                } else {
+                    console.error("Invalid MIDI data in file.");
+                }
+            } catch (error) {
+                console.error("Error parsing file:", error);
+            }
+        };
+        reader.readAsText(file);
+    };
 
-                    // Optionally handle MIDI data, depending on where it needs to be loaded
-                    console.log('Loaded MIDI data:', midiData);
-                };
-                reader.readAsText(file);
-            };
+    input.click();
+}
 
-            input.click();
-        }
         
