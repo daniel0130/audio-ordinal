@@ -35,21 +35,23 @@ function setupMediaRecorder() {
         console.log(`Recorder stopped, total chunks: ${audioChunks.length}`);
         if (audioChunks.length > 0) {
             const audioBlob = new Blob(audioChunks, { type: mimeType });
+            console.log('Blob created, converting to ArrayBuffer...');
             const arrayBuffer = await blobToArrayBuffer(audioBlob);
             
+            console.log('ArrayBuffer created, posting message to parent...');
             window.parent.postMessage({
                 type: 'audioData',
                 data: arrayBuffer,
                 mimeType: mimeType,
                 filename: 'SynthSample',
-                channelIndex: currentChannelIndex  // Use the dynamically stored channelIndex
+                channelIndex: currentChannelIndex
             }, '*');
             console.log('Audio data sent to parent.');
         } else {
             console.error('No audio data recorded.');
         }
     };
-
+    
     // Global access to recording controls
     window.startAudioRecording = () => {
         console.log('Global start recording triggered');
@@ -61,6 +63,18 @@ function setupMediaRecorder() {
         console.log('Global stop recording triggered');
         recorder.stop();
     };
+
+    function blobToArrayBuffer(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(blob);
+        });
+    }
+    
 
     document.getElementById('playRecordButton').addEventListener('click', () => {
         if (context.state === 'suspended') {
@@ -89,16 +103,6 @@ function setupMediaRecorder() {
     }
 }
 
-function blobToArrayBuffer(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            resolve(reader.result);
-        };
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(blob);
-    });
-}
 
 // Delayed execution or tied to a user interaction
 document.addEventListener('DOMContentLoaded', setupMediaRecorder);
