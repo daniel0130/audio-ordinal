@@ -32,14 +32,26 @@ let currentOscillator = null;
 let noteCount = 0; // Counter for notes played
 let currentChannelIndex = 0;  // Default to 0, update upon receiving message
 
-
 // Listen for messages from the parent
 window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'setChannelIndex') {
-        currentChannelIndex = event.data.channelIndex;
-        console.log(`[child] Channel index set to ${currentChannelIndex}`);
+    if (event.data) {
+        if (event.data.type === 'setChannelIndex') {
+            currentChannelIndex = event.data.channelIndex;
+            console.log(`[child] Channel index set to ${currentChannelIndex}`);
+        } else if (event.data.type === 'setBPM') {
+            const bpm = event.data.bpm;  // Assuming the BPM value is sent under the bpm key
+            console.log(`[child] BPM set to ${bpm}`);
+            // Update the BPM display on the page
+            const bpmDisplay = document.getElementById('bpmDisplay');
+            if (bpmDisplay) {
+                bpmDisplay.textContent = `${bpm} BPM`; // Updates the display to show the new BPM
+            } else {
+                console.error("BPM display element not found!");
+            }
+        }
     }
 }, false);
+
 
 
 // Global objects to track oscillators by frequency
