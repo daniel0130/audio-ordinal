@@ -36,11 +36,21 @@ let currentChannelIndex = 0;  // Default to 0, update upon receiving message
 window.addEventListener('message', function(event) {
     if (event.data) {
         if (event.data.type === 'setChannelIndex') {
-            currentChannelIndex = event.data.channelIndex;
+            const channelIndex = event.data.channelIndex;
+            currentChannelIndex = channelIndex;
             console.log(`[child] Channel index set to ${currentChannelIndex}`);
+            
+            // Update the channel display on the page
+            const channelDisplay = document.getElementById('sequencerChannelDisplay');
+            if (channelDisplay) {
+                channelDisplay.textContent = `Channel ${channelIndex}`; // Updates the display to show the new channel index
+            } else {
+                console.error("Channel display element not found!");
+            }
         } else if (event.data.type === 'setBPM') {
             const bpm = event.data.bpm;  // Assuming the BPM value is sent under the bpm key
             console.log(`[child] BPM set to ${bpm}`);
+            
             // Update the BPM display on the page
             const bpmDisplay = document.getElementById('bpmDisplay');
             if (bpmDisplay) {
@@ -51,6 +61,7 @@ window.addEventListener('message', function(event) {
         }
     }
 }, false);
+
 
 
 
