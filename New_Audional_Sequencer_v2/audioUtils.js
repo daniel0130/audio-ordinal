@@ -363,6 +363,7 @@ function playSound(currentSequence, channel, currentStep) {
   const audioContext = window.unifiedSequencerSettings.audioContext;
   const source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
+  source.started = false;  // Add a started flag
 
   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
   if (!gainNode) {
@@ -370,22 +371,20 @@ function playSound(currentSequence, channel, currentStep) {
     return;
   }
 
-  // Assign playback rate and connect source to gain node immediately before starting playback.
-  const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
-  source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
-  source.connect(gainNode);
-  gainNode.connect(audioContext.destination);
+  source.playbackRate.setValueAtTime(window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex], audioContext.currentTime);
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
 
-  // Calculate trim values directly here and start playback.
-  const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReverse);
-  source.start(0, trimStart, duration);
+    const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReverse);
+    source.start(0, trimStart, duration);
+    source.started = true;  // Set the started flag to true after calling start()
 
-  // Dispose of the source node after playback finishes.
-  source.onended = () => {
-    source.disconnect();
-  };
+    source.onended = () => {
+        source.disconnect();
+        window.unifiedSequencerSettings.sourceNodes[channelIndex] = null;
+    };
 
-  // console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
+    window.unifiedSequencerSettings.sourceNodes[channelIndex] = source;
 }
 
 
