@@ -107,61 +107,31 @@ function blobToArrayBuffer(blob) {
 }
 
 
-document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
-document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
+// document.getElementById('recordButton').addEventListener('click', window.startAudioRecording);
+// document.getElementById('stopRecordButton').addEventListener('click', window.stopAudioRecording);
 
-document.getElementById('playRecordButton').addEventListener('click', () => {
-    if (context.state === 'suspended') {
-        context.resume().then(() => {
-            console.log("AudioContext resumed successfully");
-            playRecordedAudio();
-        }).catch(e => console.error('Error resuming the audio context:', e));
-    } else {
-        playRecordedAudio();
-    }
-});
+// document.getElementById('playRecordButton').addEventListener('click', () => {
+//     if (context.state === 'suspended') {
+//         context.resume().then(() => {
+//             console.log("AudioContext resumed successfully");
+//             playRecordedAudio();
+//         }).catch(e => console.error('Error resuming the audio context:', e));
+//     } else {
+//         playRecordedAudio();
+//     }
+// });
 
 
-document.getElementById('recordButton').addEventListener('click', () => {
-    console.log('Recording started');
-    audioChunks.length = 0;
-    recorder.start();
-});
+// document.getElementById('recordButton').addEventListener('click', () => {
+//     console.log('Recording started');
+//     audioChunks.length = 0;
+//     recorder.start();
+// });
 
-document.getElementById('stopRecordButton').addEventListener('click', () => {
-    console.log('Stopping recording');
-    recorder.stop();
-});
+// document.getElementById('stopRecordButton').addEventListener('click', () => {
+//     console.log('Stopping recording');
+//     recorder.stop();
+// });
 
 // Delayed execution or tied to a user interaction
 document.addEventListener('DOMContentLoaded', setupMediaRecorder);
-
-// recorder.onstop = () => {
-//     console.log(`Recorder stopped, total chunks: ${audioChunks.length}`);
-//     if (audioChunks.length > 0) {
-//         const audioBlob = new Blob(audioChunks, { type: mimeType });
-//         console.log('Blob size:', audioBlob.size);
-
-//         // Convert Blob to ArrayBuffer and send to parent
-//         const reader = new FileReader();
-//         reader.onload = function() {
-//             const arrayBuffer = reader.result;
-//             window.parent.postMessage({
-//                 type: 'audioData',
-//                 data: arrayBuffer,
-//                 channelIndex: 0 // Assuming channel index is 0; adjust as needed
-//             }, '*');
-//             console.log('Audio data sent to parent.');
-//         };
-//         reader.onerror = function(err) {
-//             console.error('Error reading audio blob:', err);
-//         };
-//         reader.readAsArrayBuffer(audioBlob);
-//     } else {
-//         console.error('No audio data recorded.');
-//     }
-// };
-
-// recorder.onerror = event => {
-//     console.error('Recorder Error:', event.error);
-// };
