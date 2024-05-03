@@ -87,3 +87,13 @@
             display: none;
         }
     }
+
+
+    /* HIDDEN BUTTONS */
+
+     /* Hide these buttons */
+     #recordButton,
+     #stopRecordButton,
+     #playRecordButton {
+         display: none;
+     }

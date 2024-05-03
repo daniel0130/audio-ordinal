@@ -49,14 +49,26 @@ function scheduleNextStep() {
 function stopScheduler() {
     console.log('[SequenceChangeDebug] Stopping scheduler.');
     clearTimeout(timeoutId);
-    // Reset counters
+
+    // Iterate over all source nodes and stop them if they have been started
+    window.unifiedSequencerSettings.sourceNodes.forEach((source, index) => {
+        if (source && source.started) {
+            source.stop();  // Stop only if started
+            source.disconnect();  // Disconnect from the audio graph
+            window.unifiedSequencerSettings.sourceNodes[index] = null;  // Clear the reference
+        }
+    });
+
+    // Reset counters and state
     currentStep = 0;
     beatCount = 1;
-    barCount = 1; // Reset barCount to 1
+    barCount = 1;
     sequenceCount = 0;
     isPaused = false;
     pauseTime = 0;
 }
+
+
 
 
 function resetStepLights() {
