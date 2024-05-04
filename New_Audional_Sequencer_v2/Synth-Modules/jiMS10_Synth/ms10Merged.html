@@ -61,7 +61,18 @@
                 <button onclick="loadSettings()">Load Settings</button>
                 <button id="createMidiJsonFile">Download Json Recording</button>
                 <input type="file" id="loadMidiJsonFile" style="display: none;" />
-                <button id="quantizeRecording" >Quantize Recording</button>
+                <button id="quantizeRecording">Toggle Quantize Recording</button>
+                <button id="metronomeButton">Toggle Metronome</button>
+
+                <!-- <script>
+                    let isQuantizeActive = false;  // Track quantization state
+                
+                    document.getElementById('quantizeRecording').addEventListener('click', function() {
+                        isQuantizeActive = !isQuantizeActive;  // Toggle quantization
+                        this.classList.toggle('active');  // Toggle visual state
+                        console.log('Quantize Recording: ' + (isQuantizeActive ? 'ON' : 'OFF'));
+                    });
+                </script>             -->
             </div>
     </div>
     <script src="synth.js"></script>
@@ -76,7 +87,8 @@
     <!-- <script src="playNotes.js"></script> -->
     <script src="noteSelector.js"></script>
     <!-- <script src="saveLoadMidiRecordingJsonFiles.js"></script> -->
-    
+    <script src="metronome.js"></script>
+
        
 </body>
 

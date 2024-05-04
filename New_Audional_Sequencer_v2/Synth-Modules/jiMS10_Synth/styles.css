@@ -150,3 +150,12 @@
         width: 100px;
         transition: background-color .3s;
     } */
+
+
+    #quantizeRecording.active {
+        background-color: rgb(157, 53, 199);  
+    }
+
+    #metronomeButton.active {
+        background-color: rgb(254, 181, 47);  
+    }

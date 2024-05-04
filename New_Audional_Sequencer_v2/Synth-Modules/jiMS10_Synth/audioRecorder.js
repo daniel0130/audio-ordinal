@@ -76,31 +76,31 @@ function setupMediaRecorder() {
     }
     
 
-    document.getElementById('playRecordButton').addEventListener('click', () => {
-        if (context.state === 'suspended') {
-            context.resume().then(() => {
-                console.log("AudioContext resumed successfully");
-                playRecordedAudio();
-            }).catch(e => console.error('Error resuming the audio context:', e));
-        } else {
-            playRecordedAudio();
-        }
-    });
+//     // document.getElementById('playRecordButton').addEventListener('click', () => {
+//     //     if (context.state === 'suspended') {
+//     //         context.resume().then(() => {
+//     //             console.log("AudioContext resumed successfully");
+//     //             playRecordedAudio();
+//     //         }).catch(e => console.error('Error resuming the audio context:', e));
+//     //     } else {
+//     //         playRecordedAudio();
+//     //     }
+//     // });
 
-    function playRecordedAudio() {
-        let audioUrl; // Ensure this variable is defined correctly in your context or passed in
-        if (audioUrl) {
-            console.log('Playing from URL:', audioUrl);
-            const audio = new Audio(audioUrl);
-            audio.play().then(() => {
-                console.log('Playback started');
-            }).catch(e => {
-                console.error('Error playing the audio:', e);
-            });
-        } else {
-            console.error('Audio URL is not defined.');
-        }
-    }
+//     function playRecordedAudio() {
+//         let audioUrl; // Ensure this variable is defined correctly in your context or passed in
+//         if (audioUrl) {
+//             console.log('Playing from URL:', audioUrl);
+//             const audio = new Audio(audioUrl);
+//             audio.play().then(() => {
+//                 console.log('Playback started');
+//             }).catch(e => {
+//                 console.error('Error playing the audio:', e);
+//             });
+//         } else {
+//             console.error('Audio URL is not defined.');
+//         }
+//     }
 }
 
 
