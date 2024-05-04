@@ -63,6 +63,8 @@
         .dropdown-container, .control-container {
             display: flex;
             flex-wrap: wrap;
+            flex-direction: column;
+
             justify-content: space-around;
             width: 100%;
             margin: 5px 0;
@@ -107,14 +109,44 @@
         margin-right: 10px; /* Adjust the margin as needed */
     }
     
-    .bpm-display {
+ 
+    
+    .central-display {
+        display: flex;
+        flex-direction: column; /* Stacks children vertically */
+        align-items: center; /* Center-aligns children horizontally */
+        justify-content: center; /* Center-aligns children vertically */
+        width: 100%; /* Ensures the container takes full width of its parent */
+    }
+    
+    
+   .playNoteButton {
         font-family: Arial, sans-serif;
         font-size: 16px;
         font-weight: bold;
-        color: #333;
+        color: #2ac6ff;
         padding: 5px 10px;
-        border: 2px solid #333;
-        border-radius: 5px;
-        width: 100px;
+        border: solid #333;
+        width: 100px; /* Set a fixed width for both */
+        text-align: center; /* Center the text inside the BPM display */
+    }
+
+    .bpm-display {
+        margin: 10px 1px; /* Add some space around the BPM display */
+        color: #2ac6ff;
+        padding: 5px 10px;
+        border: solid #333;
+        width: 75px; /* Set a fixed width for both */
+
+
     }
     
+    /* .playNoteButton {
+        background-color: #2d2d2d;
+        color: #0fafff;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        width: 100px;
+        transition: background-color .3s;
+    } */

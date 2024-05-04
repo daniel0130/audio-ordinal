@@ -10,6 +10,8 @@
 
 <body>
     <h2>jiMS10 - Audional Synth</h2>
+    <div class="sequencer-channel" id="sequencerChannelDisplay">Channel 0</div>
+
     <div class="synth-container">
         <div class="dropdown-container">
             <label>
@@ -30,10 +32,12 @@
                 Note:
                 <select id="note"></select>
             </label>
-            <button onclick="playMS10TriangleBass()">Play Note</button>
-            <div class="bpm-display" id="bpmDisplay">0 BPM</div>
-
         </div>
+        <div class="central-display">
+            <div class="bpm-display" id="bpmDisplay">120 BPM</div>
+            <button class="playNoteButton" onclick="playMS10TriangleBass()">Play Note</button>
+        </div>
+        
         <div class="control-container">
             <div class="fader-controls">
                 <label>Attack (ms): <input id="attack" max="2000" min="0" type="range" value="10"></label>
