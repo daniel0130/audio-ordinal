@@ -10,7 +10,8 @@ let nextEventIndex = 0; // Initialize the nextEventIndex
 var playbackInterval; // Declare playbackInterval globally
 let recordingStartTime = 0; // Initialize recording start time
 let isRecordingAudioStarted = false; // Flag to track if recording has started
-
+let currentBPM = 120; // Default BPM value
+let isQuantizeActive = false;  // Track quantization state
 
 function onMIDISuccess(e) {
     console.log("MIDI access granted.");
@@ -167,16 +168,43 @@ function playMIDINote(message) {
     onMIDIMessage({ data: midiMessage });
 }
 
+function quantizeMidiEvent(timestamp, bpm, subdivisionsPerBeat = 32) {
+    // Calculate milliseconds per beat based on the BPM provided
+    const millisecondsPerBeat = 60000 / bpm;
+
+    // Calculate milliseconds per subdivision
+    // subdivisionsPerBeat allows quantization to finer musical timing details (e.g., eighth notes, sixteenth notes)
+    const millisecondsPerSubdivision = millisecondsPerBeat / subdivisionsPerBeat;
+
+    // Quantize the timestamp to the nearest subdivision
+    // Math.round ensures that the timestamp aligns to the closest possible subdivision point
+    const quantizedTimestamp = Math.round(timestamp / millisecondsPerSubdivision) * millisecondsPerSubdivision;
+
+    return quantizedTimestamp;
+}
+
+                
+document.getElementById('quantizeRecording').addEventListener('click', function() {
+    isQuantizeActive = !isQuantizeActive;  // Toggle quantization
+    this.classList.toggle('active');  // Toggle visual state
+    console.log('Quantize Recording: ' + (isQuantizeActive ? 'ON' : 'OFF'));
+});
+
 
 function handleMIDIRecording(messageType, data) {
-    console.log(`Recording MIDI event: Type=${messageType}, Data=${data}, Time=${performance.now() - recordingStartTime}`);
     const currentTime = performance.now();
     if (!recordingStartTime) {
         recordingStartTime = currentTime;  // Ensure recording start time is set at the first event
     }
-    const messageTime = currentTime - recordingStartTime;
+    let messageTime = currentTime - recordingStartTime;
+
+    // Apply quantization if enabled
+    if (isQuantizeActive) {
+        messageTime = quantizeMidiEvent(messageTime, currentBPM);
+    }
+
     midiRecording.push({ timestamp: messageTime, message: data });
-    console.log(`Recording MIDI event at ${currentTime}ms, ${messageTime}ms after recording start.`);
+    console.log(`Recording MIDI event: Type=${messageType}, Data=${data}, Time=${messageTime}ms after recording start.`);
 }
 
 
@@ -197,7 +225,10 @@ function startMIDIRecording() {
     console.log('MIDI Recording started.');
     isRecordingMIDI = true;
     midiRecording = []; // Reset the recording
-    console.log('MIDI Recording Active');
+    if (isMetronomeActive) {
+        startMetronome(currentBPM);
+      }
+      console.log("Recording started.");
    
 }
 
@@ -208,6 +239,7 @@ function stopMIDIRecording() {
         clearAllIntervals();  // Clear any playback intervals
         console.log('MIDI Recording stopped');
         isRecordingAudioStarted = false; // Reset recording started flag
+        stopMetronome();
 
         // Stop audio recording with MIDI recording
         if (window.stopAudioRecording) {
@@ -233,16 +265,32 @@ function manageMIDIResources() {
 }
 
 
-// Event listener setup with error checking
 function addMIDIControlEventListeners() {
     const recordButton = document.getElementById('recordMIDIButton');
     const stopRecordButton = document.getElementById('stopMIDIRecordButton');
-    const playRecordButton = document.getElementById('playMIDIRecordButton');
+    const playRecordButton = document.getElementById('playMIDIRecordButton'); // Ensure this is the correct ID for the intended button
 
     if (recordButton) recordButton.addEventListener('click', startMIDIRecording);
     if (stopRecordButton) stopRecordButton.addEventListener('click', stopMIDIRecording);
-    if (playRecordButton) playRecordButton.addEventListener('click', playBackMIDI);
+    if (playRecordButton) playRecordButton.addEventListener('click', () => {
+        playBackMIDI(); // Plays back MIDI
+        playRecordedAudio(); // Plays back Audio, assuming this function is properly defined and handles AudioContext
+    });
 }
+
+function playRecordedAudio() {
+    // Use the globally defined audio context from window.audioContext
+    if (window.audioContext.state === 'suspended') {
+        window.audioContext.resume().then(() => {
+            console.log("AudioContext resumed successfully");
+            // Insert audio playback logic here if any additional steps are needed
+        }).catch(e => console.error('Error resuming the audio context:', e));
+    } else {
+        // Insert audio playback logic here
+        console.log("Audio context is active, proceeding with playback");
+    }
+}
+
 
 addMIDIControlEventListeners();
 
