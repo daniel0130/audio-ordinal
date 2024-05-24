@@ -72,7 +72,7 @@ async function processHTMLResponse(htmlText) {
       const base64AudioData = audioSourceElement.getAttribute('src');
       console.log("[processHTMLResponse] Audio source element found");
 
-      if (/^data:audio\/(wav|mp3);base64,/.test(base64AudioData.toLowerCase())) {
+      if (/^data:audio\/(wav|mp3|flac);base64,/.test(base64AudioData.toLowerCase())) {
           audioData = base64ToArrayBuffer(base64AudioData.split(',')[1]);
           console.log("[processHTMLResponse] Audio data set from HTML");
       } else {
@@ -312,7 +312,13 @@ async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = 
           if (!sampleName) {
               sampleName = processedSampleName || sampleNameGiven || fullUrl.split('/').pop();
           }
-        } else {
+      } else if (contentType.includes('audio/flac')) { // Recognize FLAC content type
+          audioData = await response.arrayBuffer();
+          // Only update the sampleName if it hasn't been set by the user.
+          if (!sampleName) {
+              sampleName = sampleNameGiven || fullUrl.split('/').pop().split('#')[0].split('?')[0] || 'Unnamed Sample';
+          }
+      } else {
           audioData = await response.arrayBuffer();
           // Only update the sampleName if it hasn't been set by the user.
           if (!sampleName) {
@@ -339,6 +345,7 @@ async function fetchAudio(url, channelIndex, sampleNameGiven = null, callback = 
       console.error(`[fetchAndProcessAudio] Error fetching audio from URL: ${url}`, error);
   }
 }
+
 
 
 
