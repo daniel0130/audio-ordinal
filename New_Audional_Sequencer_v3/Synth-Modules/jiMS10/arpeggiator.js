@@ -1,3 +1,5 @@
+// arpeggiator.js
+
 import { playMS10TriangleBass, stopMS10TriangleBass, context } from './audioContext.js';
 import { SYNTH_CHANNEL } from './iframeMessageHandling.js';
 
@@ -5,11 +7,12 @@ const sequencerChannel = new BroadcastChannel('sequencerChannel');
 
 export let isArpeggiatorOn = false;
 export let arpNotes = [];
+export let isLatchModeOn = false;
+
 let currentArpIndex = 0;
 let nextNoteTime = 0;
 let isNudgeActive = false;
 let timerID = null;
-let isLatchModeOn = false;
 
 const LOOKAHEAD = 15.0; // milliseconds
 const SCHEDULE_AHEAD_TIME = 0.05; // seconds
@@ -77,16 +80,19 @@ export const loadArpNotesFromLocalStorage = () => {
   }
 };
 
-
 export const addNoteToArpeggiator = (frequency) => {
+  console.log(`Trying to add note with frequency: ${frequency}`);
+  console.log(`Latch mode is ${isLatchModeOn ? 'enabled' : 'disabled'}`);
   if (isLatchModeOn) {
-      console.log(`Channel ${SYNTH_CHANNEL}: Adding note to arpeggiator: ${frequency}`);
-      arpNotes.push(frequency);
-      updateArpNotesDisplay();
-      sequencerChannel.postMessage({ type: 'updateArpNotes', arpNotes });
-      saveArpNotesToLocalStorage();  // Save changes to local storage
+    console.log(`Channel ${SYNTH_CHANNEL}: Adding note to arpeggiator: ${frequency}`);
+    arpNotes.push(frequency);
+    updateArpNotesDisplay();
+    sequencerChannel.postMessage({ type: 'updateArpNotes', arpNotes });
+    saveArpNotesToLocalStorage();  // Save changes to local storage
   }
 };
+
+
 
 export const deleteLastNote = () => {
   console.log(`Channel ${SYNTH_CHANNEL}: Deleting last note from arpeggiator`);
@@ -169,10 +175,12 @@ export const updateArpNotesDisplay = () => {
 
 
 export const toggleLatchMode = () => {
+  console.log(`Toggling latch mode. Current state: ${isLatchModeOn}`);
   isLatchModeOn = !isLatchModeOn;
   document.getElementById('latchMode').style.backgroundColor = isLatchModeOn ? 'red' : '';
   console.log(`Latch mode ${isLatchModeOn ? 'enabled' : 'disabled'}`);
 };
+
 
 const applySpeedModifier = (interval) => {
   const speed = document.getElementById('arpSpeed').value;
@@ -256,12 +264,14 @@ export const adjustArpeggiatorTiming = (nudgeValue) => {
   console.log(`Adjusted nextNoteTime to: ${nextNoteTime}`);
 };
 
-// Event Listeners for Arpeggiator Controls
 const setupEventListeners = () => {
-  document.getElementById('latchMode').addEventListener('click', toggleLatchMode);
-  document.getElementById('startStopArp').addEventListener('click', toggleArpeggiator);
+  document.getElementById('startStopArp').addEventListener('click', () => {
+    console.log('Start/Stop Arpeggiator button clicked');
+    toggleArpeggiator();
+  });
+
   document.getElementById('addRest').addEventListener('click', () => {
-    console.log('Adding rest to arpeggiator');
+    console.log('Add Rest button clicked');
     arpNotes.push(null);
     if (isArpeggiatorOn) {
       currentArpIndex = currentArpIndex % arpNotes.length;
@@ -269,8 +279,21 @@ const setupEventListeners = () => {
     updateArpNotesDisplay();
     sequencerChannel.postMessage({ type: 'updateArpNotes', arpNotes });
   });
-  document.getElementById('deleteLastNote').addEventListener('click', deleteLastNote);
-  document.getElementById('timingAdjust').addEventListener('input', () => isNudgeActive = true);
+
+  document.getElementById('deleteLastNote').addEventListener('click', () => {
+    console.log('Delete Last Note button clicked');
+    deleteLastNote();
+  });
+
+  document.getElementById('latchMode').addEventListener('click', () => {
+    console.log('Latch Mode button clicked');
+    toggleLatchMode();
+  });
+
+  document.getElementById('timingAdjust').addEventListener('input', () => {
+    isNudgeActive = true;
+  });
+
   document.getElementById('timingAdjust').addEventListener('change', () => {
     isNudgeActive = false;
     if (isArpeggiatorOn) {
@@ -279,6 +302,7 @@ const setupEventListeners = () => {
   });
 };
 
+// Call the function to set up the event listeners
 setupEventListeners();
 
  // Listen for messages from the iframe to dynamically adjust its size

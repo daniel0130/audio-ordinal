@@ -27,7 +27,7 @@ function requestMIDIAccess() {
     }
 }
 
-let isRecording = false;
+export let isRecording = false;
 let isWarning = false;
 let warningTimeout;
 

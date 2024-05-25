@@ -4,6 +4,7 @@ import { playMS10TriangleBass } from './audioContext.js';
 import { getMidiRecording, recordMidiEvent } from './midiRecording.js';
 import { getChannelIndex } from './activeSynthChannelIndex.js'; 
 import { SYNTH_CHANNEL } from './iframeMessageHandling.js';
+import { addNoteToArpeggiator } from './arpeggiator.js';
 
 
 const A4_MIDI_NUMBER = 69;
@@ -54,14 +55,20 @@ function handleArpeggiatorMIDIEvent(event, channelIndex) {
     }
 }
 
+// handleNoteEvent function
 export function handleNoteEvent(note, velocity, isNoteOn) {
     if (!isNoteOn) return;
     const channelIndex = SYNTH_CHANNEL;
     const frequency = midiNoteToFrequency(note);
     console.log(`[handleNoteEvent] Playing note. MIDI note: ${note}, Frequency: ${frequency}, Channel Index: ${channelIndex}`);
+    
+    // Play the note
     playMS10TriangleBass(frequency);
-}
-
+    
+    // Add note to arpeggiator if latch mode is on
+    addNoteToArpeggiator(frequency);
+  }
+  
 export function midiNoteToFrequency(note) {
     if (note < 0 || note > 127) {
         console.error('[midiNoteToFrequency] Invalid MIDI note:', note);
