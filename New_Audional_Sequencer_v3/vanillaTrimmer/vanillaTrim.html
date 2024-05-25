@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Trimmer</title>
+    <style>
+        .waveform-container { position: relative; width: 100%; height: 200px; background: #f3f3f3; border: 1px solid #000; }
+        canvas, .dimmed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        canvas { display: block; }
+        .slider { width: 100%; }
+        .dimmed { background: rgba(0, 0, 0, 0.5); }
+        .loop-button.on { background-color: green; }
+        .loop-button.off { background-color: red; }
+
+
+        /* General slider style */
+        
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    outline: none;
+    opacity: 0.7;
+    height: 2px;
+    margin: 10px 0;
+    flex: 1; /* This makes sliders take equal space */
+
+}
+
+/* Slider thumb styles (common) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    border: solid 10px transparent;
+    cursor: pointer;
+    position: relative;
+}
+
+.slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    border: solid 10px transparent;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Specific styles for start and end sliders */
+#startSlider::-webkit-slider-thumb {
+    border-right-color: green; /* Adjusted for rotation */
+    border-left-width: 0;
+    transform: translateY(-50%) rotate(90deg); /* Rotated 90 degrees clockwise */
+}
+
+#startSlider::-moz-range-thumb {
+    border-right-color: green;
+    border-left-width: 0;
+    transform: translateY(-50%) rotate(90deg);
+}
+
+#endSlider::-webkit-slider-thumb {
+    border-left-color: red; /* Adjusted for rotation */
+    border-right-width: 0;
+    transform: translateY(50%) rotate(-90deg); /* Rotated 90 degrees counterclockwise */
+}
+
+#endSlider::-moz-range-thumb {
+    border-left-color: red;
+    border-right-width: 0;
+    transform: translateY(50%) rotate(-90deg);
+}
+
+/* Hide the slider track (for most browsers) */
+.slider::-webkit-slider-runnable-track {
+    background: transparent;
+}
+
+.slider::-moz-range-track {
+    background: transparent;
+}
+
+.slider::-ms-track {
+    background: transparent;
+}
+
+/* Additional CSS to overlay sliders */
+#startSlider, #endSlider {
+    position: absolute;
+    top: 100%; /* Adjust as needed to position within the waveform container */
+    z-index: 10; /* Ensures sliders are above the dimmed areas */
+}
+
+#startSlider {
+    z-index: 11; /* Ensures start slider is above the end slider */
+}
+    </style>
+</head>
+<body>
+    <div id="audioTrimmerModal">
+        <h1>Audio Trimmer</h1>
+        <input type="text" id="ordinalIdInput" placeholder="Enter Ordinal ID" />
+        <button id="loadSampleButton">Load Sample</button>
+        <div class="waveform-container">
+            <canvas id="waveformCanvas" width="4000" height="800"></canvas>
+            <canvas id="playbackCanvas" width="4000" height="800"></canvas>
+            <div class="dimmed" id="startDimmed"></div>
+            <div class="dimmed" id="endDimmed"></div>
+            <input type="range" class="slider" id="startSlider" value="0" min="0" step="0.01">
+            <input type="range" class="slider" id="endSlider" value="100" min="0" step="0.01">
+        </div>
+        <br><br>
+        <div>
+        <button id="playButton">Play</button>
+        <button id="stopButton">Stop</button>
+        <button id="loopButton" class="loop-button off">Loop Selection</button>
+    </div>
+</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => new AudioTrimmer().initialize());
+
+        class AudioTrimmer {
+            constructor() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.audioBuffer = null;
+                this.sourceNode = null;
+                this.isPlaying = false;
+                this.isLooping = false;
+                this.startTime = 0;
+                this.totalSampleDuration = 0;
+                this.startSliderValue = 0;
+                this.endSliderValue = 100;
+                this.trimmedSampleDuration = 0;
+                this.displayTimeout = null;
+            }
+
+            initialize() {
+                ['ordinalIdInput', 'loadSampleButton', 'waveformCanvas', 'playbackCanvas', 'startSlider', 'endSlider', 'playButton', 'stopButton', 'loopButton', 'startDimmed', 'endDimmed']
+                    .forEach(id => this[id] = document.getElementById(id));
+                this.ctx = this.waveformCanvas.getContext('2d');
+                this.playbackCtx = this.playbackCanvas.getContext('2d');
+                this.addEventListeners();
+
+                // Initialize slider values and event listeners
+                this.initializeSliders();
+
+                // Update the dimmed areas based on the initial slider values
+                this.updateDimmedAreas(); // Ensure dimmed areas are correctly set on page load
+            }
+
+            initializeSliders() {
+                const startSlider = this.startSlider;
+                const endSlider = this.endSlider;
+
+                // Initialize state
+                let startSliderState = 0;   // Start slider state (0-100)
+                let endSliderState = 100;    // End slider state (0-100)
+
+                startSlider.value = startSliderState;
+                endSlider.value = endSliderState;
+
+                startSlider.addEventListener('input', () => {
+                    startSliderState = parseInt(startSlider.value);
+                    if (startSliderState > endSliderState) {
+                        startSlider.value = endSliderState; // Limit to end slider position
+                    }
+                });
+
+                endSlider.addEventListener('input', () => {
+                    endSliderState = parseInt(endSlider.value);
+                    if (endSliderState < startSliderState) {
+                        endSlider.value = startSliderState; // Limit to start slider position
+                    }
+                });
+            }
+
+            updateSliderValues() {
+                this.startSliderValue = parseFloat(this.startSlider.value);
+                this.endSliderValue = parseFloat(this.endSlider.value);
+                this.updateDimmedAreas(); // This will update the dimmed areas based on the sliders
+                this.updateTrimmedSampleDuration();
+                this.debounceDisplayValues();
+            }
+
+        
+            updateDimmedAreas() {
+                // Assuming maxDuration represents the total duration or range for the sliders
+                const maxDuration = this.audioBuffer ? this.audioBuffer.duration : 100;
+
+                // Calculate the width and position of the start and end dimmed areas based on slider values
+                const startDimmedWidth = `${this.startSliderValue / maxDuration * 100}%`;
+                const endDimmedWidth = `${(1 - this.endSliderValue / maxDuration) * 100}%`;
+                const endDimmedLeft = `${this.endSliderValue / maxDuration * 100}%`;
+
+                // Adjust the start and end dimmed areas
+                this.startDimmed.style.width = startDimmedWidth;
+                this.startDimmed.style.left = '0';
+
+                // Calculate the position of the end dimmed area from the left
+                this.endDimmed.style.width = endDimmedWidth;
+                this.endDimmed.style.left = endDimmedLeft;
+            }
+
+            updateTrimmedSampleDuration() {
+                const startValue = this.startSliderValue;
+                const endValue = this.endSliderValue;
+                this.trimmedSampleDuration = Math.max(0, endValue - startValue);
+                this.debounceDisplayValues();
+            }
+
+
+            debounceDisplayValues() {
+                if (this.displayTimeout) {
+                    clearTimeout(this.displayTimeout);
+                }
+                this.displayTimeout = setTimeout(() => this.displayValues(), 3000);
+            }
+
+            displayValues() {
+                console.log("Total Sample Duration:", this.totalSampleDuration);
+                console.log("Trimmed Sample Duration:", this.trimmedSampleDuration);
+                console.log("Start Slider Value:", this.startSliderValue);
+                console.log("End Slider Value:", this.endSliderValue);
+                console.log("Is Playing:", this.isPlaying);
+                console.log("Is Looping:", this.isLooping);
+                // Add any other values you wish to display
+            }
+
+            addEventListeners() {
+                this.loadSampleButton.addEventListener('click', () => this.loadSample());
+                this.playButton.addEventListener('click', () => this.playAudio());
+                this.stopButton.addEventListener('click', () => this.stopAudio());
+                this.loopButton.addEventListener('click', () => this.toggleLoop());
+                ['startSlider', 'endSlider'].forEach(slider => 
+                    this[slider].addEventListener('input', () => this.updateSliderValues()));
+            }
+
+            async loadSample() {
+                if (!this.ordinalIdInput.value) return;
+                this.startSliderValue = 0;
+                this.endSliderValue = 100;
+                this.updateSliderValues();
+                try {
+                    const url = `https://ordinals.com/content/${this.ordinalIdInput.value}`;
+                    const response = await fetch(url);
+                    const contentType = response.headers.get('content-type');
+                    let arrayBuffer = contentType && contentType.includes('application/json') ?
+                        this.base64ToArrayBuffer((await response.json()).audioData.split(',')[1]) : await response.arrayBuffer();
+                    this.audioBuffer = await this.decodeAudioData(arrayBuffer);
+                    [this.startSlider, this.endSlider].forEach(slider => slider.max = this.audioBuffer.duration);
+                    this.updateSliderValues();
+                    this.drawWaveform();
+                } catch (error) {
+                    console.error('Error fetching or decoding audio:', error);
+                }
+                if (this.audioBuffer) {
+                    this.totalSampleDuration = this.audioBuffer.duration;
+                    this.updateTrimmedSampleDuration();
+                }
+                if (this.audioBuffer) {
+                    this.totalSampleDuration = this.audioBuffer.duration;
+                    this.updateTrimmedSampleDuration();
+                }
+                this.debounceDisplayValues();
+            }
+
+            base64ToArrayBuffer(base64) {
+                return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
+            }
+
+            decodeAudioData(audioData) {
+                return new Promise((resolve, reject) => 
+                    this.audioContext.decodeAudioData(audioData, resolve, e => reject(new Error(`Decoding audio data failed with error: ${e}`))));
+            }
+
+    drawWaveform() {
+        if (!this.audioBuffer) return;
+        const width = this.waveformCanvas.width;
+        const height = this.waveformCanvas.height;
+        const channelData = this.audioBuffer.getChannelData(0);
+        const step = Math.ceil(channelData.length / width);
+        const amp = height / 2;
+        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.beginPath();
+
+        for (let i = 0; i < width; i++) {
+            const { min, max } = this.getMinMax(channelData, i * step, step);
+            this.ctx.moveTo(i, amp * (1 + min));
+            this.ctx.lineTo(i, amp * (1 + max));
+        }
+
+        this.ctx.stroke();
+    }
+
+    getMinMax(channelData, startIndex, step) {
+        let min = 1.0, max = -1.0;
+        for (let i = 0; i < step; i++) {
+            const datum = channelData[startIndex + i];
+            if (datum < min) min = datum;
+            if (datum > max) max = datum;
+        }
+        return { min, max };
+    }
+
+    playAudio() {
+        if (this.isPlaying) {
+            this.stopAudio();
+        }
+
+        this.sourceNode = this.audioContext.createBufferSource();
+        this.sourceNode.buffer = this.audioBuffer;
+        this.sourceNode.connect(this.audioContext.destination);
+        const startValue = this.startSliderValue;
+        const endValue = this.endSliderValue;
+        this.sourceNode.loop = this.isLooping;
+        if (this.isLooping) {
+            this.sourceNode.loopStart = Math.max(0, startValue);
+            this.sourceNode.loopEnd = Math.min(endValue, this.audioBuffer.duration);
+        }
+        if (this.audioBuffer && startValue < endValue) {
+            this.sourceNode.start(0, startValue, endValue - startValue);
+            this.startTime = this.audioContext.currentTime - startValue;
+            this.isPlaying = true;
+            this.animatePlayback();
+        }
+        this.sourceNode.onended = () => {
+            this.isPlaying = false;
+            if (this.isLooping) this.playAudio();
+        };
+    }
+
+    stopAudio() {
+        if (this.isPlaying && this.sourceNode) {
+            this.sourceNode.disconnect();
+            this.sourceNode = null;
+            this.isPlaying = false;
+        }
+        this.isLooping = false;
+    }
+
+    toggleLoop() {
+        this.isLooping = !this.isLooping;
+        this.loopButton.classList.toggle('on', this.isLooping);
+        this.loopButton.classList.toggle('off', !this.isLooping);
+    }
+
+
+    getCurrentPlaybackPosition() {
+        if (!this.isPlaying) return 0;
+        return (this.audioContext.currentTime - this.startTime) % this.audioBuffer.duration;
+    }
+
+    updatePlaybackCanvas() {
+        const currentPosition = this.getCurrentPlaybackPosition();
+        const width = this.playbackCanvas.width;
+        const height = this.playbackCanvas.height;
+        this.playbackCtx.clearRect(0, 0, width, height);
+        const xPosition = (currentPosition / this.audioBuffer.duration) * width;
+        this.playbackCtx.beginPath();
+        this.playbackCtx.moveTo(xPosition, 0);
+        this.playbackCtx.lineTo(xPosition, height);
+        this.playbackCtx.strokeStyle = '#FF0000';
+        this.playbackCtx.lineWidth = 2;
+        this.playbackCtx.stroke();
+    }
+
+    animatePlayback() {
+        if (this.isPlaying) {
+            this.updatePlaybackCanvas();
+            requestAnimationFrame(() => this.animatePlayback());
+        }
+    }
+}
+
+    </script>
+
+    <!-- <script src="script.js"></script>-->
+</body>
+</html>

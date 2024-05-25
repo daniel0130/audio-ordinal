@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JiMS10 - Audional Synth</title>
+  <link rel="stylesheet" href="styles/baseStyles.css">
+  <link rel="stylesheet" href="styles/buttonStyles.css">
+  <link rel="stylesheet" href="styles/formStyles.css">
+  <link rel="stylesheet" href="styles/layoutStyles.css">
+  <link rel="stylesheet" href="styles/labels-and-displays.css">
+</head>
+<body>
+  <div class="synth-container">
+    <h2>JiMS10 Synth</h2>
+    <div class="controls-column">
+      <label class="project-settings-label">
+    
+        <div id="sequencerChannelDisplay" class="channel-display">Channel: N/A</div>
+        <div id="bpmDisplay" class="bpm-display">BPM: N/A</div>
+      </label>
+      <button id="mute" class="on" aria-pressed="true">UNMUTE</button>
+
+      <label>Waveform:
+        <select id="waveform">
+          <option value="sawtooth" selected>Sawtooth</option>
+          <option value="square">Square</option>
+          <option value="triangle">Triangle</option>
+          <option value="pulse">Pulse</option>
+          <option value="sine">Sine</option>
+          <option value="rampedSawtooth">Ramped Sawtooth</option>
+          <option value="rampedSquare">Ramped Square</option>
+          <option value="rampedTriangle">Ramped Triangle</option>
+          <option value="rampedPulse">Ramped Pulse</option>
+          <option value="rampedSine">Ramped Sine</option>
+        </select>
+      </label>
+    </div>
+    <div class="controls-column">
+      <label>Attack (ms): <input id="attack" type="range" value="10" max="2000" min="0"></label>
+      <label>Release (ms): <input id="release" type="range" value="500" max="2000" min="0"></label>
+      <label>Cutoff (Hz): <input id="cutoff" type="range" value="2000" max="2000" min="20"></label>
+      <label>Resonance: <input id="resonance" type="range" value="5" max="10" min="0" step="0.1"></label>
+      <label>Volume: <input id="volume" type="range" value="50" max="100" min="0"></label>
+    </div>
+    <div class="arpeggiator-controls">
+      <h3>Arpeggiator</h3>
+      <div class="control-button-row">
+        <button id="latchMode">Latch Mode</button>
+        <button id="addRest">Add Rest</button>
+        <button id="deleteLastNote">Delete Last Step</button>
+      </div>
+      <button id="startStopArp">Start Arpeggiator</button>
+
+      <div class="control-pair">
+        <label>Tempo (BPM): <input id="arpTempo" type="number" value="120" max="240" min="40" step="0.1"></label>
+      </div>
+      <div class="control-pair">
+        <label>Pattern:
+          <select id="arpPattern">
+            <option value="up">Up</option>
+            <option value="down">Down</option>
+            <option value="random">Random</option>
+            <option value="up-down">Up-Down</option>
+            <option value="double-step">Double Step</option>
+            <option value="random-rest">Random with Rests</option>
+          </select>
+        </label>
+        <label>Speed:
+          <select id="arpSpeed">
+            <option value="half-time">Half Time</option>
+            <option value="normal" selected>Normal</option>
+            <option value="double-time">Double Time</option>
+            <option value="quadruple-time">Quadruple Time</option>
+            <option value="octuple-time">Octuple Time</option>
+          </select>
+        </label>
+      </div>
+        <div class="control-button-row">
+            <button id="saveSettings">Save Settings</button>
+            <input type="file" id="loadSettingsFile" accept=".json" style="display:none;">
+            <button id="loadSettingsButton">Load Settings</button>
+            <button id="RecordMidi">Record Midi</button>
+        </div>
+        <button id="PlayMidi">Play Recorded Midi</button>
+    </div>
+    
+      <div class="timing-section">
+        <label for="timingAdjust">Sync Nudge (+/- 3%):</label>
+        <input id="timingAdjust" type="range" value="0" max="3" min="-3" step="0.1">
+        <canvas height="60" id="arpNotesDisplay" style="width: 100%;"></canvas>
+      </div>
+    </div>
+    <script type="module" src="main.js"></script>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = [
+        'mute',
+        'latchMode',
+        'addRest',
+        'deleteLastNote',
+        'startStopArp'
+      ];
+
+      buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        button.addEventListener('click', () => {
+          if (buttonId === 'addRest' || buttonId === 'deleteLastNote') {
+            button.classList.add('flash');
+            setTimeout(() => {
+              button.classList.remove('flash');
+            }, 200); // Duration of the flash animation
+          } else {
+            button.classList.toggle('on');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

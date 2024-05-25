@@ -1,0 +1,158 @@
+/* --- Containers & Layout --- */
+
+.drum-machine-container {
+    width: 95%;
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 20px; /* Add some padding for spacing */
+}
+/* Hide all step containers by default */
+.steps-container {
+    display: none;
+}
+
+/* Show only the step containers that are inside the drum machine container */
+.drum-machine-container .steps-container {
+    display: grid;
+    grid-template-columns: repeat(64, minmax(10px, 1fr)); /* 64 columns */
+    gap: 0px;
+    overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
+}
+
+/* Adjust the breakpoints as needed based on the total width of 64 buttons */
+@media screen and (max-width: 1280px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(32, minmax(10px, 1fr)); /* Adjust to 32 columns */
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .drum-machine-container .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+.controls-container {
+    flex: 1; /* Takes up 1 part of the available space */
+    /* Add more styling as needed */
+}
+
+.controls-container{
+    margin: 5px;
+    border: 1px solid #ccc; /* Example border */
+    border-radius: 5px; /* Rounded corners */
+    overflow: auto; /* In case content overflows */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.steps-container {
+    display: none;
+    grid-template-columns: repeat(64, minmax(10px, 1fr)); /* 64 columns */
+    gap: 0px;
+    overflow-x: auto; /* Enable horizontal scroll if buttons don't fit */
+}
+
+/* Adjust the breakpoints as needed based on the total width of 64 buttons */
+@media screen and (max-width: 1280px) { /* Example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(32, minmax(10px, 1fr)); /* Adjust to 48 columns */
+    }
+}
+
+@media screen and (max-width: 1024px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 32 columns */
+    }
+}
+
+@media screen and (max-width: 768px) { /* Another example breakpoint */
+    .steps-container {
+        grid-template-columns: repeat(16, minmax(10px, 1fr)); /* Adjust to 16 columns */
+    }
+}
+
+
+
+
+.channel-controls {
+    margin-top: 0px;
+}
+
+/* --- Steps and Sequence Light Styles --- */
+#sequence-lights {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+    margin-left: 10%;
+}
+
+.sequence-light {
+    grid-column: span 1;
+    height: 15px;
+    background-color: grey;
+}
+
+.sequence-light.on {
+    background-color: greenyellow;
+}
+
+/* --- LOWER Button and Container Styles --- */
+
+
+.quickplay-button-container {
+    width: 90%;
+    margin: 0 auto; /* Center the container horizontally */
+    display: flex; /* Use flexbox for horizontal alignment */
+    align-items: center; /* Center items vertically */
+    justify-content: center; /* Center items horizontally */
+}
+
+.quick-play-button {
+    width: 30px; /* Set a fixed width */
+    height: 30px; /* Set the same value for height to make it square */
+    padding: 5px; /* Adjust padding as needed */
+    margin: 0 5px; /* Adjust margin for spacing between buttons */
+    display: flex;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    background-color: #4CAF50; /* Example background color */
+    color: white; /* Text color */
+    cursor: pointer; /* Add pointer cursor to indicate interactivity */
+    /* Add other styles as needed */
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+    .quick-play-button {
+        width: 30px; /* Smaller size for smaller screens */
+        height: 30px; /* Keep the square shape */
+        padding: 3px; /* Adjust padding for smaller screens */
+    }
+}
+
+.quick-play-button strong {
+    display: block; /* Ensure the <strong> element takes full width */
+    font-weight: bold;
+}
+
+.quick-play-button.active {
+    background-color: limegreen; /* Change to bright green when active */
+}
+
+/* Styles for other buttons */
+#prev-sequence,
+#next-sequence,
+button[for="mode-switcher"] {
+    font-size: 12.5px; /* Adjust the font size as needed */
+    padding: 5px 10px; /* Adjust the padding as needed */
+    font-weight: bold; /* Make the text bold */
+}

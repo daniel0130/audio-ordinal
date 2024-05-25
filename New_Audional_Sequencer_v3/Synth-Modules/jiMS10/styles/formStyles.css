@@ -1,0 +1,31 @@
+/* formStyles.css */
+
+/* Form element styles */
+label {
+    display: block;
+    margin: 10px 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  input[type="range"],
+  input[type="number"],
+  select {
+    width: 100%;
+    margin-top: 5px;
+  }
+  
+  /* General button styles */
+  button {
+    background-color: #2d2d2d;
+    color: #0fafff;
+    border: none;
+    padding: 3px 3px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: 0;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    margin: 10px 0;
+    width: calc(25%);
+  }
+  

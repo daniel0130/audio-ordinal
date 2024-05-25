@@ -1,0 +1,140 @@
+/* optimizedStyles.css */
+
+#synthContainer {
+  width: 100%;
+  height: 600px;
+  position: relative;
+}
+
+.iframe-wrapper,
+.floatingWindow {
+  position: absolute;
+  height: 900px;
+  border: 2px solid #000;
+  background-color: #fff;
+  z-index: 1000;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.floatingWindow {
+  top: 0%;
+  left: 600px;
+  width: 40%;
+  height: 90%;
+  background-color: #000;
+  border: 5px solid black;
+  resize: both;
+  z-index: 1000;
+}
+
+.draggable-resizable-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.resizer {
+  width: 10px;
+  height: 10px;
+  background: gray;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: se-resize;
+  z-index: 1001;
+}
+
+.tabContainer button {
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 1px;
+}
+
+.tabContainer button:hover {
+  background-color: #d0d0d0;
+}
+
+.tabContainer button.activeTab {
+  background-color: #fdd6a0;
+  color: #000;
+  font-weight: bold;
+}
+
+.tabContainer button.inactiveTab {
+  background-color: #000;
+  color: #ddd;
+}
+
+.titleBar {
+  background-color: #363636;
+  color: #fff;
+  padding: 5px;
+  cursor: move;
+  text-align: center;
+  z-index: 1000;
+}
+
+.controlButton,
+.closeButton {
+  position: absolute;
+  top: 5px;
+}
+
+.closeButton {
+  right: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  color: red;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.project-settings {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+}
+
+.controls-row select {
+  margin-top: 5px;
+}
+
+.controls-row button {
+  padding: 10px 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.controls-row button:hover {
+  background-color: #0056b3;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+#mute {
+  margin-left: -1000px;
+}
