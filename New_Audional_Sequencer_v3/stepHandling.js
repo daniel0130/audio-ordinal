@@ -1,6 +1,6 @@
 // stepHandling.js
 
-let totalNumberOfSequences = 16;
+let totalNumberOfSequences = window.unifiedSequencerSettings.numSequences;
 
 function handleStep(channel, channelData, totalStepCount) {
     // console.log('handleStep entered');
