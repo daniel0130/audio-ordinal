@@ -1,8 +1,10 @@
 class UnifiedSequencerSettings {
-    constructor(audioContext) {
+    constructor(audioContext, numSequences = 64, numChannels = 16) {
         this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-        this.globalPlaybackSpeed = 1; // Default speed is normal (1x)
-        this.channelPlaybackSpeed = new Array(16).fill(1); // Default speed is normal (1x)
+        this.numSequences = numSequences;
+        this.numChannels = numChannels;
+        this.globalPlaybackSpeed = 1;
+        this.channelPlaybackSpeed = new Array(this.numChannels).fill(1); // Default speed is normal (1x)
         this.observers = [];
         this.gainNodes = [];
         this.sourceNodes = []; // Array to hold source nodes
@@ -12,12 +14,12 @@ class UnifiedSequencerSettings {
                 projectName: 'New Audx Project',
                 projectBPM: 120,
                 currentSequence: 0,
-                channelURLs: new Array(16).fill(''),
-                channelVolume: new Array(16).fill(0.5),
-                channelPlaybackSpeed: new Array(16).fill(1), // Default speed is normal (1x)
-                trimSettings: Array.from({ length: 16 }, () => ({ start: 0.01, end: 100.00, length: 0 })),
-                projectChannelNames: new Array(16).fill('Load Sample'),
-                projectSequences: this.initializeSequences(16, 16, 64)
+                channelURLs: new Array(this.numChannels).fill(''),
+                channelVolume: new Array(this.numChannels).fill(0.5),
+                channelPlaybackSpeed: new Array(this.numChannels).fill(1), // Default speed is normal (1x)
+                trimSettings: Array.from({ length: this.numChannels }, () => ({ start: 0.01, end: 100.00, length: 0 })),
+                projectChannelNames: new Array(this.numChannels).fill('Load Sample'),
+                projectSequences: this.initializeSequences(this.numSequences, this.numChannels, 64)
             }
         };
 
@@ -29,12 +31,32 @@ class UnifiedSequencerSettings {
         this.formatURL = this.formatURL.bind(this);
         this.setChannelVolume = this.setChannelVolume.bind(this);
         this.setChannelPlaybackSpeed = this.setChannelPlaybackSpeed.bind(this); // Bind the new method
+        this.updateTotalSequences = this.updateTotalSequences.bind(this);
     }
+
+    // New method to update the total number of sequences
+    updateTotalSequences() {
+        let lastActiveSequence = -1;
+        for (let seq = 0; seq < this.numSequences; seq++) {
+            const sequence = this.settings.masterSettings.projectSequences[`Sequence${seq}`];
+            if (!sequence) continue; // Skip if sequence is not defined
+            for (let ch = 0; ch < this.numChannels; ch++) {
+                const channel = sequence[`ch${ch}`];
+                if (channel && channel.steps.some(step => step.isActive)) {
+                    lastActiveSequence = seq;
+                    break;
+                }
+            }
+        }
+        this.numSequences = lastActiveSequence + 1;
+        console.log(`Total sequences updated to ${this.numSequences}`);
+    }
+
 
    
 
     initializeSourceNodes() {
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < this.numChannels; i++) {
             const source = this.audioContext.createBufferSource(); // Create a new buffer source node
             source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
             source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
@@ -42,10 +64,8 @@ class UnifiedSequencerSettings {
         }
     }
 
-
-
     initializeGainNodes() {
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < this.numChannels; i++) {
             const gainNode = this.audioContext.createGain();
             gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
             gainNode.connect(this.audioContext.destination);
@@ -104,30 +124,30 @@ class UnifiedSequencerSettings {
         console.log("Current Global Settings:", this.settings);
     }
 
-        initializeSequences(numSequences, numChannels, numSteps) {
-            let sequenceData = {};
-            for (let seq = 0; seq < numSequences; seq++) {
-                sequenceData[`Sequence${seq}`] = this.initializeChannels(numChannels, numSteps);
-            }
-            return sequenceData;
+    initializeSequences(numSequences = this.numSequences, numChannels = this.numChannels, numSteps = 64) {
+        let sequenceData = {};
+        for (let seq = 0; seq < numSequences; seq++) {
+            sequenceData[`Sequence${seq}`] = this.initializeChannels(numChannels, numSteps);
         }
+        return sequenceData;
+    }
 
-        initializeChannels(numChannels, numSteps) {
-            let channels = {};
-            for (let ch = 0; ch < numChannels; ch++) {
-                channels[`ch${ch}`] = {
-                    steps: Array.from({ length: numSteps }, () => ({
+    initializeChannels(numChannels, numSteps) {
+        let channels = {};
+        for (let ch = 0; ch < numChannels; ch++) {
+            channels[`ch${ch}`] = {
+                steps: Array.from({ length: numSteps }, () => ({
                     isActive: false,
                     isReverse: false,
                     volume: 1,
                     pitch: 1,
-                    })),
-                    mute: false,
-                    url: ''
-                };
-            }
-            return channels;
+                })),
+                mute: false,
+                url: ''
+            };
         }
+        return channels;
+    }
 
             // Inside the UnifiedSequencerSettings class
             getStepSettings(sequenceIndex, channelIndex, stepIndex) {
@@ -177,6 +197,7 @@ class UnifiedSequencerSettings {
                 const existingStepState = this.getStepStateAndReverse(currentSequence, channelIndex, stepIndex);
                 if (typeof state === 'boolean') {
                     this.updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, state, existingStepState.isReverse);
+                    this.updateTotalSequences(); // Update total sequences
                 } else {
                     console.error('Invalid state type in updateStepState');
                 }
@@ -204,6 +225,7 @@ class UnifiedSequencerSettings {
                 const step = this.settings.masterSettings.projectSequences[`Sequence${sequenceIndex}`][`ch${channelIndex}`].steps[stepIndex];
                 // Toggle the active state of the step object
                 step.isActive = !step.isActive;
+                this.updateTotalSequences(); // Update total sequences
                 this.notifyObservers();
             }
             
@@ -211,6 +233,7 @@ class UnifiedSequencerSettings {
                 const step = this.settings.masterSettings.projectSequences[`Sequence${sequenceIndex}`][`ch${channelIndex}`].steps[stepIndex];
                 // Toggle the reverse state of the step object
                 step.isReverse = !step.isReverse;
+                this.updateTotalSequences(); // Update total sequences
                 this.notifyObservers();
             }
         
@@ -237,6 +260,7 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
     if (step) {
         step.isActive = isActive;
         step.isReverse = isReverse;
+        this.updateTotalSequences(); // Update total sequences
     } else {
         throw new Error('Invalid sequence, channel, or step index in updateStepStateAndReverse');
     }

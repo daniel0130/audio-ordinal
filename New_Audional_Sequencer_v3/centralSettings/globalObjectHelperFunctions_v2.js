@@ -1,51 +1,24 @@
 // globalObjectHelperFunctions_v2.js
 
-
-// function getChannelURL(channelIndex) {
-//     cons
-//     return window.unifiedSequencerSettings.channelURLs(channelIndex);
-// }
-
 // 
 function updateTrimSettingsUI(trimSettings) {
     console.log("debugGlobalObjectToUI - entered");
     console.log("{debugGlobalObjectToUI} updateTrimSettingsUI: updating with trimSettings", trimSettings);
 
-    // Implement logic to update UI for trim settings
-    console.log("Trim settings UI updated:", trimSettings);
-    // Example: Update each trim setting input field
     trimSettings.forEach((setting, index) => {
         const startSlider = document.getElementById(`start-slider-${index}`);
         const endSlider = document.getElementById(`end-slider-${index}`);
         if (startSlider && endSlider) {
-            startSlider.value = setting.startSliderValue;
-            endSlider.value = setting.endSliderValue;
+            startSlider.value = setting.start;
+            endSlider.value = setting.end;
         }
     });
 }
-// // 
-// function updateProjectChannelNamesUI(urlNames) {
-//     console.log("debugGlobalObjectToUI - entered");
-//     console.log("{debugGlobalObjectToUI} updateProjectChannelNamesUI: updating with URL names", urlNames); 
-//     // Implement logic to update UI for project URL names
-//     console.log("Project URL names UI updated:", urlNames);
-//     // Example: Update each URL name display
-//     urlNames.forEach((name, index) => {
-//         const nameDisplay = document.getElementById(`url-name-${index}`);
-//         if (nameDisplay) {
-//             nameDisplay.textContent = name;
-//         }
-//     });
-// }
 
 
-   // Function to get trim settings
-   function getTrimSettings(channelIndex) {
-    console.log("debugGlobalObjectToUI - entered");
-       return window.unifiedSequencerSettings.getTrimSettings(channelIndex);
-   }
 
-function updateBPMUI(bpm) {
+
+   function updateBPMUI(bpm) {
     console.log("debugGlobalObjectToUI - entered");
     const bpmSlider = document.getElementById('bpm-slider');
     const bpmDisplay = document.getElementById('bpm-display');
@@ -62,13 +35,23 @@ function updateProjectNameUI(projectName) {
         projectNameInput.value = projectName;
     }
 }
+
+function getTrimSettings(channelIndex) {
+    console.log("debugGlobalObjectToUI - entered");
+    return window.unifiedSequencerSettings.getTrimSettings(channelIndex);
+}
+
+function setGlobalChannelURLs(urls) {
+    console.log("debugGlobalObjectToUI - entered");
+    window.unifiedSequencerSettings.setChannelURLs(urls);
+}
+
 // 
 // 
 // // Utility Functions
 // 
 function updateSpecificStepUI(currentSequence, channelIndex, stepIndex) {
     console.log("debugGlobalObjectToUI - entered");
-    // Use the correct ID format to match the updated step button IDs
     const stepButtonId = `Sequence${currentSequence}-ch${channelIndex}-step-${stepIndex}`;
     console.log(`Looking for step button with ID: ${stepButtonId}`);
 
@@ -76,14 +59,10 @@ function updateSpecificStepUI(currentSequence, channelIndex, stepIndex) {
 
     if (stepButton) {
         let currentStepState = window.unifiedSequencerSettings.getStepState(currentSequence, channelIndex, stepIndex);
-        console.log(`[updateSpecificStepUI] Step button found: Sequence ${currentSequence}, Channel ${channelIndex}, Step ${stepIndex}, Current State: ${currentStepState}`);
-
         if (currentStepState) {
             stepButton.classList.add('selected');
-            console.log(`[updateSpecificStepUI] Added 'selected' class to step button with ID: ${stepButtonId}`);
         } else {
             stepButton.classList.remove('selected');
-            console.log(`[updateSpecificStepUI] Removed 'selected' class from step button with ID: ${stepButtonId}`);
         }
     } else {
         console.error(`Step button not found for the given IDs: ${stepButtonId}`);
@@ -91,11 +70,22 @@ function updateSpecificStepUI(currentSequence, channelIndex, stepIndex) {
 }
 
 
+
 function getProjectSequences() {
     console.log("debugGlobalObjectToUI - entered");
-    const globalObject = window.unifiedSequencerSettings; // Assuming global object is accessible via window
     return window.unifiedSequencerSettings.getSettings('projectSequences');
 }
+
+function setTrimSettings(channelIndex, startSliderValue, endSliderValue) {
+    if (typeof startSliderValue !== 'number' || typeof endSliderValue !== 'number') {
+        console.error('Invalid trim settings values');
+        return;
+    }
+
+    window.unifiedSequencerSettings.setTrimSettings(channelIndex, startSliderValue, endSliderValue);
+}
+
+
 
 
 function updateProjectSequencesUI(sequenceData) {
@@ -103,40 +93,25 @@ function updateProjectSequencesUI(sequenceData) {
     console.log("{debugGlobalObjectToUI} [updateProjectSequencesUI] updateProjectSequencesUI: updating with sequences", sequenceData);
 
     // Log the total number of sequences being processed
-    console.log(`[updateProjectSequencesUI] Total sequences to process: ${Object.keys(sequenceData).length}`);
+    const numSequences = Object.keys(sequenceData).length;
+    console.log(`[updateProjectSequencesUI] Total sequences to process: ${numSequences}`);
 
     Object.keys(sequenceData).forEach(sequenceKey => {
         const sequence = sequenceData[sequenceKey];
         console.log(`[updateProjectSequencesUI] Processing sequence: ${sequenceKey}`);
 
         Object.keys(sequence).forEach(channelKey => {
-            const steps = sequence[channelKey].steps; // Corrected to directly access the steps array
-            // console.log(`[updateProjectSequencesUI] Processing channel: ${channelKey} in sequence: ${sequenceKey}`);
-
+            const steps = sequence[channelKey].steps;
             if (Array.isArray(steps)) {
-                // console.log(`[updateProjectSequencesUI] Total steps in channel ${channelKey}: ${steps.length}`);
-
                 steps.forEach((step, index) => {
-                    // Generate ID in the format used for step buttons
-                const stepControlId = `${sequenceKey}-${channelKey}-step-${index}`;
-                const stepControl = document.getElementById(stepControlId);
-
-                    // console.log(`[updateProjectSequencesUI] Processing stepControl ID: ${stepControlId}, State: ${step}`);
-
+                    const stepControlId = `${sequenceKey}-${channelKey}-step-${index}`;
+                    const stepControl = document.getElementById(stepControlId);
                     if (stepControl) {
                         if (step === true) {
-                            if (!stepControl.classList.contains('selected')) {
-                                // console.log(`[updateProjectSequencesUI] Adding 'selected' class to stepControl: ${stepControlId}`);
-                                stepControl.classList.add('selected');
-                            }
+                            stepControl.classList.add('selected');
                         } else {
-                            if (stepControl.classList.contains('selected')) {
-                                console.log(`[updateProjectSequencesUI] Removing 'selected' class from stepControl: ${stepControlId}`);
-                                stepControl.classList.remove('selected');
-                            }
+                            stepControl.classList.remove('selected');
                         }
-                    } else {
-                        // console.log(`[updateProjectSequencesUI] Step control not found for ID: ${stepControlId}`);
                     }
                 });
             } else {
@@ -150,23 +125,8 @@ function updateProjectSequencesUI(sequenceData) {
 
 
 
-function setGlobalChannelURLs(urls) {
-    console.log("debugGlobalObjectToUI - entered");
-    window.unifiedSequencerSettings.setChannelURLs(urls);
-    console.log(`[setGlobalChannelURLs] Project URLs updated:`, urls);
-}
-// 
-function setTrimSettings(channelIndex, startSliderValue, endSliderValue) {
-    // Validate the input values if necessary
-    if (typeof startSliderValue !== 'number' || typeof endSliderValue !== 'number') {
-        console.error('Invalid trim settings values');
-        return;
-    }
 
-    // Update the trim settings in the global object
-    window.unifiedSequencerSettings.setTrimSettings(channelIndex, startSliderValue, endSliderValue);
-    console.log(`[setGlobalTrimSettings] Trim settings updated for channel ${channelIndex}: Start Slider Value = ${startSliderValue}, End Slider Value = ${endSliderValue}`);
-}
+// 
 
 // 
 // function setGlobalProjectChannelNames(urlNames) {
