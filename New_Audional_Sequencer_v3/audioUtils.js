@@ -304,11 +304,11 @@ function playSound(currentSequence, channel, currentStep) {
 
   if (isActive) {
       sequencerChannel.postMessage({ type: 'startArpeggiator', channelIndex: channelIndex });
-      console.log(`[playSound] Message sent: startArpeggiator for channel ${channelIndex}`);
+      // console.log(`[playSound] Message sent: startArpeggiator for channel ${channelIndex}`);
 
       if (iframeSequencerChannel) {
           iframeSequencerChannel.postMessage({ type: 'startArpeggiator', channelIndex: channelIndex });
-          console.log(`[playSound] Message sent to iframe: startArpeggiator for channel ${channelIndex}`);
+          // console.log(`[playSound] Message sent to iframe: startArpeggiator for channel ${channelIndex}`);
       }
   } else if (isReverse) {
       sequencerChannel.postMessage({ type: 'stopArpeggiator', channelIndex: channelIndex });
