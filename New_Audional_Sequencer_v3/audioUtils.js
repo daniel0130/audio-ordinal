@@ -320,11 +320,11 @@ function playSound(currentSequence, channel, currentStep) {
       }
   }
   sequencerChannel.close(); // Close the original channel after sending the message
-  console.log(`[playSound] Sequencer message channel closed: synth_channel_${channelIndex}`);
+  // console.log(`[playSound] Sequencer message channel closed: synth_channel_${channelIndex}`);
 
   if (iframeSequencerChannel) {
       iframeSequencerChannel.close(); // Close the iframe-specific channel after sending the message
-      console.log(`[playSound] Sequencer message channel closed: synth_channel_${iframeId}`);
+      // console.log(`[playSound] Sequencer message channel closed: synth_channel_${iframeId}`);
   }
 
   // Manage audio playback
