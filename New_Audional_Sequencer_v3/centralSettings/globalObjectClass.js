@@ -590,30 +590,28 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
             }
     
 
-            // Corrected to accept a parameter for the current sequence index
-            updateUIForSequence(currentSequenceIndex) {
+             // Corrected to accept a parameter for the current sequence index
+             updateUIForSequence(currentSequenceIndex) {
                 const channels = document.querySelectorAll('.channel');
+            
                 channels.forEach((channel, channelIndex) => {
                     const stepButtons = channel.querySelectorAll('.step-button');
                     stepButtons.forEach((button, stepIndex) => {
                         const { isActive, isReverse } = this.getStepStateAndReverse(currentSequenceIndex, channelIndex, stepIndex);
-                        // console.log(`[Debug] Updating UI for channel ${channelIndex}, step ${stepIndex}: active=${isActive}, reverse=${isReverse}`);
-                        button.classList.remove('selected', 'reverse');  // Clear previous states
-                        if (isActive) {
-                            button.classList.add('selected');
-                        }
-                        if (isReverse) {
-                            button.classList.add('reverse');
-                        }
-                      
-                        
+                        button.classList.toggle('selected', isActive);
+                        button.classList.toggle('reverse', isReverse);
                     });
                 });
-                requestAnimationFrame(() => {
-                    this.updateUIForSequence(this.settings.masterSettings.currentSequence);
-                });
-            }
             
+                // Debounced update to avoid excessive calls
+                if (!this._scheduledUpdate) {
+                    this._scheduledUpdate = true;
+                    requestAnimationFrame(() => {
+                        this._scheduledUpdate = false;
+                        this.updateUIForSequence(this.settings.masterSettings.currentSequence);
+                    });
+                }
+            }
             
             
 
