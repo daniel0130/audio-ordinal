@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image and Video Montage</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Image and Video Montage Timeline</h1>
+    <div class="controls">
+        <input type="text" id="media-url" placeholder="Enter media URL" size="50">
+        <input type="number" id="media-duration" placeholder="Duration (sec)" min="0.01" step="0.01" value="5.00">
+        <label>
+            <input type="checkbox" id="media-audio"> Audio
+        </label>
+        <button onclick="addMedia()">Add Media</button>
+        <button onclick="saveTimeline()">Save Timeline</button>
+        <input type="file" id="load-file" accept=".json" style="display:none" onchange="loadTimeline(event)">
+        <button onclick="document.getElementById('load-file').click()">Load Timeline</button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="playback-controls">
+        <button onclick="playTimeline()">Play Timeline</button>
+        <button onclick="pauseTimeline()">Pause Timeline</button>
+        <button onclick="stopTimeline()">Stop Timeline</button>
+        <div class="timer" id="timer">00:00:00.00</div>
+    </div>
+    <div id="media-container"></div>
+
+    <script src="mediaManager.js"></script>
+    <script src="uiManager.js"></script>
+    <script src="playbackManager.js"></script>
+    <script src="playbackMixedMedia.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
