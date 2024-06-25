@@ -43,7 +43,7 @@ function scheduleNextMedia(endTime) {
 
     if (delay > 0) {
         setTimeout(() => {
-            if (!playbackPaused && !playbackStopped) {
+            if (!playbackStopped) {
                 totalElapsedTime += (endTime - playbackStartTime) / 1000;
                 currentIndex++;
                 console.log(`[${getCurrentTimestamp()}] Moving to next media. Current index: ${currentIndex}`);
@@ -56,7 +56,7 @@ function scheduleNextMedia(endTime) {
             }
         }, delay);
     } else {
-        if (!playbackPaused && !playbackStopped) {
+        if (!playbackStopped) {
             totalElapsedTime += (endTime - playbackStartTime) / 1000;
             currentIndex++;
             console.log(`[${getCurrentTimestamp()}] Moving to next media. Current index: ${currentIndex}`);
