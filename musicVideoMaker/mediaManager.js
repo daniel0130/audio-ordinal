@@ -44,7 +44,7 @@ function updateAudio(index, audio) {
 
 function resetControls() {
     document.getElementById('media-url').value = '';
-    document.getElementById('media-duration').value = '5.00';
+    document.getElementById('media-duration').value = '2.00';
     document.getElementById('media-audio').checked = false;
 }
 
