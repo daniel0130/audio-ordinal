@@ -1,11 +1,5 @@
 // playbackManager.js
 
-let currentIndex = 0;
-let playbackStartTime = 0;
-let elapsedTime = 0;
-let totalElapsedTime = 0;
-let playbackStopped = false;
-let totalPlaybackTime = 0;
 
 async function playTimeline() {
     if (timeline.length > 0) {
@@ -19,7 +13,8 @@ async function playTimeline() {
         playbackStartTime = Date.now();
         console.log(`[${getCurrentTimestamp()}] Starting timeline playback`);
         console.log(`[${getCurrentTimestamp()}] Total playback time: ${totalPlaybackTime} seconds`);
-        updateTimer();
+        startTimer();
+
         await playMediaWrapper(currentIndex);
     }
 }
@@ -34,6 +29,7 @@ function stopTimeline() {
     updateTimerDisplay(0);
     document.getElementById('media-container').innerHTML = '';
     console.log(`[${getCurrentTimestamp()}] Stopping timeline playback`);
+    stopTimer();
 }
 
 async function playMediaWrapper(index) {
