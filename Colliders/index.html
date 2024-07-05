@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+        #video-container {
+            display: none;
+        }
+        video {
+            max-height: 100%;
+            width: auto;
+        }
+        #startButton {
+            position: absolute;
+            z-index: 10;
+            padding: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.2s ease-in-out;
+        }
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0; }
+        }
+        @keyframes glitch {
+            0% { transform: none; }
+            20% { transform: skewX(-10deg); }
+            40% { transform: skewX(10deg); }
+            60% { transform: skewX(-5deg); }
+            80% { transform: skewX(5deg); }
+            100% { transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">Start the Accelerator</button>
+    <div id="video-container">
+        <video id="video" src="collidersCharacterTrailer.mp4" loop></video>
+    </div>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            var button = this;
+            button.textContent = 'WHAT HAVE YOU DONE!';
+            button.style.backgroundColor = 'red';
+            button.style.color = 'white';
+            button.style.animation = 'blink 1s steps(5, start) infinite, glitch 0.2s steps(2, end) infinite';
+
+            // Play alarm sound
+            var context = new (window.AudioContext || window.webkitAudioContext)();
+            var gainNode = context.createGain();
+            gainNode.connect(context.destination);
+
+            var createOscillator = function(frequency, startTime, stopTime) {
+                var oscillator = context.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+                oscillator.connect(gainNode);
+                oscillator.start(startTime);
+                oscillator.stop(stopTime);
+                return oscillator;
+            };
+
+            var now = context.currentTime;
+            var duration = 5;
+            var fadeDuration = 2;
+            gainNode.gain.setValueAtTime(1, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + duration + fadeDuration);
+
+            var oscillators = [];
+            for (var i = 0; i < duration; i++) {
+                oscillators.push(createOscillator(440, now + i, now + i + 0.5));
+                oscillators.push(createOscillator(220, now + i + 0.5, now + i + 1));
+            }
+
+            setTimeout(function() {
+                button.style.display = 'none';
+            }, 5000);
+
+            var videoContainer = document.getElementById('video-container');
+            videoContainer.style.display = 'flex';
+            var video = document.getElementById('video');
+            video.play();
+        });
+
+        document.getElementById('video').addEventListener('click', function() {
+            var video = this;
+            video.pause();
+            video.currentTime = 0;
+            var videoContainer = document.getElementById('video-container');
+            videoContainer.style.display = 'none';
+
+            var button = document.getElementById('startButton');
+            button.textContent = 'Start the Accelerator';
+            button.style.backgroundColor = 'white';
+            button.style.color = 'black';
+            button.style.animation = 'none';
+            button.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
