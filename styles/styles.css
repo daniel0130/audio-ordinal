@@ -139,14 +139,37 @@
     padding: 10px 20px;
   }
   
+  /* Updated .info-content */
   .info-content {
     display: none;
-    margin-top: 20px;
     padding: 20px;
     background-color: #333333;
     color: white;
+    position: fixed; /* Make the content fixed within the viewport */
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 1000; /* Ensure it appears above other content */
+    margin-top: 0; /* Remove the margin to align it properly in fixed position */
   }
   
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 16px;
+  } 
+
   .modal {
     display: none;
     position: fixed;

@@ -12,56 +12,22 @@
 
 
 function toggleInfo(buttonId) {
-    console.log("Button clicked: " + buttonId); // Debugging line
+            console.log("Button clicked: " + buttonId); // Debugging line
 
-    // Get the buttons
-    var audionalsButton = document.getElementById("audionals-button");
-    var jsonButton = document.getElementById("json-button");
-    var donateButton = document.getElementById("donate-button");
+            // Get the buttons
+            var audionalsButton = document.getElementById("audionals-button");
+            var jsonButton = document.getElementById("json-button");
+            var donateButton = document.getElementById("donate-button");
 
-    // Get the content sections
-    var audionalsContent = document.getElementById("info-content-audionals");
-    var jsonContent = document.getElementById("info-content-json");
-    var donateContent = document.getElementById("info-content-donate");
+            // Get the content sections
+            var audionalsContent = document.getElementById("info-content-audionals");
+            var jsonContent = document.getElementById("info-content-json");
+            var donateContent = document.getElementById("info-content-donate");
 
-    // First, reset all buttons and content
-    audionalsButton.classList.remove("active");
-    jsonButton.classList.remove("active");
-    donateButton.classList.remove("active");
+            // Check the current display status of the clicked content
+            var isVisible = (document.getElementById("info-content-" + buttonId).style.display === "block");
 
-    audionalsContent.style.display = "none";
-    jsonContent.style.display = "none";
-    donateContent.style.display = "none";
-
-    // Then, activate the clicked button and corresponding content
-    switch (buttonId) {
-        case "audionals":
-            audionalsButton.classList.add("active");
-            audionalsContent.style.display = "block";
-            break;
-        case "json":
-            jsonButton.classList.add("active");
-            jsonContent.style.display = "block";
-            break;
-        case "donate":
-            donateButton.classList.add("active");
-            donateContent.style.display = "block";
-            break;
-    }
-
-    // Add the event listener to the document
-    document.addEventListener('click', function(event) {
-        var audionalsButton = document.getElementById("audionals-button");
-        var jsonButton = document.getElementById("json-button");
-        var donateButton = document.getElementById("donate-button");
-
-        var audionalsContent = document.getElementById("info-content-audionals");
-        var jsonContent = document.getElementById("info-content-json");
-        var donateContent = document.getElementById("info-content-donate");
-
-        // Check if the click was outside the info content areas
-        if (!audionalsContent.contains(event.target) && !jsonContent.contains(event.target) && !donateContent.contains(event.target) && event.target !== audionalsButton && event.target !== jsonButton && event.target !== donateButton) {
-            // Reset the state of all buttons and hide the content
+            // First, reset all buttons and content
             audionalsButton.classList.remove("active");
             jsonButton.classList.remove("active");
             donateButton.classList.remove("active");
@@ -69,9 +35,42 @@ function toggleInfo(buttonId) {
             audionalsContent.style.display = "none";
             jsonContent.style.display = "none";
             donateContent.style.display = "none";
+
+            // If the clicked content is not already visible, show it
+            if (!isVisible) {
+                document.getElementById(buttonId + "-button").classList.add("active");
+                document.getElementById("info-content-" + buttonId).style.display = "block";
+            }
+
+            // Add the event listener to the document
+            document.addEventListener('click', function(event) {
+                var audionalsButton = document.getElementById("audionals-button");
+                var jsonButton = document.getElementById("json-button");
+                var donateButton = document.getElementById("donate-button");
+
+                var audionalsContent = document.getElementById("info-content-audionals");
+                var jsonContent = document.getElementById("info-content-json");
+                var donateContent = document.getElementById("info-content-donate");
+
+                // Check if the click was outside the info content areas
+                if (!audionalsContent.contains(event.target) && !jsonContent.contains(event.target) && !donateContent.contains(event.target) && event.target !== audionalsButton && event.target !== jsonButton && event.target !== donateButton) {
+                    // Reset the state of all buttons and hide the content
+                    audionalsButton.classList.remove("active");
+                    jsonButton.classList.remove("active");
+                    donateButton.classList.remove("active");
+
+                    audionalsContent.style.display = "none";
+                    jsonContent.style.display = "none";
+                    donateContent.style.display = "none";
+                }
+            });
         }
-    });
-}
+
+        function closeInfo(contentId) {
+            document.getElementById(contentId).style.display = "none";
+            var buttonId = contentId.split('-')[2] + '-button';
+            document.getElementById(buttonId).classList.remove("active");
+        }
 
 // a function to link the users to another page - https://audionals.com/ordSPD/
 function tryAudionalSequencer() {
@@ -126,34 +125,35 @@ window.onload = function() {
 };
 
       
-  </script>
-  </head>
-  <body>
+</script>
+</head>
+<body>
     <div class="header">
         <img src="AudionalsLogo.png" alt="Audionals Logo">
         <h1>Audionals.com</h1>
         <div>
-          <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Play with the Ord SPD</button>
-          <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>    
+            <button id="sequencer-button" class="magic-button" onclick="tryAudionalSequencer()" style="font-size: 16px; font-weight: bold;">Play with the Ord SPD</button>
+            <p style="text-align: center; color: rgb(255, 255, 255);">Mix Raw On-chain Audio</p>
         </div>
         <img src="AudionalsLogo.png" alt="Audionals Logo">
-      </div>
+    </div>
     <!-- This is where the sequencer will appear -->
-<div id="sequencer-container">
-    <!-- We'll create the iframe here with JavaScript -->
-</div>
-
-<div class="button-container">
-  <button id="audionals-button" class="info-button active" onclick="toggleInfo('audionals')">What are Audionals?</button>
-  <button id="json-button" class="more-info-button" onclick="toggleInfo('json')">New JSON standard?</button>
-  <button id="donate-button" class="donate-button" onclick="toggleInfo('donate')">Donate to support more Audional innovation</button>
-</div>
-
+    <div id="sequencer-container">
+        <!-- We'll create the iframe here with JavaScript -->
+    </div>
+    
+    <div class="button-container">
+        <button id="audionals-button" class="info-button" onclick="toggleInfo('audionals')">What are Audionals?</button>
+        <button id="json-button" class="more-info-button" onclick="toggleInfo('json')">New JSON standard?</button>
+        <button id="donate-button" class="donate-button" onclick="toggleInfo('donate')">Donate to support more Audional innovation</button>
+    </div>
 
 
     <div class="info-content" id="info-content-audionals">
       <p>Audionals are a groundbreaking new standard for producing, inscribing, and distributing music via the Bitcoin blockchain, providing a unique tool for musicians, sound designers, music enthusiasts, and audiophile collectors alike to create and distribute their work in a web3 environment guaranteed attribution for all future uses of their work. The platform takes advantage of the secure and transparent nature of the blockchain, offering a unique method for inscribing data directly on the blockchain or bridging off-chain data from alternative permanent data storage solutions to tokens traded purely on the Bitcoin blockchain. This innovative approach taken by Audionals.com might very well disrupt the traditional music industry and usher in a new era of audio content creation, distribution, ownership, and administration.</p><br>
-      <p>The fundamental technology that drives Audionals.com is the inscription of data to the Bitcoin blockchain. Audio data in the form of Base64 embedded JSON files is one such protocol that was introduced by Audionals in mid-2023. Audio files uploaded to the platform are encoded into a text format called Base64, which transforms the binary data into a string of ASCII characters. This audio-text data is then embedded within a JSON (JavaScript Object Notation) file, another text format file that is both easy for humans to read and write as well as for machines to parse and generate.</p><br>
+      <p>Audionals is revolutionising the music industry by making blockchain technology affordable and accessible to all musicians. This innovation liberates artists from the burden of high file sizes and costs, paving the way for an era of unparalleled creativity and innovation for audial artists on the Bitcoin blockchain. The Audionals protocol marks the start of a fresh chapter, starting with a modest sample library that promises to evolve into a groundbreaking musical ecosystem, with the potential to transform the financial dynamics of the music industry to better support the very artists who breathe life into it. Replacing the inneficient and opaque framework with one that is optimised and transparent, removing excess handling and human interpretation from the processes and relying only on pure, unadulterated, immutable data as the real source of truth.</p><br>
+      <p>By integrating all elements of music production into the blockchain, the Audionals protocol ensures comprehensive and transparent attribution for every component used in creating a song. This means that not only are composers and sample holders recognized, but so are the contributions of those using specific effects and tools, such as reverb, EQ adjustments, delay, compression, and various synthesizers and other digital instruments. Every modification and effect is recorded with a unique identifier, ensuring that each participant in the creative process, from composers to producers to plugin and instrument creators, receives fair acknowledgment. This innovation fosters a collaborative environment where every detail is tracked and rewarded, enhancing the integrity and richness of the musical landscape. Whether you are a producer, writer, or a music enthusiast, the Audionals protocol opens up a new world of possibilities, ensuring that the full spectrum of creativity involved in making music is visible and valued.</p><br>
+      <p>The fundamental technology that drives Audionals.com is the inscription of data to the Bitcoin blockchain. Audio data in all its forms, including Base64 embedded JSON files can be inscribed and sequenced into infinite new songs in the future.</p><br>
       <p>The use of JSON files makes the audio data more easily indexable and sortable by its ability to hold extensive, user-defined metadata. Metadata such as the audio type, the instrument used, genre, key, BPM, and other user-defined parameters can be added to JSON files, which facilitates searching, categorization, and manipulation of the audio files on the platform. It essentially creates a database of audio files with advanced metadata that are easily searchable and sortable for use in future applications such as the Audional Sequencer that allows the creation of new music using existing inscriptions to save on the cost of on-chain music production and distribution.</p><br>
       <p>Audio data in its raw form can also be inscribed and recursively accessed in whole or in part for distribution of future releases or third-party remixes that always access the original file when executed, ensuring that on-chain attribution is as immutable as Bitcoin transactions themselves.</p><br>
       <p>The ability to inscribe audio data directly onto the blockchain or to store and access audio from other permanent immutable storage solutions has profound implications for ownership, copyright, authenticity, and control. Once a piece of immutable audio is inscribed or connected to the blockchain, it is permanent. Its inscribed usage cannot be altered or deleted, the user's ownership is transparent, and the original sample owner's rights are upheld if any part of their work is reused in future compositions.</p><br>
@@ -163,7 +163,8 @@ window.onload = function() {
       <p>By leveraging audional technology and the immutable nature of the blockchain, musicians can establish permanent, verifiable ownership, distribute their work entirely peer to peer, and track all of its usage with ease. The transparency and traceability offered by audional technology also enables accurate and transparent royalty payment tracking and distribution, ensuring all creators receive recognition and income for their work no matter how small their contribution might be. Unlike Spotify removing payment for songs with fewer than 1000 plays, the Audional vision is one where every single element of a song's production gets full attribution in an environment where this is not only possible but extremely healthy at a grassroots level and promotes greater creative collaboration through guaranteed financial inclusion.</p><br>
       <p>Owners of software used in the music creation process can apply new business models based purely on actual usage and financial earnings that their software is a part of rather than complex subscription models that add friction at a grassroots level and earn nothing extra when their software produces big hits. The audional protocol improves efficiency, fairness, and productivity for all participants and allows some previously external yet vital elements of the music creation process to become a visible part of every song that is also included in the financial framework.</p><br>
       <p>In essence, Audionals.com represents a novel application of blockchain technology in the realm of audio and music. Its unique approach to audio inscription, coupled with the innovative on-chain composition feature, is poised to disrupt the traditional music industry and empower artists in unprecedented ways. In a world where digital technology continues to reshape the way we create, distribute, and consume music, Audionals.com offers a glimpse into a future where music and blockchain become inextricably linked drawing all participants into the same transparent, data-driven environment where the music really can speak for itself.</p>
-  </div>
+    </div>
+
     
     <div class="info-content" id="info-content-json" style="display: none;">
         <p>The Audionals protocol began as an innovative standard for the indexing and standardisation of audio files inscribed as text strings on the Bitcoin blockchain and has grown to become a cutting-edge standard for bringing a multitude of benefits to the digital creative industries such as music and film.</p><br>
@@ -176,6 +177,7 @@ window.onload = function() {
     </div>
   
     <div class="info-content" id="info-content-donate" style="display: none; text-align: center;">
+      <button class="close-button" onclick="closeInfo('info-content-donate')">X</button>
       <p style="color: gold;">Donate to support ongoing audionals research.</p>
       <p style="color: rgb(8, 245, 8);">Send donations to jim.btc</p>
       <p style="color: orange;">BTC - bc1qxt4w0thady2x3cc370rx0qaau9r25wnun2k5f6</p>
