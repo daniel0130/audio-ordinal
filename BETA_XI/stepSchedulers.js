@@ -1,7 +1,7 @@
 // stepSchedulers.js
 
 function startScheduler() {
-    clearTimeout(timeoutId);
+    clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
     window.unifiedSequencerSettings.audioContext.resume();
     startTime = window.unifiedSequencerSettings.audioContext.currentTime;
     nextStepTime = startTime;
@@ -10,14 +10,24 @@ function startScheduler() {
     console.log(`[startScheduler] Current BPM from global settings: ${currentBPM}`);
 
     scheduleNextStep();
-    // Send start time to the slave
-    if (slaveWindow) {
-        slaveWindow.postMessage({
-            type: 'PLAY',
-            startTime: startTime  // Include the start time in the play message
-        }, '*');
-    }
 }
+
+function scheduleNextStep() {
+    // console.log('[SequenceChangeDebug] Scheduling next step.');
+    // console.log("[SequenceChangeDebug] Attempting to play sound for Channel:", "Step:", currentStep);
+
+    const bpm = window.unifiedSequencerSettings.getBPM() || 105; // Fallback to 105 BPM
+    // console.log(`[scheduleNextStep] Current BPM: ${bpm}`);
+
+    stepDuration = 60 / bpm / 4;
+    // console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`);
+
+    timeoutId = setTimeout(() => {
+        playStep();
+        scheduleNextStep();
+    }, (nextStepTime - audioContext.currentTime) * 1000);
+}
+
 
 function pauseScheduler() {
     clearTimeout(timeoutId); // Clear the current timeout without closing the audio context
@@ -29,29 +39,13 @@ function pauseScheduler() {
 function resumeScheduler() {
   if(isPaused) {
       // Replace the startTime adjustment with a nextStepTime reset
-      window.unifiedSequencerSettings.audioContext.resume().then(() => {
-        nextStepTime = window.unifiedSequencerSettings.audioContext.currentTime;
-        isPaused = false;
-        scheduleNextStep();  // Begin scheduling steps again
-    });
+      window.unifiedSequencerSettings.audioContext.resume();
+      nextStepTime = window.unifiedSequencerSettings.audioContext.currentTime;
+      isPaused = false;
+  }
+  scheduleNextStep(); // Begin scheduling steps again
 }
-}
 
-function scheduleNextStep() {
-    // console.log('[SequenceChangeDebug] Scheduling next step.');
-    // console.log("[SequenceChangeDebug] Attempting to play sound for Channel:", "Step:", currentStep);
-
-    const bpm = window.unifiedSequencerSettings.getBPM() || 120; // Fallback to 105 BPM
-    // console.log(`[scheduleNextStep] Current BPM: ${bpm}`);
-
-    stepDuration = 60 / bpm / 4;
-    // console.log(`[scheduleNextStep] Step Duration: ${stepDuration}`);
-
-    timeoutId = setTimeout(() => {
-        playStep();
-        scheduleNextStep();
-    }, (nextStepTime - window.unifiedSequencerSettings.audioContext.currentTime) * 1000);
-}
 
 
 function stopScheduler() {
