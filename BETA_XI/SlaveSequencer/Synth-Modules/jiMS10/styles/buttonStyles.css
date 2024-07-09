@@ -1,0 +1,174 @@
+/* buttonStyles.css */
+
+
+  
+  /* Latch Mode button styles */
+  #latchMode {
+    background-color: #580b0b;
+    color: #fff;
+  }
+  
+  #latchMode.on {
+    background-color: #ff0000;
+    box-shadow: 0 0 15px #ff0000;
+  }
+  
+  /* Add Rest button styles */
+  #addRest {
+    background-color: #0f374b;
+    color: #fff;
+  }
+  
+  #addRest.flash {
+    animation: flash-add-rest 0.4s;
+  }
+  
+  @keyframes flash-add-rest {
+    0%, 100% {
+      background-color: #0f374b;
+    }
+    50% {
+      background-color: #00aaff;
+    }
+  }
+  
+  /* Delete Note button styles */
+  #deleteLastNote {
+    background-color: #471b1b;
+    color: #fff;
+  }
+  
+  #deleteLastNote.flash {
+    animation: flash-delete-note 0.4s;
+  }
+  
+  @keyframes flash-delete-note {
+    0%, 100% {
+      background-color: #471b1b;
+    }
+    50% {
+      background-color: #ff4500;
+    }
+  }
+  
+  /* Start Arpeggiator button styles */
+  #startStopArp, #PlayMidi {
+    background-color: #006400;
+    width: 100%;
+    padding: 10px 0;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: 0;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    margin: 10px 0;
+    box-sizing: border-box;
+  }
+  
+  #startStopArp.on, #PlayMidi.on {
+    background-color: #00ff00;
+    box-shadow: 0 0 15px #00ff00;
+    color: black;
+  }
+  
+  /* Settings button styles */
+  /* Save Settings button */
+  #saveSettings {
+    background-color: #235336;
+    color: #ffffff;
+  }
+  
+  #saveSettings:hover {
+    background-color: #409461;
+  }
+  
+  #saveSettings.on {
+    background-color: #007bff;
+    box-shadow: 0 0 15px #007bff;
+    color: white;
+  }
+  
+  /* Load Settings button */
+  #loadSettingsButton {
+    background-color: #283458;
+    color: #ffffff;
+  }
+  
+  #loadSettingsButton:hover {
+    background-color: #495d9c;
+  }
+  
+  #loadSettingsButton.on {
+    background-color: #008000;
+    box-shadow: 0 0 15px #008000;
+    color: white;
+  }
+  
+  /* Common styles for both buttons */
+
+  /* Mute button styles */
+
+#mute {
+  background-color: #862727;
+  width: 100%;
+  color: #fff;
+  font-weight: bold;
+}
+
+#mute.on {
+  background-color: #ff0000;
+  box-shadow: 0 0 15px #ff0000;
+  color: black;
+}
+
+#mute:hover {
+  background-color: #890202;
+}
+
+
+  /* Record Midi button */
+
+#RecordMidi {
+    background-color: #471b1b;
+    color: #fff;
+    font-weight: bold;
+  }
+
+#RecordMidi:hover {
+    background-color: #890202;
+  }
+
+#RecordMidi.on {
+    background-color: #ff0000;
+    box-shadow: 0 0 15px #ff0000;
+    color: black;
+  }
+
+  #RecordMidi.flash {
+    animation: flashWarning 1s infinite;
+  }
+
+  @keyframes flashWarning {
+    0%, 100% {
+        background-color: #471b1b;
+    }
+    50% {
+        background-color: #ff0000;
+    }
+  }
+
+  #recordWarning {
+    display: none;
+    position: absolute;
+    top: 50px; /* Adjust based on your layout */
+    right: 10px; /* Adjust based on your layout */
+    background-color: #ff0000;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+
+

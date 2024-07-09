@@ -1,0 +1,154 @@
+/* --- Global Styles --- */
+body {
+    background-color: var(--main-bg-color);
+    color: var(--primary-color);
+    font: normal normal normal 100%/1 var(--default-font);
+}
+
+/* --- Drum Machine Container --- */
+#drum-machine {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    background-color: var(--secondary-bg-color);
+    box-sizing: border-box;
+}
+
+/* --- Headers & Text Elements --- */
+h1 {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+h3 .subtext {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+h3:hover .subtext {
+    font-size: 1em;
+    opacity: 0.5;
+}
+
+.title {
+    font-size: 40px;
+}
+
+.small-text, .smaller-text {
+    font-size: 20px;
+}
+
+.larger-text {
+    font-size: 1.5em;
+}
+
+.centered, .centered-text {
+    display: block;
+    text-align: center;
+}
+
+.bright-orange {
+    color: #f7931a;
+}
+
+/* Additional font size settings for modal content */
+.modal-text-small {
+    font-size: 0.9em; /* Slightly smaller than default */
+}
+
+.modal-text-smaller {
+    font-size: 0.8em; /* Even smaller for more content fit */
+}
+
+.modal-title-small {
+    font-size: 1.2em; /* Smaller title font size */
+}
+
+.modal-header {
+    font-size: 1em; /* Reduced size for section headers */
+}
+  
+  .modal-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.trimmer-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; /* Could be more or less, depending on screen size */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    /* Add animation - The modal will slide in from the top of the screen */
+    -webkit-animation-name: slideIn;
+    -webkit-animation-duration: 0.4s;
+    animation-name: slideIn;
+    animation-duration: 0.4s
+}
+
+/* The Close Button */
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Add Zoom Animation */
+@-webkit-keyframes slideIn {
+    from {top: -300px; opacity: 0} 
+    to {top: 0; opacity: 1}
+}
+
+@keyframes slideIn {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+.modal-column {
+    width: 48%; /* Adjust width as needed */
+    padding: 1%; /* Provides some spacing between columns */
+    box-sizing: border-box; /* Includes padding in the width */
+}
+
+.control-button-demo {
+    display: inline-block;
+    width: 20px; /* Width of the button */
+    height: 20px; /* Height of the button */
+    color: white; /* Text color */
+    text-align: center; /* Center the text inside the button */
+    margin-right: 5px; /* Margin to separate button from text */
+    font-weight: bold; /* Bold text */
+    border-radius: 3px; /* Rounded corners if your buttons have them */
+}
+.step-button.demo {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+    border: 1px solid #555;
+    /* Additional styles to match your step buttons */
+}
+
+#project-name {
+    z-index: 1000; /* 1000 is arbitrary, it just needs to be higher than other elements */
+    position: relative; /* z-index only works on positioned elements */
+}
+
+/* If the label also needs to be visible */
+label[for="project-name"] {
+    z-index: 1000; /* Same z-index as the input for consistency */
+    position: relative;
+}
+

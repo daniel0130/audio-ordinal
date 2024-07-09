@@ -1,0 +1,161 @@
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2d2d2d;
+            color: #efefef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-image: linear-gradient(to top, #2d2d2d, #434343);
+        }
+
+        .synth-container {
+            background-color: #4a4a4a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 150,  kicker0.5);
+            width: 50%;  /* Expand the width */
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+        }
+
+        button {
+            background-color: #2d2d2d;
+            color: #0fafff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+            transition: background-color .3s;
+        }
+
+        button:hover {
+            background-color: #0fafff;
+            color: #2d2d2d;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .grid-placeholder {
+            display: none;
+        }
+
+        .dropdown-container, .control-container {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+
+            justify-content: space-around;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .arpeggiator-controls {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        input[type=range], select, input[type=number], input[type=checkbox] {
+            margin-left: 10px;
+        }
+
+    /* Ensure the grid fits well in the container */
+    @media (max-width: 600px) {
+        .button-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-placeholder {
+            display: none;
+        }
+    }
+
+
+    /* HIDDEN BUTTONS */
+
+     /* Hide these buttons */
+     #recordButton,
+     #stopRecordButton,
+     #playRecordButton {
+         display: none;
+     }
+
+     .button-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .button-container button {
+        margin-right: 10px; /* Adjust the margin as needed */
+    }
+    
+ 
+    
+    .central-display {
+        display: flex;
+        flex-direction: column; /* Stacks children vertically */
+        align-items: center; /* Center-aligns children horizontally */
+        justify-content: center; /* Center-aligns children vertically */
+        width: 100%; /* Ensures the container takes full width of its parent */
+    }
+    
+    
+   .playNoteButton {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        color: #2ac6ff;
+        padding: 5px 10px;
+        border: solid #333;
+        width: 100px; /* Set a fixed width for both */
+        text-align: center; /* Center the text inside the BPM display */
+    }
+
+    .bpm-display {
+        margin: 10px 1px; /* Add some space around the BPM display */
+        color: #2ac6ff;
+        padding: 5px 10px;
+        border: solid #333;
+        width: 75px; /* Set a fixed width for both */
+
+
+    }
+    
+    /* .playNoteButton {
+        background-color: #2d2d2d;
+        color: #0fafff;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        width: 100px;
+        transition: background-color .3s;
+    } */
+
+
+    #quantizeRecording.active {
+        background-color: rgb(157, 53, 199);  
+    }
+
+    #metronomeButton.active {
+        background-color: rgb(254, 181, 47);  
+    }

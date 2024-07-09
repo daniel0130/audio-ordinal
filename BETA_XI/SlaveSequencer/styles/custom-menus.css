@@ -1,0 +1,11 @@
+/* custom-menus.css */
+
+.custom-context-menu {
+    position: absolute;
+    background-color: #000000;
+    border: 1px solid #ccc;
+    padding: 5px;
+    z-index: 100; /* Ensure it appears above other elements */
+    /* Add more styling as needed */
+}
+

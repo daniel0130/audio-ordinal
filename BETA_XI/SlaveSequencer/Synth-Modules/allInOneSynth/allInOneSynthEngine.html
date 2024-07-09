@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI Playback</title>
+    <script src="allInOneSynthEngine.js"></script>
+    <style>
+        /* Add your CSS styling here */
+        #loadMidiJsonFileLabel, #playMidiButton {
+            cursor: pointer;
+            display: inline-block;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="loadMidiJsonFile" style="display: none;" />
+    <label for="loadMidiJsonFile" id="loadMidiJsonFileLabel">Load MIDI Recording</label>
+    <button id="playMidiButton">Play Loaded MIDI File</button>
+
+    <script>
+        document.getElementById('loadMidiJsonFile').addEventListener('change', function(event) {
+            if (event.target.files.length === 0) {
+                console.log("No file selected.");
+                return;
+            }
+    
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                loadMIDIRecording(e.target.result); // Pass the file content directly
+            };
+            reader.readAsText(event.target.files[0]); // Read the first file
+        });
+    
+        document.getElementById('playMidiButton').addEventListener('click', function() {
+            playBackMIDI();
+        });
+    </script>
+</body>
+</html>

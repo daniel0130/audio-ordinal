@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jiMS10: Audional Synth</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h2>jiMS10 - Audional Synth</h2>
+    <div class="sequencer-channel" id="sequencerChannelDisplay">Channel 0</div>
+
+    <div class="synth-container">
+        <div class="dropdown-container">
+            <label>
+                Control Channel:
+                <select id="controlChannel"></select> <!-- Control Channel Dropdown -->
+            </label>
+            <label>
+                Waveform:
+                <select id="waveform">
+                    <option value="sine">Sine</option>
+                    <option value="sawtooth" selected>Sawtooth</option>
+                    <option value="square">Square</option>
+                    <option value="triangle">Triangle</option>
+                    <!-- <option value="pulse">Pulse</option> -->
+                </select>
+            </label>
+            <label>
+                Note:
+                <select id="note"></select>
+            </label>
+        </div>
+        <div class="central-display">
+            <div class="bpm-display" id="bpmDisplay">120 BPM</div>
+            <button class="playNoteButton" onclick="playMS10TriangleBass()">Play Note</button>
+        </div>
+        
+        <div class="control-container">
+            <div class="fader-controls">
+                <label>Attack (ms): <input id="attack" max="2000" min="0" type="range" value="10"></label>
+                <label>Release (ms): <input id="release" max="10000" min="0" type="range" value="300"></label>
+                <label>Cutoff (Hz): <input id="cutoff" max="20000" min="20" type="range" value="3000"></label>
+                <label>Resonance: <input id="resonance" max="100" min="0" type="range" value="5" step="0.1"></label>
+                <label>Distortion: <input id="distortion" max="100" min="0" type="range" value="0" step="0.1"></label>
+            
+                <label>Volume: <input id="volume" max="500" min="0" type="range" value="500"></label>
+            </div>
+            <div class="button-grid">
+                <button id="recordButton" onclick="resumeAudioContext();">Record Audio</button>
+                <button id="stopRecordButton">Stop Audio Recording</button>
+                <button id="playRecordButton" onclick="resumeAudioContext();">Play Audio Recording</button>
+                
+                <button id="recordMIDIButton">Record MIDI and Audio</button>
+                <button id="stopMIDIRecordButton">Stop and Buffer Audio Recording</button>
+                <button id="playMIDIRecordButton">Play MIDI Recording</button>
+                <button onclick="saveSettings()">Save Settings</button>
+                <div class="grid-placeholder"></div> <!-- Placeholder for alignment -->
+                <button onclick="loadSettings()">Load Settings</button>
+                <button id="createMidiJsonFile">Download Json Recording</button>
+                <input type="file" id="loadMidiJsonFile" style="display: none;" />
+                <button id="quantizeRecording">Toggle Quantize Recording</button>
+                <button id="metronomeButton">Toggle Metronome</button>
+
+                <!-- <script>
+                    let isQuantizeActive = false;  // Track quantization state
+                
+                    document.getElementById('quantizeRecording').addEventListener('click', function() {
+                        isQuantizeActive = !isQuantizeActive;  // Toggle quantization
+                        this.classList.toggle('active');  // Toggle visual state
+                        console.log('Quantize Recording: ' + (isQuantizeActive ? 'ON' : 'OFF'));
+                    });
+                </script>             -->
+            </div>
+    </div>
+    <script src="synth.js"></script>
+    <script src="audioRecorder.js"></script>
+    <script src="controlChannels.js"></script>
+    <!-- <script src="main.js"></script> -->
+    <!-- <script src="arpeggiator.js"></script> -->
+    <script src="eventListeners.js"></script>
+    <script src="midiControl.js"></script>
+    <!-- <script src="timing.js"></script> -->
+    <script src="saveLoad.js"></script>
+    <!-- <script src="playNotes.js"></script> -->
+    <script src="noteSelector.js"></script>
+    <!-- <script src="saveLoadMidiRecordingJsonFiles.js"></script> -->
+    <script src="metronome.js"></script>
+
+       
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles/channel-elements.css">
+    <link rel="stylesheet" type="text/css" href="styles/variables-media-queries.css">
+    <link rel="stylesheet" type="text/css" href="styles/global-structural.css">
+    <link rel="stylesheet" type="text/css" href="styles/components.css">
+    <link rel="stylesheet" type="text/css" href="styles/layout-containers.css">
+    <link rel="stylesheet" type="text/css" href="styles/popups-modals.css">
+    <link rel="stylesheet" type="text/css" href="styles/animations-keyframes.css">
+    <link rel="stylesheet" type="text/css" href="styles/utility-buttons.css">
+    <link rel="stylesheet" type="text/css" href="AudioTrimModule/audio-trim-module.css">
+    <link rel="stylesheet" type="text/css" href="styles/custom-menus.css">
+    <link rel="stylesheet" type="text/css" href="styles/modal-styles.css">
+    <link rel="stylesheet" type="text/css" href="styles/step-button-settings-menu.css">
+    <link rel="stylesheet" type="text/css" href="styles/synthContainerAndIframes.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+</head>
+
+<body>
+    <div class="drum-machine-container">
+    <div id="drum-machine">
+        <h1>
+            <span class="button-label">Play</span>
+            <div class="button button-round tooltip">
+                <div class="button play-button" id="play"></div>
+                <span class="tooltiptext">Start the sequence.</span>
+            </div>
+            <button id="open-slave">Open Slave Sequencer</button>
+
+            <span class="button-label stop">Stop</span>
+            <div class="button button-round tooltip">
+                <div class="button stop-button" id="stop"></div>
+                <span class="tooltiptext">Stop the sequence.</span>
+            </div>
+            <div class="bpm-container tooltip">
+                BPM: <input type="range" min="60" max="180" value="105" step="1" id="bpm-slider" title="Adjust the Beats Per Minute">
+                <div class="bpm-display" id="bpm-display">105</div>
+                <span class="tooltiptext">Drag to adjust the BPM (Beats Per Minute) of the sequence.</span>
+            </div>
+            <span class="title">
+                Audional Sequencer 
+                <br>
+                <span class="bright-orange">&#x20bf;</span>itcoin<span class="bright-orange">&#x20bf;</span>eats<span class="small-text, bright-orange">&#x20bf;</span><span class="small-text">eta</span>
+            </span>
+        </h1>
+         <!-- Utility Buttons Container -->
+         <div class="utility-buttons">
+            <!-- Save Button -->
+            <button id="save-button" class="tooltip">Save
+                <span class="tooltiptext">This button will save your sequence into JSON file for download so you can recall it later on.</span>
+            </button>
+            <input type="file" id="save-file-input" style="display: none">
+            <!-- Load Button -->
+            <button id="new-load-button" class="tooltip">Load
+                <span class="tooltiptext">This button will load your audional composition JSON files, even while the sequencer is playing live.</span>
+            </button>
+            <div id="loadOptions" class="load-popup">
+                <button id="loadJson">Load from Json file</button>
+                <button id="loadInternalPreset1">Be Based - OB1 Song 1</button>
+                <button id="loadInternalPreset2">FREEDOM to TRANSACT</button>
+                <button id="loadInternalPreset3">OB1 Project Template.json</button>
+                <!--<<button id="loadInternalPreset4">Nobodys Cutting It Up</button>-->
+                <!--<<button id="loadInternalPreset5">Koto2</button>-->
+               
+            </div>
+            <input type="file" id="load-file-input" style="display: none" accept=".json">
+            <!-- Copy Button -->
+            <button id="copy-sequence-settings" class="action-button tooltip copy-button">Copy
+                <span class="tooltiptext">Copy Sequence Steps</span>
+            </button>
+            <!-- Paste Button -->
+            <button id="paste-button" class="action-button tooltip paste-button">Paste
+                <span class="tooltiptext">Paste the sequence settings from clipboard.</span>
+            </button>
+
+            <!-- Instructions Button -->
+            <button id="instruction-button" class="action-button tooltip instruction-button">Instructions
+                <span class="tooltiptext">Basic instructions for operation of the Audional Sequencer</span>
+            </button>
+
+
+            <!-- Project Name Text Box -->
+            <label for="project-name" class="tooltip">Project Name
+                <span class="tooltiptext">Enter the project name</span>
+            </label>
+            <input type="text" id="project-name" class="project-name" placeholder="Enter project name">
+
+                        
+            <!-- Help Modal -->
+            <div id="help-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2 id="modal-title">Help - Audional Sequencer Instructions</h2>
+                    <div id="modal-left-column" class="modal-column"></div>
+                    <div id="modal-right-column" class="modal-column">                
+
+                    </div>
+            </div>
+
+        </div>
+        <div class="subtext-container">
+            <p class="subtext centered-text">
+                Raw On-chain <span class="bright-orange">&#x20bf;</span>itcoin Audionals: playing live, directly from the <span class="">&#x20bf;</span>lockchain!
+            </p>
+        </div>
+        <main id="app" role="main"><!-- Channel Templates -->
+            <!-- Channel Templates -->
+            <div class="channel-template" style="display: none;">
+                <div class="channel">
+                    <button class="load-sample-button tooltip" title="Load New Audio into Channel">Load New Audio into Channel
+                        <span class="tooltiptext">Use this button to load a new audional sample into the current channel.</span>
+                    </button>
+                
+                    <button class="control-button volume-button tooltip" style="background-color: rgb(255, 145, 0); font-weight: bold;">
+                        <span class="letter">V</span>
+                        <span class="tooltiptext">Adjust the volume of the current channel.</span>
+                    </button>
+
+                    <button class="control-button playback-speed-button tooltip" style="background-color: rgb(144, 0, 255); font-weight: bold;">
+                        <span class="letter">P</span>
+                        <span class="tooltiptext">Adjust the playback speed or pitch of the current channel.</span>
+                    </button>
+                    
+                    <!-- Open Audio Trimmer Button for each channel -->
+                    <button class="control-button open-audio-trimmer tooltip" style="background-color: blue; font-weight: bold;">
+                        <span class="letter">T</span>
+                        <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
+                    </button>
+                    
+                    <button class="control-button clear-button tooltip">
+                        <span class="letter">C</span>
+                        <span class="tooltiptext">Clear the current channel's sequence.</span>
+                        <div class="clear-confirm" style="display: none; position: absolute; background-color: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 3px; z-index: 10;">
+                            Click again to confirm clear
+                        </div>
+                    </button>
+                    
+                    <button class="control-button mute-button tooltip">
+                        <span class="letter">M</span>
+                        <span class="tooltiptext">Mute or unmute the current channel.</span>
+                    </button>
+                    
+                    <button class="control-button solo-button tooltip">
+                        <span class="letter">S</span>
+                        <span class="tooltiptext">Solo the current channel.</span>
+                    </button>
+                    
+                    <!-- Steps Container (Where step buttons go) -->
+                    <div class="steps-container"></div>
+                    
+                    <!-- Pattern Selection Button and Pattern Shift Buttons -->
+                    <button class="control-button fwd-pattern-selection tooltip">
+                        <span class="emoji">🔲</span>
+                        <span class="tooltiptext">Auto draw a pattern for the current channel. Click to scroll options.</span>
+                    </button>
+                    <!--Pattern Shift Button - A Button with a big red arrow pointing to the right-->
+                    <button class="control-button pattern-shift-right tooltip">
+                        <span class="emoji">➡️</span>
+                        <span class="tooltiptext">Shift the pattern 1 step to the right.</span>
+                    </button>
+
+                </div>
+            </div>
+        </main><!-- Modal Structure -->
+        <!-- Button Container for Playback and Actions -->
+        <div class="quickplay-button-container">
+            <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
+            <button id="prev-sequence" class="tooltip">Previous Sequence
+                <span class="tooltiptext">Go to the previous sequence</span>
+            </button>
+            <span id="current-sequence-display" class="tooltip">Sequence 0
+                <span class="tooltiptext">Currently displayed sequence</span>
+            </span>
+            <button id="next-sequence" class="tooltip">Next Sequence
+                <span class="tooltiptext">Go to the next sequence</span>
+            </button>
+            <label for="continuous-play" class="tooltip">Continuous Play
+                <span class="tooltiptext">Toggle continuous play mode</span>
+            </label>
+            <input type="checkbox" id="continuous-play" class="tooltip" unchecked>
+
+            <!--<div id="quick-play-button" class="tooltip">
+                <span class="tooltiptext">Quick play button</span>
+            </div>-->
+
+        </div>
+        
+        <div id="synthContainer" style="width: 100%; height: 500px;"></div>
+        <script src="floatingWindowUtils.js"></script>
+        <script src="loadSynthModule.js"></script>
+
+
+        <div id="audio-trimmer-modal" class="modal" hidden>
+            <div class="trimmer-modal-content">
+                <span class="close-button">&times;</span>
+                <div id="audio-trimmer-container"></div>
+            </div>
+        </div>
+       
+    </div>
+</div> 
+    </div>
+    </div>
+    </div>
+    </main>
+   
+<script src="centralSettings/formattingHelpers.js"></script>
+
+<script src="centralSettings/globalObjectClass.js"></script>
+<script src="centralSettings/importExportGlobalSettings.js"></script>
+<script src="patternSelectionButtons.js"></script>   
+<script src="AudioTrimModule/audioTrimModuleHelperFunctions.js"></script>
+<script src="AudioTrimModule/audioTrimModule_v2.js"></script>
+<script src="centralSettings/globalObjectHelperFunctions_v2.js"></script>
+<script src="quickplayButtons.js"></script> <!-- Newly added external script link -->
+<script src="copyAndPaste.js"></script>
+<script src="displayUpdatedValues.js"></script>
+<script src="eventListeners_v2.js"></script>
+<script src="colourPicker.js"></script>
+<script src="timingMessages.js"></script>
+<script src="masterSettings.js"></script>
+<!-- <script src="channelSettings.js"></script> -->
+<script type="module" src="channelsForEach.js"></script>
+<!-- <script src="stepButtonSettingsMenu.js"></script> -->
+<script src="createStepButtonsForSequence.js"></script>
+
+<script src="stepHandling.js"></script>
+<script src="stepSchedulers.js"></script>
+<script src="embeddedPreset.js"></script>
+<script src="audionalSampleLibrary.js"></script>
+<script src="audioUtils.js"></script>
+<script src="observers.js"></script>
+<!-- <script src="loadSynthModule.js"></script> -->
+<script type="module" src="loadSampleModalButton_v2.js"></script>
+<script src="index.js"></script>
+<script src="volumeSettings.js"></script> 
+<script src="instructions.js"></script>
+
+
+
+</body>
+</html>

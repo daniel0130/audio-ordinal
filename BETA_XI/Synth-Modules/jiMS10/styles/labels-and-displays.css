@@ -1,0 +1,28 @@
+.synth-container {
+    background-color: #333; /* Background color for the container */
+    padding: 20px; /* Padding around the container */
+    border-radius: 10px; /* Rounded corners for the container */
+}
+
+.synth-title {
+    color: #fff; /* White color for the title */
+    font-size: 24px; /* Larger font size for the title */
+    margin-bottom: 20px; /* Space below the title */
+}
+
+.project-settings-label {
+    color: #00c8ff; /* Light gray color for the project settings label */
+    font-size: 18px; /* Medium font size for the project settings label */
+}
+
+.channel-display {
+    color: #fff700; /* Tomato color for the channel display */
+    font-size: 16px; /* Font size for the channel display */
+    margin-top: 10px; /* Space above the channel display */
+}
+
+.bpm-display {
+    color: #d194ff; /* Dodger blue color for the BPM display */
+    font-size: 16px; /* Font size for the BPM display */
+    margin-top: 5px; /* Space above the BPM display */
+}

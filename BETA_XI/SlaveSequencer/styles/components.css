@@ -1,0 +1,175 @@
+/* --- Buttons & Controls --- */
+.button, h1 .button {
+    border: none;
+    background-color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: var(--box-shadow-style);
+    color: var(--main-bg-color);
+    font-size: 1em;
+}
+
+.control-button {
+    width: var(--control-button-dimension);
+    height: var(--control-button-dimension);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: 0;
+    position: relative;
+    z-index: 5;
+}
+
+.play-button, .stop-button {
+    position: relative;
+    width: 30px; /* Smaller width */
+    height: 30px; /* Smaller height */
+    font-size: 14px; /* Adjust font size if needed */
+    padding: 5px; /* Adjust padding if needed */
+}
+
+#play.selected {
+    background-color: #00ff00;
+}
+
+.stop-button {
+    background-color: var(--accent-color);
+}
+
+.button-label.stop {
+    color: #ff0000;
+}
+
+div[idModalContent] div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+div[idModalContent] div button {
+    margin-right: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+div[idModalContent] div button:hover {
+    background-color: #ddd;
+}
+
+div[idModalContent] div a {
+    text-decoration: none;
+    display: flex;
+    color: black;
+    transition: color 0.3s ease;
+}
+
+div[idModalContent] div a:hover {
+    color: #666;
+}
+
+
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+.action-button {
+    border: none;
+    color: white; /* White text */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.action-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+/* --- Tooltip Styles --- */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden; /* Keep this as hidden */
+    max-width: 150px; /* Reduce the width */
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: calc(100% + 5px); /* Adjust the position to be just below the button */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.7; /* Reduced opacity to make it semi-transparent */
+    transition: opacity 0.3s;
+    font-size: 12px; /* Reduce the font size */
+    pointer-events: none; /* Prevent the tooltip from intercepting clicks */
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible; /* Set this to visible */
+    opacity: 0.7; /* Maintain the reduced opacity even on hover */
+}
+
+/* --- Mode Switcher Styles --- */
+.mode-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 50px;
+}
+
+.mode-switcher label {
+    margin-right: 10px;
+}
+
+.mode-switcher input[type="checkbox"] {
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+}
+
+.mode-switcher input[type="checkbox"]:checked {
+    background-color: #2196f3;
+}
+
+.mode-switcher input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 18px;
+    height: 18px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.mode-switcher input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+}
+
+
