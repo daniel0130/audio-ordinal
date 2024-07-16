@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Embedded Test</title>
+</head>
+<body>
+    <iframe srcdoc='
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TRUTH</title>
+    </head>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #title-display-container, 
+        #project-name-display, 
+        #by-display, 
+        #artist-name-display, 
+        #visual-artist-display, 
+        #visual-artist-name-display {
+            font-size: 2vw; /* Responsive font size */
+        }
+    </style>
+    
+    <body>
+        <script>window.seed=1426,window.songDataUrl="/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0"</script>
+
+        <script>
+            let intervalId;
+            
+            // pakoLoaderAndStyles.js
+            !function(){
+                const n=document.createElement("style");
+                n.textContent="\n        canvas {\n            position: absolute;\n        }\n        body {\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            height: 100vh;\n            margin: 0;\n            background-color: black;\n            position: relative;\n        }\n        #canvas-container {\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            width: 100%;\n            height: 100%;\n            position: relative;\n        }\n        #cv, body {\n            background: #000;\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            height: 100vh;\n        }\n        #title-display-container {\n            position: fixed;\n            top: 50%;\n            left: 50%;\n            transform: translate(-50%, -50%);\n            text-align: center;\n            z-index: 9999;\n            pointer-events: none;\n        }\n        #project-name-display, \n        #by-display, \n        #artist-name-display, \n        #visual-artist-display, \n        #visual-artist-name-display {\n            opacity: 0;\n            font-weight: bold;\n            position: absolute;\n            text-align: center;\n            left: 50%;\n            transform: translate(-50%, -50%);\n            width: auto;\n            white-space: nowrap;\n            margin: 0;\n            padding: 0;\n            line-height: normal;\n            font-size: 50px;\n        }\n    ",
+                document.head.appendChild(n);
+                const e=document.createElement("div");
+                e.id="canvas-container";
+                const t=document.createElement("canvas");
+                e.appendChild(t),document.body.appendChild(e)
+            }(),
+            function(){
+                const n=document.createElement("script");
+                n.src="/content/1db9ef42162943bb969ee9d331f02ea77cd3be8a1fb5e607b4e9cda2d7274403i0",
+                n.onload=function(){
+                    window.songDataUrl&&processSerializedData(window.songDataUrl)
+                },
+                document.body.appendChild(n)
+            }();
+        </script>
+
+        // load pfpCapture.js
+        <script>
+            !function(){
+                const c=document.createElement("script");
+                c.src="/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0",
+                document.body.appendChild(c)
+            }();
+        </script>
+    </body>
+    </html>
+    ' width="500" height="500" style="border:1px solid black;"></iframe>
+</body>
+</html>
