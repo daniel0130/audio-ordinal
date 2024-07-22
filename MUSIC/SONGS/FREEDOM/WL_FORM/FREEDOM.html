@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREEDOM Collection Whitelist Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+            font-size: 20px;
+        }
+        .media {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .media img, .media video {
+            max-width: 20%;
+            height: auto;
+            border-radius: 8px;
+            margin: 0 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="email"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FREEDOM Collection Assets For Posting</h1>
+    
+    <div class="media">
+        <img id="image1" src="placeholder1.jpg" alt="NFT Artwork 1">
+        <img id="image2" src="placeholder2.jpg" alt="NFT Artwork 2">
+        <video id="video" src="placeholder.mp4" controls></video>
+    </div>
+    <br><br><br>
+    <h2>FREEDOM Collection Whitelist Form</h1>
+
+    
+    <form id="whitelistForm" action="https://script.google.com/macros/s/AKfycbxVY0Y5n0PoFF0VXv2M3sYCpQ1AHuRXvil9eu12ukP8gIjdxupi-z-J3WzacKO4K9nT/exec" method="post">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="twitterHandle">Twitter Handle</label>
+        <input type="text" id="twitterHandle" name="twitterHandle" required>
+
+        <label for="tweetUrl">URL of Promotional Post (ensure to give the correct url as wallets will not be added for invalid posts)</label>
+        <input type="text" id="tweetUrl" name="tweetUrl" required>
+
+        <label for="walletAddress">Wallet Address (will be added to the WL after promotional posts have been confirmed)</label>
+        <input type="text" id="walletAddress" name="walletAddress" required>
+
+        <button type="submit">Submit</button>
+    </form>
+    
+    <p id="responseMessage"></p>
+
+    <div id="additionalFields" class="hidden">
+        <form id="additionalForm">
+            <label for="communityName">Community Name</label>
+            <input type="text" id="communityName" name="communityName">
+
+            <label for="communityTwitter">Community Twitter</label>
+            <input type="text" id="communityTwitter" name="communityTwitter">
+
+            <label for="communityDiscord">Community Discord</label>
+            <input type="text" id="communityDiscord" name="communityDiscord">
+
+            <label for="communityWebsite">Community Website</label>
+            <input type="text" id="communityWebsite" name="communityWebsite">
+
+            <label for="communityDescription">Any other things you would like to say about your community?</label>
+            <input type="text" id="communityDescription" name="communityDescription">
+
+            <button type="submit">Submit Additional Info</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('whitelistForm').addEventListener('submit', function(event) {
+        // Show additional fields on form submit
+        document.getElementById('additionalFields').classList.remove('hidden');
+    });
+
+    window.onload = function() {
+        const mediaFolderPath = 'media/';
+        const images = ['image1.jpg', 'image2.gif'];
+        // Assuming video.mp4 is optional, you can remove or comment out this line if not available
+        // const video = 'video.mp4';
+
+        document.getElementById('image1').src = mediaFolderPath + images[0];
+        document.getElementById('image2').src = mediaFolderPath + images[1];
+        // Uncomment the next line if the video file is available
+        // document.getElementById('video').src = mediaFolderPath + video;
+    };
+</script>
+
+</body>
+</html>
