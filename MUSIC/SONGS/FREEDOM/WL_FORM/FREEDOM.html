@@ -75,7 +75,7 @@
     <div class="media">
         <img id="image1" src="media/placeholder1.jpg" alt="NFT Artwork 1">
         <img id="image2" src="media/placeholder2.jpg" alt="NFT Artwork 2">
-        <video id="video" src="media/placeholder1.jpg" controls></video>
+        <!-- <video id="video" src="media/placeholder1.jpg" controls></video> -->
     </div>
     <br><br><br>
     <h2>FREEDOM Collection Whitelist Form</h1>
@@ -106,82 +106,89 @@
         <form id="additionalForm">
             <label for="communityName">Community Name</label>
             <input type="text" id="communityName" name="communityName">
-
+    
             <label for="communityTwitter">Community Twitter</label>
             <input type="text" id="communityTwitter" name="communityTwitter">
-
+    
             <label for="communityDiscord">Community Discord</label>
             <input type="text" id="communityDiscord" name="communityDiscord">
-
+    
             <label for="communityWebsite">Community Website</label>
             <input type="text" id="communityWebsite" name="communityWebsite">
-
+    
+            <label for="communitySize">Community Size</label>
+            <input type="number" id="communitySize" name="communitySize">
+    
+            <label for="whitelistPlaces">Whitelist Places Requested</label>
+            <input type="number" id="whitelistPlaces" name="whitelistPlaces">
+    
             <label for="communityDescription">Any other things you would like to say about your community?</label>
             <input type="text" id="communityDescription" name="communityDescription">
-
+    
             <button type="submit">Submit Additional Info</button>
         </form>
     </div>
-</div>
+    
 
-<script>
-    document.getElementById('whitelistForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const tweetUrl = document.getElementById('tweetUrl').value;
-        const walletAddress = document.getElementById('walletAddress').value;
-
-        // Simple validation for Twitter/X URL
-        const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/status\/\d+$/;
-        const isValidTweetUrl = twitterUrlPattern.test(tweetUrl);
-
-        // Validation for Bitcoin address including the new formats
-        const bitcoinAddressPattern = /^(bc1([a-zA-HJ-NP-Z0-9]{25,62})|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/;
-        const isValidBitcoinAddress = bitcoinAddressPattern.test(walletAddress);
-
-        if (!isValidTweetUrl) {
-            document.getElementById('responseMessage').textContent = 'Invalid Twitter/X post URL. Please provide a correct URL.';
-        } else if (!isValidBitcoinAddress) {
-            document.getElementById('responseMessage').textContent = 'Invalid Bitcoin wallet address. Please provide a valid address.';
-        } else {
-            // Show additional fields if valid
-            document.getElementById('additionalFields').classList.remove('hidden');
-            document.getElementById('responseMessage').textContent = '';
-            // Disable the initial submit button to prevent multiple submissions
-            document.querySelector('#whitelistForm button[type="submit"]').disabled = true;
-        }
-    });
-
-    document.getElementById('additionalForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        
-        // Copy additional form data to hidden fields in the whitelist form
-        const additionalFormElements = document.getElementById('additionalForm').elements;
-        for (let i = 0; i < additionalFormElements.length; i++) {
-            if (additionalFormElements[i].type !== 'submit') {
-                let hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = additionalFormElements[i].name;
-                hiddenField.value = additionalFormElements[i].value;
-                document.getElementById('whitelistForm').appendChild(hiddenField);
+    <script>
+        document.getElementById('whitelistForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const tweetUrl = document.getElementById('tweetUrl').value;
+            const walletAddress = document.getElementById('walletAddress').value;
+    
+            // Simple validation for Twitter/X URL
+            const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/status\/\d+$/;
+            const isValidTweetUrl = twitterUrlPattern.test(tweetUrl);
+    
+            // Validation for Bitcoin address including the new formats
+            const bitcoinAddressPattern = /^(bc1([a-zA-HJ-NP-Z0-9]{25,62})|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/;
+            const isValidBitcoinAddress = bitcoinAddressPattern.test(walletAddress);
+    
+            if (!isValidTweetUrl) {
+                document.getElementById('responseMessage').textContent = 'Invalid Twitter/X post URL. Please provide a correct URL.';
+            } else if (!isValidBitcoinAddress) {
+                document.getElementById('responseMessage').textContent = 'Invalid Bitcoin wallet address. Please provide a valid address.';
+            } else {
+                // Show additional fields if valid
+                document.getElementById('additionalFields').classList.remove('hidden');
+                document.getElementById('responseMessage').textContent = '';
+                // Disable the initial submit button to prevent multiple submissions
+                document.querySelector('#whitelistForm button[type="submit"]').disabled = true;
             }
-        }
-        
-        // Submit the main form
-        document.getElementById('whitelistForm').submit();
-    });
-
-    window.onload = function() {
-        const mediaFolderPath = 'media/';
-        const images = ['image1.jpg', 'image2.gif'];
-        // Assuming video.mp4 is optional, you can remove or comment out this line if not available
-        const video = 'video.mp4';
-
-        document.getElementById('image1').src = mediaFolderPath + images[0];
-        document.getElementById('image2').src = mediaFolderPath + images[1];
-        // Uncomment the next line if the video file is available
-        document.getElementById('video').src = mediaFolderPath + video;
-    };
-</script>
+        });
+    
+        document.getElementById('additionalForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Copy additional form data to hidden fields in the whitelist form
+            const additionalFormElements = document.getElementById('additionalForm').elements;
+            for (let i = 0; i < additionalFormElements.length; i++) {
+                if (additionalFormElements[i].type !== 'submit') {
+                    let hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = additionalFormElements[i].name;
+                    hiddenField.value = additionalFormElements[i].value;
+                    document.getElementById('whitelistForm').appendChild(hiddenField);
+                }
+            }
+            
+            // Submit the main form
+            document.getElementById('whitelistForm').submit();
+        });
+    
+        window.onload = function() {
+            const mediaFolderPath = 'media/';
+            const images = ['image1.jpg', 'image2.gif'];
+            // Assuming video.mp4 is optional, you can remove or comment out this line if not available
+            // const video = 'video.mp4';
+    
+            document.getElementById('image1').src = mediaFolderPath + images[0];
+            document.getElementById('image2').src = mediaFolderPath + images[1];
+            // Uncomment the next line if the video file is available
+            document.getElementById('video').src = mediaFolderPath + video;
+        };
+    </script>
+    
 
 
 
