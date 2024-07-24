@@ -194,7 +194,7 @@ button:hover {
         event.preventDefault();
         const tweetUrl = document.getElementById('tweetUrl').value;
         const walletAddress = document.getElementById('walletAddress').value;
-        const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/status\/\d+$/;
+        const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+$/;
         const isValidTweetUrl = twitterUrlPattern.test(tweetUrl);
         const bitcoinAddressPattern = /^(bc1([a-zA-HJ-NP-Z0-9]{25,62})|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/;
         const isValidBitcoinAddress = bitcoinAddressPattern.test(walletAddress);
@@ -253,6 +253,7 @@ button:hover {
         document.getElementById('image2').src = mediaFolderPath + images[1];
     };
 </script>
+
 
 
 
