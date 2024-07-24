@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREEDOM Collection Whitelist Form</title>
+    <style>
+        .centered-text {
+            text-align: center;
+            margin: 0 auto;
+        }
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #fff;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+h1 {
+    font-size: 80px;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+h3 {
+    font-size: 24px;
+}
+
+h4 {
+    font-size: 18px;
+}
+
+h5 {
+    font-size: 14px;
+}
+
+h6 {
+    font-size: 10px;
+}
+
+.media {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.media img, .media video {
+    max-width: 20%;
+    height: auto;
+    border-radius: 8px;
+    margin: 0 10px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 10px;
+}
+
+input[type="text"], input[type="email"] {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: calc(100% - 20px); /* Adjusted width */
+    color: #000;
+}
+
+input.width-adjusted {
+    width: calc(100% - 40px); /* Further reduction if needed */
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.hidden {
+    display: none;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>自由</h1>
+        <div class="centered-text">
+        <h4>2X 白名单</h4>
+        <div class="media">
+            <img id="image1" src="media/placeholder1.jpg" alt="NFT 艺术品 1">
+            <img id="image2" src="media/placeholder2.jpg" alt="NFT 艺术品 2">
+        </div>
+        <h2>加入Double Mint白名单，赢取额外的铸造通行证！</h2>
+    
+        <h5> 为了确保您在Double Mint白名单中的位置，请在推特上分享关于链上音乐对您的意义或其对世界的潜在影响的看法。 </h5>
+          
+            <h4> 
+            别忘了标记 @audionals, @jimdotbtc 和 @OrdinalBased1s。 
+            <br>
+            <br>
+            发挥您的创造力—突出的推文将获得额外的白名单铸造通行证！ 
+            <br>
+            <br>
+            推文后，将您的推文链接粘贴到下面的输入框中以解锁白名单表单的下一部分。 
+            <br>
+            <br>
+            <h5>
+            在第二部分，您需要告诉我们您的社区信息并提供一些链接和其他信息。
+            <br>
+            <br>
+            最后，告诉我们如果被接受，您希望为您的社区申请多少个Double Mint白名单通行证。 
+            </h5>
+            <br>
+            让我们看看您最具创意、最吸引人和最有信息量的推文吧！
+        </h4>
+        </div>
+    
+        <h2>自由系列白名单表单</h2>
+    <form id="whitelistForm" action="https://script.google.com/macros/s/AKfycbwXG3R1tKUvAJyWEBUebdWgXfslLyo4Xc4z4tJgZggqz_hSRXvDPitW1sXC6BNvK_DY/exec" method="post">
+        <label for="name">姓名</label>
+        <input type="text" id="name" name="name" class="width-adjusted" required>
+        
+        <label for="email">邮箱（可选 - 有助于沟通但不是必需的）</label>
+        <input type="email" id="email" name="email" class="width-adjusted">
+        
+        <label for="twitterHandle">推特用户名</label>
+        <input type="text" id="twitterHandle" name="twitterHandle" class="width-adjusted" required>
+        
+        <label for="tweetUrl">推广帖子的URL（确保提供正确的URL，因为无效的帖子将不会被添加到钱包中）</label>
+        <input type="text" id="tweetUrl" name="tweetUrl" class="width-adjusted" required>
+        
+        <label for="walletAddress">钱包地址（推广帖子确认后将添加到白名单）</label>
+        <input type="text" id="walletAddress" name="walletAddress" class="width-adjusted" required>
+        
+        <button type="submit">提交</button>
+    </form>
+    
+    <p id="responseMessage"></p>
+    
+    <div id="additionalFields" class="hidden">
+        <form id="additionalForm">
+            <label for="communityName">社区名称</label>
+            <input type="text" id="communityName" name="communityName" class="width-adjusted">
+            
+            <label for="communityTwitter">社区推特</label>
+            <input type="text" id="communityTwitter" name="communityTwitter" class="width-adjusted">
+            
+            <label for="communityDiscord">社区Discord</label>
+            <input type="text" id="communityDiscord" name="communityDiscord" class="width-adjusted">
+            
+            <label for="communityWebsite">社区网站</label>
+            <input type="text" id="communityWebsite" name="communityWebsite" class="width-adjusted">
+            
+            <label for="communitySize">社区规模</label>
+            <input type="number" id="communitySize" name="communitySize" class="width-adjusted">
+            
+            <label for="whitelistPlaces">请求的白名单名额</label>
+            <input type="number" id="whitelistPlaces" name="whitelistPlaces" class="width-adjusted">
+            
+            <label for="communityDescription">您还想说些什么关于您的社区？</label>
+            <input type="text" id="communityDescription" name="communityDescription" class="width-adjusted">
+            
+            <button type="submit">提交额外信息</button>
+        </form>
+    </div>
+    
+
+<script>
+    document.getElementById('whitelistForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const tweetUrl = document.getElementById('tweetUrl').value;
+        const walletAddress = document.getElementById('walletAddress').value;
+        const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/status\/\d+$/;
+        const isValidTweetUrl = twitterUrlPattern.test(tweetUrl);
+        const bitcoinAddressPattern = /^(bc1([a-zA-HJ-NP-Z0-9]{25,62})|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/;
+        const isValidBitcoinAddress = bitcoinAddressPattern.test(walletAddress);
+        if (!isValidTweetUrl) {
+            document.getElementById('responseMessage').textContent = 'Invalid Twitter/X post URL. Please provide a correct URL.';
+        } else if (!isValidBitcoinAddress) {
+            document.getElementById('responseMessage').textContent = 'Invalid Bitcoin wallet address. Please provide a valid address.';
+        } else {
+            document.getElementById('additionalFields').classList.remove('hidden');
+            document.getElementById('responseMessage').textContent = '';
+            document.querySelector('#whitelistForm button[type="submit"]').disabled = true;
+        }
+    });
+
+    document.getElementById('additionalForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const additionalFormElements = document.getElementById('additionalForm').elements;
+        const whitelistForm = document.getElementById('whitelistForm');
+
+        // Clear existing hidden fields to avoid duplication
+        const hiddenFields = whitelistForm.querySelectorAll('input[type="hidden"]');
+        hiddenFields.forEach(field => field.remove());
+
+        // Function to append hidden fields
+        function appendHiddenField(name, value) {
+            let hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = name;
+            hiddenField.value = value;
+            whitelistForm.appendChild(hiddenField);
+        }
+
+        // Append additional fields to the whitelist form in correct order
+        const fieldsToAppend = [
+            'communityName',
+            'communityTwitter',
+            'communityDiscord',
+            'communityWebsite',
+            'communitySize',
+            'whitelistPlaces',
+            'communityDescription'
+        ];
+
+        fieldsToAppend.forEach(fieldId => {
+            const fieldValue = document.getElementById(fieldId).value;
+            appendHiddenField(fieldId, fieldValue);
+        });
+
+        whitelistForm.submit();
+    });
+
+    window.onload = function() {
+        const mediaFolderPath = 'media/';
+        const images = ['image1.jpg', 'image2.gif'];
+        document.getElementById('image1').src = mediaFolderPath + images[0];
+        document.getElementById('image2').src = mediaFolderPath + images[1];
+    };
+</script>
+
+
+
+</div>
+</body>
+</html>
