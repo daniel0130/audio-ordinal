@@ -194,12 +194,17 @@ button:hover {
         event.preventDefault();
         const tweetUrl = document.getElementById('tweetUrl').value;
         const walletAddress = document.getElementById('walletAddress').value;
-        const twitterUrlPattern = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+$/;
-        const isValidTweetUrl = twitterUrlPattern.test(tweetUrl);
+
+        // Very relaxed validation for URL
+        const urlPattern = /^(https?:\/\/)?(www\.)?(\w+\.)+\w{2,}(\/\w+)*\/?$/;
+        const isValidUrl = urlPattern.test(tweetUrl);
+
+        // Validation for Bitcoin address including the new formats
         const bitcoinAddressPattern = /^(bc1([a-zA-HJ-NP-Z0-9]{25,62})|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/;
         const isValidBitcoinAddress = bitcoinAddressPattern.test(walletAddress);
-        if (!isValidTweetUrl) {
-            document.getElementById('responseMessage').textContent = 'Invalid Twitter/X post URL. Please provide a correct URL.';
+
+        if (!isValidUrl) {
+            document.getElementById('responseMessage').textContent = 'Invalid URL. Please provide a correct URL.';
         } else if (!isValidBitcoinAddress) {
             document.getElementById('responseMessage').textContent = 'Invalid Bitcoin wallet address. Please provide a valid address.';
         } else {
@@ -253,6 +258,8 @@ button:hover {
         document.getElementById('image2').src = mediaFolderPath + images[1];
     };
 </script>
+
+
 
 
 
