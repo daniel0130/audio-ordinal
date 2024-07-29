@@ -174,7 +174,8 @@
         </div>
     </div>
     <script>
-       function isValidUrl(string) {
+      // Utility function for validation
+      function isValidUrl(string) {
           try {
               new URL(string);
               return true;
@@ -182,20 +183,21 @@
               return false;
           }
       }
-
+  
       function isValidOrdinalId(id) {
           const regex = /^[0-9a-fA-F]{64}(i\d+)?$/;
           return regex.test(id);
       }
-
+  
       function extractIdFromUrl(url) {
           return url.split('/').pop();
       }
-
+  
       function setupUrlListeners() {
           const urlFields = ['songUrl', 'ordinalElementId', 'collectionArtworkUrl', 'receiptBackgroundUrl'];
           urlFields.forEach(fieldId => {
-              document.getElementById(fieldId).addEventListener('input', function() {
+              const field = document.getElementById(fieldId);
+              field.addEventListener('input', function() {
                   if (isValidUrl(this.value)) {
                       this.value = extractIdFromUrl(this.value);
                   }
@@ -205,7 +207,7 @@
               });
           });
       }
-
+  
       function calculate() {
           const totalCollectionSize = parseInt(document.getElementById('totalCollectionSize').value) || 0;
           const pricePerItem = parseFloat(document.getElementById('pricePerItem').value) || 0;
@@ -213,17 +215,16 @@
           const totalEarned = totalItemsSold * pricePerItem;
           const marketplaceCut = parseFloat(document.getElementById('marketplaceCut').value) || 0;
           const totalReceived = totalEarned - (totalEarned * marketplaceCut / 100);
-          document.getElementById('totalReceived').value = totalReceived.toFixed(8);
-
           const numRecipients = parseInt(document.getElementById('numRecipients').value) || 0;
           const totalRoyalties = totalReceived * 0.2;
           const royaltySplit = numRecipients > 0 ? totalRoyalties / numRecipients : 0;
+  
+          document.getElementById('totalEarned').value = totalEarned.toFixed(8);
+          document.getElementById('totalReceived').value = totalReceived.toFixed(8);
           document.getElementById('totalRoyalties').value = totalRoyalties.toFixed(8);
           document.getElementById('royaltySplit').value = royaltySplit.toFixed(8);
-
-          document.getElementById('totalEarned').value = totalEarned.toFixed(8);
       }
-
+  
       function generateDataFile() {
           const fields = ['songName', 'songUrl', 'totalCollectionSize', 'pricePerItem', 'marketplaceCut', 'totalReceived', 'numRecipients', 'totalRoyalties', 'royaltySplit', 'collectionArtworkUrl', 'receiptBackgroundUrl', 'ordinalElementId'];
           const receiptData = fields.reduce((data, field) => {
@@ -239,13 +240,14 @@
               data[field] = value;
               return data;
           }, {});
+  
           const blob = new Blob([JSON.stringify(receiptData)], { type: 'application/json' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
           link.download = 'receiptData.json';
           link.click();
       }
-
+  
       function loadDataFile() {
           const input = document.createElement('input');
           input.type = 'file';
@@ -267,7 +269,7 @@
           };
           input.click();
       }
-
+  
       function generateIndividualReceipt() {
           const ordinalElementId = document.getElementById('ordinalElementId').value;
           if (!ordinalElementId) {
@@ -278,7 +280,7 @@
               alert('Ordinal Element ID is not valid.');
               return;
           }
-
+  
           const fields = ['songName', 'songUrl', 'totalEarned', 'marketplaceCut', 'totalReceived', 'numRecipients', 'totalRoyalties', 'royaltySplit', 'collectionArtworkUrl', 'receiptBackgroundUrl'];
           const receiptData = fields.reduce((data, field) => {
               const value = document.getElementById(field).value;
@@ -290,14 +292,11 @@
               return data;
           }, {});
           receiptData.ordinalElementId = ordinalElementId;
-
+  
           const receiptContent = `
               <h2>Audional Royalty Payment</h2>
               ${Object.keys(receiptData).map(key => {
-                  if (key === 'ordinalElementId') {
-                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> <a href="https://ordinals.com/content/${receiptData[key]}" target="_blank">${receiptData[key]}</a></p>`;
-                  }
-                  if (key === 'songUrl') {
+                  if (key === 'ordinalElementId' || key === 'songUrl') {
                       return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> <a href="https://ordinals.com/content/${receiptData[key]}" target="_blank">${receiptData[key]}</a></p>`;
                   }
                   if (key !== 'collectionArtworkUrl' && key !== 'receiptBackgroundUrl') {
@@ -306,9 +305,9 @@
                   return '';
               }).join('')}
           `;
-
+  
           document.getElementById('receipt-content').innerHTML = receiptContent;
-
+  
           const collectionArtworkUrl = `https://ordinals.com/content/${receiptData.collectionArtworkUrl}`;
           if (collectionArtworkUrl && collectionArtworkUrl.endsWith('.html')) {
               document.getElementById('collectionArtworkIframe').src = collectionArtworkUrl;
@@ -319,7 +318,7 @@
               document.getElementById('collectionArtwork').style.display = 'block';
               document.getElementById('collectionArtworkIframe').style.display = 'none';
           }
-
+  
           const receiptBackgroundUrl = `https://ordinals.com/content/${receiptData.receiptBackgroundUrl}`;
           if (receiptBackgroundUrl) {
               const receipt = document.getElementById('receipt');
@@ -327,8 +326,7 @@
               receipt.style.display = 'block';
           }
       }
-
-
+  
       function checkOrdinalElementId() {
           const ordinalElementId = document.getElementById('ordinalElementId').value;
           const button = document.getElementById('generateIndividualReceipt');
@@ -338,13 +336,13 @@
           button.style.cursor = isValid ? 'pointer' : 'not-allowed';
           button.setAttribute('enabled', isValid ? 'true' : 'false');
       }
-
+  
       window.onload = function() {
           calculate();
           setupUrlListeners();
           checkOrdinalElementId();
       };
-
-    </script>
+  </script>
+  
 </body>
 </html>
