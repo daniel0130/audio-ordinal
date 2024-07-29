@@ -294,17 +294,24 @@
           receiptData.ordinalElementId = ordinalElementId;
   
           const receiptContent = `
-              <h2>Audional Royalty Payment</h2>
-              ${Object.keys(receiptData).map(key => {
-                  if (key === 'ordinalElementId' || key === 'songUrl') {
-                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> <a href="https://ordinals.com/content/${receiptData[key]}" target="_blank">${receiptData[key]}</a></p>`;
-                  }
-                  if (key !== 'collectionArtworkUrl' && key !== 'receiptBackgroundUrl') {
-                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${receiptData[key]}</p>`;
-                  }
-                  return '';
-              }).join('')}
-          `;
+            <h2>Audional Royalty Payment</h2>
+            ${Object.keys(receiptData).map(key => {
+                if (key === 'ordinalElementId' || key === 'songUrl') {
+                    return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> <a href="https://ordinals.com/content/${receiptData[key]}" target="_blank">${receiptData[key]}</a></p>`;
+                }
+                if (key !== 'collectionArtworkUrl' && key !== 'receiptBackgroundUrl') {
+                    return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${receiptData[key]}</p>`;
+                }
+                return '';
+            }).join('')}
+            <div style="margin-top: 10px; padding: 5px; border: 2px solid red; text-align: center;">
+                <strong>***IMPORTANT - PLEASE READ***</strong>
+            <p>
+                This ordinal inscription facilitates automated and decentralized royalty payments between artists, sample holders, and plug-in creators. Payments are embedded in the padding of royalty receipts, using ordinal IDs, without needing payment addresses.
+                If you are the original reciever of this royalty receipt, it may contain royalty payments.
+            </p>
+        </div>
+        `;
   
           document.getElementById('receipt-content').innerHTML = receiptContent;
   
