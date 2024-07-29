@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hash to Seed and Access Level Converter</title>
+</head>
+<body>
+    <h1>Hash to Seed and Access Level Converter</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="processFile()">Process File</button>
+    <button onclick="exportToMagicEdenFormat()">Export to Magic Eden Format</button>
+    <h2>Processed JSON</h2>
+    <pre id="output"></pre>
+
+    <script>
+        let processedData = [];
+
+        function generateSeed(e) {
+            let t = parseInt(e.split("i")[1]);
+            let r = e.split("");
+            for (; t--; ) r.push(r.shift());
+            let i = 0;
+            for (let e of r.join("")) i = (31 * i + e.charCodeAt()) % Number.MAX_SAFE_INTEGER;
+            return i % 1400000000;
+        }
+
+        function randomWithSeed(seed) {
+            const value = 10000 * Math.sin(seed);
+            return value - Math.floor(value);
+        }
+
+        function generateAccessLevel(seed) {
+            const skewFactor = 0.3; // Adjust this factor to skew the distribution
+            const skewedValue = Math.pow(randomWithSeed(seed), skewFactor);
+            return Math.min(Math.max(Math.floor((1 - skewedValue) * 10) + 1, 1), 10); // Ensure value is between 1 and 10
+        }
+
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const output = document.getElementById('output');
+
+            if (!fileInput.files.length) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const content = event.target.result;
+                const data = JSON.parse(content);
+
+                let currentIndex = 1;
+
+                processedData = data.map(entry => {
+                    return entry.holdings.map(holding => {
+                        return holding.inscription_ids.map(id => {
+                            const seed = generateSeed(id);
+                            const accessLevel = generateAccessLevel(seed);
+                            return {
+                                id: id,
+                                meta: {
+                                    name: `FREEDOM #${currentIndex++}`,
+                                    attributes: [
+                                        {
+                                            trait_type: "Colour Effect Level",
+                                            value: accessLevel.toString()
+                                        }
+                                    ]
+                                }
+                            };
+                        });
+                    }).flat();
+                }).flat();
+
+                const updatedJson = JSON.stringify(processedData, null, 2);
+                output.textContent = updatedJson;
+            };
+
+            reader.readAsText(file);
+        }
+
+        function exportToMagicEdenFormat() {
+            if (processedData.length === 0) {
+                alert('Please process a file first.');
+                return;
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(processedData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "magic_eden_format.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+    </script>
+</body>
+</html>
