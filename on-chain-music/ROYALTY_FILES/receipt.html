@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Royalty Receipt</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .receipt { border: 1px solid #ddd; padding: 10px; margin: 10px; }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <h2>Royalty Receipt</h2>
+    <p><strong>Song Name:</strong> <span id="song-name"></span></p>
+    <p><strong>Song URL:</strong> <a id="song-url" href=""></a></p>
+    <p><strong>Total Earned:</strong> <span id="total-earned"></span></p>
+    <p><strong>Marketplace Cut:</strong> <span id="marketplace-cut"></span>%</p>
+    <p><strong>Total Received After Costs:</strong> <span id="total-received"></span></p>
+    <p><strong>Total Royalties Earned:</strong> <span id="total-royalties"></span></p>
+    <p><strong>Number of Royalty Recipients:</strong> <span id="num-recipients"></span></p>
+    <p><strong>Your Royalty Split:</strong> <span id="your-split"></span></p>
+    <div class="info">
+      <p>To extract your royalties, use the padding in the receipt NFT provided in this form.</p>
+    </div>
+  </div>
+
+  <script>
+    function loadReceipt(data) {
+      const receiptData = JSON.parse(data);
+      document.getElementById('song-name').innerText = receiptData.songName;
+      const songUrlElement = document.getElementById('song-url');
+      songUrlElement.href = receiptData.songUrl;
+      songUrlElement.innerText = receiptData.songUrl;
+      document.getElementById('total-earned').innerText = receiptData.totalEarned;
+      document.getElementById('marketplace-cut').innerText = receiptData.marketplaceCut;
+      document.getElementById('total-received').innerText = receiptData.totalReceived;
+      document.getElementById('total-royalties').innerText = receiptData.totalRoyalties;
+      document.getElementById('num-recipients').innerText = receiptData.numRecipients;
+      document.getElementById('your-split').innerText = receiptData.yourSplit;
+    }
+
+    // Check if the data parameter is provided
+    const urlParams = new URLSearchParams(window.location.search);
+    const data = urlParams.get('data');
+    if (data) {
+      loadReceipt(decodeURIComponent(data));
+    } else {
+      // Attempt to fetch the data from the inscription itself
+      fetch(location.pathname)
+        .then(response => response.text())
+        .then(text => {
+          const urlPattern = /(https?:\/\/[^\s]+)/g;
+          const match = text.match(urlPattern);
+          if (match && match[0]) {
+            const receiptUrl = new URL(match[0]);
+            const receiptData = receiptUrl.searchParams.get('data');
+            if (receiptData) {
+              loadReceipt(decodeURIComponent(receiptData));
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching the inscription:', error));
+    }
+  </script>
+</body>
+</html>

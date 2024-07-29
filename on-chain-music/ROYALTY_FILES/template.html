@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Royalty Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group input[readonly] {
+            background-color: #f0f0f0;
+        }
+        button {
+            padding: 10px 15px;
+            margin-right: 10px;
+        }
+        button#generateIndividualReceipt {
+            background-color: red;
+            color: white;
+            cursor: not-allowed;
+        }
+        button#generateIndividualReceipt[enabled="true"] {
+            background-color: green;
+            cursor: pointer;
+        }
+        #receipt {
+            display: none;
+            width: 600px;
+            height: 600px;
+            position: relative;
+            border: 1px solid #000;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: none; /* No default background */
+        }
+        #receipt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--bg-url);
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: 1;
+        }
+        #receipt-content {
+            position: relative;
+            z-index: 2;
+            color: black; /* Ensure text remains black */
+        }
+        #receipt img, #receipt iframe {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 100px;
+            max-height: 100px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+  
+      <script>
+        function calculate() {
+            const totalEarned = parseFloat(document.getElementById("totalEarned").value);
+            const marketplaceCut = parseFloat(document.getElementById("marketplaceCut").value);
+            const numRecipients = parseInt(document.getElementById("numRecipients").value);
+
+            if (!isNaN(totalEarned) && !isNaN(marketplaceCut) && !isNaN(numRecipients)) {
+                const marketplaceShare = totalEarned * (marketplaceCut / 100);
+                const eachRecipientShare = (totalEarned - marketplaceShare) / numRecipients;
+                
+                console.log("Marketplace Share:", marketplaceShare);
+                console.log("Each Recipient's Share:", eachRecipientShare);
+            }
+        }
+
+        window.onload = function() {
+            calculate();
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Royalty Receipt</h1>
+        <div class="form-group">
+            <label for="songName">Song Name:</label>
+            <input type="text" id="songName">
+        </div>
+        <div class="form-group">
+            <label for="songUrl">Song URL:</label>
+            <input type="text" id="songUrl">
+        </div>
+        <div class="form-group">
+            <label for="collectionArtworkUrl">Song Collection Artwork URL:</label>
+            <input type="text" id="collectionArtworkUrl">
+        </div>
+        <div class="form-group">
+            <label for="receiptBackgroundUrl">Receipt Background Artwork URL:</label>
+            <input type="text" id="receiptBackgroundUrl">
+        </div>
+        <div class="form-group">
+            <label for="ordinalElementId">Your Ordinal Element ID:</label>
+            <input type="text" id="ordinalElementId">
+        </div>
+        <div class="form-group">
+            <label for="totalEarned">Total Earned (BTC):</label>
+            <input type="number" id="totalEarned" value="0.045" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label for="marketplaceCut">Marketplace Cut (%):</label>
+            <input type="number" id="marketplaceCut" value="10" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label for="numRecipients">Number of Royalty Recipients:</label>
+            <input type="number" id="numRecipients" value="16" oninput="calculate()">
+        </div>
+      
+        <div class="form-group">
+            <label for="totalReceived">Total Received After Costs (BTC):</label>
+            <input type="number" id="totalReceived" readonly>
+        </div>
+        <div class="form-group">
+            <label for="totalRoyalties">Total Royalties Earned (BTC):</label>
+            <input type="number" id="totalRoyalties" readonly>
+        </div>
+        <div class="form-group">
+            <label for="royaltySplit">Each Royalty Split Receives (BTC):</label>
+            <input type="number" id="royaltySplit" readonly>
+        </div>
+        <button onclick="generateDataFile()">Generate Data File</button>
+        <button onclick="loadDataFile()">Load Data File</button>
+        <div class="tooltip">
+            <button id="generateIndividualReceipt" onclick="generateIndividualReceipt()" disabled>Generate Individual Receipt</button>
+            <span class="tooltiptext">Must have a unique Ordinal ID before generating an individual receipt</span>
+        </div>
+        <div id="receipt">
+            <img id="collectionArtwork" src="" alt="Collection Artwork">
+            <iframe id="collectionArtworkIframe" src="" style="display:none;"></iframe>
+            <div id="receipt-content"></div>
+            <img id="receipt-background" src="">
+        </div>
+    </div>
+
+    <script>
+      function isValidUrl(string) {
+          try {
+              new URL(string);
+              return true;
+          } catch (_) {
+              return false;
+          }
+      }
+
+      function isValidOrdinalId(id) {
+          const regex = /^[0-9a-fA-F]{64}(i\d+)?$/;
+          return regex.test(id);
+      }
+
+      function calculate() {
+          const totalEarned = parseFloat(document.getElementById('totalEarned').value) || 0;
+          const marketplaceCut = parseFloat(document.getElementById('marketplaceCut').value) || 0;
+          const totalReceived = totalEarned - (totalEarned * marketplaceCut / 100);
+          document.getElementById('totalReceived').value = totalReceived.toFixed(8);
+
+          const numRecipients = parseInt(document.getElementById('numRecipients').value) || 0;
+          const totalRoyalties = totalReceived * 0.2;
+          const royaltySplit = numRecipients > 0 ? totalRoyalties / numRecipients : 0;
+          document.getElementById('totalRoyalties').value = totalRoyalties.toFixed(8);
+          document.getElementById('royaltySplit').value = royaltySplit.toFixed(8);
+      }
+
+      function generateDataFile() {
+          const fields = ['songName', 'songUrl', 'totalEarned', 'marketplaceCut', 'totalReceived', 'numRecipients', 'totalRoyalties', 'royaltySplit', 'collectionArtworkUrl', 'receiptBackgroundUrl', 'ordinalElementId'];
+          const receiptData = fields.reduce((data, field) => {
+              const value = document.getElementById(field).value;
+              if (field.includes('Url') && !isValidUrl(value)) {
+                  alert(`${field.replace(/([A-Z])/g, ' $1')} is not a valid URL.`);
+                  return data;
+              }
+              if (field === 'ordinalElementId' && !isValidOrdinalId(value)) {
+                  alert('Ordinal Element ID is not valid.');
+                  return data;
+              }
+              data[field] = value;
+              return data;
+          }, {});
+          const blob = new Blob([JSON.stringify(receiptData)], { type: 'application/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'receiptData.json';
+          link.click();
+      }
+
+      function loadDataFile() {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'application/json';
+          input.onchange = event => {
+              const file = event.target.files[0];
+              const reader = new FileReader();
+              reader.onload = () => {
+                  const receiptData = JSON.parse(reader.result);
+                  for (const key in receiptData) {
+                      if (receiptData.hasOwnProperty(key)) {
+                          document.getElementById(key).value = receiptData[key];
+                      }
+                  }
+                  checkOrdinalElementId();
+                  calculate();
+              };
+              reader.readAsText(file);
+          };
+          input.click();
+      }
+
+      function generateIndividualReceipt() {
+          const ordinalElementId = document.getElementById('ordinalElementId').value;
+          if (!ordinalElementId) {
+              alert('Ordinal Element ID is required to generate an individual receipt.');
+              return;
+          }
+          if (!isValidOrdinalId(ordinalElementId)) {
+              alert('Ordinal Element ID is not valid.');
+              return;
+          }
+
+          const fields = ['songName', 'songUrl', 'totalEarned', 'marketplaceCut', 'totalReceived', 'numRecipients', 'totalRoyalties', 'royaltySplit', 'collectionArtworkUrl', 'receiptBackgroundUrl'];
+          const receiptData = fields.reduce((data, field) => {
+              const value = document.getElementById(field).value;
+              if (field.includes('Url') && !isValidUrl(value)) {
+                  alert(`${field.replace(/([A-Z])/g, ' $1')} is not a valid URL.`);
+                  return data;
+              }
+              data[field] = value;
+              return data;
+          }, {});
+          receiptData.ordinalElementId = ordinalElementId;
+
+          const receiptContent = `
+              <h2>Audional Royalty Payment</h2>
+              ${Object.keys(receiptData).map(key => {
+                  if (key === 'ordinalElementId') {
+                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> <a href="https://ordinals.com/content/${receiptData[key]}" target="_blank">${receiptData[key]}</a></p>`;
+                  }
+                  if (key === 'songUrl') {
+                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${receiptData[key].split('/').pop()}</p>`;
+                  }
+                  if (key !== 'collectionArtworkUrl' && key !== 'receiptBackgroundUrl') {
+                      return `<p><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${receiptData[key]}</p>`;
+                  }
+                  return '';
+              }).join('')}
+          `;
+
+          document.getElementById('receipt-content').innerHTML = receiptContent;
+
+          const collectionArtworkUrl = receiptData.collectionArtworkUrl;
+          if (collectionArtworkUrl.endsWith('.html')) {
+              document.getElementById('collectionArtworkIframe').src = collectionArtworkUrl;
+              document.getElementById('collectionArtworkIframe').style.display = 'block';
+              document.getElementById('collectionArtwork').style.display = 'none';
+          } else {
+              document.getElementById('collectionArtwork').src = collectionArtworkUrl;
+              document.getElementById('collectionArtwork').style.display = 'block';
+              document.getElementById('collectionArtworkIframe').style.display = 'none';
+          }
+
+          const receipt = document.getElementById('receipt');
+          receipt.style.setProperty('--bg-url', `url(${receiptData.receiptBackgroundUrl})`);
+          receipt.style.display = 'block';
+      }
+
+
+      function checkOrdinalElementId() {
+          const ordinalElementId = document.getElementById('ordinalElementId').value;
+          const button = document.getElementById('generateIndividualReceipt');
+          button.disabled = !ordinalElementId;
+          button.style.backgroundColor = ordinalElementId ? 'green' : 'red';
+          button.style.cursor = ordinalElementId ? 'pointer' : 'not-allowed';
+          button.setAttribute('enabled', ordinalElementId ? 'true' : 'false');
+      }
+
+      document.getElementById('ordinalElementId').addEventListener('input', checkOrdinalElementId);
+      checkOrdinalElementId();
+  </script>
+</body>
+</html>
