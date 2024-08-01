@@ -40,8 +40,8 @@ def transcribe_with_timecodes(audio_path, language="en-US"):
                 word_durations = duration / len(words)
                 
                 for j, word in enumerate(words):
-                    word_start_time = start_time + j * word_durations
-                    word_end_time = word_start_time + word_durations
+                    word_start_time = round(start_time + j * word_durations, 3)
+                    word_end_time = round(word_start_time + word_durations, 3)
                     transcript.append({
                         "word": word,
                         "start_time": word_start_time,
@@ -62,7 +62,7 @@ def get_ordinal_id(url):
     return url.split('/')[-1]
 
 # URL of the audio file
-audio_url = "https://ordinals.hiro.so/content/0b69fb6734a3e267093e5b9d9c5af70a847c021922c168a9d573659ea63fa7adi0"
+audio_url = "https://ordinals.hiro.so/content/2d471092cf6504e4e389eef609bb98cabc844fd054157b4b008ca3c2e66f67adi0"
 audio_path = "downloaded_audio.mp3"
 
 # Download the audio file
