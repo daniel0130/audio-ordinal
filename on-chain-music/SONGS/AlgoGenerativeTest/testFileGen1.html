@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>FREEDOM</title>
+    <script>
+        !function() {
+            function hashString(str) {
+                let rotationCount = parseInt(str.split("i")[1]);
+                let characters = str.split("");
+                for (let i = 0; i < rotationCount; i++) {
+                    let char = characters.shift();
+                    characters.push(char);
+                }
+                str = characters.join("");
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = (31 * hash + str.charCodeAt(i)) % Number.MAX_SAFE_INTEGER;
+                }
+                return hash % 1400000000;
+            }
+
+            const seedValue = hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");
+            window.seed = 937;
+            console.log("Generated seed:", window.seed);
+
+            if (window.playbackStarted === undefined) {
+                window.playbackStarted = false;
+            }
+
+            document.addEventListener("playbackStarted", () => {
+                window.psTime = Date.now();
+                window.playbackStarted = true;
+                displayText();
+            });
+
+            document.addEventListener("playbackStopped", () => {
+                window.playbackStarted = false;
+            });
+
+            const setPlaybackStatus = (status) => {
+                window.playbackStarted = status;
+            };
+
+            document.addEventListener("playbackStarted", () => {
+                window.psTime = Date.now();
+                setPlaybackStatus(true);
+            });
+
+            document.addEventListener("playbackStopped", () => {
+                setPlaybackStatus(false);
+            });
+
+            window.onload = function() {
+                document.title = "Freedom to Transact";
+                displayPlayText();
+            };
+
+            const titleObserver = new MutationObserver(() => {
+                if (document.title !== "FREEDOM") {
+                    document.title = "FREEDOM";
+                }
+            });
+
+            titleObserver.observe(document.querySelector("title"), { childList: true, subtree: true });
+        }();
+    </script>
+    <style>
+        [style*="Impact, charcoal, sans-serif"] {
+            display: none !important;
+        }
+
+        .text-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 7.87s ease-in-out;
+        }
+
+        .freedom {
+            font-family: Arial, bold, sans-serif;
+            font-size: 65px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .melophonic {
+            font-family: "Trebuchet MS", bold, sans-serif;
+            font-size: 62px;
+            color: #000;
+        }
+
+        .sqyzy {
+            font-family: Arial, bold, sans-serif;
+            font-size: 96px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .fade-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 18s ease-in-out;
+        }
+
+        .play-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Arial, bold, sans-serif;
+            font-size: 65px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 10001;
+            opacity: 1;
+            text-align: center;
+            transition: opacity 10s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="fadeOverlay" class="fade-overlay"></div>
+    <script>
+        window.songDataUrl = "/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0";
+
+        // pakoLoaderAndStyles.js
+        !function() {
+            const styleElement = document.createElement("style");
+            styleElement.textContent = `
+                canvas {
+                    position: absolute;
+                }
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    margin: 0;
+                    background-color: black;
+                    position: relative;
+                }
+                #canvas-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                }
+                #cv, body {
+                    background: #000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                }
+                #title-display-container {
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-align: center;
+                    z-index: 9999;
+                    pointer-events: none;
+                }
+                #project-name-display, 
+                #by-display, 
+                #artist-name-display, 
+                #visual-artist-display, 
+                #visual-artist-name-display {
+                    opacity: 0;
+                    font-weight: bold;
+                    position: absolute;
+                    text-align: center;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: auto;
+                    white-space: nowrap;
+                    margin: 0;
+                    padding: 0;
+                    line-height: normal;
+                    font-size: 50px;
+                }
+            `;
+            document.head.appendChild(styleElement);
+
+            const canvasContainer = document.createElement("div");
+            canvasContainer.id = "canvas-container";
+            const canvas = document.createElement("canvas");
+            canvasContainer.appendChild(canvas);
+            document.body.appendChild(canvasContainer);
+        }();
+
+        !function() {
+                const keyMap = {0:"projectName", 1:"artistName", 2:"projectBPM", 3:"currentSequence", 4:"channelURLs", 5:"channelVolume", 6:"channelPlaybackSpeed", 7:"trimSettings", 8:"projectChannelNames", 9:"startSliderValue", 10:"endSliderValue", 11:"totalSampleDuration", 12:"start", 13:"end", 14:"projectSequences", 15:"steps"},
+                reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([e, r]) => [r, +e])),
+                channelMap = Array.from({length: 26}, (e, r) => String.fromCharCode(65 + r)),
+                reverseChannelMap = Object.fromEntries(channelMap.map((e, r) => [e, r])),
+                decompressSteps = e => e.flatMap(e => {
+                    if (typeof e === "number") return e;
+                    if (typeof e === "object" && "r" in e) {
+                        const [r, t] = e.r;
+                        return Array.from({length: t - r + 1}, (e, t) => r + t);
+                    }
+                    return typeof e === "string" && e.endsWith("r") ? {index: parseInt(e.slice(0, -1), 10), reverse: !0} : void 0;
+                }),
+                deserialize = e => {
+                    const r = e => Array.isArray(e) ? e.map(e => typeof e === "object" ? r(e) : e) : typeof e === "object" && e !== null ? Object.entries(e).reduce((e, [t, n]) => {
+                        const a = keyMap[t] ?? t;
+                        return e[a] = a === "projectSequences" ? Object.entries(n).reduce((e, [r, t]) => (e[r.replace("s", "Sequence")] = Object.entries(t).reduce((e, [r, t]) => {
+                            var n;
+                            return e[`ch${reverseChannelMap[r]}`] = {steps: (n = t[reverseKeyMap.steps] || [], n.flatMap(e => {
+                                if (typeof e === "number") return e;
+                                if (typeof e === "object" && "r" in e) {
+                                    const [r, t] = e.r;
+                                    return Array.from({length: t - r + 1}, (e, t) => r + t);
+                                }
+                                return typeof e === "string" && e.endsWith("r") ? {index: parseInt(e.slice(0, -1), 10), reverse: !0} : void 0;
+                            }))}, e;
+                        }, {}), e), {}) : r(n), e;
+                    }, {}) : e;
+                    return r(e);
+                };
+                
+                const loadPako = async () => {
+                    try {
+                        const t = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),
+                        o = await t.text(),
+                        e = document.createElement("div");
+                        e.innerHTML = o;
+                        const n = e.querySelectorAll("script"),
+                        c = Array.from(n).find(t => t.textContent.includes("pako"));
+                        if (!c) throw new Error("Pako library not found in the HTML content.");
+                        const r = document.createElement("script");
+                        r.textContent = c.textContent,
+                        document.head.appendChild(r),
+                        console.log("Pako library loaded:", pako);
+                    } catch (t) {
+                        console.error("Error loading Pako:", t);
+                    }
+                };
+
+                const processSerializedData = async e => {
+                    try {
+                        await loadPako();
+                        const o = await fetch(e);
+                        if (!o.ok) throw new Error("Network response was not ok");
+                        const a = await o.arrayBuffer(),
+                        r = pako.inflate(new Uint8Array(a)),
+                        t = new TextDecoder("utf-8").decode(r),
+                        n = JSON.parse(t),
+                        s = deserialize(n);
+                        console.log("Deserialized Data:", s);
+                        const c = new Blob([JSON.stringify(s)], {type: "application/json"});
+                        window.jsonDataUrl = URL.createObjectURL(c);
+                        const i = document.createElement("script");
+                        i.src = "/content/6e226872d6612da632fcf29824b6f52c3672a745e194032e4f91c351e47d75c9i0",
+                        document.head.appendChild(i);
+                    } catch (e) {
+                        console.error("Error processing data:", e);
+                    }
+                };
+
+                if (window.songDataUrl) {
+                    processSerializedData(window.songDataUrl);
+                }
+            }();
+
+
+        // load pfpCapture.js
+        !function() {
+            const scriptElement = document.createElement("script");
+            scriptElement.src = "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0";
+            document.body.appendChild(scriptElement);
+        }();
+
+        function createTextElement(text, className) {
+            const element = document.createElement("div");
+            element.textContent = text;
+            element.classList.add("text-element", className);
+            document.body.appendChild(element);
+            return element;
+        }
+
+        function initialFadeIn() {
+            const fadeOverlay = document.getElementById("fadeOverlay");
+            setTimeout(() => {
+                fadeOverlay.style.opacity = "0";
+            }, 100);
+        }
+
+        function displayText() {
+            const texts = [
+                { text: "FREEDOM", className: "freedom", fadeIn: 0, fadeOut: 15740 },
+                { text: "melophonic", className: "melophonic", fadeIn: 15740, fadeOut: 31480 },
+                { text: "SQYZY", className: "sqyzy", fadeIn: 31480, fadeOut: 47800 }
+            ];
+
+            texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+                const textElement = createTextElement(text, className);
+                setTimeout(() => textElement.style.opacity = "1", fadeIn);
+                setTimeout(() => textElement.style.opacity = "0", fadeOut);
+            });
+        }
+
+        function displayPlayText() {
+            const playTextElement = document.createElement("div");
+            playTextElement.textContent = "FREEDOM";
+            playTextElement.className = "play-text";
+            document.body.appendChild(playTextElement);
+            setTimeout(() => {
+                playTextElement.style.opacity = "0";
+            }, 100);
+        }
+
+        window.onload = function() {
+            initialFadeIn();
+            document.title = "Freedom to Transact";
+            displayPlayText();
+        };
+    </script>
+</body>
+</html>
