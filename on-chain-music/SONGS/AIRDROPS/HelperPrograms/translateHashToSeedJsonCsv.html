@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hash to Seed and Access Level Converter</title>
+</head>
+<body>
+    <h1>Hash to Seed and Access Level Converter</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="processFile()">Process File</button>
+    <h2>Processed CSV</h2>
+    <pre id="output"></pre>
+
+    <script>
+        function generateSeed(e) {
+            let t = parseInt(e.split("i")[1]);
+            let r = e.split("");
+            for (; t--; ) r.push(r.shift());
+            let i = 0;
+            for (let e of r.join("")) i = (31 * i + e.charCodeAt()) % Number.MAX_SAFE_INTEGER;
+            return i % 1400000000;
+        }
+
+        function randomWithSeed(seed) {
+            const value = 10000 * Math.sin(seed);
+            return value - Math.floor(value);
+        }
+
+        function generateAccessLevel(seed) {
+            const skewFactor = 0.3; // Adjust this factor to skew the distribution
+            const skewedValue = Math.pow(randomWithSeed(seed), skewFactor);
+            return Math.min(Math.max(Math.floor((1 - skewedValue) * 10) + 1, 1), 10); // Ensure value is between 1 and 10
+        }
+
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const output = document.getElementById('output');
+
+            if (!fileInput.files.length) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const content = event.target.result;
+                const lines = content.split('\n');
+                const result = [["Hash", "Access Level"]]; // Initialize result with header
+
+                lines.forEach(line => {
+                    const hash = line.trim();
+                    if (hash) {
+                        const seed = generateSeed(hash);
+                        const accessLevel = generateAccessLevel(seed);
+                        result.push([hash, accessLevel]);
+                    }
+                });
+
+                output.textContent = result.map(row => row.join(',')).join('\n');
+                downloadCSV(result);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function downloadCSV(data) {
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "processed_hashes.csv");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+    </script>
+</body>
+</html>
