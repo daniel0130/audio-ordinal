@@ -370,81 +370,119 @@ function processLoad(url, sampleName, index, loadSampleButton, modal) {
     }
 }
 
-
 function handleUpdate(index, modal, loadSampleButton) {
-    // Assuming nameInput is the input field for the channel name
     const nameInput = document.querySelector('.channel-name-input');
     if (nameInput && nameInput.value) {
         updateProjectChannelNamesUI(index, nameInput.value);
         window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
         loadSampleButton.textContent = nameInput.value;
-        closeAllModals();  // Ensure to close all modals when update is successful
+        closeAllModals();
     }
 }
-
 
 function copyOrdinalId(channelIndex) {
     const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
     copiedOrdinalId = extractOrdinalIdFromUrl(url);
     console.log(`Copied Ordinal ID: ${copiedOrdinalId}`);
+    showVisualMessage(`Copied ID: ${copiedOrdinalId}`);
 }
 
 function pasteOrdinalId(channelIndex, loadSampleButton) {
     if (copiedOrdinalId) {
         setOrdinalIdInUrl(channelIndex, copiedOrdinalId);
         console.log(`Pasted Ordinal ID: ${copiedOrdinalId} into channel ${channelIndex}`);
-        
-        // Trigger the loading process after setting the ordinal ID
         const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
         const sampleName = copiedOrdinalId;
-        
         processLoad(url, sampleName, channelIndex, loadSampleButton, null);
+        updateButtonText(channelIndex, loadSampleButton); // Update button text
     } else {
         console.warn('No Ordinal ID copied');
     }
 }
 
+function pasteOrdinalIdToAllChannels(loadSampleButton) {
+    if (!copiedOrdinalId) {
+        console.warn('No Ordinal ID copied');
+        return;
+    }
 
+    const confirmation = confirm('Are you sure you want to paste this ID across all channels? Existing channels will be lost.');
+    if (confirmation) {
+        const totalChannels = window.unifiedSequencerSettings.settings.masterSettings.channelURLs.length;
+        for (let i = 0; i < totalChannels; i++) {
+            setOrdinalIdInUrl(i, copiedOrdinalId);
+            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[i];
+            const sampleName = copiedOrdinalId;
+            processLoad(url, sampleName, i, loadSampleButton, null);
+            updateButtonText(i, loadSampleButton); // Update button text for each channel
+        }
+        showVisualMessage('Pasted ID to all channels');
+    }
+}
+
+function updateButtonText(index, loadSampleButton) {
+    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
+    if (projectChannelNames && index < projectChannelNames.length) {
+        loadSampleButton.textContent = projectChannelNames[index] || 'Load New Audio into Channel';
+    }
+}
+
+function showVisualMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'visual-message';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 2000); // Remove message after 2 seconds
+}
 
 function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButton) {
     console.log('Creating custom context menu');
 
-    closeCustomContextMenu();  // Ensure any existing context menus are closed
+    closeCustomContextMenu();
 
     const menu = createContextMenu(x, y);
     menu.style.position = 'absolute';
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
-    menu.className = 'custom-context-menu'; // Use a specific class for styling
+    menu.className = 'custom-context-menu';
 
-    // Define menu options
     const options = [
         { 
             label: 'Add User Channel Name', 
             action: () => {
                 showChannelNamingModal(channelIndex, loadSampleButton);
-                closeCustomContextMenu(); // Close the menu after action is performed
+                closeCustomContextMenu();
             } 
         },
         { 
             label: 'Copy Ordinal ID', 
             action: () => {
                 copyOrdinalId(channelIndex);
-                closeCustomContextMenu(); // Close the menu after action is performed
+                closeCustomContextMenu();
             } 
         },
         { 
             label: 'Paste Ordinal ID', 
             action: () => {
                 pasteOrdinalId(channelIndex, loadSampleButton);
-                closeCustomContextMenu(); // Close the menu after action is performed
+                closeCustomContextMenu();
+            } 
+        },
+        { 
+            label: 'Paste Ordinal ID to All Channels', 
+            action: () => {
+                pasteOrdinalIdToAllChannels(loadSampleButton);
+                closeCustomContextMenu();
             } 
         },
         { 
             label: 'Reset Channel to Default', 
             action: () => {
                 resetChannelToDefault(channelIndex);
-                closeCustomContextMenu(); // Close the menu after action is performed
+                closeCustomContextMenu();
             } 
         }
     ];
@@ -456,36 +494,28 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
 
     document.body.appendChild(menu);
 
-    // Set a timeout to automatically close the menu after 3 seconds (3000 milliseconds)
     setTimeout(() => {
         closeCustomContextMenu();
     }, 3000);
 
-    // Timeout to avoid immediate closing due to the current click event
     setTimeout(() => {
-        // Listen for clicks outside the menu to close it
         document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
     }, 0);
 }
 
-
 function resetChannelToDefault(channelIndex) {
     console.log(`Resetting channel ${channelIndex} to default settings`);
-    window.unifiedSequencerSettings.setChannelVolume(channelIndex, 1); // Reset volume to 1
-    window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, 1); // Reset playback speed to 1
+    window.unifiedSequencerSettings.setChannelVolume(channelIndex, 1);
+    window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, 1);
 }
 
-
 function handleClickOutsideMenu(event, menu) {
-    // Close the menu if the click is outside of the menu
     if (!menu.contains(event.target)) {
         closeCustomContextMenu();
-        // document.removeEventListener('click', handleClickOutsideMenu);
     }
 }
 
 function closeCustomContextMenu() {
-    // Remove any existing context menus
     const existingMenu = document.querySelector('.custom-context-menu');
     if (existingMenu) {
         existingMenu.remove();
