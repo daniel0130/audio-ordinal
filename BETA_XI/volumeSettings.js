@@ -1,6 +1,7 @@
 // volumeSettings.js
 
 let modalTimeout; // To track the inactivity timeout
+let mouseOutTimeout;
 
 document.addEventListener("DOMContentLoaded", function() {
     const volumeButtons = document.querySelectorAll('.volume-button');
@@ -130,27 +131,33 @@ function createTextInput(type, channelIndex, slider) {
 }
 
 function addModalEventListeners(modal, type) {
+    // Adding event listener for click event on the modal
     modal.addEventListener('click', (event) => {
-        event.stopPropagation();
-        resetModalTimeout(type);
+        event.stopPropagation(); // Prevent the click from bubbling up
+        resetModalTimeout(type); // Reset the longer timeout on click
     });
 
-    modal.addEventListener('mouseover', () => resetModalTimeout(type));
-    modal.addEventListener('mouseout', () => setModalTimeout(type));
+    // Adding event listener for mouseover event on the modal
+    modal.addEventListener('mouseover', () => resetModalTimeout(type)); // Reset the longer timeout on mouseover
+
+    // Adding event listener for mouseout event on the modal
+    modal.addEventListener('mouseout', () => setMouseOutTimeout(type)); // Set the shorter timeout on mouseout
 }
 
 function closeModal(type) {
-    clearTimeout(modalTimeout);
-    document.querySelectorAll(`.${type}-modal`).forEach(modal => modal.remove());
+    clearTimeout(modalTimeout); // Clear any existing timeout for interaction
+    clearTimeout(mouseOutTimeout); // Clear any existing timeout for mouseout
+    document.querySelectorAll(`.${type}-modal`).forEach(modal => modal.remove()); // Remove all modals of the given type
 }
 
 function resetModalTimeout(type) {
-    clearTimeout(modalTimeout);
-    modalTimeout = setTimeout(() => closeModal(type), 20000); // 5 seconds timeout
+    clearTimeout(modalTimeout); // Clear any existing interaction timeout
+    modalTimeout = setTimeout(() => closeModal(type), 20000); // Set a new 20-second timeout for interaction
 }
 
-function setModalTimeout(type) {
-    modalTimeout = setTimeout(() => closeModal(type), 20000); // Set the timeout when mouse is out
+function setMouseOutTimeout(type) {
+    clearTimeout(mouseOutTimeout); // Clear any existing mouseout timeout
+    mouseOutTimeout = setTimeout(() => closeModal(type), 5000); // Set a new 5-second timeout for mouseout
 }
 
 function getChannelValue(type, channelIndex) {
@@ -190,6 +197,7 @@ function setChannelVolume(channelIndex, volume) {
 
     localStorage.setItem(`channelVolume_${channelIndex}`, volume.toString());
 }
+
 
 function setChannelSpeed(channelIndex, speed) {
     console.log(`Setting playback speed for channel ${channelIndex} to ${speed}`);

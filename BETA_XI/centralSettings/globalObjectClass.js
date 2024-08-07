@@ -45,24 +45,38 @@ class UnifiedSequencerSettings {
     }
 
     initializeGainNodes() {
-        if (this.gainNodes.length === 0) { // Only initialize if gain nodes haven't been created
-            for (let i = 0; i < this.numChannels; i++) {
-                const gainNode = this.audioContext.createGain();
-                gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
-                gainNode.connect(this.audioContext.destination);
-                this.gainNodes.push(gainNode);
-            }
+        console.log("Initializing gain nodes");
+        for (let i = 0; i < this.numChannels; i++) {
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
+            gainNode.connect(this.audioContext.destination);
+            this.gainNodes[i] = gainNode;
+            console.log(`Gain node ${i} initialized with volume ${this.settings.masterSettings.channelVolume[i]}`);
         }
     }
 
     setChannelVolume(channelIndex, volume) {
-        if (channelIndex >= 0 && channelIndex < this.gainNodes.length && this.gainNodes[channelIndex]) {
-            this.gainNodes[channelIndex].gain.setValueAtTime(volume, this.audioContext.currentTime);
-            this.settings.masterSettings.channelVolume[channelIndex] = volume;
-        } else {
-            console.error(`Cannot set volume for channel ${channelIndex}: Gain node is undefined.`);
+        console.log(`Setting volume for channel ${channelIndex} to ${volume}`);
+        const gainNode = this.gainNodes[channelIndex];
+
+        if (!gainNode) {
+            console.error(`No gain node found for channel ${channelIndex}`);
+            return;
         }
+
+        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+        this.settings.masterSettings.channelVolume[channelIndex] = volume;
+        console.log(`Volume for channel ${channelIndex} set to ${volume}`);
+
+        // Store the volume in local storage for persistence
+        localStorage.setItem(`channelVolume_${channelIndex}`, volume.toString());
     }
+
+    getChannelVolume(channelIndex) {
+        return this.settings.masterSettings.channelVolume[channelIndex] || 1; // Default volume is 1
+    }
+
+    
 
     async loadSettings(jsonSettings) {
         console.log("[internalPresetDebug] loadSettings entered");

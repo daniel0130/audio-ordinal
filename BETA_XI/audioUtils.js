@@ -379,6 +379,10 @@ function playSound(currentSequence, channel, currentStep) {
       source.start(0, trimStart, duration);
   }
 
+  fadeGainNode.gain.setValueAtTime(userVolume, audioContext.currentTime); // Ensure volume is set
+
+
+
   source.onended = () => {
       fadeGainNode.disconnect();
       source.disconnect();
