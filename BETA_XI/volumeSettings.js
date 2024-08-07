@@ -157,8 +157,9 @@ function resetModalTimeout(type) {
 
 function setMouseOutTimeout(type) {
     clearTimeout(mouseOutTimeout); // Clear any existing mouseout timeout
-    mouseOutTimeout = setTimeout(() => closeModal(type), 5000); // Set a new 5-second timeout for mouseout
+    mouseOutTimeout = setTimeout(() => closeModal(type), 10000); // Set a new 10-second timeout for mouseout
 }
+
 
 function getChannelValue(type, channelIndex) {
     if (type === 'volume') {
