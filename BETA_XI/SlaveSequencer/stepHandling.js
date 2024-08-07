@@ -42,7 +42,9 @@ function playStep(currentStep, currentSequence) {
 
         renderPlayhead(buttons, currentStep);
         const isMuted = handleStep(channel, channelData, totalStepCount);
-        playSound(currentSequence, channel, currentStep);
+        if (!isMuted) {
+            playSound(currentSequence, channel, currentStep);
+        }
     }
 
     const isLastStep = currentStep === 63;
@@ -112,3 +114,4 @@ function resetStepLights() {
         button.classList.remove('playing');
     });
 }
+

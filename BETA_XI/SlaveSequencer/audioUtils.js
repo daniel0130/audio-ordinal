@@ -381,35 +381,6 @@ function stopAllAudio() {
 }
 
 
-// // Example modification in playTrimmedAudio function
-// function playTrimmedAudio(channelIndex, audioBuffer, url, currentStep, isReversePlayback) {
-//   const audioContext = window.unifiedSequencerSettings.audioContext;
-//   const source = audioContext.createBufferSource();
-//   source.buffer = audioBuffer;
-
-//   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
-//   if (!gainNode) {
-//     console.error("No gain node found for channel", channelIndex);
-//     return;
-//   }
-
-//   // Retrieve the specific playback speed for this channel
-//   const channelSpecificSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
-
-//   // Apply the specific channel playback speed to the current source node
-//   source.playbackRate.setValueAtTime(channelSpecificSpeed, audioContext.currentTime);
-
-//   source.connect(gainNode);
-//   gainNode.connect(audioContext.destination);
-
-//   const { trimStart, duration } = calculateTrimValues(channelIndex, audioBuffer, isReversePlayback);
-//   source.start(0, trimStart, duration);
-//   console.log(`Played audio at channel ${channelIndex} with playback speed of ${channelSpecificSpeed}x`);
-// }
-
-
-
-
 
 function calculateTrimValues(channelIndex, audioBuffer, isReversePlayback) {
   // console.log(`[calculateTrimValues] Called for channelIndex: ${channelIndex}, isReversePlayback: ${isReversePlayback}`);
@@ -445,9 +416,6 @@ function calculateTrimValues(channelIndex, audioBuffer, isReversePlayback) {
 }
 
 
-
-
-
 function getChannelIndex(channel) {
   return parseInt(channel.dataset.id.split('-')[1]);
 }
@@ -464,7 +432,6 @@ function getAudioUrl(channelIndex) {
 function getAudioBuffer(url) {
   return audioBuffers.get(url);
 }
-
 
 // Function to toggle the play state
 function togglePlayState(isPlaying, startStopFunction, firstButton, secondButton) {
