@@ -61,6 +61,9 @@ document.getElementById('prev-sequence').addEventListener('click', function() {
     let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
     let prevSequence = (currentSequence - 1 + totalSequences) % totalSequences;
 
+    // Update currentSequence
+    window.unifiedSequencerSettings.setCurrentSequence(prevSequence);
+
     // Pass currentStep to handle sequence transition
     console.log(`[slave] [prev-sequence] Transitioning to previous sequence ${prevSequence}`);
     handleSequenceTransition(prevSequence, currentStep);
@@ -71,6 +74,9 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
     let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
     let nextSequence = (currentSequence + 1) % totalSequences;
+
+    // Update currentSequence
+    window.unifiedSequencerSettings.setCurrentSequence(nextSequence);
 
     // Pass currentStep to handle sequence transition
     console.log(`[slave] [next-sequence] Transitioning to next sequence ${nextSequence}`);

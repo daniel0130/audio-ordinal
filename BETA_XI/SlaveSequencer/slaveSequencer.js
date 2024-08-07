@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.unifiedSequencerSettings = new UnifiedSequencerSettings();
     let isPlaying = false;
     let currentStep = 0;
-    let currentSequence = 0;
     let timeoutId;
     let startTime;
     let nextStepTime;
@@ -50,8 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'STEP_UPDATE':
                 currentStep = message.step;
-                currentSequence = message.sequence;
-                playStep(currentStep, currentSequence);
+                window.unifiedSequencerSettings.setCurrentSequence(message.sequence);
+                playStep(currentStep, window.unifiedSequencerSettings.getCurrentSequence());
                 break;
             case 'SYNC_SETTINGS':
                 window.unifiedSequencerSettings.loadSettings(message.settings);
@@ -95,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleSequenceTransition(targetSequence, startStep) {
-        currentSequence = targetSequence; // Ensure currentSequence is updated
         window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
         console.log(`[slave] [handleSequenceTransition] Sequence set to ${targetSequence}`);
         const currentSequenceDisplay = document.getElementById('current-sequence-display');
@@ -153,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function scheduleNextStep() {
+        const currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
         console.log(`[slave] [scheduleNextStep] Scheduling next step at ${nextStepTime} for currentSequence ${currentSequence}`);
         const bpm = window.unifiedSequencerSettings.getBPM() || 120;
         stepDuration = 60 / bpm / 4;
@@ -168,8 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
             scheduleNextStep();
         }, (nextStepTime - window.unifiedSequencerSettings.audioContext.currentTime) * 1000);
     }
-    
-    
 
     function stopScheduler() {
         console.log('[slave] Stopping scheduler.');
