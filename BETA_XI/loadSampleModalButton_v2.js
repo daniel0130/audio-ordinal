@@ -16,6 +16,11 @@ const ogSampleUrls = [
     { value: 'https://ordinals.com/content/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0',text: 'OB1 #10 - Hard Snare' },
     { value: 'https://ordinals.com/content/1bda678460ef08fb64435b57c9b69fd78fd4556822ccd8e9839b4eb71b3621edi0',text: 'OB1 #11 - Small Click' },
     { value: 'https://ordinals.com/content/228947e9fc52e44d3a22e84aed7bbaeff08d60c5f925aa6be7e265d210425c28i0',text: 'OB1 #12 - DJ Scratch' },
+    { value: 'https://ordinals.com/content/578aa9d3b29ceceafc659ecee22cb7ef1a063ba5b71474db8fe84949746cdeefi0',text: 'OB1 #13 - Glockenspiel' },
+    { value: 'https://ordinals.com/content/3e5fe7bc10e37a145a75f7ddd71debd9079b05568c5b9c5e6b4de3d959a4c46bi0',text: 'OB1 #14 - Cowbell' },
+    { value: 'https://ordinals.com/content/b77fb3b299477ca55ab2626dbbc12c0d5fa9d4cf51ae00850caae6e36baef745i0',text: 'OB1 #16 - Bass Drop' },
+
+
 
     { value: 'https://ordinals.com/content/752bd66406185690c6f14311060785170df91a887b42740e1dde27e5fbf351cbi0#', text: 'MS10 Woop.mp3' },
     { value: 'https://ordinals.com/content/6d962189218b836cf33e2dc1adbc981e90242aa395f0868178773065f76f144ei0', text: 'audinalSample#1' },
@@ -56,6 +61,7 @@ const ogSampleUrls = [
 
 let openModals = [];
 let copiedOrdinalId = null; // Variable to store the copied ordinal ID
+let copiedChannelName = ''; // Global variable to store the copied channel name
 
 
 function setupLoadSampleButton(channel, index) {
@@ -420,6 +426,29 @@ function pasteOrdinalIdToAllChannels(loadSampleButton) {
     }
 }
 
+function copyChannelName(channelIndex) {
+    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
+    if (projectChannelNames && projectChannelNames[channelIndex]) {
+        copiedChannelName = projectChannelNames[channelIndex];
+        console.log(`Copied Channel Name: ${copiedChannelName}`);
+        showVisualMessage(`Copied Channel Name: ${copiedChannelName}`);
+    } else {
+        console.warn('No Channel Name to copy');
+    }
+}
+
+function pasteChannelName(channelIndex, loadSampleButton) {
+    if (copiedChannelName) {
+        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = copiedChannelName;
+        updateProjectChannelNamesUI(channelIndex, copiedChannelName);
+        loadSampleButton.textContent = copiedChannelName;
+        console.log(`Pasted Channel Name: ${copiedChannelName} into channel ${channelIndex}`);
+        showVisualMessage(`Pasted Channel Name: ${copiedChannelName}`);
+    } else {
+        console.warn('No Channel Name copied');
+    }
+}
+
 function updateButtonText(index, loadSampleButton) {
     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
     if (projectChannelNames && index < projectChannelNames.length) {
@@ -454,6 +483,20 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
             label: 'Add User Channel Name', 
             action: () => {
                 showChannelNamingModal(channelIndex, loadSampleButton);
+                closeCustomContextMenu();
+            } 
+        },
+        { 
+            label: 'Copy Channel Name', 
+            action: () => {
+                copyChannelName(channelIndex);
+                closeCustomContextMenu();
+            } 
+        },
+        { 
+            label: 'Paste Channel Name', 
+            action: () => {
+                pasteChannelName(channelIndex, loadSampleButton);
                 closeCustomContextMenu();
             } 
         },
@@ -496,7 +539,7 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
 
     setTimeout(() => {
         closeCustomContextMenu();
-    }, 3000);
+    }, 20000);
 
     setTimeout(() => {
         document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
