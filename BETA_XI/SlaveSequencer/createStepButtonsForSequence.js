@@ -1,10 +1,11 @@
 function createStepButtonsForSequence() {
-    console.log("[createStepButtonsForSequence] [SeqDebug] entered");
+    console.log("[createStepButtonsForSequence] [SeqDebug] Entered");
     channels.forEach((channel, channelIndex) => {
         const stepsContainer = channel.querySelector('.steps-container');
         stepsContainer.innerHTML = '';
 
         let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+        console.log(`[createStepButtonsForSequence] [SeqDebug] Creating buttons for sequence ${currentSequence} on channel ${channelIndex}`);
 
         for (let i = 0; i < 64; i++) {
             const button = document.createElement('button');
@@ -40,6 +41,7 @@ function toggleStepActivation(button, sequence, channelIndex, stepIndex) {
     const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(sequence, channelIndex, stepIndex);
     // Toggle active state, deactivate reverse if activating
     window.unifiedSequencerSettings.updateStepStateAndReverse(sequence, channelIndex, stepIndex, !isActive, isActive ? isReverse : false);
+    console.log(`[SeqDebug] toggleStepActivation: Sequence ${sequence}, Channel ${channelIndex}, Step ${stepIndex} toggled to ${!isActive}`);
     updateButtonState(button, sequence, channelIndex, stepIndex);
 }
 
@@ -47,6 +49,7 @@ function toggleStepReverse(button, sequence, channelIndex, stepIndex) {
     const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(sequence, channelIndex, stepIndex);
     // Toggle reverse state, deactivate active if reversing
     window.unifiedSequencerSettings.updateStepStateAndReverse(sequence, channelIndex, stepIndex, isReverse ? isActive : false, !isReverse);
+    console.log(`[SeqDebug] toggleStepReverse: Sequence ${sequence}, Channel ${channelIndex}, Step ${stepIndex} reversed to ${!isReverse}`);
     updateButtonState(button, sequence, channelIndex, stepIndex);
 }
 
@@ -57,6 +60,7 @@ function updateButtonState(button, sequence, channelIndex, stepIndex) {
     button.style.backgroundColor = ''; // Reset
     if (isActive) button.style.backgroundColor = 'red';
     if (isReverse) button.style.backgroundColor = 'green';
+    console.log(`[SeqDebug] updateButtonState: Sequence ${sequence}, Channel ${channelIndex}, Step ${stepIndex} - Active: ${isActive}, Reverse: ${isReverse}`);
 }
 
 document.addEventListener('DOMContentLoaded', createStepButtonsForSequence);

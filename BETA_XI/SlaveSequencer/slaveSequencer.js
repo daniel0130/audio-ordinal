@@ -95,16 +95,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleSequenceTransition(targetSequence, startStep) {
+        console.log(`[SeqDebug] handleSequenceTransition: Transitioning to sequence ${targetSequence} starting at step ${startStep}`);
+    
         window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
-        console.log(`[slave] Sequence set to ${targetSequence}`);
+        console.log(`[SeqDebug] handleSequenceTransition: Current sequence set to ${targetSequence}`);
+    
         const currentSequenceDisplay = document.getElementById('current-sequence-display');
         if (currentSequenceDisplay) {
             currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
+            console.log(`[SeqDebug] handleSequenceTransition: Updated UI to display sequence ${targetSequence}`);
         }
+    
         resetCountersForNewSequence(startStep);
         createStepButtonsForSequence();
     }
-
+    
     function resetCountersForNewSequence(startStep = 0) {
         currentStep = startStep;
         beatCount = Math.floor(startStep / 4);
@@ -154,18 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`[slave] Scheduling next step at ${nextStepTime}`);
         const bpm = window.unifiedSequencerSettings.getBPM() || 120;
         stepDuration = 60 / bpm / 4;
-
+    
         // Clear any existing timeouts
         if (timeoutId) {
             clearTimeout(timeoutId);
         }
-
+    
         timeoutId = setTimeout(() => {
             console.log(`[slave] About to play step ${currentStep} of sequence ${currentSequence}`);
             playStep(currentStep, currentSequence);
             scheduleNextStep();
         }, (nextStepTime - window.unifiedSequencerSettings.audioContext.currentTime) * 1000);
     }
+    
 
     function stopScheduler() {
         console.log('[slave] Stopping scheduler.');
@@ -221,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function playStep(currentStep, currentSequence) {
         console.log(`[slave] Playing step ${currentStep} for sequence ${currentSequence} at ${new Date().toISOString()}`);
         const presetData = presets.preset1;
-
+    
         for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
             const channel = channels[channelIndex];
             const buttons = channel.querySelectorAll('.step-button');
@@ -230,22 +236,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 mute: false,
                 url: null
             };
-
+    
             renderPlayhead(buttons, currentStep);
             const isMuted = handleStep(channel, channelData, totalStepCount);
-            playSound(currentSequence, channel, currentStep);
+            if (!isMuted) {
+                playSound(currentSequence, channel, currentStep);
+            }
         }
-
+    
         const isLastStep = currentStep === 63;
         incrementStepCounters();
-
+    
         const continuousPlayCheckbox = document.getElementById('continuous-play');
         let isContinuousPlay = continuousPlayCheckbox.checked;
-
+    
         if (isContinuousPlay && isLastStep) {
-            currentSequence = (currentSequence + 1) % window.unifiedSequencerSettings.numSequences;
+            let nextSequence = (currentSequence + 1) % window.unifiedSequencerSettings.numSequences;
+            console.log(`[slave] Transitioning to next sequence ${nextSequence}`);
+            handleSequenceTransition(nextSequence, 0);
+        } else if (isLastStep) {
+            console.log("[slave] Last step reached, but continuous play is disabled. Resetting to step 0.");
             resetCountersForNewSequence(0);
-            createStepButtonsForSequence();
         }
     }
 

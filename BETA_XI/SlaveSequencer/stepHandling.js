@@ -31,6 +31,8 @@ function renderPlayhead(buttons, currentStep) {
 function playStep(currentStep, currentSequence) {
     const presetData = presets.preset1;
 
+    console.log(`[slave] [playStep] About to play step ${currentStep} of sequence ${currentSequence}`);
+    
     for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
         const channel = channels[channelIndex];
         const buttons = channel.querySelectorAll('.step-button');
@@ -53,13 +55,44 @@ function playStep(currentStep, currentSequence) {
     const continuousPlayCheckbox = document.getElementById('continuous-play');
     let isContinuousPlay = continuousPlayCheckbox.checked;
 
+    console.log(`[slave] Continuous play is ${isContinuousPlay ? 'enabled' : 'disabled'}.`);
     if (isContinuousPlay && isLastStep) {
         let nextSequence = (currentSequence + 1) % totalNumberOfSequences;
+        console.log(`[slave] Transitioning to next sequence ${nextSequence}`);
         handleSequenceTransition(nextSequence, 0);
+    } else if (isLastStep) {
+        console.log("[slave] Last step reached, but continuous play is disabled. Resetting to step 0.");
+        resetCountersForNewSequence(0);
     }
 }
 
+function handleSequenceTransition(targetSequence, startStep) {
+    console.log(`[SeqDebug] handleSequenceTransition: Transitioning to sequence ${targetSequence} starting at step ${startStep}`);
+
+    window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
+    console.log(`[SeqDebug] handleSequenceTransition: Current sequence set to ${targetSequence}`);
+
+    const currentSequenceDisplay = document.getElementById('current-sequence-display');
+    if (currentSequenceDisplay) {
+        currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
+        console.log(`[SeqDebug] handleSequenceTransition: Updated UI to display sequence ${targetSequence}`);
+    }
+
+    if (startStep === undefined) {
+        startStep = currentStep;
+    }
+
+    resetCountersForNewSequence(startStep);
+    createStepButtonsForSequence();
+
+    setTimeout(() => {
+        window.unifiedSequencerSettings.updateUIForSequence(targetSequence);
+        console.log(`[SeqDebug] handleSequenceTransition: UI updated for sequence ${targetSequence}`);
+    }, 100);
+}
+
 function incrementStepCounters() {
+    console.log("[slave] Incrementing step counters.");
     currentStep = (currentStep + 1) % 64;
     totalStepCount = (totalStepCount + 1);
     nextStepTime += stepDuration;
@@ -77,27 +110,7 @@ function incrementStepCounters() {
     if (currentStep === 0) {
         sequenceCount++;
     }
-}
-
-function handleSequenceTransition(targetSequence, startStep) {
-    window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
-    console.log(`Sequence set to ${targetSequence}`);
-
-    const currentSequenceDisplay = document.getElementById('current-sequence-display');
-    if (currentSequenceDisplay) {
-        currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
-    }
-
-    if (startStep === undefined) {
-        startStep = currentStep;
-    }
-
-    resetCountersForNewSequence(startStep);
-    createStepButtonsForSequence();
-
-    setTimeout(() => {
-        window.unifiedSequencerSettings.updateUIForSequence(targetSequence);
-    }, 100);
+    console.log(`[slave] Current step: ${currentStep}, Total step count: ${totalStepCount}, Sequence count: ${sequenceCount}`);
 }
 
 function resetCountersForNewSequence(startStep = 0) {
