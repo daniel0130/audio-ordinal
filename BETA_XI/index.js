@@ -55,6 +55,10 @@ let slaveWindow;
 
 function openSlaveSequencer() {
     slaveWindow = window.open('SlaveSequencer/slaveSequencer.html', 'Slave Sequencer');
+    if (slaveWindow) {
+        syncSettingsWithSlave();
+        syncContinuousPlayWithSlave();
+    }
 }
 
 function sendPlayMessage(startTime) {
@@ -81,6 +85,14 @@ function syncSettingsWithSlave() {
     }
 }
 
+function syncContinuousPlayWithSlave() {
+    if (slaveWindow) {
+        const continuousPlayCheckbox = document.getElementById('continuous-play');
+        let isContinuousPlay = continuousPlayCheckbox.checked;
+        slaveWindow.postMessage({ type: 'SYNC_CONTINUOUS_PLAY', isContinuousPlay }, '*');
+        console.log(`[master] Sent SYNC_CONTINUOUS_PLAY message at ${new Date().toISOString()} with isContinuousPlay: ${isContinuousPlay}`);
+    }
+}
     
 
 if (playButton && stopButton) {
@@ -193,10 +205,17 @@ if (playButton && stopButton) {
             openSlaveButton.addEventListener('click', () => {
                 openSlaveSequencer();
                 syncSettingsWithSlave();
+                syncContinuousPlayWithSlave();
+            });
+        
+            const continuousPlayCheckbox = document.getElementById('continuous-play');
+            continuousPlayCheckbox.addEventListener('change', () => {
+                syncContinuousPlayWithSlave();
             });
         
             window.unifiedSequencerSettings.observers.push(syncSettingsWithSlave);
         });
+        
 
 
     // // Function to update the dim state based on gain value

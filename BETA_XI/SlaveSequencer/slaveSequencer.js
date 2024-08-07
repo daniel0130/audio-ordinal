@@ -1,5 +1,3 @@
-// CombinedFile.js
-
 // Unified Sequencer Settings Initialization
 document.addEventListener('DOMContentLoaded', () => {
     window.unifiedSequencerSettings = new UnifiedSequencerSettings();
@@ -79,10 +77,21 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'RESET_COUNTERS':
                 resetCountersForNewSequence(message.startStep);
                 break;
+            case 'SYNC_CONTINUOUS_PLAY':
+                updateContinuousPlayUI(message.isContinuousPlay);
+                break;
             default:
                 console.warn(`[slave] Received unknown message type at ${new Date().toISOString()}: ${message.type}`);
         }
     });
+
+    function updateContinuousPlayUI(isContinuousPlay) {
+        const continuousPlayCheckbox = document.getElementById('continuous-play');
+        if (continuousPlayCheckbox) {
+            continuousPlayCheckbox.checked = isContinuousPlay;
+            console.log(`[slave] Updated continuous play UI to ${isContinuousPlay}`);
+        }
+    }
 
     function incrementStepCounters(message) {
         currentStep = message.currentStep;
@@ -103,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetCountersForNewSequence(startStep);
         createStepButtonsForSequence();
     }
-    
+
     function resetCountersForNewSequence(startStep = 0) {
         currentStep = startStep;
         beatCount = Math.floor(startStep / 4);
@@ -111,8 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         totalStepCount = startStep;
         console.log(`[slave] [resetCountersForNewSequence] Counters reset for new sequence starting at step ${startStep}`);
     }
-    
-    
+
     function setMasterBPM(bpm) {
         if (bpm !== undefined) {
             console.log(`[slave] Setting BPM to ${bpm} as per master's instructions.`);
@@ -155,12 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`[slave] [scheduleNextStep] Scheduling next step at ${nextStepTime} for currentSequence ${currentSequence}`);
         const bpm = window.unifiedSequencerSettings.getBPM() || 120;
         stepDuration = 60 / bpm / 4;
-    
+
         // Clear any existing timeouts
         if (timeoutId) {
             clearTimeout(timeoutId);
         }
-    
+
         timeoutId = setTimeout(() => {
             console.log(`[slave] [scheduleNextStep] About to play step ${currentStep} of currentSequence ${currentSequence}`);
             playStep(currentStep, currentSequence);
@@ -222,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function playStep(currentStep, currentSequence) {
         console.log(`[slave] [playStep] Playing step ${currentStep} for currentSequence ${currentSequence} at ${new Date().toISOString()}`);
         const presetData = presets.preset1;
-    
+
         for (let channelIndex = 0; channelIndex < 16; channelIndex++) {
             const channel = channels[channelIndex];
             const buttons = channel.querySelectorAll('.step-button');
@@ -231,24 +239,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 mute: false,
                 url: null
             };
-    
+
             // Ensure the correct sequence data is used
             let stepIndex = currentSequence * 64 + currentStep;
             console.log(`[slave] [playStep] Using stepIndex ${stepIndex} for sequence ${currentSequence}, channel ${channelIndex}`);
-    
+
             renderPlayhead(buttons, currentStep);
             const isMuted = handleStep(channel, channelData, totalStepCount);
             if (!isMuted) {
                 playSound(currentSequence, channel, currentStep);
             }
         }
-    
+
         const isLastStep = currentStep === 63;
         incrementStepCounters();
-    
+
         const continuousPlayCheckbox = document.getElementById('continuous-play');
         let isContinuousPlay = continuousPlayCheckbox.checked;
-    
+
         if (isContinuousPlay && isLastStep) {
             let nextSequence = (currentSequence + 1) % window.unifiedSequencerSettings.numSequences;
             console.log(`[slave] [playStep] Transitioning to next sequence ${nextSequence}`);
@@ -258,8 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resetCountersForNewSequence(0);
         }
     }
-    
-    
+
     function incrementStepCounters() {
         console.log('[slave] Incrementing step counters.');
         currentStep = (currentStep + 1) % 64;
