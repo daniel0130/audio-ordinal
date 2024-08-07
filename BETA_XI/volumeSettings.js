@@ -146,11 +146,11 @@ function closeModal(type) {
 
 function resetModalTimeout(type) {
     clearTimeout(modalTimeout);
-    modalTimeout = setTimeout(() => closeModal(type), 2000); // 2 seconds timeout
+    modalTimeout = setTimeout(() => closeModal(type), 5000); // 5 seconds timeout
 }
 
 function setModalTimeout(type) {
-    modalTimeout = setTimeout(() => closeModal(type), 2000); // Set the timeout when mouse is out
+    modalTimeout = setTimeout(() => closeModal(type), 5000); // Set the timeout when mouse is out
 }
 
 function getChannelValue(type, channelIndex) {
