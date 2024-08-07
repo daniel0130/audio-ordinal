@@ -418,6 +418,7 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
                 return exportedSettings;
             }
     
+            
             async loadSettings(jsonSettings) {
                 console.log("[internalPresetDebug] loadSettings entered");
                 try {
@@ -426,20 +427,30 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
         
                     const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
         
+                    // Set up basic settings first
                     this.settings.masterSettings.currentSequence = 0;
                     this.settings.masterSettings.projectName = parsedSettings.projectName;
                     this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
         
-                    this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
-                    this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
+                    // Add artistName field if present
+                    if (parsedSettings.artistName) {
+                        this.settings.masterSettings.artistName = parsedSettings.artistName;
+                    }
         
+                    // Ensure playback speeds are set
+                    this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
+                    this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(this.numChannels).fill(1);
+        
+                    // Initialize gain nodes early with default values
                     this.initializeGainNodes();
         
+                    // Then update URL and volume settings
                     if (parsedSettings.channelURLs) {
                         const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
                         this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
                     }
         
+                    // Update volumes from settings, ensuring gain nodes are ready
                     if (parsedSettings.channelVolume) {
                         parsedSettings.channelVolume.forEach((volume, index) => {
                             this.setChannelVolume(index, volume);
@@ -448,7 +459,8 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
         
                     this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
                     this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
-                    this.deserializeAndApplyProjectSequences(parsedSettings);
+        
+                    this.deserializeAndApplyProjectSequences(parsedSettings.projectSequences);
         
                     console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
                     this.updateProjectNameUI(this.settings.masterSettings.projectName);
@@ -483,53 +495,73 @@ updateStepStateAndReverse(currentSequence, channelIndex, stepIndex, isActive, is
                 this.resetCountersForNewSequence(startStep);
                 createStepButtonsForSequence();
             }
-            
-            deserializeAndApplyProjectSequences(parsedSettings) {
-                if (parsedSettings.projectSequences) {
-                    Object.keys(parsedSettings.projectSequences).forEach(sequenceKey => {
-                        const sequence = parsedSettings.projectSequences[sequenceKey];
+        
+            deserializeAndApplyProjectSequences(projectSequences) {
+                try {
+                    if (!projectSequences || typeof projectSequences !== 'object') {
+                        throw new Error('Invalid projectSequences object');
+                    }
+        
+                    Object.keys(projectSequences).forEach(sequenceKey => {
+                        const sequence = projectSequences[sequenceKey];
+                        if (!sequence || typeof sequence !== 'object') {
+                            console.error(`Invalid sequence data for ${sequenceKey}`);
+                            return;
+                        }
+        
                         Object.keys(sequence).forEach(channelKey => {
                             const channel = sequence[channelKey];
+                            if (!channel || typeof channel !== 'object') {
+                                console.error(`Invalid channel data for ${channelKey} in sequence ${sequenceKey}`);
+                                return;
+                            }
+        
                             let newSteps = Array.from({ length: 64 }, () => ({
                                 isActive: false,
                                 isReverse: false,
                                 volume: 1,
                                 pitch: 1
                             }));
-                            
-                            channel.steps.forEach(stepData => {
-                                let index;
-                                let isReverse = false;
-                                if (typeof stepData === 'object' && stepData.index !== undefined) {
-                                    index = stepData.index - 1; // Adjusting for zero-based indexing
-                                    isReverse = stepData.reverse || false;
-                                } else if (typeof stepData === 'number') {
-                                    index = stepData - 1; // Adjusting for zero-based indexing
-                                }
-                                if (index !== undefined) {
-                                    newSteps[index] = {
-                                        isActive: true,
-                                        isReverse: isReverse,
-                                        volume: 1,
-                                        pitch: 1
-                                    };
-                                }
-                            });
-                            
-                            this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = newSteps;
-
+        
+                            if (Array.isArray(channel.steps)) {
+                                channel.steps.forEach(stepData => {
+                                    let index;
+                                    let isReverse = false;
+                                    if (typeof stepData === 'object' && stepData.index !== undefined) {
+                                        index = stepData.index - 1; // Adjusting for zero-based indexing
+                                        isReverse = stepData.reverse || false;
+                                    } else if (typeof stepData === 'number') {
+                                        index = stepData - 1; // Adjusting for zero-based indexing
+                                    }
+                                    if (index !== undefined && index >= 0 && index < newSteps.length) {
+                                        newSteps[index] = {
+                                            isActive: true,
+                                            isReverse: isReverse,
+                                            volume: 1,
+                                            pitch: 1
+                                        };
+                                    }
+                                });
+                            } else {
+                                console.error(`Invalid steps array for channel ${channelKey} in sequence ${sequenceKey}`);
+                            }
+        
+                            if (!this.settings.masterSettings.projectSequences[sequenceKey]) {
+                                this.settings.masterSettings.projectSequences[sequenceKey] = {};
+                            }
+        
+                            this.settings.masterSettings.projectSequences[sequenceKey][channelKey] = { steps: newSteps };
                         });
                     });
+                } catch (error) {
+                    console.error('Error in deserializeAndApplyProjectSequences:', error);
                 }
-                // console.log(`[classDebug] Initial state post-load for channel 1, step 1:`, this.getStepStateAndReverse(0, 1, 1));
-
             }
-            
-    
-    async formatURL(url) {
-        // Asynchronous operation example (placeholder)
-        return new Promise(resolve => setTimeout(() => resolve(url), 100)); // Simulates async processing
-    }
+        
+            async formatURL(url) {
+                // Asynchronous operation example (placeholder)
+                return new Promise(resolve => setTimeout(() => resolve(url), 100)); // Simulates async processing
+            }
 
 
     initializeTrimSettings(numSettings) {
