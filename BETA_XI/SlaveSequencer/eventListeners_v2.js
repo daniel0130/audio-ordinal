@@ -7,6 +7,26 @@ appContainer.addEventListener('click', () => {
     });
 });
 
+function handleSequenceTransition(targetSequence, startStep) {
+    currentSequence = targetSequence; // Ensure currentSequence is updated
+    window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
+    console.log(`[slave] [handleSequenceTransition] Sequence set to ${targetSequence}`);
+    const currentSequenceDisplay = document.getElementById('current-sequence-display');
+    if (currentSequenceDisplay) {
+        currentSequenceDisplay.innerHTML = `Sequence: ${targetSequence}`;
+    }
+    resetCountersForNewSequence(startStep);
+    createStepButtonsForSequence();
+}
+
+function resetCountersForNewSequence(startStep = 0) {
+    currentStep = startStep;
+    beatCount = Math.floor(startStep / 4);
+    barCount = Math.floor(startStep / 16);
+    totalStepCount = startStep;
+    console.log(`[slave] [resetCountersForNewSequence] Counters reset for new sequence starting at step ${startStep}`);
+}
+
 
 document.addEventListener("DOMContentLoaded", function() {
     let saveButton = document.getElementById('save-button');
@@ -35,13 +55,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
 
-    // Previous Sequence Button
+// Previous Sequence Button
 document.getElementById('prev-sequence').addEventListener('click', function() {
     let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
     let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
     let prevSequence = (currentSequence - 1 + totalSequences) % totalSequences;
 
     // Pass currentStep to handle sequence transition
+    console.log(`[slave] [prev-sequence] Transitioning to previous sequence ${prevSequence}`);
     handleSequenceTransition(prevSequence, currentStep);
 });
 
@@ -52,6 +73,7 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     let nextSequence = (currentSequence + 1) % totalSequences;
 
     // Pass currentStep to handle sequence transition
+    console.log(`[slave] [next-sequence] Transitioning to next sequence ${nextSequence}`);
     handleSequenceTransition(nextSequence, currentStep);
 });
 

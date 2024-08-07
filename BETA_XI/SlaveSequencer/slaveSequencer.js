@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         createStepButtonsForSequence();
     }
     
-    
     function resetCountersForNewSequence(startStep = 0) {
         currentStep = startStep;
         beatCount = Math.floor(startStep / 4);
