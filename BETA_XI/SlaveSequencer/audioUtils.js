@@ -288,7 +288,7 @@ function getIframeIdByChannelIndex(channelIndex) {
 }
 
 function playSound(currentSequence, channel, currentStep) {
-  console.log("[playSound] Active audio sources:", activeAudioSources.size);
+  console.log(`[slave] [playSound] Active audio sources: ${activeAudioSources.size} for sequence ${currentSequence}`);
   const channelIndex = getChannelIndex(channel);
   const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(currentSequence, channelIndex, currentStep);
 
@@ -333,7 +333,7 @@ function playSound(currentSequence, channel, currentStep) {
   const bufferKey = `channel_${channelIndex}_${isReverse ? 'reverse' : 'forward'}`;
   const audioBuffer = audioBuffers.get(bufferKey);
   if (!audioBuffer) {
-      console.error(`[playSound] No audio buffer found for ${bufferKey}`);
+      console.error(`[slave] [playSound] No audio buffer found for ${bufferKey}`);
       return;
   }
 
@@ -343,7 +343,7 @@ function playSound(currentSequence, channel, currentStep) {
 
   const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
   if (!gainNode) {
-      console.error("No gain node found for channel", channelIndex);
+      console.error("[slave] [playSound] No gain node found for channel", channelIndex);
       return;
   }
 
@@ -367,19 +367,18 @@ function playSound(currentSequence, channel, currentStep) {
 }
 
 function stopAllAudio() {
-  console.log("[stopAllAudio] Active audio sources before stopping:", activeAudioSources.size);
+  console.log("[slave] [stopAllAudio] Active audio sources before stopping:", activeAudioSources.size);
 
   activeAudioSources.forEach(source => {
       try {
           source.stop(0); // Use 0 as the argument to stop immediately
           source.disconnect();
       } catch (error) {
-          console.error('[stopAllAudio] Error stopping audio source:', error);
+          console.error('[slave] [stopAllAudio] Error stopping audio source:', error);
       }
   });
   activeAudioSources.clear(); // Clear the set after stopping all sources
 }
-
 
 
 function calculateTrimValues(channelIndex, audioBuffer, isReversePlayback) {

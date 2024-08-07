@@ -1,11 +1,11 @@
 function createStepButtonsForSequence() {
     console.log("[createStepButtonsForSequence] [SeqDebug] Entered");
+    let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
+    console.log(`[createStepButtonsForSequence] [SeqDebug] Creating buttons for currentSequence ${currentSequence}`);
+
     channels.forEach((channel, channelIndex) => {
         const stepsContainer = channel.querySelector('.steps-container');
         stepsContainer.innerHTML = '';
-
-        let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
-        console.log(`[createStepButtonsForSequence] [SeqDebug] Creating buttons for sequence ${currentSequence} on channel ${channelIndex}`);
 
         for (let i = 0; i < 64; i++) {
             const button = document.createElement('button');
@@ -36,6 +36,7 @@ function createStepButtonsForSequence() {
         }
     });
 }
+
 
 function toggleStepActivation(button, sequence, channelIndex, stepIndex) {
     const { isActive, isReverse } = window.unifiedSequencerSettings.getStepStateAndReverse(sequence, channelIndex, stepIndex);
