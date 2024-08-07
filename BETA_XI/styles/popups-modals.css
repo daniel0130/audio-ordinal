@@ -1,6 +1,5 @@
 /* --- Popups and Modal Styles --- */
 
-
 .load-popup button:hover {
     background-color: #ddd;
 }
@@ -40,13 +39,44 @@
     cursor: pointer;
 }
 
-
-.volume-modal {
-    /* Add your styling here */
-    border: 2px solid red; /* Just for debugging */
-    padding: 10px;
-    background: #fff;
+.volume-modal,
+.speed-modal {
+    position: absolute;
     border: 1px solid #ccc;
     border-radius: 5px;
+    padding: 10px;
+    background: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.volume-modal .close-button,
+.speed-modal .close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.volume-modal input[type="range"],
+.speed-modal input[type="range"] {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.volume-modal input[type="number"],
+.speed-modal input[type="number"] {
+    width: calc(100% - 20px);
+    margin-top: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.volume-modal .close-button:hover,
+.speed-modal .close-button:hover {
+    color: black;
 }

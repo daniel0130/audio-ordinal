@@ -27,25 +27,22 @@ function toggleVolumeModal(button, channelIndex) {
         openVolumeModal(button, channelIndex);
     }
 }
-
 function openVolumeModal(button, channelIndex) {
     closeVolumeModal(); // Close any existing modals first
 
-    // Create the modal container
     const modal = document.createElement('div');
     modal.classList.add('volume-modal');
-    modal.dataset.channel = channelIndex; // Add data attribute for channel index
+    modal.dataset.channel = channelIndex;
     modal.style.position = 'absolute';
     modal.style.left = `${button.offsetLeft + button.offsetWidth + 10}px`;
     modal.style.top = `${button.offsetTop}px`;
     modal.style.zIndex = 1000;
 
-    // Create the close button
     const closeButton = document.createElement('button');
     closeButton.textContent = 'X';
     closeButton.style.position = 'absolute';
-    closeButton.style.top = '0px';
-    closeButton.style.left = '0px';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '5px';
     closeButton.style.backgroundColor = 'transparent';
     closeButton.style.border = 'none';
     closeButton.style.cursor = 'pointer';
@@ -55,17 +52,35 @@ function openVolumeModal(button, channelIndex) {
     });
     modal.appendChild(closeButton);
 
-    // Create the slider inside the modal
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.min = 0;
     slider.max = 2;
     slider.step = 0.01;
-    slider.value = getChannelVolume(channelIndex).toString(); // Set initial value based on current volume
+    slider.value = getChannelVolume(channelIndex).toString();
     modal.appendChild(slider);
 
+    const textInput = document.createElement('input');
+    textInput.type = 'number';
+    textInput.min = 0;
+    textInput.max = 2;
+    textInput.step = 0.01;
+    textInput.value = slider.value;
+    modal.appendChild(textInput);
+
     slider.addEventListener('input', (event) => {
-        setChannelVolume(channelIndex, parseFloat(event.target.value));
+        const value = parseFloat(event.target.value);
+        textInput.value = value.toString();
+        setChannelVolume(channelIndex, value);
+        resetVolumeModalTimeout();
+    });
+
+    textInput.addEventListener('input', (event) => {
+        let value = parseFloat(event.target.value);
+        if (isNaN(value) || value < 0) value = 0;
+        if (value > 2) value = 2;
+        slider.value = value.toString();
+        setChannelVolume(channelIndex, value);
         resetVolumeModalTimeout();
     });
 
@@ -90,20 +105,18 @@ function setChannelVolume(channelIndex, volume) {
 
     gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
     
-    // Ensure the channelVolume array exists and has the correct length
     if (!window.unifiedSequencerSettings.settings.masterSettings.channelVolume) {
         window.unifiedSequencerSettings.settings.masterSettings.channelVolume = new Array(16).fill(1);
     }
     
     window.unifiedSequencerSettings.settings.masterSettings.channelVolume[channelIndex] = volume;
 
-    // Save the volume setting to localStorage to maintain across sessions
     localStorage.setItem(`channelVolume_${channelIndex}`, volume.toString());
 }
 
 function getChannelVolume(channelIndex) {
     const gainNode = window.unifiedSequencerSettings.gainNodes[channelIndex];
-    return gainNode ? gainNode.gain.value : 1.0; // Default to mid-range if undefined
+    return gainNode ? gainNode.gain.value : 1.0;
 }
 
 function closeVolumeModal() {
@@ -113,10 +126,10 @@ function closeVolumeModal() {
 
 function resetVolumeModalTimeout() {
     clearTimeout(volumeModalTimeout);
-    volumeModalTimeout = setTimeout(closeVolumeModal, 3000); // Adjust modal close timeout as needed
+    volumeModalTimeout = setTimeout(closeVolumeModal, 3000);
 }
 
-// Setup for playback speed buttons
+// Playback Speed Modal Code
 const speedButtons = document.querySelectorAll('.playback-speed-button');
 speedButtons.forEach((button, index) => {
     button.addEventListener('click', (event) => {
@@ -126,41 +139,31 @@ speedButtons.forEach((button, index) => {
     });
 });
 
-// Ensure modals close on outside clicks
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.volume-modal, .speed-modal')) {
-        closeVolumeModal();
-        closeSpeedModal();
-    }
-});
-
 function toggleSpeedModal(button, channelIndex) {
     const existingModal = document.querySelector(`.speed-modal[data-channel="${channelIndex}"]`);
     if (existingModal) {
-        closeSpeedModal(); // Close if already open
+        closeSpeedModal();
     } else {
         openSpeedModal(button, channelIndex);
     }
 }
 
 function openSpeedModal(button, channelIndex) {
-    closeSpeedModal(); // Close any existing speed modals first
+    closeSpeedModal();
 
-    // Create the modal container for speed adjustment
     const modal = document.createElement('div');
     modal.classList.add('speed-modal');
-    modal.dataset.channel = channelIndex; // Add data attribute for channel index
+    modal.dataset.channel = channelIndex;
     modal.style.position = 'absolute';
     modal.style.left = `${button.offsetLeft + button.offsetWidth + 10}px`;
     modal.style.top = `${button.offsetTop}px`;
     modal.style.zIndex = 1000;
 
-    // Create the close button
     const closeButton = document.createElement('button');
     closeButton.textContent = 'X';
     closeButton.style.position = 'absolute';
-    closeButton.style.top = '0px';
-    closeButton.style.left = '0px';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '5px';
     closeButton.style.backgroundColor = 'transparent';
     closeButton.style.border = 'none';
     closeButton.style.cursor = 'pointer';
@@ -170,27 +173,45 @@ function openSpeedModal(button, channelIndex) {
     });
     modal.appendChild(closeButton);
 
-    // Create the speed slider inside the modal
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.min = 0.1;
     slider.max = 10;
     slider.step = 0.01;
-    slider.value = getChannelSpeed(channelIndex).toString(); // Assume a similar getter for speed
+    slider.value = getChannelSpeed(channelIndex).toString();
     modal.appendChild(slider);
 
+    const textInput = document.createElement('input');
+    textInput.type = 'number';
+    textInput.min = 0.1;
+    textInput.max = 10;
+    textInput.step = 0.01;
+    textInput.value = slider.value;
+    modal.appendChild(textInput);
+
     slider.addEventListener('input', (event) => {
-        setChannelSpeed(channelIndex, parseFloat(event.target.value));
-        resetVolumeModalTimeout(); // Use the same timeout reset function
+        const value = parseFloat(event.target.value);
+        textInput.value = value.toString();
+        setChannelSpeed(channelIndex, value);
+        resetVolumeModalTimeout();
+    });
+
+    textInput.addEventListener('input', (event) => {
+        let value = parseFloat(event.target.value);
+        if (isNaN(value) || value < 0.1) value = 0.1;
+        if (value > 10) value = 10;
+        slider.value = value.toString();
+        setChannelSpeed(channelIndex, value);
+        resetVolumeModalTimeout();
     });
 
     modal.addEventListener('click', (event) => {
         event.stopPropagation();
-        resetVolumeModalTimeout(); // Use the same timeout reset function
+        resetVolumeModalTimeout();
     });
 
     document.body.appendChild(modal);
-    resetVolumeModalTimeout(); // Use the same timeout reset function
+    resetVolumeModalTimeout();
 }
 
 function closeSpeedModal() {
@@ -199,20 +220,20 @@ function closeSpeedModal() {
 }
 
 function getChannelSpeed(channelIndex) {
-    // Access the current speed setting from the UnifiedSequencerSettings
     if (channelIndex >= 0 && channelIndex < window.unifiedSequencerSettings.channelPlaybackSpeed.length) {
         return window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex];
     } else {
         console.error("Channel index out of bounds");
-        return 1.0; // Return default speed if out of bounds
+        return 1.0;
     }
 }
 
 function setChannelSpeed(channelIndex, speed) {
     console.log(`Setting playback speed for channel ${channelIndex} to ${speed}`);
-    // Call the method from UnifiedSequencerSettings to ensure proper handling
     window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, speed);
 }
+
+
 
 
 // function closeSpeedModal() {
