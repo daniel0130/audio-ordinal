@@ -522,7 +522,7 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
             } 
         },
         { 
-            label: 'Reset Channel to Default', 
+            label: 'Reset Channel Pitch & Volume to 1', 
             action: () => {
                 resetChannelToDefault(channelIndex);
                 closeCustomContextMenu();
