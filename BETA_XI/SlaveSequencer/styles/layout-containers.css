@@ -1,9 +1,13 @@
 /* --- Containers & Layout --- */
 
 .drum-machine-container {
-    width: 95%;
-    margin: 0 auto; /* Center the container horizontally */
-    padding: 20px; /* Add some padding for spacing */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
 }
 /* Hide all step containers by default */
 .steps-container {

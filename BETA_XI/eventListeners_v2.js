@@ -34,15 +34,26 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('[Save/Load debug] Cancel button clicked');
     });
 
-
-    // Previous Sequence Button
+// Previous Sequence Button
 document.getElementById('prev-sequence').addEventListener('click', function() {
     let currentSequence = window.unifiedSequencerSettings.getCurrentSequence();
     let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
     let prevSequence = (currentSequence - 1 + totalSequences) % totalSequences;
 
+    // Update currentSequence
+    window.unifiedSequencerSettings.setCurrentSequence(prevSequence);
+
     // Pass currentStep to handle sequence transition
+    console.log(`[master] [prev-sequence] Transitioning to previous sequence ${prevSequence}`);
     handleSequenceTransition(prevSequence, currentStep);
+
+    // Send message to slave
+    syncCurrentSequenceWithSlave(prevSequence);
+    const message = { type: 'SEQUENCE_TRANSITION', targetSequence: prevSequence, startStep: currentStep };
+    console.log(`[master] [prev-sequence] Sending message to slave: ${JSON.stringify(message)}`);
+    if (slaveWindow) {
+        slaveWindow.postMessage(message, '*');
+    }
 });
 
 // Next Sequence Button
@@ -51,9 +62,23 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     let totalSequences = Object.keys(window.unifiedSequencerSettings.settings.masterSettings.projectSequences).length;
     let nextSequence = (currentSequence + 1) % totalSequences;
 
+    // Update currentSequence
+    window.unifiedSequencerSettings.setCurrentSequence(nextSequence);
+
     // Pass currentStep to handle sequence transition
+    console.log(`[master] [next-sequence] Transitioning to next sequence ${nextSequence}`);
     handleSequenceTransition(nextSequence, currentStep);
+
+    // Send message to slave
+    syncCurrentSequenceWithSlave(nextSequence);
+    const message = { type: 'SEQUENCE_TRANSITION', targetSequence: nextSequence, startStep: currentStep };
+    console.log(`[master] [next-sequence] Sending message to slave: ${JSON.stringify(message)}`);
+    if (slaveWindow) {
+        slaveWindow.postMessage(message, '*');
+    }
 });
+
+
 
 
     saveButton.addEventListener('click', () => {

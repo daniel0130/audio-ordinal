@@ -53,6 +53,7 @@ if (!audioContext) {
 
 let slaveWindow;
 
+// Function to open slave sequencer window
 function openSlaveSequencer() {
     slaveWindow = window.open('SlaveSequencer/slaveSequencer.html', 'Slave Sequencer');
     if (slaveWindow) {
@@ -61,6 +62,7 @@ function openSlaveSequencer() {
     }
 }
 
+// Function to send play message
 function sendPlayMessage(startTime) {
     if (slaveWindow) {
         const bpm = window.unifiedSequencerSettings.getBPM();
@@ -69,6 +71,7 @@ function sendPlayMessage(startTime) {
     }
 }
 
+// Function to send stop message
 function sendStopMessage() {
     if (slaveWindow) {
         slaveWindow.postMessage({ type: 'STOP' }, '*');
@@ -76,6 +79,7 @@ function sendStopMessage() {
     }
 }
 
+// Function to sync settings with slave
 function syncSettingsWithSlave() {
     if (slaveWindow) {
         const settings = window.unifiedSequencerSettings.exportSettings();
@@ -85,12 +89,21 @@ function syncSettingsWithSlave() {
     }
 }
 
+// Function to sync continuous play with slave
 function syncContinuousPlayWithSlave() {
     if (slaveWindow) {
         const continuousPlayCheckbox = document.getElementById('continuous-play');
         let isContinuousPlay = continuousPlayCheckbox.checked;
         slaveWindow.postMessage({ type: 'SYNC_CONTINUOUS_PLAY', isContinuousPlay }, '*');
         console.log(`[master] Sent SYNC_CONTINUOUS_PLAY message at ${new Date().toISOString()} with isContinuousPlay: ${isContinuousPlay}`);
+    }
+}
+
+// Function to sync current sequence with slave
+function syncCurrentSequenceWithSlave(sequence) {
+    if (slaveWindow) {
+        slaveWindow.postMessage({ type: 'SYNC_CURRENT_SEQUENCE', sequence }, '*');
+        console.log(`[master] Sent SYNC_CURRENT_SEQUENCE message at ${new Date().toISOString()} with sequence: ${sequence}`);
     }
 }
     

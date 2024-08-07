@@ -16,7 +16,11 @@
     <link rel="stylesheet" type="text/css" href="styles/step-button-settings-menu.css">
     <link rel="stylesheet" type="text/css" href="styles/synthContainerAndIframes.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
+    <style>
+        .hide-elements {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -163,15 +167,13 @@
                 </div>
             </div>
         </main><!-- Modal Structure -->
-        <!-- Button Container for Playback and Actions -->
-        <div class="quickplay-button-container">
+     <!-- Button Container for Playback and Actions -->
+        <div class="quickplay-button-container hide-elements">
             <!-- Wrap "Save" and "Load" buttons with their associated elements in a container -->
             <button id="prev-sequence" class="tooltip">Previous Sequence
                 <span class="tooltiptext">Go to the previous sequence</span>
             </button>
-            <span id="current-sequence-display" class="tooltip">Sequence 0
-                <span class="tooltiptext">Currently displayed sequence</span>
-            </span>
+
             <button id="next-sequence" class="tooltip">Next Sequence
                 <span class="tooltiptext">Go to the next sequence</span>
             </button>
@@ -179,6 +181,7 @@
                 <span class="tooltiptext">Toggle continuous play mode</span>
             </label>
             <input type="checkbox" id="continuous-play" class="tooltip" unchecked>
+        </div>
 
             <!--<div id="quick-play-button" class="tooltip">
                 <span class="tooltiptext">Quick play button</span>

@@ -19,14 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`[slave] Received message from parent at ${new Date().toISOString()}:`);
         console.log(JSON.stringify(event.data));
         const message = event.data;
-
+    
         // Ensure messages are processed in the correct order
         if (message.sequenceNumber <= lastProcessedSequenceNumber) {
             console.warn(`[slave] Discarding out-of-order or duplicate message: ${message.sequenceNumber}`);
             return;
         }
         lastProcessedSequenceNumber = message.sequenceNumber;
-
+    
         switch (message.type) {
             case 'PLAY':
                 startTime = message.startTime;
@@ -80,11 +80,15 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'SYNC_CONTINUOUS_PLAY':
                 updateContinuousPlayUI(message.isContinuousPlay);
                 break;
+            case 'SYNC_CURRENT_SEQUENCE':
+                window.unifiedSequencerSettings.setCurrentSequence(message.sequence);
+                console.log(`[slave] Updated current sequence to ${message.sequence}`);
+                break;
             default:
                 console.warn(`[slave] Received unknown message type at ${new Date().toISOString()}: ${message.type}`);
         }
     });
-
+    
     function updateContinuousPlayUI(isContinuousPlay) {
         const continuousPlayCheckbox = document.getElementById('continuous-play');
         if (continuousPlayCheckbox) {
@@ -92,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`[slave] Updated continuous play UI to ${isContinuousPlay}`);
         }
     }
-
+    
     function incrementStepCounters(message) {
         currentStep = message.currentStep;
         totalStepCount = message.totalStepCount;
@@ -101,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         barCount = message.barCount;
         sequenceCount = message.sequenceCount;
     }
-
+    
     function handleSequenceTransition(targetSequence, startStep) {
         window.unifiedSequencerSettings.setCurrentSequence(targetSequence);
         console.log(`[slave] [handleSequenceTransition] Sequence set to ${targetSequence}`);
@@ -112,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetCountersForNewSequence(startStep);
         createStepButtonsForSequence();
     }
-
+    
     function resetCountersForNewSequence(startStep = 0) {
         currentStep = startStep;
         beatCount = Math.floor(startStep / 4);
@@ -197,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pauseTime = 0;
     }
 
+
     function handleStep(channel, channelData, totalStepCount) {
         console.log(`[slave] Handling step for channel ${channel.id}`);
         let isMuted = channel.dataset.muted === 'true';
@@ -226,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
 
     function playStep(currentStep, currentSequence) {
         console.log(`[slave] [playStep] Playing step ${currentStep} for currentSequence ${currentSequence} at ${new Date().toISOString()}`);
