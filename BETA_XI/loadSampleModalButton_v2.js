@@ -427,16 +427,6 @@ function processLoad(url, sampleName, index, loadSampleButton, modal) {
     }
 }
 
-function handleUpdate(index, modal, loadSampleButton) {
-    const nameInput = document.querySelector('.channel-name-input');
-    if (nameInput && nameInput.value) {
-        updateProjectChannelNamesUI(index, nameInput.value);
-        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index] = nameInput.value;
-        loadSampleButton.textContent = nameInput.value;
-        closeAllModals();
-    }
-}
-
 function copyOrdinalId(channelIndex) {
     const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
     copiedOrdinalId = extractOrdinalIdFromUrl(url);
@@ -567,6 +557,20 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
         },
         { 
             label: 'Paste Ordinal ID to All Channels', 
+            action: () => {
+                pasteOrdinalIdToAllChannels(loadSampleButton);
+                closeCustomContextMenu();
+            } 
+        },
+        { 
+            label: 'Copy Channel', 
+            action: () => {
+                pasteOrdinalIdToAllChannels(loadSampleButton);
+                closeCustomContextMenu();
+            } 
+        },
+        { 
+            label: 'Paste Channel', 
             action: () => {
                 pasteOrdinalIdToAllChannels(loadSampleButton);
                 closeCustomContextMenu();

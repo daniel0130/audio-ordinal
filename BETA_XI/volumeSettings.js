@@ -1,4 +1,4 @@
-// volumeSettings.js
+// volumeSettings.js is a script that allows users to adjust the volume and playback speed of each channel in the Unified Sequencer.
 
 let modalTimeout; // To track the inactivity timeout
 let mouseOutTimeout;
