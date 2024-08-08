@@ -20,6 +20,7 @@ class UnifiedSequencerSettings {
                 channelPlaybackSpeed: new Array(this.numChannels).fill(1), // Default speed is normal (1x)
                 trimSettings: Array.from({ length: this.numChannels }, () => ({ start: 0.01, end: 100.00, length: 0 })),
                 projectChannelNames: new Array(this.numChannels).fill('Load Sample'),
+                channelSettings: this.initializeChannelSettings(numChannels), // Initialize channelSettings
                 projectSequences: this.initializeSequences(this.numSequences, this.numChannels, 64)
             }
         };
@@ -314,6 +315,14 @@ return new Promise(resolve => setTimeout(() => resolve(url), 100)); // Simulates
 
     checkSettings() {
         console.log("Current Global Settings:", this.settings);
+    }
+
+    initializeChannelSettings(numChannels) {
+        let channelSettings = {};
+        for (let ch = 0; ch < numChannels; ch++) {
+            channelSettings[`ch${ch}`] = { volume: 1, pitch: 1 };
+        }
+        return channelSettings;
     }
 
     initializeSequences(numSequences = this.numSequences, numChannels = this.numChannels, numSteps = 64) {

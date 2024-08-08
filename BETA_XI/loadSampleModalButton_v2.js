@@ -62,6 +62,7 @@ const ogSampleUrls = [
 let openModals = [];
 let copiedOrdinalId = null; // Variable to store the copied ordinal ID
 let copiedChannelName = ''; // Global variable to store the copied channel name
+let copiedChannel = null;
 
 
 function setupLoadSampleButton(channel, index) {
@@ -490,6 +491,165 @@ function pasteChannelName(channelIndex, loadSampleButton) {
     }
 }
 
+function copyChannel(channelIndex) {
+    const settings = window.unifiedSequencerSettings.settings.masterSettings;
+    const currentSequence = settings.currentSequence;
+
+    console.log('Copying channel:', {
+        channelIndex,
+        currentSequence,
+        settings
+    });
+
+    const sequence = settings.projectSequences[`Sequence${currentSequence}`];
+    console.log('Sequence data:', sequence);
+
+    if (!sequence) {
+        console.warn('Invalid sequence index in copyChannel');
+        showVisualMessage('Invalid sequence index');
+        return;
+    }
+
+    const channel = sequence[`ch${channelIndex}`];
+    console.log('Channel data:', channel);
+
+    if (!channel) {
+        console.warn('Invalid channel index in copyChannel');
+        showVisualMessage('Invalid channel index');
+        return;
+    }
+
+    if (!settings.channelSettings) {
+        settings.channelSettings = {};
+    }
+
+    const channelSettings = settings.channelSettings[`ch${channelIndex}`] || { volume: 1, pitch: 1 };
+    const playbackSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex] || 1;
+    const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
+
+    // Calculate total sample duration
+    const totalSampleDuration = trimSettings.totalSampleDuration || 1; // Assuming a default value of 1 if not present
+
+    const channelData = {
+        url: settings.channelURLs[channelIndex],
+        name: settings.projectChannelNames[channelIndex],
+        volume: channelSettings.volume || 1,
+        pitch: channelSettings.pitch || 1,
+        playbackSpeed: playbackSpeed,
+        trimSettings: {
+            ...trimSettings,
+            totalSampleDuration: totalSampleDuration
+        },
+        steps: channel.steps || []
+    };
+    copiedChannel = channelData;
+    console.log('Copied Channel:', copiedChannel);
+    showVisualMessage('Copied Channel');
+}
+
+
+
+
+function pasteChannel(channelIndex, loadSampleButton) {
+    if (copiedChannel) {
+        const settings = window.unifiedSequencerSettings.settings.masterSettings;
+        const currentSequence = settings.currentSequence;
+
+        console.log('Pasting channel:', {
+            channelIndex,
+            currentSequence,
+            copiedChannel,
+            settings
+        });
+
+        const sequence = settings.projectSequences[`Sequence${currentSequence}`];
+        console.log('Sequence data:', sequence);
+
+        if (!sequence) {
+            console.warn('Invalid sequence index in pasteChannel');
+            showVisualMessage('Invalid sequence index');
+            return;
+        }
+
+        // Ensure the channel exists before pasting
+        if (!sequence[`ch${channelIndex}`]) {
+            sequence[`ch${channelIndex}`] = { steps: [] };
+        }
+
+        if (!settings.channelSettings) {
+            settings.channelSettings = {};
+        }
+        if (!settings.channelSettings[`ch${channelIndex}`]) {
+            settings.channelSettings[`ch${channelIndex}`] = {};
+        }
+
+        console.log('Before applying settings:', settings.channelSettings[`ch${channelIndex}`]);
+
+        // Paste URL and name
+        settings.channelURLs[channelIndex] = copiedChannel.url;
+        settings.projectChannelNames[channelIndex] = copiedChannel.name;
+        loadSampleButton.textContent = copiedChannel.name;
+
+        // Paste volume and pitch
+        settings.channelSettings[`ch${channelIndex}`].volume = copiedChannel.volume;
+        settings.channelSettings[`ch${channelIndex}`].pitch = copiedChannel.pitch;
+
+        // Apply the volume immediately
+        setChannelVolume(channelIndex, copiedChannel.volume);
+
+        // Paste playback speed
+        window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, copiedChannel.playbackSpeed);
+
+        // Log after applying volume and playback speed
+        console.log('After applying volume and playback speed:', settings.channelSettings[`ch${channelIndex}`]);
+
+        // Paste steps without changing the channel reference
+        sequence[`ch${channelIndex}`].steps = copiedChannel.steps.map(step => ({ ...step }));
+
+        // Paste trim settings
+        const trimSettings = copiedChannel.trimSettings;
+        console.log('Pasting trim settings:', trimSettings);
+        window.unifiedSequencerSettings.setTrimSettings(channelIndex, trimSettings.start, trimSettings.end);
+
+        // Update global settings with new trim settings
+        settings.trimSettings[channelIndex] = trimSettings;
+
+        // Notify observers about the trim settings change
+        window.unifiedSequencerSettings.notifyObservers();
+
+        // Update trim settings UI
+        if (isModalOpen) { // Check if the modal is open
+            window.unifiedSequencerSettings.updateTrimSettingsUI([trimSettings]);
+        }
+
+        // Process load to ensure the audio sample is fully integrated
+        processLoad(copiedChannel.url, copiedChannel.name, channelIndex, loadSampleButton, null);
+
+        // Update button text
+        updateButtonText(channelIndex, loadSampleButton);
+
+        console.log('Pasted Channel:', copiedChannel);
+        showVisualMessage('Pasted Channel');
+
+        // Log the full settings object after pasting
+        console.log('Full settings after pasting:', JSON.stringify(settings));
+    } else {
+        console.warn('No Channel copied');
+        showVisualMessage('No Channel copied');
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 function updateButtonText(index, loadSampleButton) {
     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
     if (projectChannelNames && index < projectChannelNames.length) {
@@ -565,14 +725,14 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
         { 
             label: 'Copy Channel', 
             action: () => {
-                pasteOrdinalIdToAllChannels(loadSampleButton);
+                copyChannel(channelIndex);
                 closeCustomContextMenu();
             } 
         },
         { 
             label: 'Paste Channel', 
             action: () => {
-                pasteOrdinalIdToAllChannels(loadSampleButton);
+                pasteChannel(channelIndex, loadSampleButton);
                 closeCustomContextMenu();
             } 
         },
@@ -586,15 +746,18 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
     ];
 
     options.forEach(option => {
-        const menuOption = createMenuOption(option.label, option.action);
-        menu.appendChild(menuOption);
+        const menuItem = document.createElement('div');
+        menuItem.className = 'context-menu-item';
+        menuItem.textContent = option.label;
+        menuItem.onclick = option.action;
+        menu.appendChild(menuItem);
     });
 
     document.body.appendChild(menu);
 
     setTimeout(() => {
         closeCustomContextMenu();
-    }, 20000);
+    }, 60000);
 
     setTimeout(() => {
         document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
