@@ -720,14 +720,14 @@ function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButto
                 pasteChannel(channelIndex, loadSampleButton);
                 closeCustomContextMenu();
             } 
-        },
-        { 
-            label: 'Reset Channel Pitch & Volume to 1', 
-            action: () => {
-                resetChannelToDefault(channelIndex);
-                closeCustomContextMenu();
-            } 
         }
+        // { 
+        //     label: 'Reset Channel Pitch & Volume to 1', 
+        //     action: () => {
+        //         resetChannelToDefault(channelIndex);
+        //         closeCustomContextMenu();
+        //     } 
+        // }
     ];
 
     options.forEach(option => {
