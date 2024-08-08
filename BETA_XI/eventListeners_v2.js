@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadInternalPreset2 = document.getElementById('loadInternalPreset2');
     let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
     let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
-    // let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
+    let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
     // let loadButtonClicked = false; // Flag to track if the load button is clicked
 
     // Create and append the Cancel button
@@ -185,7 +185,7 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     // Additional presets can be added in the same manner
     
     loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Basic_Drum_Kit.json'));
-    // loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto2.json'));
+    loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/16_Glockenspiel_Notes.json'));
 });
 
 // Message event listener handling load, play, stop, pause commands

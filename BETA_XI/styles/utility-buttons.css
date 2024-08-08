@@ -4,7 +4,7 @@
     width: auto; /* This will make the div only as wide as its content requires */
     min-width: 100px; /* You can set a min-width to ensure it doesn't get too narrow */
     max-width: 300px; /* Optional: You can set a max-width if you want to limit how wide it can get */
-    max-height: 100px; /* Set a max-height for the container */
+    max-height: 200px; /* Set a max-height for the container */
     overflow-y: auto; /* Add scroll to the container */
     border: 1px solid #aaa;
     background-color: #f9f9f9;
