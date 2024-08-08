@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadInternalPreset1 = document.getElementById('loadInternalPreset1');
     let loadInternalPreset2 = document.getElementById('loadInternalPreset2');
     let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
-    // let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
+    let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
     // let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
     // let loadButtonClicked = false; // Flag to track if the load button is clicked
 
@@ -184,7 +184,7 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     loadInternalPreset3.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/OB1_PresetTemplate.json'));
     // Additional presets can be added in the same manner
     
-    // loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/internalPreset4.json'));
+    loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Basic_Drum_Kit.json'));
     // loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto2.json'));
 });
 

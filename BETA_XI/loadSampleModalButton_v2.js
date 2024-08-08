@@ -114,71 +114,122 @@ function openModal(index, loadSampleButton) {
     openModals.push(modal);
 
     const inputs = [
-        { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' }
-        // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
-    
 
-// Find the dropdown element
-const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
-ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
-
-// Inject CSS for pulsing effect into the head of the document
-const style = document.createElement('style');
-style.type = 'text/css';
-style.innerHTML = `
-    @keyframes pulse-green {
-        0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
-    }
-    .pulse-green {
-        animation: pulse-green 2s infinite;
-    }
-`;
-document.head.appendChild(style);
-
-// Add the 'pulse-green' class to the dropdown
-ogAudionalDropdown.classList.add('pulse-green');
-
-modalContent.appendChild(ogAudionalDropdown);
-ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-
+    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
+
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = `
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+        }
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 165, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 165, 0, 0); }
+        }
+        .pulse-orange {
+            animation: pulse-orange 2s infinite;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    `;
+    document.head.appendChild(style);
+
+    ogAudionalDropdown.classList.add('pulse-green');
+
     modalContent.appendChild(ogAudionalDropdown);
     ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-    
-    const actions = [
-        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
-        { text: 'Cancel', action: () => closeModal(modal) },
-        { text: 'Update Channel Name', action: () => handleUpdate(index, modal, loadSampleButton) }
-    ];
 
     inputs.forEach(({ text, placeholder, type, className }) => {
         const textPara = createTextParagraph(text);
-        textPara.style.display = 'inline-block'; // Change display to inline-block
-        textPara.style.width = 'auto'; // Auto width to adjust with content
-        textPara.style.marginRight = '20px'; // Space between text and input
+        textPara.style.display = 'inline-block';
+        textPara.style.width = 'auto';
+        textPara.style.marginRight = '20px';
         
         const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
-        inputElement.style.width = '300px'; // Set the width of the input
-        inputElement.style.display = 'inline-block'; // Display inline-block for alignment
+        inputElement.style.width = '300px';
+        inputElement.style.display = 'inline-block';
 
-        const containerDiv = document.createElement('div'); // Create a container div for each input group
+        const containerDiv = document.createElement('div');
         containerDiv.appendChild(textPara);
         containerDiv.appendChild(inputElement);
         modalContent.appendChild(containerDiv);
     });
 
-    actions.forEach(({ text, action }) => {
-        modalContent.appendChild(createButton(text, action));
+    const actions = [
+        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
+        { text: 'Cancel', action: () => closeModal(modal) },
+        { 
+            text: 'Search for more on-chain audio', 
+            action: () => window.open('https://ordinals.hiro.so/inscriptions?f=audio', '_blank'), 
+            tooltip: 'Find any onchain audio you like. Simply copy the ordinal ID and paste it into the form above to load it into the sequencer for remixing.',
+            className: 'pulse-orange'
+        }
+    ];
+
+    actions.forEach(({ text, action, tooltip, className }) => {
+        const button = createButton(text, action);
+        if (tooltip) {
+            const tooltipSpan = document.createElement('span');
+            tooltipSpan.className = 'tooltiptext';
+            tooltipSpan.textContent = tooltip;
+            
+            const tooltipDiv = document.createElement('div');
+            tooltipDiv.className = 'tooltip';
+            tooltipDiv.appendChild(button);
+            tooltipDiv.appendChild(tooltipSpan);
+            
+            if (className) {
+                button.classList.add(className);
+            }
+            
+            modalContent.appendChild(tooltipDiv);
+        } else {
+            if (className) {
+                button.classList.add(className);
+            }
+            modalContent.appendChild(button);
+        }
     });
 
     document.body.appendChild(modal);
     return modal;
 }
+
+
+
 
 
 function createOGDropdown(label, options) {
