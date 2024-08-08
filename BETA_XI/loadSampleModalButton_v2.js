@@ -493,31 +493,11 @@ function pasteChannelName(channelIndex, loadSampleButton) {
 
 function copyChannel(channelIndex) {
     const settings = window.unifiedSequencerSettings.settings.masterSettings;
-    const currentSequence = settings.currentSequence;
 
     console.log('Copying channel:', {
         channelIndex,
-        currentSequence,
         settings
     });
-
-    const sequence = settings.projectSequences[`Sequence${currentSequence}`];
-    console.log('Sequence data:', sequence);
-
-    if (!sequence) {
-        console.warn('Invalid sequence index in copyChannel');
-        showVisualMessage('Invalid sequence index');
-        return;
-    }
-
-    const channel = sequence[`ch${channelIndex}`];
-    console.log('Channel data:', channel);
-
-    if (!channel) {
-        console.warn('Invalid channel index in copyChannel');
-        showVisualMessage('Invalid channel index');
-        return;
-    }
 
     if (!settings.channelSettings) {
         settings.channelSettings = {};
@@ -530,6 +510,15 @@ function copyChannel(channelIndex) {
     // Calculate total sample duration
     const totalSampleDuration = trimSettings.totalSampleDuration || 1; // Assuming a default value of 1 if not present
 
+    // Collect steps from all sequences
+    const allSteps = {};
+    for (const sequenceKey in settings.projectSequences) {
+        const sequence = settings.projectSequences[sequenceKey];
+        if (sequence[`ch${channelIndex}`]) {
+            allSteps[sequenceKey] = sequence[`ch${channelIndex}`].steps.map(step => ({ ...step }));
+        }
+    }
+
     const channelData = {
         url: settings.channelURLs[channelIndex],
         name: settings.projectChannelNames[channelIndex],
@@ -540,7 +529,7 @@ function copyChannel(channelIndex) {
             ...trimSettings,
             totalSampleDuration: totalSampleDuration
         },
-        steps: channel.steps || []
+        steps: allSteps
     };
     copiedChannel = channelData;
     console.log('Copied Channel:', copiedChannel);
@@ -550,31 +539,16 @@ function copyChannel(channelIndex) {
 
 
 
+
 function pasteChannel(channelIndex, loadSampleButton) {
     if (copiedChannel) {
         const settings = window.unifiedSequencerSettings.settings.masterSettings;
-        const currentSequence = settings.currentSequence;
 
         console.log('Pasting channel:', {
             channelIndex,
-            currentSequence,
             copiedChannel,
             settings
         });
-
-        const sequence = settings.projectSequences[`Sequence${currentSequence}`];
-        console.log('Sequence data:', sequence);
-
-        if (!sequence) {
-            console.warn('Invalid sequence index in pasteChannel');
-            showVisualMessage('Invalid sequence index');
-            return;
-        }
-
-        // Ensure the channel exists before pasting
-        if (!sequence[`ch${channelIndex}`]) {
-            sequence[`ch${channelIndex}`] = { steps: [] };
-        }
 
         if (!settings.channelSettings) {
             settings.channelSettings = {};
@@ -603,8 +577,18 @@ function pasteChannel(channelIndex, loadSampleButton) {
         // Log after applying volume and playback speed
         console.log('After applying volume and playback speed:', settings.channelSettings[`ch${channelIndex}`]);
 
-        // Paste steps without changing the channel reference
-        sequence[`ch${channelIndex}`].steps = copiedChannel.steps.map(step => ({ ...step }));
+        // Paste steps across all sequences
+        for (const sequenceKey in copiedChannel.steps) {
+            const sequence = settings.projectSequences[sequenceKey];
+            if (!sequence) {
+                console.warn(`Invalid sequence index: ${sequenceKey} in pasteChannel`);
+                continue;
+            }
+            if (!sequence[`ch${channelIndex}`]) {
+                sequence[`ch${channelIndex}`] = { steps: [] };
+            }
+            sequence[`ch${channelIndex}`].steps = copiedChannel.steps[sequenceKey].map(step => ({ ...step }));
+        }
 
         // Paste trim settings
         const trimSettings = copiedChannel.trimSettings;
@@ -638,6 +622,7 @@ function pasteChannel(channelIndex, loadSampleButton) {
         showVisualMessage('No Channel copied');
     }
 }
+
 
 
 
