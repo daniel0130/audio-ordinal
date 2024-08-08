@@ -1,25 +1,25 @@
 {
-  "projectName": "Be Based - OB1 Song #1 -  by melophonic",
+  "projectName": "OB1 Template",
   "artistName": "",
   "projectBPM": 120,
   "currentSequence": 0,
   "channelURLs": [
-    "https://ordinals.com/content/e7d344ef3098d0889856978c4d2e81ccf2358f7f8b66feecc71e03036c59ad48i0",
-    "https://ordinals.com/content/d030eb3d8bcd68b0ed02b0c67fdb981342eea40b0383814f179a48e76927db93i0",
+    "https://ordinals.com/content/e7d344ef3098d0889856978c4d2e81ccf2358f7f8b66feecc71e03036c59ad48i0#",
     "https://ordinals.com/content/ef5707e6ecf4d5b6edb4c3a371ca1c57b5d1057c6505ccb5f8bdc8918b0c4d94i0",
+    "https://ordinals.com/content/d030eb3d8bcd68b0ed02b0c67fdb981342eea40b0383814f179a48e76927db93i0",
     "https://ordinals.com/content/3b7482a832c4f27c32fc1da7cc4249bbbac1cbdfbdb8673079cad0c33486d233i0",
     "https://ordinals.com/content/5a42d7b2e2fe01e4f31cbad5dd671997f87339d970faaab37f6355c4a2f3be5ai0",
-    "https://ordinals.com/content/1bda678460ef08fb64435b57c9b69fd78fd4556822ccd8e9839b4eb71b3621edi0",
-    "https://ordinals.com/content/91f52a4ca00bb27383ae149f24b605d75ea99df033a6cbb6de2389455233bf51i0",
     "https://ordinals.com/content/ddc1838c1a6a3c45b2c6e19ff278c3b51b0797c3f1339c533370442d23687a68i0",
+    "https://ordinals.com/content/91f52a4ca00bb27383ae149f24b605d75ea99df033a6cbb6de2389455233bf51i0",
     "https://ordinals.com/content/1e3c2571e96729153e4b63e2b561d85aec7bc5ba372d293af469a525dfa3ed59i0",
     "https://ordinals.com/content/437868aecce108d49f9b29c2f477987cb5834ffdf639a650335af7f0fdd5e55bi0",
     "https://ordinals.com/content/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0",
-    "https://ordinals.com/content/bd02c39ac1adad2c4a5f79dd4a6a9f08549488348cdf7e669a397840eb2673e1i0",
-    "https://ordinals.com/content/e070d07283f4a41a8a60fda4462814046ac5d342a4afac407e8b1f57f334fb52i0",
-    "https://ordinals.com/content/f4161e0da85db42f30000e80f7923b4c59bcefd368c4c93a391efbac2c094b30i0",
+    "https://ordinals.com/content/1bda678460ef08fb64435b57c9b69fd78fd4556822ccd8e9839b4eb71b3621edi0",
+    "https://ordinals.com/content/228947e9fc52e44d3a22e84aed7bbaeff08d60c5f925aa6be7e265d210425c28i0",
+    "https://ordinals.com/content/578aa9d3b29ceceafc659ecee22cb7ef1a063ba5b71474db8fe84949746cdeefi0",
+    "https://ordinals.com/content/3e5fe7bc10e37a145a75f7ddd71debd9079b05568c5b9c5e6b4de3d959a4c46bi0",
     "https://ordinals.com/content/c511a6247dd207f6ebbf87090193d661f440a7f198c0009e49ed4c1b3541914fi0",
-    "https://ordinals.com/content/bd02c39ac1adad2c4a5f79dd4a6a9f08549488348cdf7e669a397840eb2673e1i0"
+    "https://ordinals.com/content/b77fb3b299477ca55ab2626dbbc12c0d5fa9d4cf51ae00850caae6e36baef745i0"
   ],
   "channelVolume": [
     1,
@@ -33,8 +33,8 @@
     1,
     1,
     1,
-    1,
-    1,
+    0.76,
+    0.47,
     1,
     1,
     1
@@ -45,15 +45,15 @@
     1,
     1,
     1,
+    1.12,
+    1,
+    0.765,
     1,
     1,
     1,
     1,
-    1,
-    1,
-    1,
-    1,
-    1,
+    0.148,
+    1.54,
     1,
     1
   ],
@@ -136,78 +136,260 @@
       "totalSampleDuration": 0.780125
     },
     {
-      "startSliderValue": 6.578847323600972,
-      "endSliderValue": 15.514750608272507,
-      "totalSampleDuration": 0.7422291666666667
+      "startSliderValue": 0,
+      "endSliderValue": 99.47201689545935,
+      "totalSampleDuration": 0.7422291666666667,
+      "start": 0,
+      "end": 99.47201689545935
     }
   ],
   "projectChannelNames": [
-    "VB 808 Kick",
-    "808 Closed Hat",
-    "808 Snare",
-    "808 Clap",
-    "Crash #1",
-    "Metronome Click",
-    "Synth Bass #3",
-    "Synth Bass #1",
-    "Synth Bass #2",
-    "Hard Kick #1",
-    "VB Snare",
-    "BASED",
-    "OH",
+    "OB1 #1 - 808 Kick",
+    "OB1 #2 - 808 Snare",
+    "OB1 #3 - Closed Hat",
+    "OB1 #4 - 808 Clap",
+    "OB1 #5 - Crash",
+    "OB1 #6 - Synth Bass 1",
     "Load Sample",
+    "Load Sample",
+    "OB1 #9 - Hard Kick",
+    "OB1 #10 - Hard Snare",
+    "OB1 #11 - Small Click",
+    "OB1 #12 - DJ Scratch",
+    "OB1 #13 - Glockenspiel",
+    "OB1 #14 - Cowbell",
     "ONE",
-    "B"
+    "OB1 #16 - Bass Drop"
   ],
+  "channelSettings": {
+    "ch0": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch1": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch2": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch3": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch4": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch5": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch6": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch7": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch8": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch9": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch10": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch11": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch12": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch13": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch14": {
+      "volume": 1,
+      "pitch": 1
+    },
+    "ch15": {
+      "volume": 1,
+      "pitch": 1
+    }
+  },
   "projectSequences": {
     "Sequence0": {
       "ch0": {
-        "steps": []
+        "steps": [
+          1,
+          17,
+          33,
+          49
+        ]
       },
       "ch1": {
-        "steps": []
+        "steps": [
+          9,
+          25,
+          41,
+          57
+        ]
       },
       "ch2": {
-        "steps": []
+        "steps": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61
+        ]
       },
       "ch3": {
-        "steps": []
+        "steps": [
+          7,
+          23,
+          39,
+          55
+        ]
       },
       "ch4": {
         "steps": []
       },
       "ch5": {
-        "steps": []
+        "steps": [
+          1,
+          17,
+          33,
+          49
+        ]
       },
       "ch6": {
-        "steps": []
+        "steps": [
+          19,
+          53
+        ]
       },
       "ch7": {
-        "steps": []
+        "steps": [
+          7,
+          15,
+          23,
+          31,
+          39,
+          47,
+          55,
+          63
+        ]
       },
       "ch8": {
-        "steps": []
+        "steps": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61
+        ]
       },
       "ch9": {
-        "steps": []
+        "steps": [
+          5,
+          21,
+          37,
+          53
+        ]
       },
       "ch10": {
-        "steps": []
+        "steps": [
+          3,
+          7,
+          11,
+          15,
+          19,
+          23,
+          27,
+          31,
+          35,
+          39,
+          43,
+          47,
+          51,
+          55,
+          59,
+          63
+        ]
       },
       "ch11": {
-        "steps": []
+        "steps": [
+          1
+        ]
       },
       "ch12": {
-        "steps": []
+        "steps": [
+          1,
+          17,
+          33,
+          49
+        ]
       },
       "ch13": {
-        "steps": []
+        "steps": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61
+        ]
       },
       "ch14": {
         "steps": []
       },
       "ch15": {
-        "steps": []
+        "steps": [
+          17
+        ]
       }
     },
     "Sequence1": {
