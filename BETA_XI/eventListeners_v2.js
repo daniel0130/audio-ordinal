@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let loadInternalPreset3 = document.getElementById('loadInternalPreset3');
     let loadInternalPreset4 = document.getElementById('loadInternalPreset4');
     let loadInternalPreset5 = document.getElementById('loadInternalPreset5');
+    let loadInternalPreset6 = document.getElementById('loadInternalPreset6');
     // let loadButtonClicked = false; // Flag to track if the load button is clicked
 
     // Create and append the Cancel button
@@ -186,6 +187,7 @@ document.getElementById('next-sequence').addEventListener('click', function() {
     
     loadInternalPreset4.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Basic_Drum_Kit.json'));
     loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/16_Glockenspiel_Notes.json'));
+    loadInternalPreset6.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Farty_McFarterson.json'));
 });
 
 // Message event listener handling load, play, stop, pause commands
