@@ -107,7 +107,14 @@ class UnifiedSequencerSettings {
     
             // Ensure URLs are formatted and buffers are ready
             if (settingsToLoad.channelURLs) {
+                const baseDomain = "https://ordinals.com";
+    
                 const urlPromises = settingsToLoad.channelURLs.map(async (url, index) => {
+                    // Check if the URL is missing a domain and add it if necessary
+                    if (url.startsWith("/")) {
+                        url = `${baseDomain}${url}`;
+                    }
+    
                     const formattedUrl = await this.formatURL(url);
                     this.settings.masterSettings.channelURLs[index] = formattedUrl;
     
@@ -143,6 +150,7 @@ class UnifiedSequencerSettings {
             console.error('[internalPresetDebug] Error loading settings:', error);
         }
     }
+    
     
     
     isHighlySerialized(parsedSettings) {
