@@ -85,32 +85,44 @@ class UnifiedSequencerSettings {
             this.clearMasterSettings();
             console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
     
-            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
+            let parsedSettings;
     
-            // Set up basic settings first
+            // Step 1: Parse the JSON string if necessary
+            if (typeof jsonSettings === 'string') {
+                parsedSettings = JSON.parse(jsonSettings);
+            } else {
+                parsedSettings = jsonSettings;
+            }
+    
+            // Step 2: Detect if the format is the new compact format
+            const isCompactFormat = Object.keys(parsedSettings).every(key => !isNaN(key));
+    
+            // Step 3: If the format is compact, use the deserializer to convert it
+            if (isCompactFormat) {
+                console.log("[internalPresetDebug] Detected compact serialized format, deserializing...");
+                parsedSettings = deserialize(parsedSettings);
+                console.log("[internalPresetDebug] Deserialized Settings:", parsedSettings);
+            }
+    
+            // Step 4: Proceed with the existing logic using parsedSettings
             this.settings.masterSettings.currentSequence = 0;
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
             
-            // Add artistName field if present
             if (parsedSettings.artistName) {
                 this.settings.masterSettings.artistName = parsedSettings.artistName;
             }
     
-            // Ensure playback speeds are set
             this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
             this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
     
-            // Initialize gain nodes early with default values
             this.initializeGainNodes();
     
-            // Then update URL and volume settings
             if (parsedSettings.channelURLs) {
                 const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
                 this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
             }
     
-            // Update volumes from settings, ensuring gain nodes are ready
             if (parsedSettings.channelVolume) {
                 parsedSettings.channelVolume.forEach((volume, index) => {
                     this.setChannelVolume(index, volume);
