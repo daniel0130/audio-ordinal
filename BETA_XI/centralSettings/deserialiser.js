@@ -1,4 +1,4 @@
-// Mapping keys to their original names
+
 const keyMap = {
     0: 'projectName',
     1: 'artistName',
@@ -16,71 +16,62 @@ const keyMap = {
     13: 'end',
     14: 'projectSequences',
     15: 'steps'
-  };
-  
-  const channelMap = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // A-Z
-  
-  // Function to deserialize steps from compact format
-  const deserializeSteps = compressedSteps => {
-    const steps = [];
-    compressedSteps.forEach(item => {
-      if (typeof item === 'number') {
-        steps.push({ index: item, isActive: true, isReverse: false, volume: 1, pitch: 1 });
-      } else if (typeof item === 'string' && item.endsWith('r')) {
-        const index = parseInt(item.slice(0, -1), 10);
-        steps.push({ index: index, isActive: true, isReverse: true, volume: 1, pitch: 1 });
-      } else if (typeof item === 'object' && item.r) {
-        const [start, end] = item.r;
-        for (let i = start; i <= end; i++) {
-          steps.push({ index: i, isActive: true, isReverse: false, volume: 1, pitch: 1 });
-        }
-      }
-    });
-    return steps;
-  };
-  
-  // Function to deserialize the entire object
-  const deserialize = serializedData => {
+};
+
+const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, +k]));
+const channelMap = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // A-Z
+
+const deserialize = (data) => {
     const deserializedData = {};
-  
-    for (const [key, value] of Object.entries(serializedData)) {
-      const originalKey = keyMap[key] ?? key;
-  
-      if (originalKey === 'channelURLs') {
-        deserializedData[originalKey] = value;
-      } else if (Array.isArray(value)) {
-        deserializedData[originalKey] = ['projectChannelNames'].includes(originalKey)
-          ? value.map((v, i) => v === channelMap[i] ? v : i)
-          : value.map(v => typeof v === 'number' ? v : deserialize(v));
-      } else if (typeof value === 'object' && value !== null) {
-        if (originalKey === 'projectSequences') {
-          deserializedData[originalKey] = Object.entries(value).reduce((acc, [seqKey, channels]) => {
-            const fullSeqKey = seqKey.replace('s', 'Sequence');
-            acc[fullSeqKey] = Object.entries(channels).reduce((chAcc, [chKey, chValue]) => {
-              const channelIndex = channelMap.indexOf(chKey);
-              const fullChKey = `ch${channelIndex}`;
-              chAcc[fullChKey] = {
-                steps: deserializeSteps(chValue.steps ?? []),
-                mute: false,
-                url: ""
-              };
-              return chAcc;
-            }, {});
-            return acc;
-          }, {});
+
+    for (const [key, value] of Object.entries(data)) {
+        const originalKey = keyMap[key] ?? key;
+
+        if (originalKey === 'channelURLs' || originalKey === 'projectChannelNames') {
+            deserializedData[originalKey] = value; // Just map the array directly
+        } else if (Array.isArray(value)) {
+            deserializedData[originalKey] = ['projectChannelNames'].includes(originalKey)
+                ? value.map((v, i) => channelMap[i] ?? v)
+                : value.map(v => typeof v === 'number' ? v : deserialize(v));
+        } else if (typeof value === 'object' && value !== null) {
+            deserializedData[originalKey] = originalKey === 'projectSequences'
+                ? Object.entries(value).reduce((acc, [seqKey, channels]) => {
+                    const originalSeqKey = seqKey.replace('s', 'Sequence');
+                    const restoredChannels = Object.entries(channels).reduce((chAcc, [chKey, chValue]) => {
+                        const index = channelMap.indexOf(chKey);
+                        const originalChKey = `ch${index !== -1 ? index : chKey}`;
+                        if (chValue[reverseKeyMap['steps']]?.length) {
+                            chAcc[originalChKey] = { steps: decompressSteps(chValue[reverseKeyMap['steps']]) };
+                        }
+                        return chAcc;
+                    }, {});
+                    if (Object.keys(restoredChannels).length) acc[originalSeqKey] = restoredChannels;
+                    return acc;
+                }, {})
+                : deserialize(value);
         } else {
-          deserializedData[originalKey] = deserialize(value);
+            deserializedData[originalKey] = value;
         }
-      } else {
-        deserializedData[originalKey] = value;
-      }
     }
-  
+
     return deserializedData;
-  };
+};
 
+// Decompress steps that were compressed during serialization
+const decompressSteps = steps => {
+    const decompressed = [];
 
-  // Example usage in a browser:
-// Assuming `compactSerializedData` is the serialized JSON you want to deserialize
-// const deserializedData = deserialize(compactSerializedData);
-// console.log(deserializedData);
+    steps.forEach(step => {
+        if (typeof step === 'number') {
+            decompressed.push(step);
+        } else if (typeof step === 'object' && step.r) {
+            for (let i = step.r[0]; i <= step.r[1]; i++) {
+                decompressed.push(i);
+            }
+        } else if (typeof step === 'string' && step.endsWith('r')) {
+            decompressed.push({ index: parseInt(step.slice(0, -1), 10), reverse: true });
+        }
+    });
+
+    return decompressed;
+};

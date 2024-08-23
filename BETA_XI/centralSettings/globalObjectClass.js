@@ -78,37 +78,26 @@ class UnifiedSequencerSettings {
     }
 
     
-
     async loadSettings(jsonSettings) {
         console.log("[internalPresetDebug] loadSettings entered");
         try {
             this.clearMasterSettings();
             console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
     
-            let parsedSettings;
+            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
     
-            // Step 1: Parse the JSON string if necessary
-            if (typeof jsonSettings === 'string') {
-                parsedSettings = JSON.parse(jsonSettings);
-            } else {
-                parsedSettings = jsonSettings;
+            // Detect if the data is highly serialized
+            if (this.isHighlySerialized(parsedSettings)) {
+                console.log("[internalPresetDebug] Detected highly compressed file type. Applying additional module for deserialization.");
+                const decompressedSettings = await this.decompressSerializedData(parsedSettings);
+                return this.loadSettings(decompressedSettings); // Recursively call loadSettings with decompressed data
             }
     
-            // Step 2: Detect if the format is the new compact format
-            const isCompactFormat = Object.keys(parsedSettings).every(key => !isNaN(key));
-    
-            // Step 3: If the format is compact, use the deserializer to convert it
-            if (isCompactFormat) {
-                console.log("[internalPresetDebug] Detected compact serialized format, deserializing...");
-                parsedSettings = deserialize(parsedSettings);
-                console.log("[internalPresetDebug] Deserialized Settings:", parsedSettings);
-            }
-    
-            // Step 4: Proceed with the existing logic using parsedSettings
+            // Continue with normal loading process for regular JSON
             this.settings.masterSettings.currentSequence = 0;
             this.settings.masterSettings.projectName = parsedSettings.projectName;
             this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
-            
+    
             if (parsedSettings.artistName) {
                 this.settings.masterSettings.artistName = parsedSettings.artistName;
             }
@@ -146,6 +135,94 @@ class UnifiedSequencerSettings {
         } catch (error) {
             console.error('[internalPresetDebug] Error loading settings:', error);
         }
+    }
+    
+    isHighlySerialized(parsedSettings) {
+        // A basic heuristic to detect highly serialized data
+        const keys = Object.keys(parsedSettings);
+        const numericKeyCount = keys.filter(key => /^\d+$/.test(key)).length;
+        return numericKeyCount / keys.length > 0.5; // If more than 50% of keys are numeric
+    }
+    
+    async decompressSerializedData(serializedData) {
+        const keyMap = {
+            0: 'projectName',
+            1: 'artistName',
+            2: 'projectBPM',
+            3: 'currentSequence',
+            4: 'channelURLs',
+            5: 'channelVolume',
+            6: 'channelPlaybackSpeed',
+            7: 'trimSettings',
+            8: 'projectChannelNames',
+            9: 'startSliderValue',
+            10: 'endSliderValue',
+            11: 'totalSampleDuration',
+            12: 'start',
+            13: 'end',
+            14: 'projectSequences',
+            15: 'steps'
+        };
+    
+        const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, +k]));
+        const channelMap = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // A-Z
+    
+        const deserialize = (data) => {
+            const deserializedData = {};
+    
+            for (const [key, value] of Object.entries(data)) {
+                const originalKey = keyMap[key] ?? key;
+    
+                if (originalKey === 'channelURLs' || originalKey === 'projectChannelNames') {
+                    deserializedData[originalKey] = value; // Just map the array directly
+                } else if (Array.isArray(value)) {
+                    deserializedData[originalKey] = ['projectChannelNames'].includes(originalKey)
+                        ? value.map((v, i) => channelMap[i] ?? v)
+                        : value.map(v => typeof v === 'number' ? v : deserialize(v));
+                } else if (typeof value === 'object' && value !== null) {
+                    deserializedData[originalKey] = originalKey === 'projectSequences'
+                        ? Object.entries(value).reduce((acc, [seqKey, channels]) => {
+                            const originalSeqKey = seqKey.replace('s', 'Sequence');
+                            const restoredChannels = Object.entries(channels).reduce((chAcc, [chKey, chValue]) => {
+                                const index = channelMap.indexOf(chKey);
+                                const originalChKey = `ch${index !== -1 ? index : chKey}`;
+                                if (chValue[reverseKeyMap['steps']]?.length) {
+                                    chAcc[originalChKey] = { steps: decompressSteps(chValue[reverseKeyMap['steps']]) };
+                                }
+                                return chAcc;
+                            }, {});
+                            if (Object.keys(restoredChannels).length) acc[originalSeqKey] = restoredChannels;
+                            return acc;
+                        }, {})
+                        : deserialize(value);
+                } else {
+                    deserializedData[originalKey] = value;
+                }
+            }
+    
+            return deserializedData;
+        };
+    
+        // Decompress steps that were compressed during serialization
+        const decompressSteps = steps => {
+            const decompressed = [];
+    
+            steps.forEach(step => {
+                if (typeof step === 'number') {
+                    decompressed.push(step);
+                } else if (typeof step === 'object' && step.r) {
+                    for (let i = step.r[0]; i <= step.r[1]; i++) {
+                        decompressed.push(i);
+                    }
+                } else if (typeof step === 'string' && step.endsWith('r')) {
+                    decompressed.push({ index: parseInt(step.slice(0, -1), 10), reverse: true });
+                }
+            });
+    
+            return decompressed;
+        };
+    
+        return deserialize(serializedData);
     }
     
 
