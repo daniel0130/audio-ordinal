@@ -304,47 +304,146 @@ class UnifiedSequencerSettings {
             const sequence = settingsClone.projectSequences[sequenceKey];
             for (let channelKey in sequence) {
                 const channel = sequence[channelKey];
-                const activeSteps = []; // Array to hold active or reversed steps with non-default settings
+                const activeSteps = [];
     
-                // Iterate over steps
                 channel.steps.forEach((step, index) => {
-                    // Proceed if the step is active or in reverse
                     if (step.isActive || step.isReverse) {
-                        const stepData = { index: index + 1 }; // Store step index (1-based)
+                        const stepData = { index: index + 1 };
     
-                        // Include 'reverse' only if true
                         if (step.isReverse) stepData.reverse = true;
     
-                        // Include 'volume' and 'pitch' only if they deviate from 1
-                        // Assume default volume is 1 if not present
                         const stepVolume = step.volume !== undefined ? step.volume : 1;
                         if (stepVolume !== 1) stepData.volume = stepVolume;
                         if (step.pitch !== 1) stepData.pitch = step.pitch;
     
-                        // Add to activeSteps only if there's more data beyond 'index'
                         if (Object.keys(stepData).length > 1) {
                             activeSteps.push(stepData);
                         } else {
-                            // If only 'index' is present, store as a simple number for efficiency
                             activeSteps.push(index + 1);
                         }
                     }
                 });
     
-                // Replace original steps array with the compact activeSteps array
                 channel.steps = activeSteps;
     
-                // Remove the mute and url fields
                 delete channel.mute;
                 delete channel.url;
             }
         }
     
-        const exportedSettings = JSON.stringify(settingsClone, null, pretty ? 2 : 0); // Adding indentation if pretty is true
+        const exportedSettings = JSON.stringify(settingsClone, null, pretty ? 2 : 0);
         console.log("[exportSettings] Exported Settings:", exportedSettings);
-        return exportedSettings;
+    
+        const serializedSettings = this.serialize(settingsClone);
+        const serializedExportedSettings = JSON.stringify(serializedSettings);
+        console.log("[exportSettings] Serialized Exported Settings:", serializedExportedSettings);
+    
+        this.downloadJSON(exportedSettings, 'full_format.json');
+        this.downloadJSON(serializedExportedSettings, 'serialized_format.json');
     }
     
+    serialize(data) {
+        const keyMap = {
+            projectName: 0,
+            artistName: 1,
+            projectBPM: 2,
+            currentSequence: 3,
+            channelURLs: 4,
+            channelVolume: 5,
+            channelPlaybackSpeed: 6,
+            trimSettings: 7,
+            projectChannelNames: 8,
+            startSliderValue: 9,
+            endSliderValue: 10,
+            totalSampleDuration: 11,
+            start: 12,
+            end: 13,
+            projectSequences: 14,
+            steps: 15
+        };
+    
+        const reverseChannelMap = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+    
+        const roundToFourDecimals = num => Math.round(num * 10000) / 10000;
+    
+        const compressSteps = steps => {
+            if (!steps.length) return [];
+    
+            const compressed = [];
+            let start = null, end = null, inRange = false;
+    
+            steps.forEach(step => {
+                if (typeof step === 'number') {
+                    if (start === null) {
+                        start = end = step;
+                    } else if (step === end + 1) {
+                        end = step;
+                        inRange = true;
+                    } else {
+                        compressed.push(inRange ? { r: [start, end] } : start);
+                        start = end = step;
+                        inRange = false;
+                    }
+                } else if (step.index !== undefined && step.reverse) {
+                    if (start !== null) {
+                        compressed.push(inRange ? { r: [start, end] } : start);
+                        start = end = null;
+                        inRange = false;
+                    }
+                    compressed.push(`${step.index}r`);
+                }
+            });
+    
+            if (start !== null) compressed.push(inRange ? { r: [start, end] } : start);
+    
+            return compressed;
+        };
+    
+        const serializeData = data => {
+            const serializedData = {};
+    
+            for (const [key, value] of Object.entries(data)) {
+                const shortKey = keyMap[key] ?? key;
+    
+                if (key === 'channelURLs') {
+                    serializedData[shortKey] = value;
+                } else if (Array.isArray(value)) {
+                    serializedData[shortKey] = ['projectChannelNames'].includes(key)
+                        ? value.map((v, i) => reverseChannelMap[i] ?? v)
+                        : value.map(v => typeof v === 'number' ? roundToFourDecimals(v) : serializeData(v));
+                } else if (typeof value === 'object' && value !== null) {
+                    serializedData[shortKey] = key === 'projectSequences'
+                        ? Object.entries(value).reduce((acc, [seqKey, channels]) => {
+                            const shortSeqKey = seqKey.replace('Sequence', 's');
+                            const filteredChannels = Object.entries(channels).reduce((chAcc, [chKey, chValue]) => {
+                                const letter = reverseChannelMap[parseInt(chKey.replace('ch', ''), 10)] ?? chKey;
+                                if (chValue.steps?.length) {
+                                    chAcc[letter] = { [keyMap['steps']]: compressSteps(chValue.steps) };
+                                }
+                                return chAcc;
+                            }, {});
+                            if (Object.keys(filteredChannels).length) acc[shortSeqKey] = filteredChannels;
+                            return acc;
+                        }, {})
+                        : serializeData(value);
+                } else {
+                    serializedData[shortKey] = typeof value === 'number' ? roundToFourDecimals(value) : value;
+                }
+            }
+    
+            return serializedData;
+        };
+    
+        return serializeData(data);
+    }
+    
+    downloadJSON(content, fileName) {
+        const blob = new Blob([content], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
     
     
     
