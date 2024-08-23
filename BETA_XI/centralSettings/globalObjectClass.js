@@ -77,50 +77,57 @@ class UnifiedSequencerSettings {
         return this.settings.masterSettings.channelVolume[channelIndex] || 1; // Default volume is 1
     }
 
-    
     async loadSettings(jsonSettings) {
         console.log("[internalPresetDebug] loadSettings entered");
         try {
             this.clearMasterSettings();
             console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
     
+            // Parse the incoming JSON
             const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
     
-            // Detect if the data is highly serialized
-            if (this.isHighlySerialized(parsedSettings)) {
-                console.log("[internalPresetDebug] Detected highly compressed file type. Applying additional module for deserialization.");
-                const decompressedSettings = await this.decompressSerializedData(parsedSettings);
-                return this.loadSettings(decompressedSettings); // Recursively call loadSettings with decompressed data
-            }
+            // Detect if the data is highly serialized and if so, decompress it
+            const settingsToLoad = this.isHighlySerialized(parsedSettings)
+                ? await this.decompressSerializedData(parsedSettings)
+                : parsedSettings;
     
-            // Continue with normal loading process for regular JSON
+            // Proceed with loading the settings (regular or deserialized)
             this.settings.masterSettings.currentSequence = 0;
-            this.settings.masterSettings.projectName = parsedSettings.projectName;
-            this.settings.masterSettings.projectBPM = parsedSettings.projectBPM;
+            this.settings.masterSettings.projectName = settingsToLoad.projectName;
+            this.settings.masterSettings.projectBPM = settingsToLoad.projectBPM;
     
-            if (parsedSettings.artistName) {
-                this.settings.masterSettings.artistName = parsedSettings.artistName;
+            if (settingsToLoad.artistName) {
+                this.settings.masterSettings.artistName = settingsToLoad.artistName;
             }
     
-            this.globalPlaybackSpeed = parsedSettings.globalPlaybackSpeed || 1;
-            this.channelPlaybackSpeed = parsedSettings.channelPlaybackSpeed || new Array(16).fill(1);
+            this.globalPlaybackSpeed = settingsToLoad.globalPlaybackSpeed || 1;
+            this.channelPlaybackSpeed = settingsToLoad.channelPlaybackSpeed || new Array(16).fill(1);
     
             this.initializeGainNodes();
     
-            if (parsedSettings.channelURLs) {
-                const urlPromises = parsedSettings.channelURLs.map(url => this.formatURL(url));
-                this.settings.masterSettings.channelURLs = await Promise.all(urlPromises);
+            // Ensure URLs are formatted and buffers are ready
+            if (settingsToLoad.channelURLs) {
+                const urlPromises = settingsToLoad.channelURLs.map(async (url, index) => {
+                    const formattedUrl = await this.formatURL(url);
+                    this.settings.masterSettings.channelURLs[index] = formattedUrl;
+    
+                    // Trigger the fetch, decode, and store process here
+                    await fetchAudio(formattedUrl, index);
+                });
+    
+                await Promise.all(urlPromises);
             }
     
-            if (parsedSettings.channelVolume) {
-                parsedSettings.channelVolume.forEach((volume, index) => {
+            // Set volumes
+            if (settingsToLoad.channelVolume) {
+                settingsToLoad.channelVolume.forEach((volume, index) => {
                     this.setChannelVolume(index, volume);
                 });
             }
     
-            this.settings.masterSettings.trimSettings = parsedSettings.trimSettings;
-            this.settings.masterSettings.projectChannelNames = parsedSettings.projectChannelNames;
-            this.deserializeAndApplyProjectSequences(parsedSettings);
+            this.settings.masterSettings.trimSettings = settingsToLoad.trimSettings;
+            this.settings.masterSettings.projectChannelNames = settingsToLoad.projectChannelNames;
+            this.sortAndApplyProjectSequences(settingsToLoad);
     
             console.log("[internalPresetDebug] Master settings after update:", this.settings.masterSettings);
             this.updateProjectNameUI(this.settings.masterSettings.projectName);
@@ -136,6 +143,7 @@ class UnifiedSequencerSettings {
             console.error('[internalPresetDebug] Error loading settings:', error);
         }
     }
+    
     
     isHighlySerialized(parsedSettings) {
         // A basic heuristic to detect highly serialized data
@@ -203,7 +211,6 @@ class UnifiedSequencerSettings {
             return deserializedData;
         };
     
-        // Decompress steps that were compressed during serialization
         const decompressSteps = steps => {
             const decompressed = [];
     
@@ -225,7 +232,49 @@ class UnifiedSequencerSettings {
         return deserialize(serializedData);
     }
     
-
+    sortAndApplyProjectSequences(parsedSettings) {
+        if (parsedSettings.projectSequences) {
+            Object.keys(parsedSettings.projectSequences).forEach(sequenceKey => {
+                const sequence = parsedSettings.projectSequences[sequenceKey];
+                Object.keys(sequence).forEach(channelKey => {
+                    const channel = sequence[channelKey];
+                    let newSteps = Array.from({ length: 64 }, () => ({
+                        isActive: false,
+                        isReverse: false,
+                        volume: 1,
+                        pitch: 1
+                    }));
+                    
+                    channel.steps.forEach(stepData => {
+                        let index;
+                        let isReverse = false;
+                        if (typeof stepData === 'object' && stepData.index !== undefined) {
+                            index = stepData.index - 1; // Adjusting for zero-based indexing
+                            isReverse = stepData.reverse || false;
+                        } else if (typeof stepData === 'number') {
+                            index = stepData - 1; // Adjusting for zero-based indexing
+                        }
+                        if (index !== undefined) {
+                            newSteps[index] = {
+                                isActive: true,
+                                isReverse: isReverse,
+                                volume: 1,
+                                pitch: 1
+                            };
+                        }
+                    });
+    
+                    // Assign new steps to the channel
+                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = newSteps;
+    
+                    // Ensure mute and url fields exist, for internal consistency
+                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].mute = false;
+                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].url = "";
+                });
+            });
+        }
+    }
+    
 
     exportSettings(pretty = true) {
         const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
@@ -293,50 +342,6 @@ class UnifiedSequencerSettings {
     
     
     
-    
-    deserializeAndApplyProjectSequences(parsedSettings) {
-        if (parsedSettings.projectSequences) {
-            Object.keys(parsedSettings.projectSequences).forEach(sequenceKey => {
-                const sequence = parsedSettings.projectSequences[sequenceKey];
-                Object.keys(sequence).forEach(channelKey => {
-                    const channel = sequence[channelKey];
-                    let newSteps = Array.from({ length: 64 }, () => ({
-                        isActive: false,
-                        isReverse: false,
-                        volume: 1,
-                        pitch: 1
-                    }));
-                    
-                    channel.steps.forEach(stepData => {
-                        let index;
-                        let isReverse = false;
-                        if (typeof stepData === 'object' && stepData.index !== undefined) {
-                            index = stepData.index - 1; // Adjusting for zero-based indexing
-                            isReverse = stepData.reverse || false;
-                        } else if (typeof stepData === 'number') {
-                            index = stepData - 1; // Adjusting for zero-based indexing
-                        }
-                        if (index !== undefined) {
-                            newSteps[index] = {
-                                isActive: true,
-                                isReverse: isReverse,
-                                volume: 1,
-                                pitch: 1
-                            };
-                        }
-                    });
-    
-                    // Assign new steps to the channel
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = newSteps;
-    
-                    // Ensure mute and url fields exist, for internal consistency
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].mute = false;
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].url = "";
-                });
-            });
-        }
-    }    
-
 async formatURL(url) {
 // Asynchronous operation example (placeholder)
 return new Promise(resolve => setTimeout(() => resolve(url), 100)); // Simulates async processing
