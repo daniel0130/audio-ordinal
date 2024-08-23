@@ -300,6 +300,7 @@ class UnifiedSequencerSettings {
             settingsClone.artistName = this.settings.masterSettings.artistName;
         }
     
+        // Process the steps
         for (let sequenceKey in settingsClone.projectSequences) {
             const sequence = settingsClone.projectSequences[sequenceKey];
             for (let channelKey in sequence) {
@@ -338,8 +339,21 @@ class UnifiedSequencerSettings {
         const serializedExportedSettings = JSON.stringify(serializedSettings);
         console.log("[exportSettings] Serialized Exported Settings:", serializedExportedSettings);
     
-        this.downloadJSON(exportedSettings, 'full_format.json');
-        this.downloadJSON(serializedExportedSettings, 'serialized_format.json');
+        // Retrieve the project name or default to 'Project' if not available
+        const projectName = this.settings.masterSettings.projectName || 'Project';
+    
+        // Use the project name in the filenames
+        if (exportedSettings) {
+            this.downloadJSON(exportedSettings, `${projectName}_ff_`);
+        } else {
+            console.error("Failed to generate full format JSON for download.");
+        }
+    
+        if (serializedExportedSettings) {
+            this.downloadJSON(serializedExportedSettings, `${projectName}_sf_`);
+        } else {
+            console.error("Failed to generate serialized format JSON for download.");
+        }
     }
     
     serialize(data) {
@@ -437,13 +451,22 @@ class UnifiedSequencerSettings {
         return serializeData(data);
     }
     
-    downloadJSON(content, fileName) {
-        const blob = new Blob([content], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
+    downloadJSON(content, fileNameBase) {
+        try {
+            if (!content) throw new Error("Content is undefined or null");
+            
+            const fileName = `${fileNameBase}_AUDX.json`;
+            const blob = new Blob([content], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        } catch (error) {
+            console.error("Failed to download JSON:", error);
+        }
     }
+    
+    
     
     
     
