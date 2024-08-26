@@ -397,7 +397,6 @@ class UnifiedSequencerSettings {
         }
     }
     
-    
     serialize(data) {
         const keyMap = {
             projectName: 0,
@@ -455,6 +454,17 @@ class UnifiedSequencerSettings {
             return compressed;
         };
     
+        const stripDomainFromUrl = url => {
+            // Use URL object to extract the pathname
+            try {
+                const parsedUrl = new URL(url);
+                return parsedUrl.pathname + parsedUrl.search;
+            } catch (e) {
+                // If URL parsing fails, return the original string
+                return url;
+            }
+        };
+    
         const serializeData = data => {
             const serializedData = {};
     
@@ -462,7 +472,8 @@ class UnifiedSequencerSettings {
                 const shortKey = keyMap[key] ?? key;
     
                 if (key === 'channelURLs') {
-                    serializedData[shortKey] = value;
+                    // Strip domains from all URLs in the channelURLs array
+                    serializedData[shortKey] = value.map(stripDomainFromUrl);
                 } else if (Array.isArray(value)) {
                     serializedData[shortKey] = ['projectChannelNames'].includes(key)
                         ? value.map((v, i) => reverseChannelMap[i] ?? v)
@@ -492,6 +503,7 @@ class UnifiedSequencerSettings {
     
         return serializeData(data);
     }
+    
     
     downloadJSON(content, fileNameBase) {
         try {
