@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gzip Converter and Decompressor</title>
+</head>
+<body>
+    <h1>Gzip Converter and Decompressor</h1>
+
+    <h2>Convert JSON to Gzip</h2>
+    <input type="file" id="jsonFileInput" accept=".json">
+    <button id="convertToGzipButton" disabled>Convert to Gzip</button>
+
+    <h2>Convert Gzip to JSON</h2>
+    <input type="file" id="gzipFileInput" accept=".gz">
+    <button id="convertToJsonButton" disabled>Convert to JSON</button>
+
+    <script>
+        // Load the Pako library
+        const loadPako = async () => {
+            try {
+                const response = await fetch("https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js");
+                const script = document.createElement("script");
+                script.textContent = await response.text();
+                document.head.appendChild(script);
+                console.log("Pako library loaded:", pako);
+            } catch (error) {
+                console.error("Error loading Pako:", error);
+            }
+        };
+
+        loadPako().then(() => {
+            if (typeof pako === 'undefined') {
+                console.error("Pako is not available after loading.");
+                return;
+            }
+            setupFileProcessing();
+        });
+
+        function setupFileProcessing() {
+            const jsonFileInput = document.getElementById('jsonFileInput');
+            const gzipFileInput = document.getElementById('gzipFileInput');
+            const convertToGzipButton = document.getElementById('convertToGzipButton');
+            const convertToJsonButton = document.getElementById('convertToJsonButton');
+            let jsonData = null;
+            let gzipData = null;
+
+            // Handle JSON file upload for Gzip conversion
+            jsonFileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        jsonData = e.target.result; // No need to parse, just take the raw text
+                        convertToGzipButton.disabled = false;
+                    };
+                    reader.readAsText(file); // Read the file as text, since it's already serialized
+                }
+            });
+
+            // Handle Gzip file upload for JSON decompression
+            gzipFileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        gzipData = e.target.result; // Raw binary data from the Gzip file
+                        convertToJsonButton.disabled = false;
+                    };
+                    reader.readAsArrayBuffer(file); // Read the file as an array buffer for decompression
+                }
+            });
+
+            // Compress the JSON data and download as a Gzip file
+            const createGzipFile = () => {
+                if (!jsonData) {
+                    alert("No JSON data available for compression.");
+                    return;
+                }
+
+                try {
+                    const compressed = pako.gzip(jsonData); // Compress the raw serialized JSON data
+                    const blob = new Blob([compressed], { type: 'application/gzip' });
+                    const url = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = 'compressedData.gz';
+                    downloadLink.click();
+                } catch (error) {
+                    console.error("Error during compression or download:", error);
+                }
+            };
+
+            // Decompress the Gzip file and download as JSON
+            const decompressGzipFile = () => {
+                if (!gzipData) {
+                    alert("No Gzip data available for decompression.");
+                    return;
+                }
+
+                try {
+                    const decompressed = pako.ungzip(new Uint8Array(gzipData), { to: 'string' });
+                    const blob = new Blob([decompressed], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = 'decompressedData.json';
+                    downloadLink.click();
+                } catch (error) {
+                    console.error("Error during decompression or download:", error);
+                }
+            };
+
+            // Attach the functions to the button click events
+            convertToGzipButton.addEventListener('click', createGzipFile);
+            convertToJsonButton.addEventListener('click', decompressGzipFile);
+        }
+    </script>
+</body>
+</html>

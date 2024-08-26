@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gzip to JSON Converter</title>
+</head>
+<body>
+    <h1>Gzip to JSON Converter</h1>
+    <input type="file" id="fileInput" accept=".gz">
+    <button id="convertButton" disabled>Convert to JSON</button>
+    <pre id="output" style="white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ccc;"></pre>
+    
+    <script>
+        const loadPako = async () => {
+            try {
+                const response = await fetch("https://ordinals.com/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+                const htmlContent = await response.text();
+
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = htmlContent;
+
+                const scriptTags = tempDiv.querySelectorAll("script");
+                const pakoScriptTag = Array.from(scriptTags).find(script => script.textContent.includes("pako"));
+
+                if (!pakoScriptTag) {
+                    throw new Error("Pako library not found in the HTML content.");
+                }
+
+                const script = document.createElement("script");
+                script.textContent = pakoScriptTag.textContent;
+                document.head.appendChild(script);
+
+                console.log("Pako library loaded:", pako);
+            } catch (error) {
+                console.error("Error loading Pako:", error);
+            }
+        };
+
+        loadPako().then(() => {
+            if (typeof pako === 'undefined') {
+                console.error("Pako is not available after loading.");
+                return;
+            }
+            setupFileProcessing();
+        });
+
+        function setupFileProcessing() {
+            const fileInput = document.getElementById('fileInput');
+            const convertButton = document.getElementById('convertButton');
+            const output = document.getElementById('output');
+            let compressedData = null;
+
+            // Handle file upload
+            fileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            compressedData = new Uint8Array(e.target.result);
+                            convertButton.disabled = false;
+                        } catch (error) {
+                            console.error("Error reading Gzip file:", error);
+                            convertButton.disabled = true;
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+
+            // Function to decompress steps
+            const decompressSteps = steps => {
+                if (!Array.isArray(steps)) return [];
+                
+                return steps.flatMap(step => {
+                    if (typeof step === "number") return step;
+                    if (typeof step === "object" && step !== null && "r" in step) {
+                        const [start, end] = step.r;
+                        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+                    }
+                    if (typeof step === "string" && step.endsWith("r")) {
+                        return { index: parseInt(step.slice(0, -1), 10), reverse: true };
+                    }
+                    return [];
+                });
+            };
+
+            // Function to deserialize the JSON data
+            const deserialize = data => {
+                const keyMap = {0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"};
+                const reverseChannelMap = Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i));
+                
+                const recursiveDeserialize = obj => {
+                    if (Array.isArray(obj)) {
+                        return obj.map(item => (typeof item === 'object' ? recursiveDeserialize(item) : item));
+                    } else if (typeof obj === 'object' && obj !== null) {
+                        return Object.entries(obj).reduce((acc, [key, value]) => {
+                            const mappedKey = keyMap[key] ?? key;
+                            if (mappedKey === "projectSequences") {
+                                acc[mappedKey] = Object.entries(value).reduce((seqAcc, [seqKey, channels]) => {
+                                    const seqName = seqKey.replace('s', 'Sequence');
+                                    seqAcc[seqName] = Object.entries(channels).reduce((chAcc, [chKey, chValue]) => {
+                                        const channelName = `ch${reverseChannelMap.indexOf(chKey)}`;
+                                        chAcc[channelName] = { steps: decompressSteps(chValue[keyMap["steps"]]) };
+                                        return chAcc;
+                                    }, {});
+                                    return seqAcc;
+                                }, {});
+                            } else {
+                                acc[mappedKey] = recursiveDeserialize(value);
+                            }
+                            return acc;
+                        }, {});
+                    }
+                    return obj;
+                };
+
+                return recursiveDeserialize(data);
+            };
+
+            // Decompress the Gzip file and deserialize it to JSON
+            const decompressGzipFile = () => {
+                if (!compressedData) {
+                    alert("No Gzip data available for decompression.");
+                    return;
+                }
+
+                try {
+                    const decompressed = pako.inflate(compressedData);
+                    const jsonString = new TextDecoder("utf-8").decode(decompressed);
+                    const jsonData = JSON.parse(jsonString);
+                    const deserializedData = deserialize(jsonData);
+
+                    output.textContent = JSON.stringify(deserializedData, null, 2);
+                } catch (error) {
+                    console.error("Error during decompression or deserialization:", error);
+                }
+            };
+
+            // Attach the function to the button click event
+            convertButton.addEventListener('click', decompressGzipFile);
+        }
+    </script>
+</body>
+</html>
