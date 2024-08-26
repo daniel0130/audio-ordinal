@@ -81,25 +81,18 @@ document.getElementById('next-sequence').addEventListener('click', function() {
 
 
 
+saveButton.addEventListener('click', () => {
+    // Call the exportSettings method
+    let settings = window.unifiedSequencerSettings.exportSettings();
 
-    saveButton.addEventListener('click', () => {
-        let settings = window.unifiedSequencerSettings.exportSettings();
+    // If exportSettings already handles the download, we don't need to do anything else here.
+    // We simply stop further execution here to avoid the redundant download.
+
+    console.log("[saveButton] ExportSettings executed. No additional file download triggered.");
     
-        // Create a Blob with the settings
-        let blob = new Blob([settings], { type: 'application/json' });
-    
-        // Create a download link for the Blob
-        let url = URL.createObjectURL(blob);
-        let downloadLink = document.createElement('a');
-        downloadLink.href = url;
-    
-        // Use projectName from the settings for the file name
-        let projectName = window.unifiedSequencerSettings.settings.masterSettings.projectName;
-        downloadLink.download = `${projectName}_AUDX.json`;
-    
-        // Trigger a click on the download link
-        downloadLink.click();
-    });
+    // You can perform any additional logic here if needed, but avoid triggering a download.
+});
+
 
     loadButton.addEventListener('click', () => {
         console.log('[Save/Load debug] Load button clicked');

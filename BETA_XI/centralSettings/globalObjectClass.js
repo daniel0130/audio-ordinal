@@ -342,19 +342,29 @@ class UnifiedSequencerSettings {
         // Retrieve the project name or default to 'Project' if not available
         const projectName = this.settings.masterSettings.projectName || 'Project';
     
+        // Manual flags to control which files are downloaded
+        const downloadFullFormat = true; // Change to false to disable downloading full format JSON
+        const downloadSerializedFormat = false; // Change to false to disable downloading serialized JSON
+    
         // Use the project name in the filenames
-        if (exportedSettings) {
+        if (downloadFullFormat && exportedSettings && exportedSettings.length > 2) {
             this.downloadJSON(exportedSettings, `${projectName}_ff_`);
+        } else if (!downloadFullFormat) {
+            console.log("Full format JSON download is disabled.");
         } else {
-            console.error("Failed to generate full format JSON for download.");
+            console.error("Failed to generate full format JSON for download or content is empty.");
         }
     
-        if (serializedExportedSettings) {
+        if (downloadSerializedFormat && serializedExportedSettings && serializedExportedSettings.length > 2) {
             this.downloadJSON(serializedExportedSettings, `${projectName}_sf_`);
+        } else if (!downloadSerializedFormat) {
+            console.log("Serialized format JSON download is disabled.");
         } else {
-            console.error("Failed to generate serialized format JSON for download.");
+            console.error("Failed to generate serialized format JSON for download or content is empty.");
         }
     }
+    
+    
     
     serialize(data) {
         const keyMap = {
@@ -453,18 +463,31 @@ class UnifiedSequencerSettings {
     
     downloadJSON(content, fileNameBase) {
         try {
+            console.log(`[downloadJSON] Attempting to download file with base name: ${fileNameBase}`);
+    
             if (!content) throw new Error("Content is undefined or null");
             
             const fileName = `${fileNameBase}_AUDX.json`;
+            console.log(`[downloadJSON] Generated file name: ${fileName}`);
+            
+            const contentLength = content.length;
+            console.log(`[downloadJSON] Content length: ${contentLength}`);
+            console.log(`[downloadJSON] Content preview: ${content.slice(0, 100)}`); // Logs first 100 characters of content
+    
             const blob = new Blob([content], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
+            
+            console.log(`[downloadJSON] Initiating download for file: ${fileName}`);
             link.click();
+            
+            console.log(`[downloadJSON] Download initiated successfully for file: ${fileName}`);
         } catch (error) {
             console.error("Failed to download JSON:", error);
         }
     }
+    
     
     
     
