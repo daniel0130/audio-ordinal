@@ -16,7 +16,7 @@ const loadPako = async () => {
 };
 
 // Compress the JSON data to Gzip format
-export const createGzipFile = async (jsonData) => {
+const createGzipFile = async (jsonData) => {
     await loadPako();
 
     if (!jsonData) {
@@ -34,7 +34,7 @@ export const createGzipFile = async (jsonData) => {
 };
 
 // Decompress the Gzip file back to JSON
-export const decompressGzipFile = async (gzipData) => {
+const decompressGzipFile = async (gzipData) => {
     await loadPako();
 
     if (!gzipData) {
@@ -49,3 +49,7 @@ export const decompressGzipFile = async (gzipData) => {
         throw error;
     }
 };
+
+// Expose functions to the global scope
+window.createGzipFile = createGzipFile;
+window.decompressGzipFile = decompressGzipFile;

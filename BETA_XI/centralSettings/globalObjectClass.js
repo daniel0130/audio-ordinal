@@ -284,7 +284,7 @@ class UnifiedSequencerSettings {
     }
     
 
-    exportSettings(pretty = true) {
+    exportSettings(pretty = true, includeGzip = true) {
         const settingsClone = JSON.parse(JSON.stringify(this.settings.masterSettings));
         settingsClone.currentSequence = 0;
     
@@ -362,8 +362,27 @@ class UnifiedSequencerSettings {
         } else {
             console.error("Failed to generate serialized format JSON for download or content is empty.");
         }
-    }
     
+        // If Gzip option is enabled, create and download the Gzip file
+        if (includeGzip && serializedExportedSettings && serializedExportedSettings.length > 2) {
+            createGzipFile(serializedExportedSettings)
+                .then(blob => {   
+                    const url = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = `${projectName}_sf.gz`;
+                    downloadLink.click();
+                    console.log("Gzip file created and downloaded successfully.");
+                })
+                .catch(error => {
+                    console.error("Error during Gzip creation:", error);
+                });
+        } else if (!includeGzip) {
+            console.log("Gzip file creation is disabled.");
+        } else {
+            console.error("Failed to generate serialized format JSON for Gzip compression or content is empty.");
+        }
+    }
     
     
     serialize(data) {
