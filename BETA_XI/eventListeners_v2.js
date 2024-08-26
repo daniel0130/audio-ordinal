@@ -93,66 +93,87 @@ saveButton.addEventListener('click', () => {
     // You can perform any additional logic here if needed, but avoid triggering a download.
 });
 
+loadButton.addEventListener('click', () => {
+    console.log('[Save/Load debug] Load button clicked');
+    // Toggle the display of the load options menu
+    const loadOptionsVisible = loadOptions.style.display === "block";
+    loadOptions.style.display = loadOptionsVisible ? "none" : "block";
 
-    loadButton.addEventListener('click', () => {
-        console.log('[Save/Load debug] Load button clicked');
-        // Toggle the display of the load options menu
-        const loadOptionsVisible = loadOptions.style.display === "block";
-        loadOptions.style.display = loadOptionsVisible ? "none" : "block";
-    
-        if (!loadOptionsVisible) {
-            // Position the load menu underneath the load button
-            const rect = loadButton.getBoundingClientRect();
-            loadOptions.style.position = 'absolute';
-            loadOptions.style.left = `${rect.left}px`; // Align with the left edge of the button
-            loadOptions.style.top = `${rect.bottom + window.scrollY}px`; // Place it directly below the button
-        }
-    });
+    if (!loadOptionsVisible) {
+        // Position the load menu underneath the load button
+        const rect = loadButton.getBoundingClientRect();
+        loadOptions.style.position = 'absolute';
+        loadOptions.style.left = `${rect.left}px`; // Align with the left edge of the button
+        loadOptions.style.top = `${rect.bottom + window.scrollY}px`; // Place it directly below the button
+    }
+});
 
-    
+loadJson.addEventListener('click', () => {
+    console.log('[Save/Load debug] loadJson clicked');
 
-    loadJson.addEventListener('click', () => {
-        console.log('[Save/Load debug] loadJson clicked');
+    loadFileInput.click();
+    loadOptions.style.display = "none";
+});
 
-        loadFileInput.click();
-        loadOptions.style.display = "none";
-    });
+async function loadSettingsAndFetchAudio(jsonSettings) {
+    console.log("[UnifiedLoad] Settings Loaded:", jsonSettings);
+    window.unifiedSequencerSettings.loadSettings(jsonSettings);
 
-    async function loadSettingsAndFetchAudio(jsonSettings) {
-        console.log("[UnifiedLoad] Settings Loaded:", jsonSettings);
-        window.unifiedSequencerSettings.loadSettings(jsonSettings);
-    
-        // Determine the correct URLs array to use (handling both cases)
-        let urls = jsonSettings.channelURLs || jsonSettings.projectURLs; 
-        if (urls && Array.isArray(urls)) {
-            console.log("[UnifiedLoad] Found URLs:", urls);
-            for (let i = 0; i < urls.length; i++) {
-                const url = urls[i];
-                if (url) {
-                    console.log(`[UnifiedLoad] Processing URL ${i}: ${url}`);
-                    const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
-                    await fetchAudio(url, i, loadSampleButtonElement);
-                }
+    // Determine the correct URLs array to use (handling both cases)
+    let urls = jsonSettings.channelURLs || jsonSettings.projectURLs; 
+    if (urls && Array.isArray(urls)) {
+        console.log("[UnifiedLoad] Found URLs:", urls);
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            if (url) {
+                console.log(`[UnifiedLoad] Processing URL ${i}: ${url}`);
+                const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
+                await fetchAudio(url, i, loadSampleButtonElement);
             }
         }
     }
+}
 
-    loadFileInput.addEventListener('change', () => {
-        console.log('[Save/Load debug] loadFileInput change event');
-        let file = loadFileInput.files[0];
-        let reader = new FileReader();
-        reader.onload = async function(e) {
+loadFileInput.addEventListener('change', async () => {
+    console.log('[Save/Load debug] loadFileInput change event');
+    const file = loadFileInput.files[0];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    reader.onload = async function(e) {
+        try {
             console.log("File read start");
-            let loadedSettings = JSON.parse(e.target.result);
+
+            let loadedSettings;
+
+            if (fileExtension === 'gz') {
+                // Handle Gzip file
+                console.log('[Save/Load debug] Gzip file detected');
+                const arrayBuffer = e.target.result;
+                const decompressed = await decompressGzipFile(arrayBuffer);
+                loadedSettings = JSON.parse(decompressed);
+            } else {
+                // Handle JSON file
+                console.log('[Save/Load debug] JSON file detected');
+                loadedSettings = JSON.parse(e.target.result);
+            }
+
             console.log("[loadFileInput] File content:", loadedSettings);
-    
+
             // Using the unified function
             await loadSettingsAndFetchAudio(loadedSettings);
-        };
-    
-        reader.readAsText(file);
-    });
-    
+        } catch (error) {
+            console.error("[Save/Load debug] Error processing file:", error);
+        }
+    };
+
+    if (fileExtension === 'gz') {
+        reader.readAsArrayBuffer(file); // Read the Gzip file as an ArrayBuffer
+    } else {
+        reader.readAsText(file); // Read the JSON file as text
+    }
+});
+
     
     
 

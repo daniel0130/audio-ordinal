@@ -77,19 +77,32 @@ class UnifiedSequencerSettings {
         return this.settings.masterSettings.channelVolume[channelIndex] || 1; // Default volume is 1
     }
 
-    async loadSettings(jsonSettings) {
+    async loadSettings(inputData) {
         console.log("[internalPresetDebug] loadSettings entered");
         try {
             this.clearMasterSettings();
+            
+            let jsonSettings;
+    
+            // Check if input data is a Gzip file by checking if it's a Uint8Array (binary data)
+            if (inputData instanceof Uint8Array || inputData instanceof ArrayBuffer) {
+                console.log("[internalPresetDebug] Received Gzip data, decompressing...");
+                jsonSettings = await decompressGzipFile(inputData);
+                jsonSettings = JSON.parse(jsonSettings);
+            } else if (typeof inputData === 'string') {
+                // If it's a string, treat it as JSON
+                jsonSettings = JSON.parse(inputData);
+            } else {
+                // Otherwise, assume it's already parsed JSON
+                jsonSettings = inputData;
+            }
+    
             console.log("[internalPresetDebug] Received JSON Settings:", jsonSettings);
     
-            // Parse the incoming JSON
-            const parsedSettings = typeof jsonSettings === 'string' ? JSON.parse(jsonSettings) : jsonSettings;
-    
             // Detect if the data is highly serialized and if so, decompress it
-            const settingsToLoad = this.isHighlySerialized(parsedSettings)
-                ? await this.decompressSerializedData(parsedSettings)
-                : parsedSettings;
+            const settingsToLoad = this.isHighlySerialized(jsonSettings)
+                ? await this.decompressSerializedData(jsonSettings)
+                : jsonSettings;
     
             // Proceed with loading the settings (regular or deserialized)
             this.settings.masterSettings.currentSequence = 0;
