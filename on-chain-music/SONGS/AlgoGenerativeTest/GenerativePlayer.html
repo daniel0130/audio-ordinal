@@ -3,18 +3,16 @@
 <head>
     <title>FREEDOM</title>
     <script>
-      !function() {
+    (function() {
     console.log("[Debug] Custom script started"); // Verify if this script is being executed at all
 
     function hashString(str) {
         console.log("[Debug] hashString function called"); // Log when the function is called
-        window.seed = 18607;
-        window.AccessLevel = 5;
-        let rotationCount = parseInt(str.split("i")[1]);
+        window.seed = 54;
+        let rotationCount = parseInt(str.split("i")[1], 10);
         let characters = str.split("");
         for (let i = 0; i < rotationCount; i++) {
-            let char = characters.shift();
-            characters.push(char);
+            characters.push(characters.shift());
         }
         str = characters.join("");
         let hash = 0;
@@ -31,32 +29,21 @@
         window.playbackStarted = false;
     }
 
-    document.addEventListener("playbackStarted", () => {
-        window.psTime = Date.now();
-        window.playbackStarted = true;
-        console.log("[Debug] Playback started"); // Confirm playback started
-        displayText();
-        logCurrentValues();
-    });
-
-    document.addEventListener("playbackStopped", () => {
-        window.playbackStarted = false;
-        console.log("[Debug] Playback stopped"); // Confirm playback stopped
-    });
-
-    const setPlaybackStatus = (status) => {
-        window.playbackStarted = status;
-        console.log("[Debug] Playback status set to:", status); // Log the playback status
+    const handlePlaybackEvent = (event) => {
+        if (event.type === "playbackStarted") {
+            window.psTime = Date.now();
+            window.playbackStarted = true;
+            console.log("[Debug] Playback started"); // Confirm playback started
+            displayText();
+            logCurrentValues();
+        } else if (event.type === "playbackStopped") {
+            window.playbackStarted = false;
+            console.log("[Debug] Playback stopped"); // Confirm playback stopped
+        }
     };
 
-    document.addEventListener("playbackStarted", () => {
-        window.psTime = Date.now();
-        setPlaybackStatus(true);
-    });
-
-    document.addEventListener("playbackStopped", () => {
-        setPlaybackStatus(false);
-    });
+    document.addEventListener("playbackStarted", handlePlaybackEvent);
+    document.addEventListener("playbackStopped", handlePlaybackEvent);
 
     function logCurrentValues() {
         console.log("[Debug] Current Values:");
@@ -66,51 +53,50 @@
         console.log("[Debug] psTime:", window.psTime);
         console.log("[Debug] isTrippy:", window.isTrippy);
         console.log("[Debug] clearCanvas:", window.clearCanvas);
-        // Add more logs here if you want to check other global variables
     }
 
     // Single consolidated window.onload function with more rigorous enforcement
     window.onload = function() {
-    console.log("[Debug] Window onload event triggered");
+        console.log("[Debug] Window onload event triggered");
 
-    // Set AccessLevel and isTrippy first
-    window.AccessLevel = 10;
-    window.isTrippy = true;
-    console.log("[Debug] AccessLevel and isTrippy set early");
+        // Set AccessLevel and isTrippy first
+        window.AccessLevel = 10;
+        window.isTrippy = true;
+        console.log("[Debug] AccessLevel and isTrippy set early");
 
-    // Manually increase playbackLoopCount
-    window.playbackLoopCount = 1000;
-    console.log("[Debug] playbackLoopCount set to:", window.playbackLoopCount);
+        // Manually increase playbackLoopCount
+        window.playbackLoopCount = 1000;
+        console.log("[Debug] playbackLoopCount set to:", window.playbackLoopCount);
 
-    // Now enforce clearCanvas
-    window.clearCanvas = false;
-    console.log("[Debug] clearCanvas initially set to false");
+        // Now enforce clearCanvas
+        window.clearCanvas = false;
+        console.log("[Debug] clearCanvas initially set to false");
 
-    // Existing logic from other onload functions
-    initialFadeIn();
-    document.title = "Freedom to Transact";
-    displayPlayText();
+        // Existing logic from other onload functions
+        initialFadeIn();
+        document.title = "Freedom to Transact";
+        displayPlayText();
 
-    // Continuously enforce clearCanvas = false
-    const enforceClearCanvas = setInterval(() => {
-        if (window.clearCanvas !== false) {
-            window.clearCanvas = false;
-            console.log("[Debug] clearCanvas enforced to false");
+        // Continuously enforce clearCanvas = false
+        const enforceClearCanvas = setInterval(() => {
+            if (window.clearCanvas !== false) {
+                window.clearCanvas = false;
+                console.log("[Debug] clearCanvas enforced to false");
+            }
+        }, 1000); // Check every second
+
+        // Ensure handlePlaybackStateChange is applied correctly
+        if (typeof handlePlaybackStateChange === "function") {
+            handlePlaybackStateChange();
+            console.log("[Debug] handlePlaybackStateChange called");
         }
-    }, 1000); // Check every second
 
-    // Ensure handlePlaybackStateChange is applied correctly
-    if (typeof handlePlaybackStateChange === "function") {
-        handlePlaybackStateChange();
-        console.log("[Debug] handlePlaybackStateChange called");
-    }
+        // Log initial values
+        logCurrentValues();
 
-    // Log initial values
-    logCurrentValues();
-
-    // Stop enforcing after some time to reduce load
-    setTimeout(() => clearInterval(enforceClearCanvas), 20000);
-};
+        // Stop enforcing after some time to reduce load
+        setTimeout(() => clearInterval(enforceClearCanvas), 20000);
+    };
 
     const titleObserver = new MutationObserver(() => {
         if (document.title !== "FREEDOM") {
@@ -121,7 +107,7 @@
     titleObserver.observe(document.querySelector("title"), { childList: true, subtree: true });
 
     console.log("[Debug] Custom script initialization complete"); // Final log to confirm script loaded
-}();
+})();
 
 
     </script>
@@ -263,6 +249,8 @@
             document.body.appendChild(canvasContainer);
         }();
 
+
+        
         !function() {
     const keyMap = {0: "projectName", 1: "artistName", 2: "projectBPM", 3: "currentSequence", 4: "channelURLs", 5: "channelVolume", 6: "channelPlaybackSpeed", 7: "trimSettings", 8: "projectChannelNames", 9: "startSliderValue", 10: "endSliderValue", 11: "totalSampleDuration", 12: "start", 13: "end", 14: "projectSequences", 15: "steps"},
         reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([e, r]) => [r, +e])),
@@ -343,13 +331,23 @@
             return array;
         }
 
-        // Get the BPM of the first song
-        const baseBPM = data[0].projectBPM;
+       // Array of possible BPMs
+        const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
+
+        // Function to select a BPM based on the seed
+        function selectBPM(availableBPMs, seed) {
+            const seededIndex = Math.floor(seededRandom(seed) * availableBPMs.length);
+            return availableBPMs[seededIndex];
+        }
+
+        // Select the base BPM using the seed
+        const baseBPM = selectBPM(availableBPMs, window.seed);
+        console.log(`Selected base BPM: ${baseBPM}`);
 
         // Configuration setting for harmonic adjustment
         const useHarmonicAdjustment = false; // Set to false if you want strict proportional adjustment
 
-        // Adjust playback speeds for each dataset based on the BPM of the first song
+        // Adjust playback speeds for each dataset based on the selected base BPM
         data.forEach((dataset) => {
             const currentBPM = dataset.projectBPM;
 

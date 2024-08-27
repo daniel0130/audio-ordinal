@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Inscription Preview</title>
+    <style>
+      body {
+        background-color: #1f1f1f;
+        color: #ffffff;
+        font-family: "Courier New", monospace;
+        background-size: cover;
+        background-position: center;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 800px;
+        height: 100vh;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+        border-radius: 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .header {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #FF6000;
+      }
+
+      textarea {
+        margin-bottom: 20px;
+        width: 100%;
+        height: 50vh;
+        border: 1px solid #FF6000;
+        border-radius: 0px;
+        background-color: #333;
+        color: #fff;
+      }
+
+      textarea:focus {
+        outline: none;
+        box-shadow: none;
+      }
+
+      .submit {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        background-color: #FF8000;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+      }
+
+      .submit:hover {
+        background-color: #217dbb;
+      }
+
+      #disclaimer {
+        font-size: 14px;
+        color: #dcdcdc;
+        padding: 5px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      #disclaimer a {
+        color: #FFA500;
+        text-decoration: none;
+      }
+
+      #disclaimer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+   <script>
+    // Override fetch to intercept and modify requests
+    const originalFetch = window.fetch;
+  
+    window.fetch = async function(resource, options) {
+      if (typeof resource === 'string' && resource.startsWith('/content')) {
+        resource = 'https://ordinals.com' + resource;
+      } else if (resource.url && resource.url.startsWith('/content')) {
+        resource.url = 'https://ordinals.com' + resource.url;
+      }
+      return originalFetch(resource, options);
+    };
+  
+    window.addEventListener("DOMContentLoaded", (event) => {
+      const baseURL = 'https://ordinals.com';
+  
+      // Adjust image, script, and link elements
+      document.querySelectorAll('img, script, link').forEach((element) => {
+        if (element.src && element.src.includes('/content')) {
+          element.src = baseURL + new URL(element.src).pathname;
+        }
+        if (element.href && element.href.includes('/content')) {
+          element.href = baseURL + new URL(element.href).pathname;
+        }
+      });
+  
+      // Update background image to use the correct URL
+      document.body.style.backgroundImage = `url('${baseURL}/content/82e01fe3a50bdaf1d037cf2821c191708528625e2849f5875079f038044a2eb0i0')`;
+  
+      // Handle the preview functionality
+      document.getElementById("submit").addEventListener("click", function() {
+        const content = document.getElementById("content").value;
+  
+        // Create a new window to display the content
+        const previewWindow = window.open("", "_blank");
+        previewWindow.document.open();
+        previewWindow.document.write(content);
+        previewWindow.document.close();
+      });
+    });
+  </script>
+  
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="header">Local Inscription Preview</h1>
+      <h2>Test Your Inscription</h2>
+
+      <form>
+        <textarea id="content" rows="10" autofocus></textarea>
+        <input id="submit" class="submit" type="button" value="Preview Inscription" />
+      </form>
+
+      <div id="disclaimer">
+        <h3>Local Testing Environment for Inscription Previews</h3>
+      </div>
+    </div>
+  </body>
+</html>
