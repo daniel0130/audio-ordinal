@@ -2,151 +2,75 @@
 <html lang="en">
 <head>
     <title>FREEDOM</title>
-    <script>
-    (function() {
-    console.log("[Debug] Custom script started"); // Verify if this script is being executed at all
-
-    function hashString(str) {
-        console.log("[Debug] hashString function called"); // Log when the function is called
-        window.seed = 54;
-        let rotationCount = parseInt(str.split("i")[1], 10);
-        let characters = str.split("");
-        for (let i = 0; i < rotationCount; i++) {
-            characters.push(characters.shift());
-        }
-        str = characters.join("");
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (31 * hash + str.charCodeAt(i)) % Number.MAX_SAFE_INTEGER;
-        }
-        return hash % 1400000000;
-    }
-
-    const seedValue = hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");
-    console.log("[Debug] Generated seed:", window.seed); // Confirm seed generation
-
-    if (window.playbackStarted === undefined) {
-        window.playbackStarted = false;
-    }
-
-    const handlePlaybackEvent = (event) => {
-        if (event.type === "playbackStarted") {
-            window.psTime = Date.now();
-            window.playbackStarted = true;
-            console.log("[Debug] Playback started"); // Confirm playback started
-            displayText();
-            logCurrentValues();
-        } else if (event.type === "playbackStopped") {
-            window.playbackStarted = false;
-            console.log("[Debug] Playback stopped"); // Confirm playback stopped
-        }
-    };
-
-    document.addEventListener("playbackStarted", handlePlaybackEvent);
-    document.addEventListener("playbackStopped", handlePlaybackEvent);
-
-    function logCurrentValues() {
-        console.log("[Debug] Current Values:");
-        console.log("[Debug] seed:", window.seed);
-        console.log("[Debug] AccessLevel:", window.AccessLevel);
-        console.log("[Debug] playbackStarted:", window.playbackStarted);
-        console.log("[Debug] psTime:", window.psTime);
-        console.log("[Debug] isTrippy:", window.isTrippy);
-        console.log("[Debug] clearCanvas:", window.clearCanvas);
-    }
-
-    // Single consolidated window.onload function with more rigorous enforcement
-    window.onload = function() {
-        console.log("[Debug] Window onload event triggered");
-
-        // Set AccessLevel and isTrippy first
-        window.AccessLevel = 10;
-        window.isTrippy = true;
-        console.log("[Debug] AccessLevel and isTrippy set early");
-
-        // Manually increase playbackLoopCount
-        window.playbackLoopCount = 1000;
-        console.log("[Debug] playbackLoopCount set to:", window.playbackLoopCount);
-
-        // Now enforce clearCanvas
-        window.clearCanvas = false;
-        console.log("[Debug] clearCanvas initially set to false");
-
-        // Existing logic from other onload functions
-        initialFadeIn();
-        document.title = "Freedom to Transact";
-        displayPlayText();
-
-        // Continuously enforce clearCanvas = false
-        const enforceClearCanvas = setInterval(() => {
-            if (window.clearCanvas !== false) {
-                window.clearCanvas = false;
-                console.log("[Debug] clearCanvas enforced to false");
-            }
-        }, 1000); // Check every second
-
-        // Ensure handlePlaybackStateChange is applied correctly
-        if (typeof handlePlaybackStateChange === "function") {
-            handlePlaybackStateChange();
-            console.log("[Debug] handlePlaybackStateChange called");
-        }
-
-        // Log initial values
-        logCurrentValues();
-
-        // Stop enforcing after some time to reduce load
-        setTimeout(() => clearInterval(enforceClearCanvas), 20000);
-    };
-
-    const titleObserver = new MutationObserver(() => {
-        if (document.title !== "FREEDOM") {
-            document.title = "FREEDOM";
-        }
-    });
-
-    titleObserver.observe(document.querySelector("title"), { childList: true, subtree: true });
-
-    console.log("[Debug] Custom script initialization complete"); // Final log to confirm script loaded
-})();
-
-
-    </script>
     <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+    
+        iframe {
+            width: 90%;
+            height: 70vh;
+            border: none;
+        }
+    
+        #button-container {
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 9999;
+        }
+    
         [style*="Impact, charcoal, sans-serif"] {
             display: none !important;
         }
-
-        .text-element {
-            position: absolute;
+    
+        .text-element,
+        .play-text {
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 9999;
+            z-index: 10001;
             opacity: 0;
             transition: opacity 7.87s ease-in-out;
         }
-
-        .freedom {
+    
+        .freedom,
+        .sqyzy {
             font-family: Arial, bold, sans-serif;
-            font-size: 65px;
-            font-weight: 700;
             color: #000;
         }
-
+    
+        .freedom {
+            font-size: 65px;
+            font-weight: 700;
+        }
+    
         .melophonic {
             font-family: "Trebuchet MS", bold, sans-serif;
             font-size: 62px;
             color: #000;
         }
-
+    
         .sqyzy {
-            font-family: Arial, bold, sans-serif;
             font-size: 96px;
             font-weight: 500;
-            color: #000;
         }
-
+    
         .fade-overlay {
             position: fixed;
             top: 0;
@@ -158,24 +82,246 @@
             opacity: 1;
             transition: opacity 18s ease-in-out;
         }
-
+    
         .play-text {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: Arial, bold, sans-serif;
             font-size: 65px;
             font-weight: 700;
             color: #fff;
             z-index: 10001;
             opacity: 1;
-            text-align: center;
             transition: opacity 10s ease-in-out;
         }
     </style>
-</head>
-<body>
+    </head>
+    
+    <body>
+        <div id="button-container">
+            <button onclick="setBPM(80)">80 BPM</button>
+            <button onclick="setBPM(100)">100 BPM</button>
+            <button onclick="setBPM(120)">120 BPM</button>
+            <button onclick="setBPM(140)">140 BPM</button>
+            <button onclick="setBPM(160)">160 BPM</button>
+            <button onclick="setBPM(180)">180 BPM</button>
+            <button onclick="setBPM(240)">240 BPM</button>
+            <button onclick="resetPage()">RESET PAGE</button>
+            <button onclick="autoReinitializePlayer()">AUTO REINITIALIZE</button>
+
+        </div>
+
+          <!-- Button to reload the page -->
+            <button id="reloadButton">Reload Page</button>
+
+            <script>
+                 // Add an event listener to the button to forcefully reload the page when clicked
+                document.getElementById('reloadButton').addEventListener('click', function() {
+                    // Use location.replace to ensure no history entry is created
+                    window.location.replace(window.location.href);
+                });
+            </script>
+
+    
+         <script>
+        (function () {
+            console.log("[SeedDebug] Custom script started");
+
+            // Simplified logging function for repetitive logs
+            function log(message, ...args) {
+                console.log(`[SeedDebug] ${message}`, ...args);
+            }
+
+          // Function to generate a random seed
+            function generateRandomSeed() {
+                return Math.floor(Math.random() * 100000) + 1; // Random seed between 1 and 100,000
+            }
+
+            // Function to reinitialize player with a new random seed
+            function autoReinitializePlayer() {
+                console.log("[SeedDebug] Auto reinitialization triggered");
+
+                const newSeed = generateRandomSeed();
+                console.log("[SeedDebug] Generated new seed:", newSeed);
+
+                if (window.playbackStarted) {
+                    console.log("[SeedDebug] Stopping playback before reload");
+                    window.playbackStarted = false;
+                }
+
+                const newUrl = `${window.location.pathname}?seed=${newSeed}`;
+                console.log("[SeedDebug] Redirecting to new URL with new seed:", newUrl);
+
+                window.location.href = newUrl;
+
+                setTimeout(() => {
+                    console.log("[SeedDebug] Forcing page reload");
+                    window.location.reload(true);
+                }, 100);
+            }
+
+            // Extend setBPM to optionally reinitialize with a new seed
+            function setBPM(targetBPM) {
+                console.log("[SeedDebug] setBPM function called with targetBPM:", targetBPM);
+
+                const newSeed = generateRandomSeed(); // Always generate a new seed
+                console.log("[SeedDebug] Generated new seed for BPM:", newSeed);
+
+                if (window.playbackStarted) {
+                    console.log("[SeedDebug] Stopping playback before reload");
+                    window.playbackStarted = false;
+                }
+
+                const newUrl = `${window.location.pathname}?seed=${newSeed}&bpm=${targetBPM}`;
+                console.log("[SeedDebug] Redirecting to new URL with BPM and new seed:", newUrl);
+
+                window.location.href = newUrl;
+
+                setTimeout(() => {
+                    console.log("[SeedDebug] Forcing page reload");
+                    window.location.reload(true);
+                }, 100);
+            }
+
+
+            // Simplified resetPage by breaking it down
+            function resetPage() {
+                log("RESET PAGE button clicked.");
+
+                if (window.self !== window.top) {
+                    log("Running inside an iframe. Refreshing iframe.");
+                    window.location.reload(true); // Force iframe reload
+                } else {
+                    log("Running as a standalone page.");
+
+                    clearIntervalsAndTimeouts();
+                    closeAudioContext();
+                    removeEventListeners();
+
+                    log("Stopping further resource loading.");
+                    window.stop();
+
+                    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+                    log("Resetting page to base URL:", baseUrl);
+
+                    setTimeout(() => {
+                        log("Forcing page reload using location.replace()");
+                        window.location.replace(baseUrl);
+                    }, 300);
+                }
+            }
+
+            function clearIntervalsAndTimeouts() {
+                log("Clearing intervals and timeouts.");
+
+                let highestIntervalId = window.setInterval(() => {}, 0);
+                for (let i = 0; i <= highestIntervalId; i++) window.clearInterval(i);
+                log("All intervals cleared.");
+
+                let highestTimeoutId = window.setTimeout(() => {}, 0);
+                for (let i = 0; i <= highestTimeoutId; i++) window.clearTimeout(i);
+                log("All timeouts cleared.");
+            }
+
+            function closeAudioContext() {
+                if (window.audioContext && typeof window.audioContext.close === 'function') {
+                    log("Closing AudioContext.");
+                    window.audioContext.close().then(() => log("AudioContext closed."));
+                } else {
+                    log("No active AudioContext found.");
+                }
+            }
+
+            function removeEventListeners() {
+                log("Removing event listeners.");
+                document.removeEventListener("playbackStarted", handlePlaybackEvent);
+                document.removeEventListener("playbackStopped", handlePlaybackEvent);
+            }
+
+            window.addEventListener('beforeunload', () => {
+                log("Before unload event triggered. Stopping all further execution.");
+                resetPage();
+            });
+
+
+            function logCurrentValues() {
+                console.log("[Debug] Current Values:", {
+
+                    playbackStarted: window.playbackStarted,
+                    psTime: window.psTime,
+                    isTrippy: window.isTrippy,
+                    clearCanvas: window.clearCanvas
+                });
+            }
+
+        
+            // Detect and log the current seed value from the URL
+            function getSeedFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const seed = parseInt(urlParams.get('seed'), 10) || 1;  // Default to 1 if no seed is provided
+                console.log("[SeedDebug] Extracted seed from URL:", seed);
+                return seed;
+            }
+
+            // Function to generate a random number based on the seed
+            function seededRandom(seed) {
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+            }
+
+            // Function to select BPM based on the seed
+            function selectBPM(availableBPMs, seed) {
+                const seededIndex = Math.floor(seededRandom(seed) * availableBPMs.length);
+                console.log("[SeedDebug] Selecting BPM from seed:", seed, "resulted in index:", seededIndex);
+                return availableBPMs[seededIndex];
+            }
+
+            // Use the seed from the URL or default to 1
+            window.seed = getSeedFromUrl();
+
+            // Array of possible BPMs
+            const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
+            
+            // Select the base BPM using the seed
+            const baseBPM = selectBPM(availableBPMs, window.seed);
+            console.log("[SeedDebug] Selected base BPM:", baseBPM);
+
+            // Initialize the rest of your script, ensuring all relevant logs are added
+            window.onload = function () {
+                console.log("[SeedDebug] Window onload event triggered");
+
+                window.AccessLevel = 10;
+                window.isTrippy = true;
+                window.playbackLoopCount = 1000;
+                window.clearCanvas = false;
+
+                console.log("[SeedDebug] Initial values set");
+
+                // Log any other processes happening in window.onload
+                // Example: if initialFadeIn() or displayPlayText() might interfere with reloading, log their actions
+                initialFadeIn();
+                document.title = "Freedom to Transact";
+                displayPlayText();
+
+                const enforceClearCanvas = setInterval(() => {
+                    if (window.clearCanvas) {
+                        window.clearCanvas = false;
+                        console.log("[SeedDebug] clearCanvas enforced to false");
+                    }
+                }, 1000);
+
+                if (typeof handlePlaybackStateChange === "function") {
+                    handlePlaybackStateChange();
+                    console.log("[SeedDebug] handlePlaybackStateChange called");
+                }
+
+                logCurrentValues();
+
+                setTimeout(() => clearInterval(enforceClearCanvas), 20000);
+            };
+
+            console.log("[SeedDebug] Custom script initialization complete");
+        })();
+
+    </script>
+
     <div id="fadeOverlay" class="fade-overlay"></div>
     <script>
         // window.songDataUrl = "/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0";
@@ -480,7 +626,7 @@ if (songDataUrls) {
                 setTimeout(() => textElement.style.opacity = "0", fadeOut);
             });
         }
-
+        // Existing script content within the embedded iframe
         function displayPlayText() {
             const playTextElement = document.createElement("div");
             playTextElement.textContent = "? ? ?";
@@ -493,4 +639,3 @@ if (songDataUrls) {
     </script>
 </body>
 </html>
-

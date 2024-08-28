@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>FREEDOM</title>
+    <!-- <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css"> -->
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        iframe {
+            width: 90%;
+            height: 70vh;
+            border: none;
+        }
+
+        #button-container {
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        [style*="Impact, charcoal, sans-serif"] {
+            display: none !important;
+        }
+
+        .text-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 7.87s ease-in-out;
+        }
+
+        .freedom {
+            font-family: Arial, bold, sans-serif;
+            font-size: 65px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .melophonic {
+            font-family: "Trebuchet MS", bold, sans-serif;
+            font-size: 62px;
+            color: #000;
+        }
+
+        .sqyzy {
+            font-family: Arial, bold, sans-serif;
+            font-size: 96px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .fade-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 18s ease-in-out;
+        }
+
+        .play-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Arial, bold, sans-serif;
+            font-size: 65px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 10001;
+            opacity: 1;
+            text-align: center;
+            transition: opacity 10s ease-in-out;
+        }
+  
+    </style>
+</head>
+<body>
+    <div id="fadeOverlay" class="fade-overlay"></div>
+
+    <div id="button-container">
+        <button onclick="setBPM(80)">80 BPM</button>
+        <button onclick="setBPM(100)">100 BPM</button>
+        <button onclick="setBPM(120)">120 BPM</button>
+        <button onclick="setBPM(140)">140 BPM</button>
+        <button onclick="setBPM(160)">160 BPM</button>
+        <button onclick="setBPM(180)">180 BPM</button>
+        <button onclick="setBPM(240)">240 BPM</button>
+        <button onclick="resetPage()">RESET PAGE</button>
+        <button onclick="autoReinitializePlayer()">AUTO REINITIALIZE</button>
+    </div>
+
+    <button id="reloadButton">Reload Page</button>
+
+       
+        <!-- Load scripts in the correct order --> 
+        <!-- core.js -->
+        <script>
+        // Insert full core.js code here
+                // core.js
+
+        // Simplified logging function for repetitive logs
+        function log(message, ...args) {
+            console.log(`[Debug] ${message}`, ...args);
+        }
+
+        // Function to generate a random seed
+        function generateRandomSeed() {
+            return Math.floor(Math.random() * 100000) + 1; // Random seed between 1 and 100,000
+        }
+
+        // Function to clear all intervals and timeouts
+        function clearIntervalsAndTimeouts() {
+            log("Clearing intervals and timeouts.");
+
+            let highestIntervalId = window.setInterval(() => {}, 0);
+            for (let i = 0; i <= highestIntervalId; i++) window.clearInterval(i);
+            log("All intervals cleared.");
+
+            let highestTimeoutId = window.setTimeout(() => {}, 0);
+            for (let i = 0; i <= highestTimeoutId; i++) window.clearTimeout(i);
+            log("All timeouts cleared.");
+        }
+
+        // Function to close the AudioContext if it's open
+        function closeAudioContext() {
+            if (window.audioContext && typeof window.audioContext.close === 'function') {
+                log("Closing AudioContext.");
+                window.audioContext.close().then(() => log("AudioContext closed."));
+            } else {
+                log("No active AudioContext found.");
+            }
+        }
+
+        // Function to remove event listeners
+        function removeEventListeners() {
+            log("Removing event listeners.");
+            document.removeEventListener("playbackStarted", handlePlaybackEvent);
+            document.removeEventListener("playbackStopped", handlePlaybackEvent);
+        }
+
+        // Function to extract seed value from the URL
+        function getSeedFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const seed = parseInt(urlParams.get('seed'), 10) || 1;  // Default to 1 if no seed is provided
+            log("Extracted seed from URL:", seed);
+            return seed;
+        }
+
+        // Function to generate a random number based on the seed
+        function seededRandom(seed) {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        // Function to select BPM based on the seed
+        function selectBPM(availableBPMs, seed) {
+            const seededIndex = Math.floor(seededRandom(seed) * availableBPMs.length);
+            log("Selecting BPM from seed:", seed, "resulted in index:", seededIndex);
+            return availableBPMs[seededIndex];
+        }
+
+        // Function to shuffle an array based on a seed
+        function shuffleArray(array, seed) {
+            let currentSeed = seed; // Initialize current seed
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(currentSeed) * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+                currentSeed += 1; // Increment seed manually after each use
+            }
+            return array;
+        }
+
+        // Expose functions to the global window object
+        window.log = log;
+        window.generateRandomSeed = generateRandomSeed;
+        window.clearIntervalsAndTimeouts = clearIntervalsAndTimeouts;
+        window.closeAudioContext = closeAudioContext;
+        window.removeEventListeners = removeEventListeners;
+        window.getSeedFromUrl = getSeedFromUrl;
+        window.seededRandom = seededRandom;
+        window.selectBPM = selectBPM;
+        window.shuffleArray = shuffleArray;
+
+        </script>
+    
+        <!-- externalLibraryLoader.js -->
+        <script>
+        // Insert full externalLibraryLoader.js code here
+                // externalLibraryLoader.js
+
+        async function loadPako() {
+            try {
+                const response = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+                const text = await response.text();
+                const div = document.createElement("div");
+                div.innerHTML = text;
+
+                const scriptContent = Array.from(div.querySelectorAll("script"))
+                    .find(script => script.textContent.includes("pako"));
+
+                if (!scriptContent) throw new Error("Pako library not found in the HTML content.");
+
+                const scriptElement = document.createElement("script");
+                scriptElement.textContent = scriptContent.textContent;
+                document.head.appendChild(scriptElement);
+
+                console.log("Pako library loaded:", pako);
+
+            } catch (error) {
+                console.error("Error loading Pako:", error);
+            }
+        }
+
+        // Expose the function to global scope
+        window.loadPako = loadPako;
+
+        </script>
+    
+        <!-- songDataProcessing.js -->
+        <script>
+        // Insert full songDataProcessing.js code here
+                // songDataProcessing.js
+
+        // Maps and utility functions for deserialization
+        const keyMap = {
+            0: "projectName", 1: "artistName", 2: "projectBPM", 3: "currentSequence",
+            4: "channelURLs", 5: "channelVolume", 6: "channelPlaybackSpeed",
+            7: "trimSettings", 8: "projectChannelNames", 9: "startSliderValue",
+            10: "endSliderValue", 11: "totalSampleDuration", 12: "start", 13: "end",
+            14: "projectSequences", 15: "steps"
+        };
+        const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([e, r]) => [r, +e]));
+        const channelMap = Array.from({ length: 26 }, (e, r) => String.fromCharCode(65 + r));
+        const reverseChannelMap = Object.fromEntries(channelMap.map((e, r) => [e, r]));
+
+        function decompressSteps(e) {
+            return e.flatMap(e => {
+                if (typeof e === "number") return e;
+                if (typeof e === "object" && "r" in e) {
+                    const [r, t] = e.r;
+                    return Array.from({ length: t - r + 1 }, (e, t) => r + t);
+                }
+                return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: !0 } : void 0;
+            });
+        }
+
+        function deserialize(e) {
+            const r = e => Array.isArray(e) ? e.map(e => typeof e === "object" ? r(e) : e) : typeof e === "object" && e !== null ? Object.entries(e).reduce((e, [t, n]) => {
+                const a = keyMap[t] ?? t;
+                return e[a] = a === "projectSequences" ? Object.entries(n).reduce((e, [r, t]) => (e[r.replace("s", "Sequence")] = Object.entries(t).reduce((e, [r, t]) => {
+                    var n;
+                    return e[`ch${reverseChannelMap[r]}`] = { steps: (n = t[reverseKeyMap.steps] || [], n.flatMap(e => {
+                        if (typeof e === "number") return e;
+                        if (typeof e === "object" && "r" in e) {
+                            const [r, t] = e.r;
+                            return Array.from({ length: t - r + 1 }, (e, t) => r + t);
+                        }
+                        return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: !0 } : void 0;
+                    })) }, e;
+                }, {}), e), {}) : r(n), e;
+            }, {}) : e;
+            return r(e);
+        }
+
+        async function processSerializedData(url) {
+            try {
+                await loadPako();
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Network response was not ok");
+
+                const arrayBuffer = await response.arrayBuffer();
+                const inflated = pako.inflate(new Uint8Array(arrayBuffer));
+                const text = new TextDecoder("utf-8").decode(inflated);
+                const jsonData = JSON.parse(text);
+                const deserializedData = deserialize(jsonData);
+
+                console.log("Deserialized Data:", deserializedData);
+
+                const blob = new Blob([JSON.stringify(deserializedData)], { type: "application/json" });
+                window.jsonDataUrl = URL.createObjectURL(blob);
+
+                const scriptElement = document.createElement("script");
+                scriptElement.src = "/content/6e226872d6612da632fcf29824b6f52c3672a745e194032e4f91c351e47d75c9i0";
+                document.head.appendChild(scriptElement);
+
+            } catch (error) {
+                console.error("Error processing data:", error);
+            }
+        }
+
+        // Expose the function to global scope
+        window.processSerializedData = processSerializedData;
+
+        </script>
+    
+        <!-- seedControl.js -->
+        <script>
+        // Insert full seedControl.js code here  
+                // seedControl.js
+
+        window.seed = getSeedFromUrl();
+
+        // Array of possible BPMs
+        const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
+
+        // Select the base BPM using the seed
+        const baseBPM = selectBPM(availableBPMs, window.seed);
+        log("Selected base BPM:", baseBPM);
+
+        // Expose baseBPM to the global window object
+        window.baseBPM = baseBPM;
+
+        </script>
+    
+        <!--  bpmControl.js -->
+        <script>
+       // Insert full bpmControl.js code here  
+                // bpmControl.js
+
+        function setBPM(targetBPM) {
+            log("setBPM function called with targetBPM:", targetBPM);
+
+            const newSeed = generateRandomSeed();
+            log("Generated new seed for BPM:", newSeed);
+
+            if (window.playbackStarted) {
+                log("Stopping playback before reload");
+                window.playbackStarted = false;
+            }
+
+            const newUrl = `${window.location.pathname}?seed=${newSeed}&bpm=${targetBPM}`;
+            log("Redirecting to new URL with BPM and new seed:", newUrl);
+
+            window.location.href = newUrl;
+
+            setTimeout(() => {
+                log("Forcing page reload");
+                window.location.reload(true);
+            }, 100);
+        }
+
+        function autoReinitializePlayer() {
+            log("Auto reinitialization triggered");
+
+            const newSeed = generateRandomSeed();
+            log("Generated new seed:", newSeed);
+
+            if (window.playbackStarted) {
+                log("Stopping playback before reload");
+                window.playbackStarted = false;
+            }
+
+            const newUrl = `${window.location.pathname}?seed=${newSeed}`;
+            log("Redirecting to new URL with new seed:", newUrl);
+
+            window.location.href = newUrl;
+
+            setTimeout(() => {
+                log("Forcing page reload");
+                window.location.reload(true);
+            }, 100);
+        }
+
+        // Expose functions to the global window object
+        window.setBPM = setBPM;
+        window.autoReinitializePlayer = autoReinitializePlayer;
+
+        </script>
+    
+        <!-- pageControl.js -->
+        <script>
+        // Insert full pageControl.js code here  
+                // pageControl.js
+
+        function resetPage() {
+            log("RESET PAGE button clicked.");
+
+            if (window.self !== window.top) {
+                log("Running inside an iframe. Refreshing iframe.");
+                window.location.reload(true); // Force iframe reload
+            } else {
+                log("Running as a standalone page.");
+
+                clearIntervalsAndTimeouts();
+                closeAudioContext();
+                removeEventListeners();
+
+                log("Stopping further resource loading.");
+                window.stop();
+
+                const baseUrl = `${window.location.origin}${window.location.pathname}`;
+                log("Resetting page to base URL:", baseUrl);
+
+                setTimeout(() => {
+                    log("Forcing page reload using location.replace()");
+                    window.location.replace(baseUrl);
+                }, 300);
+            }
+        }
+
+        // Event listener to reset page on before unload
+        window.addEventListener('beforeunload', () => {
+            log("Before unload event triggered. Stopping all further execution.");
+            resetPage();
+        });
+
+        // Event listener to reload the page forcefully
+        document.getElementById('reloadButton').addEventListener('click', function() {
+            // Use location.replace to ensure no history entry is created
+            window.location.replace(window.location.href);
+        });
+
+        // Expose functions to the global window object
+        window.resetPage = resetPage;
+ 
+        </script>
+    
+        <!-- displayControl.js -->
+        <script>
+        // Insert full displayControl.js code here  
+                // displayControl.js
+
+        function createTextElement(text, className) {
+            const element = document.createElement("div");
+            element.textContent = text;
+            element.classList.add("text-element", className);
+            document.body.appendChild(element);
+            return element;
+        }
+
+        function initialFadeIn() {
+            const fadeOverlay = document.getElementById("fadeOverlay");
+            setTimeout(() => {
+                fadeOverlay.style.opacity = "0";
+            }, 100);
+        }
+
+        function displayText() {
+            const texts = [
+                { text: "? ? ?", className: "freedom", fadeIn: 0, fadeOut: 15740 },
+                { text: "me?op?onic", className: "melophonic", fadeIn: 15740, fadeOut: 31480 },
+                { text: "SQ?ZY", className: "sqyzy", fadeIn: 31480, fadeOut: 47800 }
+            ];
+
+            texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+                const textElement = createTextElement(text, className);
+                setTimeout(() => textElement.style.opacity = "1", fadeIn);
+                setTimeout(() => textElement.style.opacity = "0", fadeOut);
+            });
+        }
+
+        function displayPlayText() {
+            const playTextElement = document.createElement("div");
+            playTextElement.textContent = "? ? ?";
+            playTextElement.className = "play-text";
+            document.body.appendChild(playTextElement);
+            setTimeout(() => {
+                playTextElement.style.opacity = "0";
+            }, 100);
+        }
+
+        // Window onload event to initialize display elements
+        window.onload = function () {
+            log("Window onload event triggered");
+
+            window.AccessLevel = 10;
+            window.isTrippy = true;
+            window.playbackLoopCount = 1000;
+            window.clearCanvas = false;
+
+            log("Initial values set");
+
+            initialFadeIn();
+            document.title = "Freedom to Transact";
+            displayText();
+
+            const enforceClearCanvas = setInterval(() => {
+                if (window.clearCanvas) {
+                    window.clearCanvas = false;
+                    log("clearCanvas enforced to false");
+                }
+            }, 1000);
+
+            if (typeof handlePlaybackStateChange === "function") {
+                handlePlaybackStateChange();
+                log("handlePlaybackStateChange called");
+            }
+
+            setTimeout(() => clearInterval(enforceClearCanvas), 20000);
+        };
+
+        // Expose functions to the global window object
+        window.createTextElement = createTextElement;
+        window.initialFadeIn = initialFadeIn;
+        window.displayText = displayText;
+        window.displayPlayText = displayPlayText;
+  
+        </script>
+    
+
+    
+    <!-- Load scripts in the correct order --> 
+    <!-- COMMENTING LINKS OUT TO BUILD FULL MODULAR FILE -->
+    <!-- <script src="js/core.js"></script> -->
+    <!-- <script src="js/externalLibraryLoader.js"></script> -->
+    <!-- <script src="js/songDataProcessing.js"></script> -->
+    <!-- <script src="js/seedControl.js"></script> -->
+    <!-- <script src="js/bpmControl.js"></script> -->
+    <!-- <script src="js/pageControl.js"></script> -->
+    <!-- <script src="js/displayControl.js"></script> -->
+
+
+   
+    </body>
+    </html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page with Embedded Iframe Content</title>
+    <style>
+        
+
+        iframe {
+            width: 90%;
+            height: 70vh;
+            border: 2px solid #ccc;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* Ensure padding and border are included in the width/height */
+        }
+
+        #button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px; /* Add a small margin for spacing between buttons and iframe */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+
+        <!-- Iframe to load the existing HTML content -->
+        <iframe id="embeddedFrame"></iframe>
+
+
+    <div id="button-container">
+        <button onclick="setBPM(80)">80 BPM</button>
+        <button onclick="setBPM(100)">100 BPM</button>
+        <button onclick="setBPM(120)">120 BPM</button>
+        <button onclick="setBPM(140)">140 BPM</button>
+        <button onclick="setBPM(160)">160 BPM</button>
+        <button onclick="setBPM(180)">180 BPM</button>
+        <button onclick="setBPM(240)">240 BPM</button>
+    </div>
+
+
+    <!-- Button to reset the iframe -->
+    <div id="button-container">
+        <button id="resetIframe">Reset Iframe</button>
+    </div>
+
+    <iframe id="musicFrame" srcdoc='
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <title>FREEDOM</title>
+        <script>
+            // Set default seed to 54, but allow it to be overwritten by the parent
+            if (typeof window.seed === "undefined") {
+                window.seed = 115;
+            }
+    
+            (function() {
+                console.log("[Debug] Custom script started"); // Verify if this script is being executed at all
+    
+                function hashString(str) {
+                    console.log("[Debug] hashString function called"); // Log when the function is called
+    
+                    let rotationCount = parseInt(str.split("i")[1], 10);
+                    let characters = str.split("");
+                    for (let i = 0; i < rotationCount; i++) {
+                        characters.push(characters.shift());
+                    }
+                    str = characters.join("");
+                    let hash = 0;
+                    for (let i = 0; i < str.length; i++) {
+                        hash = (31 * hash + str.charCodeAt(i)) % Number.MAX_SAFE_INTEGER;
+                    }
+                    return hash % 1400000000;
+                }
+    
+        const seedValue = hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");
+        console.log("[Debug] Generated seed:", window.seed); // Confirm seed generation
+    
+        if (window.playbackStarted === undefined) {
+            window.playbackStarted = false;
+        }
+    
+        const handlePlaybackEvent = (event) => {
+            if (event.type === "playbackStarted") {
+                window.psTime = Date.now();
+                window.playbackStarted = true;
+                console.log("[Debug] Playback started"); // Confirm playback started
+                displayText();
+                logCurrentValues();
+            } else if (event.type === "playbackStopped") {
+                window.playbackStarted = false;
+                console.log("[Debug] Playback stopped"); // Confirm playback stopped
+            }
+        };
+    
+        document.addEventListener("playbackStarted", handlePlaybackEvent);
+        document.addEventListener("playbackStopped", handlePlaybackEvent);
+    
+        function logCurrentValues() {
+            console.log("[Debug] Current Values:");
+            console.log("[Debug] seed:", window.seed);
+            console.log("[Debug] AccessLevel:", window.AccessLevel);
+            console.log("[Debug] playbackStarted:", window.playbackStarted);
+            console.log("[Debug] psTime:", window.psTime);
+            console.log("[Debug] isTrippy:", window.isTrippy);
+            console.log("[Debug] clearCanvas:", window.clearCanvas);
+        }
+    
+        // Single consolidated window.onload function with more rigorous enforcement
+        window.onload = function() {
+            console.log("[Debug] Window onload event triggered");
+    
+            // Set AccessLevel and isTrippy first
+            window.AccessLevel = 10;
+            window.isTrippy = true;
+            console.log("[Debug] AccessLevel and isTrippy set early");
+    
+            // Manually increase playbackLoopCount
+            window.playbackLoopCount = 1000;
+            console.log("[Debug] playbackLoopCount set to:", window.playbackLoopCount);
+    
+            // Now enforce clearCanvas
+            window.clearCanvas = false;
+            console.log("[Debug] clearCanvas initially set to false");
+    
+            // Existing logic from other onload functions
+            initialFadeIn();
+            document.title = "Freedom to Transact";
+            displayPlayText();
+    
+            // Continuously enforce clearCanvas = false
+            const enforceClearCanvas = setInterval(() => {
+                if (window.clearCanvas !== false) {
+                    window.clearCanvas = false;
+                    console.log("[Debug] clearCanvas enforced to false");
+                }
+            }, 1000); // Check every second
+    
+            // Ensure handlePlaybackStateChange is applied correctly
+            if (typeof handlePlaybackStateChange === "function") {
+                handlePlaybackStateChange();
+                console.log("[Debug] handlePlaybackStateChange called");
+            }
+    
+            // Log initial values
+            logCurrentValues();
+    
+            // Stop enforcing after some time to reduce load
+            setTimeout(() => clearInterval(enforceClearCanvas), 20000);
+        };
+    
+        const titleObserver = new MutationObserver(() => {
+            if (document.title !== "FREEDOM") {
+                document.title = "FREEDOM";
+            }
+        });
+    
+        titleObserver.observe(document.querySelector("title"), { childList: true, subtree: true });
+    
+        console.log("[Debug] Custom script initialization complete"); // Final log to confirm script loaded
+    })();
+    
+    
+        </script>
+        <style>
+            [style*="Impact, charcoal, sans-serif"] {
+                display: none !important;
+            }
+    
+            .text-element {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 7.87s ease-in-out;
+            }
+    
+            .freedom {
+                font-family: Arial, bold, sans-serif;
+                font-size: 65px;
+                font-weight: 700;
+                color: #000;
+            }
+    
+            .melophonic {
+                font-family: "Trebuchet MS", bold, sans-serif;
+                font-size: 62px;
+                color: #000;
+            }
+    
+            .sqyzy {
+                font-family: Arial, bold, sans-serif;
+                font-size: 96px;
+                font-weight: 500;
+                color: #000;
+            }
+    
+            .fade-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #000;
+                z-index: 10000;
+                opacity: 1;
+                transition: opacity 18s ease-in-out;
+            }
+    
+            .play-text {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-family: Arial, bold, sans-serif;
+                font-size: 65px;
+                font-weight: 700;
+                color: #fff;
+                z-index: 10001;
+                opacity: 1;
+                text-align: center;
+                transition: opacity 10s ease-in-out;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="fadeOverlay" class="fade-overlay"></div>
+        <script>
+            // window.songDataUrl = "/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0";
+            // window.songDataUrl = "/content/7c974e75314c68468b469c6e0835d48297d020ffaafc1de2428ffac567b2621ci0";
+    
+            // pakoLoaderAndStyles.js
+            !function() {
+                const styleElement = document.createElement("style");
+                styleElement.textContent = `
+                    canvas {
+                        position: absolute;
+                    }
+                    body {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                        background-color: black;
+                        position: relative;
+                    }
+                    #canvas-container {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100%;
+                        height: 100%;
+                        position: relative;
+                    }
+                    #cv, body {
+                        background: #000;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                    }
+                    #title-display-container {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        text-align: center;
+                        z-index: 9999;
+                        pointer-events: none;
+                    }
+                    #project-name-display, 
+                    #by-display, 
+                    #artist-name-display, 
+                    #visual-artist-display, 
+                    #visual-artist-name-display {
+                        opacity: 0;
+                        font-weight: bold;
+                        position: absolute;
+                        text-align: center;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: auto;
+                        white-space: nowrap;
+                        margin: 0;
+                        padding: 0;
+                        line-height: normal;
+                        font-size: 50px;
+                    }
+                `;
+                document.head.appendChild(styleElement);
+    
+                const canvasContainer = document.createElement("div");
+                canvasContainer.id = "canvas-container";
+                const canvas = document.createElement("canvas");
+                canvasContainer.appendChild(canvas);
+                document.body.appendChild(canvasContainer);
+            }();
+    
+    
+            
+            !function() {
+        const keyMap = {0: "projectName", 1: "artistName", 2: "projectBPM", 3: "currentSequence", 4: "channelURLs", 5: "channelVolume", 6: "channelPlaybackSpeed", 7: "trimSettings", 8: "projectChannelNames", 9: "startSliderValue", 10: "endSliderValue", 11: "totalSampleDuration", 12: "start", 13: "end", 14: "projectSequences", 15: "steps"},
+            reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([e, r]) => [r, +e])),
+            channelMap = Array.from({length: 26}, (e, r) => String.fromCharCode(65 + r)),
+            reverseChannelMap = Object.fromEntries(channelMap.map((e, r) => [e, r])),
+            decompressSteps = e => e.flatMap(e => {
+                if (typeof e === "number") return e;
+                if (typeof e === "object" && "r" in e) {
+                    const [r, t] = e.r;
+                    return Array.from({length: t - r + 1}, (e, t) => r + t);
+                }
+                return typeof e === "string" && e.endsWith("r") ? {index: parseInt(e.slice(0, -1), 10), reverse: !0} : void 0;
+            }),
+            deserialize = e => {
+                const r = e => Array.isArray(e) ? e.map(e => typeof e === "object" ? r(e) : e) : typeof e === "object" && e !== null ? Object.entries(e).reduce((e, [t, n]) => {
+                    const a = keyMap[t] ?? t;
+                    return e[a] = a === "projectSequences" ? Object.entries(n).reduce((e, [r, t]) => (e[r.replace("s", "Sequence")] = Object.entries(t).reduce((e, [r, t]) => {
+                        var n;
+                        return e[`ch${reverseChannelMap[r]}`] = {steps: (n = t[reverseKeyMap.steps] || [], n.flatMap(e => {
+                            if (typeof e === "number") return e;
+                            if (typeof e === "object" && "r" in e) {
+                                const [r, t] = e.r;
+                                return Array.from({length: t - r + 1}, (e, t) => r + t);
+                            }
+                            return typeof e === "string" && e.endsWith("r") ? {index: parseInt(e.slice(0, -1), 10), reverse: !0} : void 0;
+                        }))}, e;
+                    }, {}), e), {}) : r(n), e;
+                }, {}) : e;
+                return r(e);
+            };
+    
+        const loadPako = async () => {
+            try {
+                const t = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),
+                    o = await t.text(),
+                    e = document.createElement("div");
+                e.innerHTML = o;
+                const n = e.querySelectorAll("script"),
+                    c = Array.from(n).find(t => t.textContent.includes("pako"));
+                if (!c) throw new Error("Pako library not found in the HTML content.");
+                const r = document.createElement("script");
+                r.textContent = c.textContent,
+                    document.head.appendChild(r),
+                    console.log("Pako library loaded:", pako);
+            } catch (t) {
+                console.error("Error loading Pako:", t);
+            }
+        };
+    
+        const fetchAndDeserialize = async url => {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Network response was not ok");
+            const arrayBuffer = await response.arrayBuffer(),
+                inflated = pako.inflate(new Uint8Array(arrayBuffer)),
+                text = new TextDecoder("utf-8").decode(inflated),
+                jsonData = JSON.parse(text);
+            return deserialize(jsonData);
+        };
+    
+        const processSerializedData = async (urls) => {
+        try {
+            await loadPako();
+    
+            const data = await Promise.all(urls.map(fetchAndDeserialize));
+    
+            function seededRandom(seed) {
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+            }
+    
+            function shuffleArray(array, seed) {
+                let currentSeed = seed; // Initialize current seed
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(seededRandom(currentSeed) * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                    currentSeed += 1; // Increment seed manually after each use
+                }
+                return array;
+            }
+    
+           // Array of possible BPMs
+            const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
+    
+            // Function to select a BPM based on the seed
+            function selectBPM(availableBPMs, seed) {
+                const seededIndex = Math.floor(seededRandom(seed) * availableBPMs.length);
+                return availableBPMs[seededIndex];
+            }
+    
+            // Select the base BPM using the seed
+            const baseBPM = selectBPM(availableBPMs, window.seed);
+            console.log(`Selected base BPM: ${baseBPM}`);
+    
+            // Configuration setting for harmonic adjustment
+            const useHarmonicAdjustment = false; // Set to false if you want strict proportional adjustment
+    
+            // Adjust playback speeds for each dataset based on the selected base BPM
+            data.forEach((dataset) => {
+                const currentBPM = dataset.projectBPM;
+    
+                if (useHarmonicAdjustment) {
+                    if (Math.abs(baseBPM - currentBPM) >= baseBPM / 2) {
+                        console.log(`Adjusting ${currentBPM} BPM to harmonic BPM.`);
+                        dataset.channelPlaybackSpeed = dataset.channelPlaybackSpeed.map(speed => speed);
+                    } else {
+                        const bpmRatio = baseBPM / currentBPM;
+                        dataset.channelPlaybackSpeed = dataset.channelPlaybackSpeed.map(speed => speed * bpmRatio);
+                    }
+                } else {
+                    const bpmRatio = baseBPM / currentBPM;
+                    dataset.channelPlaybackSpeed = dataset.channelPlaybackSpeed.map(speed => speed * bpmRatio);
+                }
+            });
+    
+            // Combine channels from all datasets
+            const allChannels = data.flatMap((dataset, datasetIndex) =>
+                dataset.channelURLs.map((url, index) => ({
+                    url,
+                    volume: dataset.channelVolume[index],
+                    speed: dataset.channelPlaybackSpeed[index],
+                    trim: dataset.trimSettings[index],
+                    source: `data${datasetIndex + 1}`,
+                    index
+                }))
+            );
+    
+            // Shuffle channels using the seeded random generator
+            const shuffledChannels = shuffleArray(allChannels, window.seed); // Use the seed from the window object
+    
+            // Select the first 16 channels
+            const selectedChannels = shuffledChannels.slice(0, 16);
+    
+            const combinedData = {
+                ...data[0],
+                projectBPM: baseBPM,
+                channelURLs: selectedChannels.map(ch => ch.url),
+                channelVolume: selectedChannels.map(ch => ch.volume),
+                channelPlaybackSpeed: selectedChannels.map(ch => ch.speed),
+                trimSettings: selectedChannels.map(ch => ch.trim),
+                projectSequences: {}
+            };
+    
+            // Merging the data
+            const projectSequencesSources = { data1: data[0], data2: data[1], data3: data[2], data4: data[3], data5: data[4] };
+            for (const seq in data[0].projectSequences) {
+                combinedData.projectSequences[seq] = {};
+                selectedChannels.forEach((ch, i) => {
+                    const chKey = `ch${i}`;
+                    const sourceSeq = projectSequencesSources[ch.source].projectSequences[seq];
+                    if (sourceSeq && sourceSeq[`ch${ch.index}`]) {
+                        combinedData.projectSequences[seq][chKey] = sourceSeq[`ch${ch.index}`];
+                    }
+                });
+            }
+    
+            console.log("Combined Data:", combinedData);
+    
+            const blob = new Blob([JSON.stringify(combinedData)], { type: "application/json" });
+            window.jsonDataUrl = URL.createObjectURL(blob);
+            const scriptElement = document.createElement("script");
+            scriptElement.src = "/content/6e226872d6612da632fcf29824b6f52c3672a745e194032e4f91c351e47d75c9i0";
+            document.head.appendChild(scriptElement);
+        } catch (e) {
+            console.error("Error processing data:", e);
+        }
+    };
+    
+        const songDataUrls = [
+    
+        "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+    
+    
+        "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
+    
+        "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // Cheese Remix
+    
+                    // "/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
+                    // "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
+                    // "/content/b184cb80ef5f0d3e6d0ee1065a0419be8156a5b36dd443f214cf2ddf6dcda92ai0", // Choppin it up
+                    // "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",
+    
+    
+            // additional song URLs...
+        ];
+    
+       
+    
+    
+    if (songDataUrls) {
+        processSerializedData(songDataUrls);
+    }
+            }();
+    
+            
+            // load pfpCapture.js
+            !function() {
+                const scriptElement = document.createElement("script");
+                scriptElement.src = "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0";
+                document.body.appendChild(scriptElement);
+            }();
+    
+            function createTextElement(text, className) {
+                const element = document.createElement("div");
+                element.textContent = text;
+                element.classList.add("text-element", className);
+                document.body.appendChild(element);
+                return element;
+            }
+    
+            function initialFadeIn() {
+                const fadeOverlay = document.getElementById("fadeOverlay");
+                setTimeout(() => {
+                    fadeOverlay.style.opacity = "0";
+                }, 100);
+            }
+    
+            function displayText() {
+                const texts = [
+                    { text: "? ? ?", className: "freedom", fadeIn: 0, fadeOut: 15740 },
+                    { text: "me?op?onic", className: "melophonic", fadeIn: 15740, fadeOut: 31480 },
+                    { text: "SQ?ZY", className: "sqyzy", fadeIn: 31480, fadeOut: 47800 }
+                ];
+    
+                texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+                    const textElement = createTextElement(text, className);
+                    setTimeout(() => textElement.style.opacity = "1", fadeIn);
+                    setTimeout(() => textElement.style.opacity = "0", fadeOut);
+                });
+            }
+            // Existing script content within the embedded iframe
+            function displayPlayText() {
+                const playTextElement = document.createElement("div");
+                playTextElement.textContent = "? ? ?";
+                playTextElement.className = "play-text";
+                document.body.appendChild(playTextElement);
+                setTimeout(() => {
+                    playTextElement.style.opacity = "0";
+                }, 100);
+            }
+        </script>
+    </body>
+    </html>
+    '></iframe>
+
+    <script>
+
+
+
+        // Function to reload the content in the musicFrame iframe
+        document.getElementById('resetIframe').addEventListener('click', function() {
+            const musicFrame = document.getElementById('musicFrame');
+            const originalSrcdoc = musicFrame.srcdoc;
+            musicFrame.srcdoc = ''; // Clear the iframe content first
+            musicFrame.srcdoc = originalSrcdoc; // Reload the iframe content
+        });
+    </script>
+
+</body>
+</html>
