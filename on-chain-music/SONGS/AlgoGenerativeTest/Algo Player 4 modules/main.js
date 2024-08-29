@@ -1,156 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>? ? ?</title>
+// main.js
 
-<style>
-    #button-container {
-        margin: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    button {
-        padding: 5px 10px;
-        font-size: 12px;
-        cursor: pointer;
-        z-index: 9999;
-    }
-    #button-container {
-        margin: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-
-</style>
-<style>
-    body {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        background-color: #f0f0f0;
-    }
-
-    iframe {
-        width: 90%;
-        height: 70vh;
-        border: none;
-    }
-
-
-
-    [style*="Impact, charcoal, sans-serif"] {
-        display: none !important;
-    }
-
-    .text-element,
-    .play-text {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        z-index: 10001;
-        opacity: 0;
-        transition: opacity 7.87s ease-in-out;
-    }
-
- 
-    .sqyzy {
-        font-family: Arial, bold, sans-serif;
-        color: #000;
-    }
-
-    .freedom {
-        font-size: 65px;
-        font-weight: 700;
-    }
-
-    .melophonic {
-        font-family: "Trebuchet MS", bold, sans-serif;
-        font-size: 65px;
-        color: #000;
-    }
-
-    .sqyzy {
-        font-size: 96px;
-        font-weight: 500;
-    }
-
-    .fade-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        z-index: 10000;
-        opacity: 1;
-        transition: opacity 18s ease-in-out;
-    }
-
-    .play-text {
-        font-size: 65px;
-        font-weight: 700;
-        color: #fff;
-        z-index: 10001;
-        opacity: 1;
-        transition: opacity 10s ease-in-out;
-    }
-</style>
-<div id="fadeOverlay" class="fade-overlay"></div>
-
-<body>
-    <div id="button-container">
-
-        <button onclick="setBPM(240)">240 BPM</button>
-
-  
-
-      <!-- Button to reload the page -->
-        <button id="reloadButton">Reload Page</button>
-
-        <script>
-             // Add an event listener to the button to forcefully reload the page when clicked
-            document.getElementById('reloadButton').addEventListener('click', function() {
-                // Use location.replace to ensure no history entry is created
-                window.location.replace(window.location.href);
-            });
-        </script>
-
-</div>
-
-<script>
-    window.seed = 66;
-</script>
-<!-- 
-BPM 80: 11, 14, 17, 18, 28, 33, 40, 44, 45, 54, 76, 80, 81, 97, 112, 117, 120, 122, 124, 142
-BPM 100: 3, 9, 12, 24, 32, 35, 36, 43, 50, 52, 53, 62, 64, 69, 72, 73, 75, 77, 85, 93
-BPM 120: 51, 59, 65, 82, 86, 92, 100, 109, 115, 127, 128, 140, 164, 174, 187, 196, 213, 221, 230, 233
-BPM 140: 20, 21, 22, 25, 48, 49, 55, 56, 63, 66, 71, 74, 94, 111, 118, 138, 143, 145, 147, 149
-BPM 160: 1, 8, 13, 26, 29, 30, 31, 37, 38, 57, 83, 89, 95, 105, 106, 110, 116, 125, 133, 135
-BPM 180: 5, 6, 10, 19, 23, 27, 34, 41, 42, 47, 58, 61, 67, 68, 78, 87, 104, 107, 114, 132
-BPM 240: 2, 4, 7, 15, 16, 39, 46, 60, 70, 79, 84, 88, 90, 91, 96, 99, 103, 119, 123, 126
- -->
-
-</head>
-
-<body>
-
-
-
-
-<allJsModules>
-
-    <init>
-        <script>
-    
     
     (function() {
         function init() {
@@ -181,10 +30,10 @@ BPM 240: 2, 4, 7, 15, 16, 39, 46, 60, 70, 79, 84, 88, 90, 91, 96, 99, 103, 119, 
         window.addEventListener('load', init);
     })();
     
-    </script>
-    </init>
 
-        <!-- First Module Explanation
+
+
+        {/* <!-- First Module Explanation
 This script section is responsible for several critical functionalities within the application:
 
 1. **Hash Generation and Seed Initialization**:
@@ -210,9 +59,9 @@ This script section is responsible for several critical functionalities within t
    - When the window finishes loading, the script sets the document's title to "? ? ?" and calls a function `displayPlayText()`, which likely updates or displays content related to the playback feature of the application.
 
 In summary, this script manages global playback state, enforces title consistency, and provides a hashing function to generate seed values that can be used throughout the program. It also ensures a specific behavior is triggered when playback events occur.
--->
-<playbackAndStateManagement>
-    <script>
+--> */}
+
+
         (function() {
             function hashString(str) {
                 let rotationCount = parseInt(str.split("i")[1]);
@@ -285,11 +134,11 @@ In summary, this script manages global playback state, enforces title consistenc
             initializePlayback();
 
         })();
-    </script>
-</playbackAndStateManagement>
 
-    <canvasAndStyleSetup>
-        <script>
+
+
+
+
             (function() {
                 function setupStylesAndCanvas() {
                     const styleElement = document.createElement("style");
@@ -360,12 +209,7 @@ In summary, this script manages global playback state, enforces title consistenc
             
                 window.setupStylesAndCanvas = setupStylesAndCanvas;
             })();
-        </script>
-    </canvasAndStyleSetup>
-    
 
-<keymapAndLoadPako>
-        <script>
     (function() {
     const keyMap = {
         0: "projectName", 1: "artistName", 2: "projectBPM", 3: "currentSequence", 
@@ -430,11 +274,8 @@ In summary, this script manages global playback state, enforces title consistenc
     window.deserialize = deserialize;
     window.loadPako = loadPako;
 })();
-</script>
-</keymapAndLoadPako>
 
-<fetchDeserialiseAndProcess>
-    <script>
+
         (function() {
             async function fetchAndDeserialize(url) {
                 const response = await fetch(url);
@@ -585,15 +426,11 @@ In summary, this script manages global playback state, enforces title consistenc
             window.shuffleArray = shuffleArray;
             window.selectBPM = selectBPM;
         })();
-        </script>
+
         
         
-</fetchDeserialiseAndProcess>
 
 
-
-<displayAndScriptLoader>
-    <script>
         (function() {
             function loadPFPScript() {
                 const scriptElement = document.createElement("script");
@@ -656,10 +493,9 @@ In summary, this script manages global playback state, enforces title consistenc
             // Load the PFP script
             loadPFPScript();
         })();
-    </script>
 
-    <findSeeds>
-        <script>
+
+
         function findSeedsForAllBPMs(availableBPMs, seedsPerBPM = 20) {
             const seedResults = {};
         
@@ -685,13 +521,4 @@ In summary, this script manages global playback state, enforces title consistenc
         // Example usage:
         const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
         findSeedsForAllBPMs(availableBPMs, 20);
-    </script>
-    </findSeeds>
-</displayAndScriptLoader>
 
-
-
-</allJsModules>
-
-</body>
-</html>
