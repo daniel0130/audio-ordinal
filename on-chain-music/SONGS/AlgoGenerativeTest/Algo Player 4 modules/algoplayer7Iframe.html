@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Parent HTML with Embedded iFrame</title>
+    <script>
+            window.seed = 105;  // Default seed
+
+    </script>
     <style>
         /* Style to center the iframe */
         body, html {
@@ -36,7 +40,6 @@
     </style>
 </head>
 <script>
-    window.seed = 100;  // Default seed
 
     function updateScale(value) {
         const childFrame = document.getElementById('childFrame');
