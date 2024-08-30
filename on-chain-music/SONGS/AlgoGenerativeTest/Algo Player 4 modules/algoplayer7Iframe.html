@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Parent HTML with Embedded iFrame</title>
+    <style>
+        /* Style to center the iframe */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+
+        iframe {
+            width: 1240px;  /* Set the width of the iframe */
+            height: 1240px; /* Set the height of the iframe */
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style for the slider */
+        #scaleControl {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+        }
+    </style>
+</head>
+<input id="scaleControl" type="range" min="0.1" max="2" step="0.01" value="1" oninput="updateScale(this.value)">
+
+<script>
+    window.seed = 100;  // Default seed
+
+    function updateScale(value) {
+        const childFrame = document.getElementById('childFrame');
+        const scaleFactor = parseFloat(value);
+        const baseSize = 1240; // The original size of the iframe
+
+        // Post message to child iframe to adjust the content scale
+        childFrame.contentWindow.postMessage({ scale: value }, '*');
+
+        // Adjust iframe size based on scale
+        const newWidth = (baseSize * scaleFactor) + 'px';
+        const newHeight = (baseSize * scaleFactor) + 'px';
+        childFrame.style.width = newWidth;
+        childFrame.style.height = newHeight;
+
+        // Log the changes for debugging purposes
+        console.log('ScaleControl Input Changed:');
+        console.log('--------------------------');
+        console.log('New Scale Value:', scaleFactor);
+        console.log('New Iframe Width:', newWidth);
+        console.log('New Iframe Height:', newHeight);
+
+        // Listen for message events to log changes in the child iframe
+        window.addEventListener('message', function(event) {
+            if (event.data.scale !== undefined) {
+                console.log('Child Frame Scaling Update:');
+                console.log('--------------------------');
+                console.log('Scale Applied in Child:', event.data.scale);
+            }
+        });
+    }
+
+    window.addEventListener('message', function(event) {
+        if (event.data === 'requestSeed') {
+            const childFrame = document.getElementById('childFrame');
+            childFrame.contentWindow.postMessage({ seed: window.seed }, '*');
+            console.log('Seed value sent to child iframe:', window.seed);
+        }
+    });
+</script>
+<body>
+    <iframe id="childFrame" srcdoc="
+    <!DOCTYPE html>
+    <html lang=&quot;en&quot;>
+    <head>
+        <meta charset=&quot;UTF-8&quot;>
+        <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, user-scalable=yes&quot;>
+        <title>Seed Input Page</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Hide overflow to prevent scrollbars */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+    
+        canvas {
+            width: 100%; /* Make canvas fill its container */
+            height: 100%; /* Maintain aspect ratio */
+        }
+    </style>
+    <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.scale !== undefined) {
+                const baseScale = 1; // Start at full scale
+                document.getElementById('canvas-container').style.transform = 'scale(' + (event.data.scale * baseScale) + ')';
+            }
+        });
+    </script>
+    </head>
+    <body>
+        <div id=&quot;canvas-container&quot;>
+            <canvas></canvas>
+        </div>
+        <div id=&quot;input-container&quot;>
+            <label for=&quot;seedInput&quot;>Enter Seed:</label>
+            <input type=&quot;number&quot; id=&quot;seedInput&quot; value=&quot;5&quot;>
+            <button id=&quot;applySeedButton&quot;>Apply Seed</button>
+        </div>
+        <div id=&quot;button-container&quot;>
+            <button id=&quot;reloadButton&quot;>Reload Scripts</button>
+        </div>
+        <script>
+            // Function to initialize the canvas and its properties
+            function initializeCanvas() {
+                const canvas = document.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+                // Your canvas drawing logic here
+                ctx.fillStyle = 'red';
+                ctx.fillRect(10, 10, 150, 100);
+                // Update canvas size dynamically
+                function resizeCanvas() {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight;
+                }
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+            }
+    
+            // Initialize the canvas on load
+            window.onload = initializeCanvas;
+        </script>
+    
+        <script>
+            // Function to set seed and reinitialize the program
+            function setSeedAndReinitialize() {
+                const seedInput = document.getElementById(&quot;seedInput&quot;).value;
+                window.seed = parseInt(seedInput, 10);
+                localStorage.setItem(&quot;userSeed&quot;, seedInput);
+                console.log(&quot;User-defined seed set to:&quot;, window.seed);
+                initializeProgram();
+            }
+    
+            // Listen for seed value from parent
+            window.addEventListener('message', function(event) {
+                if (event.data.seed !== undefined) {
+                    window.seed = event.data.seed;
+                    console.log('Received seed from parent:', window.seed);
+                    initializeProgram();
+                }
+            });
+    
+            // Request seed value from parent
+            window.parent.postMessage('requestSeed', '*');
+    
+            // Function to initialize the program
+            function initializeProgram() {
+                console.log(&quot;Running main scripts with global seed:&quot;, window.seed);
+                // Clear any previous state if necessary
+                // For example, remove dynamically added elements or reset global variables
+                // Re-run all necessary IIFEs or functions to reinitialize the program
+                IIFE1();
+                IIFE2();
+                IIFE3();
+                IIFE4();
+                IIFE5();
+                IIFE6();
+            }
+    
+            // Add event listener to the Apply Seed button
+            document.getElementById(&quot;applySeedButton&quot;).addEventListener(&quot;click&quot;, setSeedAndReinitialize);
+    
+            // Main script execution
+            console.log(&quot;Running main scripts with global seed:&quot;, window.seed);
+       
+        // IFE #1
+        (function IIFE1() {
+            console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
+
+            function init() {
+                console.log(`[${new Date().toISOString()}] init function called.`);
+                try {
+                    console.log(`[${new Date().toISOString()}] Calling setupStylesAndCanvas...`);
+                    setupStylesAndCanvas();
+                    console.log(`[${new Date().toISOString()}] setupStylesAndCanvas completed successfully.`);
+                    
+                    const songDataUrls = [
+                        &quot;/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0&quot;, 
+                        &quot;/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0&quot;, 
+                        &quot;/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0&quot;,
+                        &quot;/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0&quot;,
+                        &quot;/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0&quot;, 
+                        &quot;/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0&quot;,
+                    ];
+                    
+                    if (songDataUrls && songDataUrls.length > 0) {
+                        console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
+                        processSerializedData(songDataUrls);
+                        console.log(`[${new Date().toISOString()}] processSerializedData completed successfully.`);
+                    } else {
+                        console.warn(`[${new Date().toISOString()}] songDataUrls array is either undefined or empty.`);
+                    }
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error in init function:`, error);
+                }
+            }
+
+            window.init = init;
+            window.addEventListener(&#39;load&#39;, function() {
+                console.log(`[${new Date().toISOString()}] Window load event triggered.`);
+                init();
+                console.log(`[${new Date().toISOString()}] init function execution completed.`);
+            });
+
+            console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
+        })();
+
+        // IFE #2
+        (function IIFE2() {
+            console.log(`[${new Date().toISOString()}] Second IIFE [hashstring] starting with seed:`, window.seed);
+
+            function hashString(str) {
+                console.log(`[${new Date().toISOString()}] hashString function called with input:`, str);
+                let rotationCount = parseInt(str.split(&quot;i&quot;)[1]);
+                console.log(`[${new Date().toISOString()}] Rotation count parsed:`, rotationCount);
+                
+                let characters = str.split(&quot;&quot;);
+                for (let i = 0; i < rotationCount; i++) {
+                    let char = characters.shift();
+                    characters.push(char);
+                }
+                str = characters.join(&quot;&quot;);
+                console.log(`[${new Date().toISOString()}] String after rotation:`, str);
+
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = (31 * hash + str.charCodeAt(i)) % Number.MAX_SAFE_INTEGER;
+                }
+                const finalHash = hash % 1400000000;
+                console.log(`[${new Date().toISOString()}] Final hash calculated:`, finalHash);
+                return finalHash;
+            }
+
+            const seedValue = hashString(&quot;4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0&quot;);
+            console.log(`[${new Date().toISOString()}] Hash string returned seed value:`, seedValue);
+            console.log(`[${new Date().toISOString()}] Using global seed:`, window.seed);
+
+            function seededRandom(localSeed) {
+                console.log(`[${new Date().toISOString()}] seededRandom function called with localSeed:`, localSeed);
+                const x = Math.sin(localSeed) * 10000;
+                const result = x - Math.floor(x);
+                console.log(`[${new Date().toISOString()}] seededRandom result:`, result);
+                return result;
+            }
+
+            function setPlaybackStatus(status) {
+                console.log(`[${new Date().toISOString()}] setPlaybackStatus called with status:`, status);
+                window.playbackStarted = status;
+            }
+
+            function initializePlayback() {
+                console.log(`[${new Date().toISOString()}] initializePlayback function called.`);
+                if (window.playbackStarted === undefined) {
+                    console.log(`[${new Date().toISOString()}] playbackStarted is undefined, initializing to false.`);
+                    window.playbackStarted = false;
+                }
+
+                document.addEventListener(&quot;playbackStarted&quot;, () => {
+                    console.log(`[${new Date().toISOString()}] playbackStarted event triggered.`);
+                    window.psTime = Date.now();
+                    setPlaybackStatus(true);
+                    console.log(`[${new Date().toISOString()}] Playback started at:`, window.psTime);
+                    displayText();  // Assuming displayText is another globally available function
+                });
+
+                document.addEventListener(&quot;playbackStopped&quot;, () => {
+                    console.log(`[${new Date().toISOString()}] playbackStopped event triggered.`);
+                    setPlaybackStatus(false);
+                    console.log(`[${new Date().toISOString()}] Playback stopped.`);
+                });
+            }
+
+            function enforceDocumentTitle() {
+                console.log(`[${new Date().toISOString()}] enforceDocumentTitle function called.`);
+                document.title = &quot;? ? ?&quot;;
+                const titleObserver = new MutationObserver(() => {
+                    if (document.title !== &quot;? ? ?&quot;) {
+                        console.log(`[${new Date().toISOString()}] Document title changed, resetting to ? ? ?`);
+                        document.title = &quot;? ? ?&quot;;
+                    }
+                });
+                titleObserver.observe(document.querySelector(&quot;title&quot;), { childList: true, subtree: true });
+                console.log(`[${new Date().toISOString()}] Title observer set up successfully.`);
+            }
+
+            window.onload = function() {
+                console.log(`[${new Date().toISOString()}] window.onload triggered.`);
+                enforceDocumentTitle();
+                displayPlayText();  // Assuming displayPlayText is another globally available function
+                console.log(`[${new Date().toISOString()}] onload functions executed successfully.`);
+            };
+
+            // Expose functions globally
+            window.hashString = hashString;
+            window.seededRandom = seededRandom;  // Make seededRandom globally available
+            window.setPlaybackStatus = setPlaybackStatus;
+            window.initializePlayback = initializePlayback;
+            window.enforceDocumentTitle = enforceDocumentTitle;
+
+            // Initialize the playback settings
+            initializePlayback();
+
+            console.log(`[${new Date().toISOString()}] Second IIFE [hashstring] completed.`);
+        })();
+
+        // IFE #3
+        (function IIFE3() {
+                console.log(`[${new Date().toISOString()}] Third IIFE [setupStylesAndCanvas] running with global seed:`, window.seed);
+
+                function setupStylesAndCanvas() {
+                    console.log(`[${new Date().toISOString()}] setupStylesAndCanvas function called.`);
+                    
+                    try {
+                        console.log(`[${new Date().toISOString()}] Creating style element...`);
+                        const styleElement = document.createElement(&quot;style&quot;);
+                        styleElement.textContent = `
+                            canvas {
+                                position: absolute;
+                            }
+                            body {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                margin: 0;
+                                background-color: black;
+                                position: relative;
+                            }
+                            #canvas-container {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                width: 100%;
+                                height: 100%;
+                                position: relative;
+                            }
+                            #cv, body {
+                                background: #000;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                            }
+                            #title-display-container {
+                                position: fixed;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                text-align: center;
+                                z-index: 9999;
+                                pointer-events: none;
+                            }
+                            #project-name-display, 
+                            #by-display, 
+                            #artist-name-display, 
+                            #visual-artist-display, 
+                            #visual-artist-name-display {
+                                opacity: 0;
+                                font-weight: bold;
+                                position: absolute;
+                                text-align: center;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                width: auto;
+                                white-space: nowrap;
+                                margin: 0;
+                                padding: 0;
+                                line-height: normal;
+                                font-size: 50px;
+                            }
+                        `;
+                        document.head.appendChild(styleElement);
+                        console.log(`[${new Date().toISOString()}] Style element appended to head.`);
+
+                        console.log(`[${new Date().toISOString()}] Creating canvas container...`);
+                        const canvasContainer = document.createElement(&quot;div&quot;);
+                        canvasContainer.id = &quot;canvas-container&quot;;
+                        const canvas = document.createElement(&quot;canvas&quot;);
+                        canvasContainer.appendChild(canvas);
+                        document.body.appendChild(canvasContainer);
+                        console.log(`[${new Date().toISOString()}] Canvas and container appended to body.`);
+                    } catch (error) {
+                        console.error(`[${new Date().toISOString()}] Error in setupStylesAndCanvas:`, error);
+                    }
+                }
+
+                window.setupStylesAndCanvas = setupStylesAndCanvas;
+
+                console.log(`[${new Date().toISOString()}] Third IIFE [setupStylesAndCanvas] completed.`);
+            })();
+
+
+            // IFE #4
+        (function IIFE4() {
+                console.log(`[${new Date().toISOString()}] Fourth IIFE [keymap] running with seed:`, window.seed);
+
+                const keyMap = {
+                    0: &quot;projectName&quot;, 1: &quot;artistName&quot;, 2: &quot;projectBPM&quot;, 3: &quot;currentSequence&quot;, 
+                    4: &quot;channelURLs&quot;, 5: &quot;channelVolume&quot;, 6: &quot;channelPlaybackSpeed&quot;, 
+                    7: &quot;trimSettings&quot;, 8: &quot;projectChannelNames&quot;, 9: &quot;startSliderValue&quot;, 
+                    10: &quot;endSliderValue&quot;, 11: &quot;totalSampleDuration&quot;, 12: &quot;start&quot;, 
+                    13: &quot;end&quot;, 14: &quot;projectSequences&quot;, 15: &quot;steps&quot;
+                };
+
+                const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([e, r]) => [r, +e]));
+                const channelMap = Array.from({ length: 26 }, (e, r) => String.fromCharCode(65 + r));
+                const reverseChannelMap = Object.fromEntries(channelMap.map((e, r) => [e, r]));
+
+                function decompressSteps(e) {
+                    console.log(`[${new Date().toISOString()}] decompressSteps function called.`);
+                    return e.flatMap(e => {
+                        if (typeof e === &quot;number&quot;) return e;
+                        if (typeof e === &quot;object&quot; && &quot;r&quot; in e) {
+                            const [r, t] = e.r;
+                            return Array.from({ length: t - r + 1 }, (e, t) => r + t);
+                        }
+                        return typeof e === &quot;string&quot; && e.endsWith(&quot;r&quot;) ? { index: parseInt(e.slice(0, -1), 10), reverse: !0 } : void 0;
+                    });
+                }
+
+                function deserialize(e) {
+                    console.log(`[${new Date().toISOString()}] deserialize function called.`);
+                    const r = e => Array.isArray(e) ? e.map(e => typeof e === &quot;object&quot; ? r(e) : e) : typeof e === &quot;object&quot; && e !== null ? Object.entries(e).reduce((e, [t, n]) => {
+                        const a = keyMap[t] ?? t;
+                        return e[a] = a === &quot;projectSequences&quot; ? Object.entries(n).reduce((e, [r, t]) => (e[r.replace(&quot;s&quot;, &quot;Sequence&quot;)] = Object.entries(t).reduce((e, [r, t]) => {
+                            var n;
+                            return e[`ch${reverseChannelMap[r]}`] = { steps: (n = t[reverseKeyMap.steps] || [], n.flatMap(e => {
+                                if (typeof e === &quot;number&quot;) return e;
+                                if (typeof e === &quot;object&quot; && &quot;r&quot; in e) {
+                                    const [r, t] = e.r;
+                                    return Array.from({ length: t - r + 1 }, (e, t) => r + t);
+                                }
+                                return typeof e === &quot;string&quot; && e.endsWith(&quot;r&quot;) ? { index: parseInt(e.slice(0, -1), 10), reverse: !0 } : void 0;
+                            })) }, e;
+                        }, {}), e), {}) : r(n), e;
+                    }, {}) : e;
+                    return r(e);
+                }
+
+                async function loadPako() {
+                    console.log(`[${new Date().toISOString()}] Starting loadPako function...`);
+
+                    try {
+                        console.log(`[${new Date().toISOString()}] Fetching content for Pako library...`);
+                        const t = await fetch(&quot;/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0&quot;);
+                        
+                        console.log(`[${new Date().toISOString()}] Fetch response received:`, t);
+                        const o = await t.text();
+                        console.log(`[${new Date().toISOString()}] Fetched content successfully, length of content:`, o.length);
+
+                        const e = document.createElement(&quot;div&quot;);
+                        e.innerHTML = o;
+                        console.log(`[${new Date().toISOString()}] HTML content parsed into DOM.`);
+
+                        const n = e.querySelectorAll(&quot;script&quot;);
+                        console.log(`[${new Date().toISOString()}] Script tags found in HTML:`, n.length);
+
+                        const c = Array.from(n).find(t => t.textContent.includes(&quot;pako&quot;));
+                        if (!c) {
+                            console.error(`[${new Date().toISOString()}] Pako library not found in the HTML content.`);
+                            throw new Error(&quot;Pako library not found in the HTML content.&quot;);
+                        }
+                        console.log(`[${new Date().toISOString()}] Pako script found in HTML content.`);
+
+                        const r = document.createElement(&quot;script&quot;);
+                        r.textContent = c.textContent;
+                        console.log(`[${new Date().toISOString()}] Pako script element created.`);
+
+                        document.head.appendChild(r);
+                        console.log(`[${new Date().toISOString()}] Pako script appended to document head.`);
+
+                        // Ensure pako is available globally before logging it
+                        if (window.pako) {
+                            console.log(`[${new Date().toISOString()}] Pako library loaded successfully:`, window.pako);
+                        } else {
+                            console.error(`[${new Date().toISOString()}] Pako is not available after script injection.`);
+                        }
+
+                    } catch (t) {
+                        console.error(`[${new Date().toISOString()}] Error occurred during Pako loading:`, t);
+                    }
+                }
+
+                window.decompressSteps = decompressSteps;
+                window.deserialize = deserialize;
+                window.loadPako = loadPako;
+
+                console.log(`[${new Date().toISOString()}] Fourth IIFE [keymap] completed.`);
+            })();
+
+
+            // IFE #5     
+        (function IIFE5() {
+                console.log(`[${new Date().toISOString()}] Fifth IIFE [fetchAndDeserialize] running with seed:`, window.seed);
+
+                async function fetchAndDeserialize(url) {
+                    console.log(`[${new Date().toISOString()}] fetchAndDeserialize called with URL:`, url);
+                    try {
+                        const response = await fetch(url);
+                        console.log(`[${new Date().toISOString()}] Fetch response received:`, response);
+
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok for URL: ${url}`);
+                        }
+
+                        const arrayBuffer = await response.arrayBuffer();
+                        console.log(`[${new Date().toISOString()}] Array buffer fetched, length:`, arrayBuffer.byteLength);
+
+                        const inflated = pako.inflate(new Uint8Array(arrayBuffer));
+                        console.log(`[${new Date().toISOString()}] Data inflated, length:`, inflated.length);
+
+                        const text = new TextDecoder(&quot;utf-8&quot;).decode(inflated);
+                        console.log(`[${new Date().toISOString()}] Data decoded, text length:`, text.length);
+
+                        const jsonData = JSON.parse(text);
+                        console.log(`[${new Date().toISOString()}] JSON parsed, keys:`, Object.keys(jsonData));
+
+                        return deserialize(jsonData);
+                    } catch (error) {
+                        console.error(`[${new Date().toISOString()}] Error in fetchAndDeserialize:`, error);
+                        throw error;  // Re-throw the error to be handled by the caller
+                    }
+                }
+                
+                function seededRandom(localSeed) {
+                    console.log(`[${new Date().toISOString()}] seededRandom function called with localSeed:`, localSeed);
+                    const x = Math.sin(localSeed) * 10000;
+                    const result = x - Math.floor(x);
+                    console.log(`[${new Date().toISOString()}] seededRandom result:`, result);
+                    return result;
+                }
+
+
+                function shuffleArray(array, localSeed) {
+                    console.log(`[${new Date().toISOString()}] shuffleArray called with array of length:`, array.length);
+                    let currentSeed = localSeed;  // Use the local seed
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(seededRandom(currentSeed) * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                        currentSeed += 1;  // Increment the local seed for the next iteration
+                    }
+                    console.log(`[${new Date().toISOString()}] Array shuffled.`);
+                    return array;
+                }
+
+
+                const availableBPMs = [80, 100, 120, 140, 160, 180, 240];
+
+                function selectBPM(availableBPMs, seed) {
+                    console.log(`[${new Date().toISOString()}] selectBPM called with seed:`, seed);
+                    const seededIndex = Math.floor(seededRandom(seed) * availableBPMs.length);
+                    const selectedBPM = availableBPMs[seededIndex];
+                    console.log(`[${new Date().toISOString()}] Selected BPM:`, selectedBPM);
+                    return selectedBPM;
+                }
+
+                async function processSerializedData(urls) {
+                    console.log(`[${new Date().toISOString()}] processSerializedData called with URLs:`, urls);
+                    try {
+                        const pakoLoadStart = Date.now();
+                        await loadPako();
+                        console.log(`[${new Date().toISOString()}] Pako library loaded in ${Date.now() - pakoLoadStart}ms.`);
+
+                        // Fetch and deserialize data from all provided song URLs
+                        const data = await Promise.all(urls.map(async (url, index) => {
+                            try {
+                                const fetchStart = Date.now();
+                                console.log(`[${new Date().toISOString()}] Processing URL at index ${index}:`, url);
+                                const result = await fetchAndDeserialize(url);
+                                const fetchTime = Date.now() - fetchStart;
+                                if (!result || !result.projectSequences) {
+                                    throw new Error(`Invalid data at URL ${url}`);
+                                }
+                                console.log(`[${new Date().toISOString()}] Data successfully processed for URL: ${url} in ${fetchTime}ms.`);
+                                return result;
+                            } catch (error) {
+                                console.error(`[${new Date().toISOString()}] Error processing URL at index ${index}:`, error);
+                                return undefined;  // Explicitly return undefined if there is an error
+                            }
+                        }));
+
+                        // Filter out any undefined data entries before processing
+                        const validData = data.filter(dataset => dataset !== undefined);
+                        console.log(`[${new Date().toISOString()}] Valid datasets filtered, count: ${validData.length}/${urls.length}`);
+
+                        if (validData.length < data.length) {
+                            console.warn(`[${new Date().toISOString()}] Some datasets were invalid and have been skipped.`);
+                        }
+
+                        const bpmSelectionStart = Date.now();
+                        const baseBPM = selectBPM(availableBPMs, window.seed);
+                        console.log(`[${new Date().toISOString()}] Selected base BPM: ${baseBPM} in ${Date.now() - bpmSelectionStart}ms.`);
+
+                        const useHarmonicAdjustment = false;
+
+                        // Adjust playback speed based on BPM
+                        validData.forEach((dataset) => {
+                            const currentBPM = dataset.projectBPM;
+                            const bpmRatio = baseBPM / currentBPM;
+                            console.log(`[${new Date().toISOString()}] Adjusting playback speed for dataset with BPM: ${currentBPM}. Ratio: ${bpmRatio}`);
+
+                            dataset.channelPlaybackSpeed = dataset.channelPlaybackSpeed.map(speed => {
+                                const adjustedSpeed = useHarmonicAdjustment && Math.abs(baseBPM - currentBPM) >= baseBPM / 2
+                                    ? speed
+                                    : speed * bpmRatio;
+                                console.log(`[${new Date().toISOString()}] Adjusted speed: ${adjustedSpeed} from original speed: ${speed}`);
+                                return adjustedSpeed;
+                            });
+                        });
+
+                        // Flatten all channels from all valid songs into a single array
+                        const allChannels = [];
+                        validData.forEach((dataset, datasetIndex) => {
+                            for (let index = 0; index < dataset.channelURLs.length; index++) {
+                                allChannels.push({
+                                    url: dataset.channelURLs[index],
+                                    volume: dataset.channelVolume[index],
+                                    speed: dataset.channelPlaybackSpeed[index],
+                                    trim: dataset.trimSettings[index],
+                                    source: `data${datasetIndex + 1}`,
+                                    index
+                                });
+                                console.log(`[${new Date().toISOString()}] Added channel: ${dataset.channelURLs[index]}, volume: ${dataset.channelVolume[index]}, speed: ${dataset.channelPlaybackSpeed[index]}`);
+                            }
+                        });
+                        console.log(`[${new Date().toISOString()}] All channels combined, count: ${allChannels.length}`);
+
+                        // Shuffle and select 16 channels from the total pool
+                        const shuffleStart = Date.now();
+                        const shuffledChannels = shuffleArray(allChannels, window.seed);
+                        console.log(`[${new Date().toISOString()}] Array shuffled in ${Date.now() - shuffleStart}ms.`);
+
+                        const selectedChannels = shuffledChannels.slice(0, 24);  // Still selecting only 16 channels
+                        console.log(`[${new Date().toISOString()}] Channels shuffled and selected, count: ${selectedChannels.length}`);
+
+                        const combinedData = {
+                            ...validData[0],  // Use the first valid dataset as a base
+                            projectBPM: baseBPM,
+                            channelURLs: selectedChannels.map(ch => ch.url),
+                            channelVolume: selectedChannels.map(ch => ch.volume),
+                            channelPlaybackSpeed: selectedChannels.map(ch => ch.speed),
+                            trimSettings: selectedChannels.map(ch => ch.trim),
+                            projectSequences: {}
+                        };
+
+                        // Combine sequences from all valid datasets, ensuring `projectSequences` exists
+                        const projectSequencesSources = validData.reduce((acc, dataset, i) => {
+                            acc[`data${i + 1}`] = dataset;
+                            return acc;
+                        }, {});
+
+                        console.log(`[${new Date().toISOString()}] Processing combined data for sequences.`);
+
+                        for (const seq in validData[0].projectSequences) {
+                            combinedData.projectSequences[seq] = {};
+
+                            selectedChannels.forEach((ch, i) => {
+                                const chKey = `ch${i}`;
+                                const sourceSeq = projectSequencesSources[ch.source]?.projectSequences[seq];
+
+                                // Check if sourceSeq and sourceSeq[`ch${ch.index}`] exist
+                                if (sourceSeq && sourceSeq[`ch${ch.index}`]) {
+                                    combinedData.projectSequences[seq][chKey] = sourceSeq[`ch${ch.index}`];
+                                    console.log(`[${new Date().toISOString()}] Added sequence data for ${chKey} in sequence ${seq}.`);
+                                } else {
+                                    console.warn(`[${new Date().toISOString()}] Missing sequence data for channel ${chKey} in sequence ${seq}.`);
+                                    // Fallback: Provide default empty steps or other fallback data
+                                    combinedData.projectSequences[seq][chKey] = { steps: [] };
+                                }
+                            });
+                        }
+
+                        console.log(`[${new Date().toISOString()}] Combined Data:`, combinedData);
+
+                        const blobCreationStart = Date.now();
+                        const blob = new Blob([JSON.stringify(combinedData)], { type: &quot;application/json&quot; });
+                        window.jsonDataUrl = URL.createObjectURL(blob);
+                        console.log(`[${new Date().toISOString()}] Blob created and URL object generated in ${Date.now() - blobCreationStart}ms.`);
+
+                        const scriptElement = document.createElement(&quot;script&quot;);
+                        scriptElement.src = &quot;/content/6e226872d6612da632fcf29824b6f52c3672a745e194032e4f91c351e47d75c9i0&quot;;
+                        document.head.appendChild(scriptElement);
+                        console.log(`[${new Date().toISOString()}] Script element appended to head.`);
+                    } catch (e) {
+                        console.error(`[${new Date().toISOString()}] Error processing data in processSerializedData:`, e);
+                    }
+                }
+
+                // Export functions globally
+                window.fetchAndDeserialize = fetchAndDeserialize;
+                window.processSerializedData = processSerializedData;
+                window.seededRandom = seededRandom;
+                window.shuffleArray = shuffleArray;
+                window.selectBPM = selectBPM;
+
+                console.log(`[${new Date().toISOString()}] Fifth IIFE [fetchAndDeserialize] completed.`);
+            })();
+
+// IFE #6
+(function IIFE6() {
+            console.log(`[${new Date().toISOString()}] Sixth IIFE [pfp and text scripts] running with seed:`, window.seed);
+
+            function loadPFPScript() {
+                console.log(`[${new Date().toISOString()}] loadPFPScript called.`);
+                try {
+                    const scriptElement = document.createElement(&quot;script&quot;);
+                    scriptElement.src = &quot;/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0&quot;;
+                    document.body.appendChild(scriptElement);
+                    console.log(`[${new Date().toISOString()}] PFP script appended to body.`);
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error in loadPFPScript:`, error);
+                }
+            }
+
+            function createTextElement(text, className) {
+                console.log(`[${new Date().toISOString()}] createTextElement called with text: ${text} and className: ${className}`);
+                try {
+                    const element = document.createElement(&quot;div&quot;);
+                    element.textContent = text;
+                    element.classList.add(&quot;text-element&quot;, className);
+                    document.body.appendChild(element);
+                    console.log(`[${new Date().toISOString()}] Text element created and appended to body.`);
+                    return element;
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error in createTextElement:`, error);
+                }
+            }
+
+            function initialFadeIn() {
+                console.log(`[${new Date().toISOString()}] initialFadeIn called.`);
+                try {
+                    const fadeOverlay = document.getElementById(&quot;fadeOverlay&quot;);
+                    if (fadeOverlay) {
+                        setTimeout(() => {
+                            fadeOverlay.style.opacity = &quot;0&quot;;
+                            console.log(`[${new Date().toISOString()}] Fade overlay opacity set to 0.`);
+                        }, 100);
+                    } else {
+                        console.warn(`[${new Date().toISOString()}] Fade overlay not found.`);
+                    }
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error in initialFadeIn:`, error);
+                }
+            }
+
+            function displayText() {
+                console.log(`[${new Date().toISOString()}] displayText called.`);
+                const texts = [
+                    { text: &quot;?\u2003\u2008\?\u2003\u2008\?&quot;, className: &quot;freedom&quot;, fadeIn: 0, fadeOut: 15740 }, // \u2003 is an em space
+                    { text: &quot;?elo?honi?&quot;, className: &quot;melophonic&quot;, fadeIn: 15740, fadeOut: 31480 },
+                    { text: &quot;?Q?Z?&quot;, className: &quot;sqyzy&quot;, fadeIn: 31480, fadeOut: 47800 }
+                ];
+
+                texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+                    console.log(`[${new Date().toISOString()}] Scheduling display of text: ${text} with className: ${className}`);
+                    const textElement = createTextElement(text, className);
+                    setTimeout(() => {
+                        textElement.style.opacity = &quot;1&quot;;
+                        console.log(`[${new Date().toISOString()}] Text ${text} faded in.`);
+                    }, fadeIn);
+                    setTimeout(() => {
+                        textElement.style.opacity = &quot;0&quot;;
+                        console.log(`[${new Date().toISOString()}] Text ${text} faded out.`);
+                    }, fadeOut);
+                });
+            }
+
+            function displayPlayText() {
+                console.log(`[${new Date().toISOString()}] displayPlayText called.`);
+                try {
+                    const playTextElement = document.createElement(&quot;div&quot;);
+                    playTextElement.textContent = &quot;?\u2003\u2008\?\u2003\u2008\?&quot;; // \u2003 is an em space
+                    playTextElement.className = &quot;play-text&quot;;
+                    document.body.appendChild(playTextElement);
+                    console.log(`[${new Date().toISOString()}] Play text element appended to body.`);
+
+                    setTimeout(() => {
+                        playTextElement.style.opacity = &quot;0&quot;;
+                        console.log(`[${new Date().toISOString()}] Play text faded out.`);
+                    }, 100);
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error in displayPlayText:`, error);
+                }
+            }
+
+            window.onload = function() {
+                console.log(`[${new Date().toISOString()}] window.onload triggered.`);
+                try {
+                    initialFadeIn();
+                    document.title = &quot;?  ?  ?&quot;;
+                    console.log(`[${new Date().toISOString()}] Document title set to &quot;?  ?  ?&quot;.`);
+                    displayPlayText();
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error during window.onload execution:`, error);
+                }
+                console.log(`[${new Date().toISOString()}] window.onload execution completed.`);
+            };
+
+            // Expose functions globally
+            window.loadPFPScript = loadPFPScript;
+            window.createTextElement = createTextElement;
+            window.initialFadeIn = initialFadeIn;
+            window.displayText = displayText;
+            window.displayPlayText = displayPlayText;
+
+            // Load the PFP script
+            loadPFPScript();
+
+            console.log(`[${new Date().toISOString()}] Sixth IIFE [pfp and text scripts] completed.`);
+        })();
+</script>
+</body>
+</html>"
+frameborder="0">
+</iframe>
+
+</body>
+</html>
+
