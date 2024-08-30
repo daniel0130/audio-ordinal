@@ -139,24 +139,26 @@
       "length": 0
     }
   ],
-  "projectChannelNames": [
-    "C2 Glock",
-    "B1 Glock",
-    "A#1 Glock",
-    "A1 Glock",
-    "G#1 Glock",
-    "G1 Glock",
-    "F#1 Glock",
-    "F1 Glock",
-    "E1 Glock",
-    "D#1 Glock",
-    "D1 Glock",
-    "C#1 Glock",
-    "C1 Glock",
-    "B0 Glock",
-    "A#0 Glock",
-    "A0 Glock"
-  ],
+  
+"projectChannelNames": [
+  "E7",
+  "E♭7",
+  "D7",
+  "C♯7",
+  "C7",
+  "B6",
+  "B♭6",
+  "A6",
+  "A♭6",
+  "G6",
+  "F♯6",
+  "F6",
+  "E6",
+  "E♭6",
+  "D6",
+  "C♯6"
+],
+
   "projectSequences": {
     "Sequence0": {
       "ch0": {
