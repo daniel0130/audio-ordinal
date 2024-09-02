@@ -39,10 +39,10 @@ function generateNewSong(dataArray) {
         "globalPlaybackSpeed": 1 // Default global playback speed
     };
 
-    // Ensure the new song has 16 channels, selecting channels from the source data
-    for (let i = 0; i < 16; i++) {
+    // Ensure the new song has 24 channels, selecting channels from the source data
+    for (let i = 0; i < 24; i++) {
         try {
-            const sourceSongIndex = i % dataArray.length; // Cycle through the data if there are fewer than 16 source songs
+            const sourceSongIndex = i % dataArray.length; // Cycle through the data if there are fewer than 24 source songs
             const sourceSong = dataArray[sourceSongIndex];
 
             // Detailed logging for validation
@@ -101,6 +101,7 @@ function generateNewSong(dataArray) {
 
     return newSong;
 }
+
 
 // Function to generate and serialize the new song data
 function createAndSerializeNewSong(dataArray) {

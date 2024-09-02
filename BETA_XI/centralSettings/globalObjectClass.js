@@ -38,40 +38,73 @@ class UnifiedSequencerSettings {
 
     initializeSourceNodes() {
         for (let i = 0; i < this.numChannels; i++) {
-            const source = this.audioContext.createBufferSource(); // Create a new buffer source node
-            source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
-            source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
-            this.sourceNodes.push(source);
+            if (!this.sourceNodes[i]) {  // Only create source nodes if they don't exist
+                const source = this.audioContext.createBufferSource(); // Create a new buffer source node
+                source.playbackRate.setValueAtTime(this.settings.masterSettings.channelPlaybackSpeed[i], this.audioContext.currentTime);
+                source.connect(this.gainNodes[i]); // Connect each source to its corresponding gain node
+                this.sourceNodes.push(source);
+            }
         }
     }
 
     initializeGainNodes() {
         console.log("Initializing gain nodes");
         for (let i = 0; i < this.numChannels; i++) {
-            const gainNode = this.audioContext.createGain();
-            gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
-            gainNode.connect(this.audioContext.destination);
-            this.gainNodes[i] = gainNode;
-            console.log(`Gain node ${i} initialized with volume ${this.settings.masterSettings.channelVolume[i]}`);
+            if (!this.gainNodes[i]) {  // Only create gain nodes if they don't exist
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.setValueAtTime(this.settings.masterSettings.channelVolume[i], this.audioContext.currentTime);
+                gainNode.connect(this.audioContext.destination);
+                this.gainNodes[i] = gainNode;
+                console.log(`Gain node ${i} initialized with volume ${this.settings.masterSettings.channelVolume[i]}`);
+            }
         }
     }
+
+    createGainNodeForChannel(channelIndex) {
+        if (!this.gainNodes[channelIndex]) {
+            const gainNode = this.audioContext.createGain();
+    
+            // Check and sanitize the volume value
+            let volume = this.settings.masterSettings.channelVolume[channelIndex];
+            if (!isFinite(volume)) {
+                console.warn(`Non-finite volume detected for channel ${channelIndex}, defaulting to 0.5`);
+                volume = 0.5; // Default to a safe value
+            }
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+            gainNode.connect(this.audioContext.destination);
+            this.gainNodes[channelIndex] = gainNode;
+            console.log(`Gain node ${channelIndex} initialized with volume ${volume}`);
+        }
+    }
+    
 
     setChannelVolume(channelIndex, volume) {
         console.log(`Setting volume for channel ${channelIndex} to ${volume}`);
+        
+        // Ensure gain node exists for the channel
+        if (!this.gainNodes[channelIndex]) {
+            console.warn(`No gain node found for channel ${channelIndex}. Creating new gain node.`);
+            this.createGainNodeForChannel(channelIndex, volume);
+        }
+
         const gainNode = this.gainNodes[channelIndex];
 
+        // Handle case where gainNode is undefined
         if (!gainNode) {
-            console.error(`No gain node found for channel ${channelIndex}`);
+            console.error(`Failed to create gain node for channel ${channelIndex}`);
             return;
         }
 
+        // Set volume on the gain node
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
         this.settings.masterSettings.channelVolume[channelIndex] = volume;
         console.log(`Volume for channel ${channelIndex} set to ${volume}`);
-
+        
         // Store the volume in local storage for persistence
         localStorage.setItem(`channelVolume_${channelIndex}`, volume.toString());
     }
+
+    
 
     getChannelVolume(channelIndex) {
         return this.settings.masterSettings.channelVolume[channelIndex] || 1; // Default volume is 1
@@ -253,48 +286,88 @@ class UnifiedSequencerSettings {
         return deserialize(serializedData);
     }
     
-    sortAndApplyProjectSequences(parsedSettings) {
-        if (parsedSettings.projectSequences) {
-            Object.keys(parsedSettings.projectSequences).forEach(sequenceKey => {
-                const sequence = parsedSettings.projectSequences[sequenceKey];
-                Object.keys(sequence).forEach(channelKey => {
-                    const channel = sequence[channelKey];
-                    let newSteps = Array.from({ length: 64 }, () => ({
-                        isActive: false,
-                        isReverse: false,
-                        volume: 1,
-                        pitch: 1
-                    }));
-                    
-                    channel.steps.forEach(stepData => {
-                        let index;
-                        let isReverse = false;
-                        if (typeof stepData === 'object' && stepData.index !== undefined) {
-                            index = stepData.index - 1; // Adjusting for zero-based indexing
-                            isReverse = stepData.reverse || false;
-                        } else if (typeof stepData === 'number') {
-                            index = stepData - 1; // Adjusting for zero-based indexing
-                        }
-                        if (index !== undefined) {
-                            newSteps[index] = {
-                                isActive: true,
-                                isReverse: isReverse,
-                                volume: 1,
-                                pitch: 1
-                            };
-                        }
-                    });
+    sortAndApplyProjectSequences(projectSequences) {
+        try {
+            console.log("Sorting and applying project sequences.");
     
-                    // Assign new steps to the channel
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = newSteps;
+            // Ensure projectSequences is defined and is an object
+            if (!projectSequences || typeof projectSequences !== 'object') {
+                throw new Error("Invalid project sequences data.");
+            }
     
-                    // Ensure mute and url fields exist, for internal consistency
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].mute = false;
-                    this.settings.masterSettings.projectSequences[sequenceKey][channelKey].url = "";
+            Object.keys(projectSequences).forEach((sequenceKey) => {
+                const sequenceData = projectSequences[sequenceKey];
+    
+                if (!sequenceData || typeof sequenceData !== 'object') {
+                    console.warn(`Skipping invalid sequence data for key: ${sequenceKey}`);
+                    return; // Skip invalid or undefined sequence data
+                }
+    
+                Object.keys(sequenceData).forEach((channelKey) => {
+                    let channelData = sequenceData[channelKey]; // Using `let` since it might be reassigned
+                    const channelIndex = parseInt(channelKey.replace('ch', ''), 10);
+    
+                    // Handle channels 0-15 (visible in UI)
+                    if (channelIndex < 16) {
+                        let newSteps = Array.from({ length: 64 }, () => ({
+                            isActive: false,
+                            isReverse: false,
+                            volume: 1,
+                            pitch: 1
+                        }));
+                        
+                        if (channelData && channelData.steps && Array.isArray(channelData.steps)) {
+                            channelData.steps.forEach(stepData => {
+                                let index;
+                                let isReverse = false;
+                                if (typeof stepData === 'object' && stepData.index !== undefined) {
+                                    index = stepData.index - 1; // Adjusting for zero-based indexing
+                                    isReverse = stepData.reverse || false;
+                                } else if (typeof stepData === 'number') {
+                                    index = stepData - 1; // Adjusting for zero-based indexing
+                                }
+                                if (index !== undefined) {
+                                    newSteps[index] = {
+                                        isActive: true,
+                                        isReverse: isReverse,
+                                        volume: 1,
+                                        pitch: 1
+                                    };
+                                }
+                            });
+                        } else {
+                            console.warn(`No valid steps found for channel ${channelKey} in sequence ${sequenceKey}`);
+                        }
+    
+                        // Assign new steps to the channel
+                        this.settings.masterSettings.projectSequences[sequenceKey][channelKey].steps = newSteps;
+    
+                        // Ensure mute and url fields exist, for internal consistency
+                        this.settings.masterSettings.projectSequences[sequenceKey][channelKey].mute = false;
+                        this.settings.masterSettings.projectSequences[sequenceKey][channelKey].url = "";
+    
+                    } else {
+                        // Handle channels beyond 16, which should not interact with the UI
+                        if (!channelData || typeof channelData !== 'object') {
+                            console.warn(`Initializing hidden channel data for key: ${channelKey} in sequence ${sequenceKey}`);
+                            sequenceData[channelKey] = { steps: [] }; // Initialize steps as an empty array
+                        }
+    
+                        // Ensure mute and url fields exist for channels beyond 16, but no further processing is needed
+                        this.settings.masterSettings.projectSequences[sequenceKey][channelKey].mute = false;
+                        this.settings.masterSettings.projectSequences[sequenceKey][channelKey].url = "";
+                    }
                 });
             });
+    
+            // Proceed with applying sequences to channels
+            console.log("Project sequences sorted and applied.");
+    
+        } catch (error) {
+            console.error("Error in sortAndApplyProjectSequences:", error);
         }
     }
+        
     
 
     exportSettings(pretty = true, includeGzip = true) {
