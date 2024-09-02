@@ -81,7 +81,7 @@ canvas#cv {
         console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
     })();
 
-(function InteractionModule() {
+
     
     function displayText(texts) {
         texts.forEach(({ text, className, fadeIn, fadeOut }) => {
@@ -113,7 +113,18 @@ canvas#cv {
     ];
 
     displayText(texts);
-})();
+
+
+function displayPlayText() {
+        try {
+            const playTextElement = createTextElement("?\u2008?\u2008?\u2008?\u2008?", "play-text");
+            setTimeout(() => {
+                playTextElement.style.opacity = "0";
+            }, 100);
+        } catch (error) {
+            console.error(`Error in displayPlayText:`, error);
+        }
+    }
 
 </script>
 </userDefinedData>
@@ -131,7 +142,7 @@ canvas#cv {
             "/content/1a5cafb61e4a320434fc4087e203d2a5f695ba9112635b960fc9d7dcb961d9fci0", // startPlaybackLoop
             "/content/a3d8a40fcde6935f16b49ad7c9e9aa185f01d1618f4e35828415f6cc27377a47i0", // dispatchSequenceEvents
             "/content/17c6cb4f92d47043da52ce8334c41961c588b7955488e56f08264840ef63a4eei0", // initialiseWorker
-            "/content/4915e144695ab04171092a45e2d49cfa7b5e92c9a35ce612e7b749457acc92ddi0", // titleDisplays_2.js
+            // "/content/4915e144695ab04171092a45e2d49cfa7b5e92c9a35ce612e7b749457acc92ddi0", // titleDisplays_2.js
             "/content/3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
             "/content/4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
             "/content/0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
@@ -148,7 +159,8 @@ canvas#cv {
             "/content/305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
             "/content/0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
             "/content/287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
-            "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0" // visualiserDrawingColours.js
+            "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
+            "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0" // PFP module
         ];
 </script>
 </defineScriptsToLoad>
@@ -157,7 +169,7 @@ canvas#cv {
 <customElements>
 <script>
 // CustomElementsModule.js
-(function CustomElementsModule() {
+
     function loadScript(src) {
         try {
             const scriptElement = document.createElement("script");
@@ -168,17 +180,6 @@ canvas#cv {
         }
     }
 
-    // function createTextElement(text, className) {
-    //     try {
-    //         const element = document.createElement("div");
-    //         if (text) element.textContent = text;
-    //         if (className) element.classList.add(className);
-    //         document.body.appendChild(element);
-    //         return element;
-    //     } catch (error) {
-    //         console.error(`Error creating element:`, error);
-    //     }
-    // }
 
     function fadeOutElementById(id, delay = 100) {
         try {
@@ -205,16 +206,7 @@ canvas#cv {
         });
     }
 
-    function displayPlayText() {
-        try {
-            const playTextElement = createTextElement("?\u2008?\u2008?\u2008?\u2008?", "play-text");
-            setTimeout(() => {
-                playTextElement.style.opacity = "0";
-            }, 100);
-        } catch (error) {
-            console.error(`Error in displayPlayText:`, error);
-        }
-    }
+
 
     // Expose functions globally
     window.loadScript = loadScript;
@@ -223,11 +215,9 @@ canvas#cv {
     window.displayTextElements = displayTextElements;
     window.displayPlayText = displayPlayText;
 
-    // Load the PFP script
-    loadScript("/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0");
 
     console.log(`[${new Date().toISOString()}] CustomElementsModule initialized.`);
-})();
+
 </script>
 </customElements>
 
@@ -530,11 +520,10 @@ canvas#cv {
     })();
     </script>
 </dataProcessingCore>
-
 <scriptLoader>
     <script>
     // scriptLoader.js
-    (function ScriptLoader() {
+    (async function ScriptLoader() {
         // Create and append canvas element
         const canvas = document.createElement("canvas");
         canvas.id = "cv";
@@ -548,14 +537,15 @@ canvas#cv {
         `;
 
         // Function to load scripts sequentially
-        function loadScriptsSequentially(n, e = 0, t) {
-            if (e < n.length) {
-                const i = document.createElement("script");
-                i.src = n[e];
-                i.onload = () => loadScriptsSequentially(n, e + 1, t);
-                document.head.appendChild(i);
-            } else if (typeof t === "function") {
-                t();
+        async function loadScriptsSequentially(scripts) {
+            for (let src of scripts) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement("script");
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                    document.head.appendChild(script);
+                });
             }
         }
 
@@ -568,47 +558,50 @@ canvas#cv {
             initializeWorker();
         }
 
-     
-
         // Function to wait for jsonDataUrl to be defined
-        function waitForJsonDataUrl(callback) {
-            if (window.jsonDataUrl) {
-                callback();
-            } else {
-                console.warn('jsonDataUrl is not defined yet, waiting...');
-                setTimeout(() => waitForJsonDataUrl(callback), 100);  // Retry after 100ms
-            }
+        function waitForJsonDataUrl() {
+            return new Promise((resolve) => {
+                (function checkJsonDataUrl() {
+                    if (window.jsonDataUrl) {
+                        resolve();
+                    } else {
+                        console.warn('jsonDataUrl is not defined yet, waiting...');
+                        setTimeout(checkJsonDataUrl, 100);  // Retry after 100ms
+                    }
+                })();
+            });
         }
 
         // Start the process once jsonDataUrl is defined
-        waitForJsonDataUrl(() => {
+        try {
+            await waitForJsonDataUrl();
             console.log('Fetching from URL:', window.jsonDataUrl);
-            fetch(window.jsonDataUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(settings => {
-                    window.settings = settings;
-                    console.log("Settings loaded:", settings);
-                    loadScriptsSequentially(window.scriptsToLoad, 0, async () => {
-                        await ensureAudioContextState();
-                        if (document.readyState === "loading") {
-                            document.addEventListener("DOMContentLoaded", initializeApp);
-                        } else {
-                            initializeApp();
-                        }
-                    });
-                })
-                .catch(error => console.error("Error loading settings:", error));
-        });
-    
+
+            const response = await fetch(window.jsonDataUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            window.settings = await response.json();
+            console.log("Settings loaded:", window.settings);
+
+            await loadScriptsSequentially(window.scriptsToLoad);
+            await ensureAudioContextState();
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initializeApp);
+            } else {
+                initializeApp();
+            }
+        } catch (error) {
+            console.error("Error initializing the app:", error);
+        }
+
         console.log(`[${new Date().toISOString()}] [debugScriptloading] ScriptLoader initialized.`);
     })();
     </script>
 </scriptLoader>
+
 
 
     
