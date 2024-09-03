@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>? ? ? ? ? ? ?</title>
     <script>
-        window.seed = 1;  // Default seed
+        window.seed = 3;  // Default seed
     
     </script>
  <style>
@@ -63,33 +63,75 @@ const init = () => {
         "/content/d0496a8e1657ce470807c8d47dcb5f1018a32d8ec8e50d490ad49411ffee1457i0", // Rhythm and Bass 60
     ];
 
-    // VOLUME_CONTROLS: Each song has an array of 17 values
+    // VOLUME_CONTROLS: Using multipliers now, 1 means no change, <1 means decrease, >1 means increase
     const VOLUME_CONTROLS = [
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // HUMANITY
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MintyFresh Vibes
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 100, 1, 1, 1, 1], // Crazy Ass Bitch
-        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+        [1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 1, 1, 0.001, 0.001, 0.001, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+        [0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5, 2, 1, 1, 1], // HUMANITY
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 0.7, 1, 1, 1, 1, 1], // MintyFresh Vibes 
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE IT's ONE OF THESE TWO
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 0.01, 1, 1, 1, 1], // Crazy Ass Bitch (Channel 12 muted)
+        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
+    ];
+
+    const SPEED_CONTROLS = [
+        // TRUTH
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // On-Chain in the Membrane
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // CHEESE
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // KORA
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // CHOPPIN' IT UP
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // MLK I HAVE A DREAM
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // ModernProgress
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // HUMANITY
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // MintyFresh Vibes
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.9, 1, 1, 1, 1, 1, 1], // update BASS TUNING chs 10-11
+
+        // ON DAY ONE
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // Rhythm and Bass 240
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // Crazy Ass Bitch
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+
+        // Rhythm and Bass 60
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
     if (songDataUrls.length > 0) {
         console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
-        processSerializedData(songDataUrls, VOLUME_CONTROLS);
-        console.log(`[${(new Date).toISOString()}] processSerializedData completed successfully.`);
+        processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS);
+        console.log(`[${new Date().toISOString()}] processSerializedData completed successfully.`);
     } else {
         console.warn(`[${new Date().toISOString()}] songDataUrls array is empty.`);
     }
 };
 
 window.init = init;
+
 
 
 
@@ -222,164 +264,313 @@ async function fetchAndDeserialize(e){
     }
 }
 
-function shuffleArray(e,t){
-    for(let n=e.length-1;n>0;n--){
-        const r=Math.floor(seededRandom(t++)*(n+1));
-        [e[n],e[r]]=[e[r],e[n]];
+/**
+ * Shuffles an array in place using a seeded random function.
+ * @param {Array} array - The array to shuffle.
+ * @param {number} seed - The seed value for consistent shuffling.
+ * @returns {Array} - The shuffled array.
+ */
+ function shuffleArray(array, seed) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed++) * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
-    console.log(`[${(new Date).toISOString()}] After shuffling - Playback Speeds:`, e.map(item => item.speed), "Trim Settings:", e.map(item => item.trim));
-    return e;
-}
-
-const BPM_VALUES=[80,100,120,140,160,180,240];
-
-function selectBPM(e){
-    return BPM_VALUES[Math.floor(seededRandom(e)*BPM_VALUES.length)];
+    console.log(`[${new Date().toISOString()}] After shuffling - Playback Speeds:`, array.map(item => item.speed), "Trim Settings:", array.map(item => item.trim));
+    return array;
 }
 
 
+const BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
 
-async function processSerializedData(songDataUrls, VOLUME_CONTROLS) {
+/**
+ * Selects a BPM value based on a seeded random function.
+ * @param {number} seed - The seed value for consistent BPM selection.
+ * @returns {number} - The selected BPM value.
+ */
+function selectBPM(seed) {
+    return BPM_VALUES[Math.floor(seededRandom(seed) * BPM_VALUES.length)];
+}
+
+
+/**
+ * Fetches and processes data from a list of URLs.
+ * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+ * @returns {Array<Object>} - Array of deserialized and validated data.
+ * @throws {Error} - Throws an error if no valid data is processed.
+ */
+ async function fetchAndProcessData(songDataUrls) {
+    const deserializedDataPromises = songDataUrls.map(async (url) => {
+        try {
+            const data = await fetchAndDeserialize(url);
+            if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+            console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
+            return data;
+        } catch (error) {
+            console.error("Error processing URL:", error);
+            return null;
+        }
+    });
+
+    const deserializedDataResults = await Promise.all(deserializedDataPromises);
+    const deserializedData = deserializedDataResults.filter(data => data !== null);
+
+    if (!deserializedData.length) throw new Error("No valid data was processed.");
+
+    return deserializedData;
+}
+
+/**
+ * Adjusts channel playback speeds, trim settings, and volumes.
+ * @param {Object} data - The song data object to adjust.
+ * @param {number} dataIndex - Index of the song data in the array.
+ * @param {number} selectedBPM - The BPM selected for this processing run.
+ * @param {Array<Array<number>>} VOLUME_CONTROLS - The volume controls for each song and channel.
+ * @param {Array<Array<number>>} SPEED_CONTROLS - The speed controls for each song and channel.
+ */
+ function adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS) {
+    const adjustmentFactor = selectedBPM / data.projectBPM;
+    console.log(`[${new Date().toISOString()}] Adjustment Factor for this song: ${adjustmentFactor}`);
+
+    data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+        const speedControlMultiplier = SPEED_CONTROLS[dataIndex][channelIndex] || 1; // Use 1 as default if not specified
+        const adjustedSpeed = speed * adjustmentFactor * speedControlMultiplier;
+        console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Speed: ${speed}, Speed Control Multiplier: ${speedControlMultiplier}, Adjusted Speed: ${adjustedSpeed}`);
+
+        let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
+        const originalDuration = trim.endSliderValue - trim.startSliderValue;
+
+        const adjustedDuration = adjustedSpeed > speed
+            ? originalDuration / adjustedSpeed
+            : originalDuration * (speed / adjustedSpeed);
+
+        if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+            trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
+            console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+        } else {
+            console.warn(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
+            trim = { startSliderValue: 0, endSliderValue: 100 };
+        }
+
+        return adjustedSpeed;
+    });
+
+    const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+    const masterVolumeMultiplier = volumeControls[0] || 1;
+
+    data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+        const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+        const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
+        console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+        return adjustedVolume;
+    });
+
+    console.log(`[${new Date().toISOString()}] After Adjustment - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
+}
+
+
+
+/**
+ * Assembles the processed song object after adjusting channels.
+ * @param {Array<Object>} deserializedData - Array of deserialized and adjusted song data.
+ * @param {number} selectedBPM - The BPM selected for this processing run.
+ * @returns {Object} - The final processed song object.
+ */
+ function assembleProcessedSong(deserializedData, selectedBPM) {
+    const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+        data.channelURLs.map((url, channelIndex) => ({
+            url,
+            volume: data.channelVolume[channelIndex],
+            speed: data.channelPlaybackSpeed[channelIndex],
+            trim: data.trimSettings[channelIndex],
+            source: `data${dataIndex + 1}`,
+            index: channelIndex
+        }))
+    );
+
+    const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
+
+    console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`,
+        shuffledChannels.map(channel => channel.speed),
+        "Trim Settings:",
+        shuffledChannels.map(channel => channel.trim)
+    );
+
+    const processedSong = {
+        ...deserializedData[0],
+        projectBPM: selectedBPM,
+        channelURLs: shuffledChannels.map(channel => channel.url),
+        channelVolume: shuffledChannels.map(channel => channel.volume),
+        channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+        trimSettings: shuffledChannels.map(channel => channel.trim),
+        projectSequences: {}
+    };
+
+    const dataSourceMap = deserializedData.reduce((acc, data, index) => ({
+        ...acc,
+        [`data${index + 1}`]: data
+    }), {});
+
+    for (const sequenceKey in deserializedData[0].projectSequences) {
+        processedSong.projectSequences[sequenceKey] = {};
+        shuffledChannels.forEach((channel, newIndex) => {
+            const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+            processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
+        });
+    }
+
+    return processedSong;
+}
+
+/**
+ * Main function to process serialized data for song generation.
+ * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+ * @param {Array<Array<number>>} VOLUME_CONTROLS - Volume controls for each song and channel.
+ * @param {Array<Array<number>>} SPEED_CONTROLS - Speed controls for each song and channel.
+ */
+ async function processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS) {
     try {
         await loadPako();
 
-        const BUFFER_FACTOR = 50;
-        const TRIM_CLAMP = true;
+        const deserializedData = await fetchAndProcessData(songDataUrls);
 
-        const deserializedDataPromises = songDataUrls.map(async (url) => {
-            try {
-                const data = await fetchAndDeserialize(url);
-                if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
-                return data;
-            } catch (error) {
-                console.error("Error processing URL:", error);
-                return null;
-            }
-        });
-
-        const deserializedDataResults = await Promise.all(deserializedDataPromises);
-        const deserializedData = deserializedDataResults.filter(data => data !== null);
-
-        if (!deserializedData.length) throw new Error("No valid data was processed.");
-        
         const selectedBPM = selectBPM(window.seed);
         console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
 
         deserializedData.forEach((data, dataIndex) => {
-            console.log(`[${(new Date).toISOString()}] Processing data from song ${dataIndex + 1}`);
-            console.log(`Original Project BPM: ${data.projectBPM}`);
-            
-            const adjustmentFactor = selectedBPM / data.projectBPM;
-            console.log(`Adjustment Factor for this song: ${adjustmentFactor}`);
-            
-            data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
-                const adjustedSpeed = speed * adjustmentFactor;
-                console.log(`Channel ${channelIndex}: Original Speed: ${speed}, Adjusted Speed: ${adjustedSpeed}`);
-                
-                let trim = data.trimSettings[channelIndex];
-                if (!trim) {
-                    console.log(`Channel ${channelIndex}: Trim settings are undefined. Setting defaults (0% - 100%).`);
-                    trim = { startSliderValue: 0, endSliderValue: 100 };
-                } else {
-                    console.log(`Channel ${channelIndex}: Original Trim Start: ${trim.startSliderValue}, Original Trim End: ${trim.endSliderValue}`);
-                }
-
-                const originalDuration = trim.endSliderValue - trim.startSliderValue;
-                let adjustedDuration;
-
-                if (adjustedSpeed > speed) {
-                    adjustedDuration = originalDuration / adjustedSpeed;
-                } else {
-                    adjustedDuration = originalDuration * (speed / adjustedSpeed);
-                }
-
-                if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
-                    trim.endSliderValue = trim.startSliderValue + adjustedDuration;
-
-                    if (TRIM_CLAMP) {
-                        trim.endSliderValue = Math.min(Math.max(trim.endSliderValue, 0), 100);
-                    }
-
-                    console.log(`Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
-                } else {
-                    console.warn(`Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
-                    trim.startSliderValue = 0;
-                    trim.endSliderValue = 100;
-                }
-
-                return adjustedSpeed;
-            });
-
-            // Apply master volume divisor
-            const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
-            const masterVolumeDivisor = volumeControls[0] || 1;
-
-            data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
-                const channelVolumeDivisor = volumeControls[channelIndex + 1] || 1; // Index + 1 because 0 is master
-                const adjustedVolume = (volume / masterVolumeDivisor) * channelVolumeDivisor;
-                console.log(`Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
-                return adjustedVolume;
-            });
-
-            console.log(
-                `[${new Date().toISOString()}] After Adjustment - Playback Speeds:`,
-                data.channelPlaybackSpeed,
-                "Trim Settings:",
-                data.trimSettings,
-                "Volumes:",
-                data.channelVolume
-                );
+            console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1}`);
+            adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS);
         });
 
-        const flattenedChannels = deserializedData.flatMap((data, dataIndex) => 
-            data.channelURLs.map((url, channelIndex) => ({
-                url,
-                volume: data.channelVolume[channelIndex],
-                speed: data.channelPlaybackSpeed[channelIndex],
-                trim: data.trimSettings[channelIndex],
-                source: `data${dataIndex + 1}`,
-                index: channelIndex
-            }))
-        );
-        
-        const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
-
-        console.log(`[${(new Date).toISOString()}] Selected 24 Channels - Playback Speeds:`, 
-            shuffledChannels.map(channel => channel.speed), 
-            "Trim Settings:", 
-            shuffledChannels.map(channel => channel.trim)
-        );
-
-        const processedSong = {
-            ...deserializedData[0],
-            projectBPM: selectedBPM,
-            channelURLs: shuffledChannels.map(channel => channel.url),
-            channelVolume: shuffledChannels.map(channel => channel.volume),
-            channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
-            trimSettings: shuffledChannels.map(channel => channel.trim),
-            projectSequences: {}
-        };
-
-        const dataSourceMap = deserializedData.reduce((acc, data, index) => ({ ...acc, [`data${index + 1}`]: data }), {});
-        for (const sequenceKey in deserializedData[0].projectSequences) {
-            processedSong.projectSequences[sequenceKey] = {};
-            shuffledChannels.forEach((channel, newIndex) => {
-                const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
-                processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
-            });
-        }
+        const processedSong = assembleProcessedSong(deserializedData, selectedBPM);
 
         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
-        console.log(`[${(new Date).toISOString()}] [debugScriptloading] Data processing complete.`);
-        
+        console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
+
     } catch (error) {
         console.error("Error processing data in processSerializedData:", error);
     }
 }
 
-console.log(`[${(new Date).toISOString()}] DataProcessingCore initialized.`);
 
+console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
+
+
+// async function processSerializedData(songDataUrls, VOLUME_CONTROLS) {
+//     try {
+//         await loadPako();
+
+//         const deserializedData = await Promise.all(
+//             songDataUrls.map(async (url) => {
+//                 try {
+//                     const data = await fetchAndDeserialize(url);
+//                     if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+//                     console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
+//                     return data;
+//                 } catch (error) {
+//                     console.error("Error processing URL:", error);
+//                     return null;
+//                 }
+//             })
+//         ).then(results => results.filter(Boolean));
+
+//         if (deserializedData.length === 0) throw new Error("No valid data was processed.");
+
+//         const selectedBPM = selectBPM(window.seed);
+//         console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
+
+//         deserializedData.forEach((data, dataIndex) => {
+//             console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1}`);
+//             const adjustmentFactor = selectedBPM / data.projectBPM;
+//             console.log(`[${new Date().toISOString()}] Adjustment Factor for this song: ${adjustmentFactor}`);
+
+//             data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+//                 const adjustedSpeed = speed * adjustmentFactor;
+//                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Speed: ${speed}, Adjusted Speed: ${adjustedSpeed}`);
+                
+//                 let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
+//                 const originalDuration = trim.endSliderValue - trim.startSliderValue;
+
+//                 const adjustedDuration = adjustedSpeed > speed 
+//                     ? originalDuration / adjustedSpeed 
+//                     : originalDuration * (speed / adjustedSpeed);
+
+//                 if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+//                     trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
+//                     console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+//                 } else {
+//                     console.warn(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
+//                     trim = { startSliderValue: 0, endSliderValue: 100 };
+//                 }
+
+//                 return adjustedSpeed;
+//             });
+
+//             const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+//             const masterVolumeMultiplier = volumeControls[0] || 1;
+
+//             data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+//                 const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+//                 const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
+//                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+//                 return adjustedVolume;
+//             });
+
+//             console.log(`[${new Date().toISOString()}] After Adjustment - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
+//         });
+
+//         const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+//             data.channelURLs.map((url, channelIndex) => ({
+//                 url,
+//                 volume: data.channelVolume[channelIndex],
+//                 speed: data.channelPlaybackSpeed[channelIndex],
+//                 trim: data.trimSettings[channelIndex],
+//                 source: `data${dataIndex + 1}`,
+//                 index: channelIndex
+//             }))
+//         );
+
+//         const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
+
+//         console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`, 
+//             shuffledChannels.map(channel => channel.speed), 
+//             "Trim Settings:", 
+//             shuffledChannels.map(channel => channel.trim)
+//         );
+
+//         const processedSong = {
+//             ...deserializedData[0],
+//             projectBPM: selectedBPM,
+//             channelURLs: shuffledChannels.map(channel => channel.url),
+//             channelVolume: shuffledChannels.map(channel => channel.volume),
+//             channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+//             trimSettings: shuffledChannels.map(channel => channel.trim),
+//             projectSequences: {}
+//         };
+
+//         const dataSourceMap = deserializedData.reduce((acc, data, index) => ({ 
+//             ...acc, 
+//             [`data${index + 1}`]: data 
+//         }), {});
+
+//         for (const sequenceKey in deserializedData[0].projectSequences) {
+//             processedSong.projectSequences[sequenceKey] = {};
+//             shuffledChannels.forEach((channel, newIndex) => {
+//                 const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+//                 processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
+//             });
+//         }
+
+//         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
+//         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+//         console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
+
+//     } catch (error) {
+//         console.error("Error processing data in processSerializedData:", error);
+//     }
+// }
+
+// console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
 
 
 </script>
