@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>? ? ? ? ? ? ?</title>
     <script>
-        window.seed = 99;  // Default seed
+        window.seed = 1;  // Default seed
     
     </script>
  <style>
@@ -27,7 +27,123 @@ canvas#cv {
 
 <userDefinedData>
 <script>
-function createTextElement(e,t){try{const n=Object.assign(document.createElement("div"),{textContent:e||""});return t&&n.classList.add(t),document.body.append(n),n}catch(e){console.error("Error creating element:",e)}}console.log(`[${(new Date).toISOString()}] First IIFE [init] starting with seed:`,window.seed);const init=()=>{console.log(`[${(new Date).toISOString()}] init function called.`);try{const e=["/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0","/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0","/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0","/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0","/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0","/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0","/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0","/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0","/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0"];e.length>0?(console.log(`[${(new Date).toISOString()}] songDataUrls array is defined and has ${e.length} items. Proceeding with processing...`),processSerializedData(e),console.log(`[${(new Date).toISOString()}] processSerializedData completed successfully.`)):console.warn(`[${(new Date).toISOString()}] songDataUrls array is empty.`)}catch(e){console.error(`[${(new Date).toISOString()}] Error in init function:`,e)}};window.init=init,window.addEventListener("load",(()=>{console.log(`[${(new Date).toISOString()}] Window load event triggered.`),init(),console.log(`[${(new Date).toISOString()}] init function execution completed.`)})),console.log(`[${(new Date).toISOString()}] First IIFE [init] completed.`);const enforceDocumentTitle=()=>{document.title="? ? ? ? ? ? ?";new MutationObserver((()=>{"? ? ? ? ? ? ?"!==document.title&&(document.title="? ? ? ? ? ? ?")})).observe(document.querySelector("title"),{childList:!0,subtree:!0})},displayText=e=>{e.forEach((({text:e,className:t,fadeIn:n,fadeOut:a})=>{const o=createTextElement(e,t);setTimeout((()=>o.style.opacity="1"),n),setTimeout((()=>o.style.opacity="0"),a)}))};window.onload=()=>{try{initialFadeIn(),document.title="? ? ? ? ? ? ?",displayPlayText()}catch(e){console.error("Error during window.onload execution:",e)}};const texts=[{text:"? ? ? ? ?",className:"freedom",fadeIn:0,fadeOut:15740},{text:"?elo?honi?",className:"melophonic",fadeIn:15740,fadeOut:41480},{text:"?Q?Z?",className:"sqyzy",fadeIn:41480,fadeOut:57800}];displayText(texts);const displayPlayText=()=>{try{const e=createTextElement("? ? ? ? ?","play-text");setTimeout((()=>e.style.opacity="0"),100)}catch(e){console.error("Error in displayPlayText:",e)}};
+function createTextElement(text, className) {
+    try {
+        const element = document.createElement("div");
+        element.textContent = text || "";
+        if (className) {
+            element.classList.add(className);
+        }
+        document.body.append(element);
+        return element;
+    } catch (error) {
+        console.error("Error creating element:", error);
+    }
+}
+
+console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
+
+
+const init = () => {
+    console.log(`[${new Date().toISOString()}] init function called.`);
+
+    const songDataUrls = [
+        "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+        "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
+        "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // CHEESE
+        "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // KORA
+        "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN' IT UP
+        "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK I HAVE A DREAM
+        "/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // ModernProgress
+        "/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
+        "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // MintyFresh Vibes
+        "/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
+        "/content/85436950f53c57aa0c510071d2d5f1c187e1d21e4e57210fcae152c4c7b6a768i0", // Rhythm and Bass 240
+        "/content/e3ca12dd7516b4e486af4e3fa7f4ebc535d825034ff3c9da4954f354572dcf61i0", // Crazy Ass Bitch
+        "/content/d0496a8e1657ce470807c8d47dcb5f1018a32d8ec8e50d490ad49411ffee1457i0", // Rhythm and Bass 60
+    ];
+
+    // VOLUME_CONTROLS: Each song has an array of 17 values
+    const VOLUME_CONTROLS = [
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // HUMANITY
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MintyFresh Vibes
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 100, 1, 1, 1, 1], // Crazy Ass Bitch
+        [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
+    ];
+
+    if (songDataUrls.length > 0) {
+        console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
+        processSerializedData(songDataUrls, VOLUME_CONTROLS);
+        console.log(`[${(new Date).toISOString()}] processSerializedData completed successfully.`);
+    } else {
+        console.warn(`[${new Date().toISOString()}] songDataUrls array is empty.`);
+    }
+};
+
+window.init = init;
+
+
+
+window.addEventListener("load", () => {
+    console.log(`[${new Date().toISOString()}] Window load event triggered.`);
+    init();
+    console.log(`[${new Date().toISOString()}] init function execution completed.`);
+});
+
+console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
+
+const enforceDocumentTitle = () => {
+    document.title = "? ? ? ? ? ? ?";
+    new MutationObserver(() => {
+        if (document.title !== "? ? ? ? ? ? ?") {
+            document.title = "? ? ? ? ? ? ?";
+        }
+    }).observe(document.querySelector("title"), { childList: true, subtree: true });
+};
+
+const displayText = (texts) => {
+    texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+        const element = createTextElement(text, className);
+        setTimeout(() => element.style.opacity = "1", fadeIn);
+        setTimeout(() => element.style.opacity = "0", fadeOut);
+    });
+};
+
+window.onload = () => {
+    try {
+        initialFadeIn();
+        document.title = "? ? ? ? ? ? ?";
+        displayPlayText();
+    } catch (error) {
+        console.error("Error during window.onload execution:", error);
+    }
+};
+
+const texts = [
+    { text: "? ? ? ? ?", className: "freedom", fadeIn: 0, fadeOut: 15740 },
+    { text: "?elo?honi?", className: "melophonic", fadeIn: 15740, fadeOut: 41480 },
+    { text: "?Q?Z?", className: "sqyzy", fadeIn: 41480, fadeOut: 57800 }
+];
+
+displayText(texts);
+
+const displayPlayText = () => {
+    try {
+        const element = createTextElement("? ? ? ? ?", "play-text");
+        setTimeout(() => element.style.opacity = "0", 100);
+    } catch (error) {
+        console.error("Error in displayPlayText:", error);
+    }
+};
 </script>
 </userDefinedData>
 
@@ -121,12 +237,16 @@ function selectBPM(e){
     return BPM_VALUES[Math.floor(seededRandom(e)*BPM_VALUES.length)];
 }
 
-async function processSerializedData(e) {
+
+
+async function processSerializedData(songDataUrls, VOLUME_CONTROLS) {
     try {
         await loadPako();
-        
-        // Fetch and deserialize all data sources
-        const deserializedDataPromises = e.map(async (url) => {
+
+        const BUFFER_FACTOR = 50;
+        const TRIM_CLAMP = true;
+
+        const deserializedDataPromises = songDataUrls.map(async (url) => {
             try {
                 const data = await fetchAndDeserialize(url);
                 if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
@@ -142,39 +262,75 @@ async function processSerializedData(e) {
 
         if (!deserializedData.length) throw new Error("No valid data was processed.");
         
-        // Select a BPM for the project based on the seed
         const selectedBPM = selectBPM(window.seed);
-        console.log(`[${(new Date).toISOString()}] Selected Master BPM: ${selectedBPM}`);
+        console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
 
-        // Adjust playback speeds and trim settings based on selected BPM
         deserializedData.forEach((data, dataIndex) => {
-            const adjustmentFactor = selectedBPM / data.projectBPM;
             console.log(`[${(new Date).toISOString()}] Processing data from song ${dataIndex + 1}`);
             console.log(`Original Project BPM: ${data.projectBPM}`);
+            
+            const adjustmentFactor = selectedBPM / data.projectBPM;
             console.log(`Adjustment Factor for this song: ${adjustmentFactor}`);
             
             data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
                 const adjustedSpeed = speed * adjustmentFactor;
                 console.log(`Channel ${channelIndex}: Original Speed: ${speed}, Adjusted Speed: ${adjustedSpeed}`);
                 
-                // Adjust the trim settings based on the new playback speed
-                const trim = data.trimSettings[channelIndex];
-                if (trim) {
-                    const originalDuration = trim.endSliderValue - trim.startSliderValue;
-                    const adjustedDuration = originalDuration / adjustmentFactor;
-                    
-                    // Update the endSliderValue to ensure the full section is played
-                    trim.endSliderValue = trim.startSliderValue + adjustedDuration;
-                    console.log(`Channel ${channelIndex}: Original Trim: ${originalDuration}, Adjusted Trim End: ${trim.endSliderValue}`);
+                let trim = data.trimSettings[channelIndex];
+                if (!trim) {
+                    console.log(`Channel ${channelIndex}: Trim settings are undefined. Setting defaults (0% - 100%).`);
+                    trim = { startSliderValue: 0, endSliderValue: 100 };
+                } else {
+                    console.log(`Channel ${channelIndex}: Original Trim Start: ${trim.startSliderValue}, Original Trim End: ${trim.endSliderValue}`);
                 }
-                
+
+                const originalDuration = trim.endSliderValue - trim.startSliderValue;
+                let adjustedDuration;
+
+                if (adjustedSpeed > speed) {
+                    adjustedDuration = originalDuration / adjustedSpeed;
+                } else {
+                    adjustedDuration = originalDuration * (speed / adjustedSpeed);
+                }
+
+                if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+                    trim.endSliderValue = trim.startSliderValue + adjustedDuration;
+
+                    if (TRIM_CLAMP) {
+                        trim.endSliderValue = Math.min(Math.max(trim.endSliderValue, 0), 100);
+                    }
+
+                    console.log(`Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+                } else {
+                    console.warn(`Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
+                    trim.startSliderValue = 0;
+                    trim.endSliderValue = 100;
+                }
+
                 return adjustedSpeed;
             });
 
-            console.log(`[${(new Date).toISOString()}] After Adjustment - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings);
+            // Apply master volume divisor
+            const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+            const masterVolumeDivisor = volumeControls[0] || 1;
+
+            data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+                const channelVolumeDivisor = volumeControls[channelIndex + 1] || 1; // Index + 1 because 0 is master
+                const adjustedVolume = (volume / masterVolumeDivisor) * channelVolumeDivisor;
+                console.log(`Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+                return adjustedVolume;
+            });
+
+            console.log(
+                `[${new Date().toISOString()}] After Adjustment - Playback Speeds:`,
+                data.channelPlaybackSpeed,
+                "Trim Settings:",
+                data.trimSettings,
+                "Volumes:",
+                data.channelVolume
+                );
         });
 
-        // Flatten and shuffle the channels, then select the first 24 channels
         const flattenedChannels = deserializedData.flatMap((data, dataIndex) => 
             data.channelURLs.map((url, channelIndex) => ({
                 url,
@@ -188,14 +344,12 @@ async function processSerializedData(e) {
         
         const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
 
-        // Log the selected channels' settings before placing them in the new song
         console.log(`[${(new Date).toISOString()}] Selected 24 Channels - Playback Speeds:`, 
             shuffledChannels.map(channel => channel.speed), 
             "Trim Settings:", 
             shuffledChannels.map(channel => channel.trim)
         );
 
-        // Create a new object to represent the processed song
         const processedSong = {
             ...deserializedData[0],
             projectBPM: selectedBPM,
@@ -206,7 +360,6 @@ async function processSerializedData(e) {
             projectSequences: {}
         };
 
-        // Map the sequences correctly based on selected channels
         const dataSourceMap = deserializedData.reduce((acc, data, index) => ({ ...acc, [`data${index + 1}`]: data }), {});
         for (const sequenceKey in deserializedData[0].projectSequences) {
             processedSong.projectSequences[sequenceKey] = {};
@@ -216,7 +369,6 @@ async function processSerializedData(e) {
             });
         }
 
-        // Create a URL for the processed song data and dispatch an event to indicate completion
         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
         console.log(`[${(new Date).toISOString()}] [debugScriptloading] Data processing complete.`);
@@ -227,6 +379,7 @@ async function processSerializedData(e) {
 }
 
 console.log(`[${(new Date).toISOString()}] DataProcessingCore initialized.`);
+
 
 
 </script>
