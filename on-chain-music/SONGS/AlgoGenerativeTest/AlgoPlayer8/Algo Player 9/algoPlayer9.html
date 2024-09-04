@@ -190,24 +190,34 @@ body {
                 }
             });
         }
+
+        // Pause execution until the Continue button is clicked
+        function pauseBeforeContinue() {
+            return new Promise((resolve) => {
+                const button = document.getElementById('continue-button');
+                button.addEventListener('click', () => {
+                    button.style.display = 'none';  // Hide the button after it's clicked
+                    resolve();
+                });
+            });
+        }
         
 
-   // Main initialization function
-        async function initApp() {
+    // Main initialization function (executed step by step)
+     async function initApp() {
             console.log(`[${new Date().toISOString()}] App initialization started.`);
-            try {
-                await setSeed();
-                await initializeMultiplierArrays();
 
-                if (seedSet && arraysInitialized) {
-                    console.log(`[${new Date().toISOString()}] Starting main init function...`);
-                    init();
-                } else {
-                    console.error(`[${new Date().toISOString()}] Initialization failed! Seed or arrays not ready.`);
-                }
-            } catch (error) {
-                console.error(`[${new Date().toISOString()}] Initialization error:`, error);
-            }
+            // Step 1: Set seed
+            await setSeed();
+
+            // Step 2: Initialize multiplier arrays
+            await initializeMultiplierArrays();
+
+            // Wait for user to click the "Continue" button
+            await pauseBeforeContinue();
+
+            // Step 3: Proceed with the remaining app initialization
+            init();  // Call the main app logic here after the Continue button is pressed
         }
 
         // Init function, which contains the main application logic
