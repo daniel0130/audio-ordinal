@@ -1,571 +1,585 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>? ? ? ? ? ? ?</title>
-    <script>
-        window.seed = 0;  // Default seed
-    </script>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>? ? ? ? ? ? ?</title>
+
+        <style>
+            body {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;display: flex;justify-content: center;align-items: center;}#canvas-container {width: 50vmin;height: 50vmin;display: flex;justify-content: center;align-items: center;background-color: white;position: relative;}body, html {height: 100%;margin: 0;display: flex;align-items: center;justify-content: center;background-color: #000000;position: relative;transform: scale(0.7);}.text-element, .play-text {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;z-index: 10001;opacity: 1;transition: opacity 5s ease-in-out;}.play-text {font-size: 125px;font-style: bold;font-weight: 700;color: #ff00bf;z-index: 10001;opacity: 1;transition: opacity 30s ease-in-out;}.sqyzy {font-family: Arial, bold, sans-serif;color: #000000;}.freedom {font-size: 125px;font-weight: 700;font-style: bold;}.melophonic {font-family: "Trebuchet MS", bold, sans-serif;font-size: 65px;color: #000;}.sqyzy {font-size: 96px;font-weight: 500;}.fade-overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: #000;z-index: 10000;opacity: 1;transition: opacity 10s ease-in-out;}
+        
+        /* New Styles to Handle Canvas */
+        canvas#cv {
+            position: absolute; /* Ensure it's not affecting the flow of the document */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Translate it back to the center */
+            z-index: 9999; /* Place it below the text elements but above other content */
+            pointer-events: none; /* Prevent the canvas from intercepting any pointer events */
+        }
+        
+        </style>
+        </head>
+        <body>
 
     <script>
+        window.seed = 0;  // Default seed
+        let seedSet = false;  // Track seed state
+        let arraysInitialized = false;  // Track array initialization state
+
         // Generate a random seed with up to 20 digits if the seed is set to 0
         function generateRandomSeed() {
             return Math.floor(Math.random() * Math.pow(10, 16));
         }
 
         // Set the seed; if it's 0, generate a random seed
-        if (window.seed === 0) {
-            window.seed = generateRandomSeed();
+        async function setSeed() {
+            return new Promise((resolve) => {
+                console.log(`[${new Date().toISOString()}] Starting seed generation...`);
+                if (window.seed === 0) {
+                    window.seed = generateRandomSeed();
+                    console.log(`[${new Date().toISOString()}] New seed generated: ${window.seed}`);
+                } else {
+                    console.log(`[${new Date().toISOString()}] Existing seed: ${window.seed}`);
+                }
+                seedSet = true;
+                resolve(window.seed);
+            });
         }
 
-        console.log(`Using seed: ${window.seed}`);  // Log the seed being used
+        // Initialize multiplier arrays (Volume and Speed Controls)
+        async function initializeMultiplierArrays() {
+            return new Promise((resolve, reject) => {
+                try {
+
+
+                const VOLUME_CONTROLS = [   [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+                                            [1, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 1, 1, 0.0001, 0.0001, 0.0001, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+                                            [0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5, 2, 1, 1, 1], // HUMANITY
+                                            [0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 0.7, 0.7, 1, 1, 1, 1, 1], // MintyFresh Vibes
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1], // ON DAY ONE
+                                            [0.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.3, 1, 1], // Rhythm and Bass 240
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 0.01, 1, 1, 1, 1], // Crazy Ass Bitch (Channel 12 muted)
+                                            [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60 
+                                        ];
+
+                const SPEED_CONTROLS = [    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // HUMANITY
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.9, 1, 1, 1, 1, 1, 1], // MintyFresh Vibes
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Crazy Ass Bitch
+                                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
+                                        ];
+        
+                                        arraysInitialized = true;
+                    console.log(`[${new Date().toISOString()}] Multiplier arrays initialized.`);
+                    resolve(true);
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error initializing arrays:`, error);
+                    reject(false);
+                }
+            });
+        }
+        
+
+    // Main initialization function that waits for seed and array initialization
+    async function initApp() {
+            console.log(`[${new Date().toISOString()}] App initialization started.`);
+            
+            // Wait for seed setting and multiplier arrays initialization
+            await setSeed();
+            await initializeMultiplierArrays();
+
+            // Ensure everything is properly initialized before running init
+            if (seedSet && arraysInitialized) {
+                console.log(`[${new Date().toISOString()}] Starting main init function...`);
+                init();  // Call the main init function
+            } else {
+                console.error(`[${new Date().toISOString()}] Initialization failed! Seed or arrays not ready.`);
+            }
+        }
+
+        // Init function, which contains the main application logic
+        const init = () => {
+            console.log(`[${new Date().toISOString()}] init function called.`);
+            
+            const songDataUrls = [  "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+                                        "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
+                                        "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // CHEESE
+                                        "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // KORA
+                                        "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN' IT UP
+                                        "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK I HAVE A DREAM
+                                        "/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // ModernProgress
+                                        "/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
+                                        "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // MintyFresh Vibes
+                                        "/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
+                                        "/content/85436950f53c57aa0c510071d2d5f1c187e1d21e4e57210fcae152c4c7b6a768i0", // Rhythm and Bass 240
+                                        "/content/e3ca12dd7516b4e486af4e3fa7f4ebc535d825034ff3c9da4954f354572dcf61i0", // Crazy Ass Bitch
+                                        "/content/d0496a8e1657ce470807c8d47dcb5f1018a32d8ec8e50d490ad49411ffee1457i0", // Rhythm and Bass 60 
+                                    ];
+
+                if (songDataUrls.length > 0) {
+                    console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
+                    processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS);
+                    console.log(`[${new Date().toISOString()}] processSerializedData completed successfully.`);
+                } else {
+                    console.warn(`[${new Date().toISOString()}] songDataUrls array is empty.`);
+                }
+            };
+
+
+
+            window.init = init;
+
+            // Handle the load event to trigger the initialization sequence
+            window.addEventListener("load", async () => {
+                console.log(`[${new Date().toISOString()}] Window load event triggered.`);
+                await initApp();
+                console.log(`[${new Date().toISOString()}] initApp function execution completed.`);
+            });
+
+            console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
+
+            function createTextElement(text, className) {
+            try {
+                const element = document.createElement("div");
+                element.textContent = text || "";
+                if (className) {
+                    element.classList.add(className);
+                }
+                document.body.append(element);
+                return element;
+            } catch (error) {
+                console.error("Error creating element:", error);
+            }
+        }
+
+        console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
+
+        </script>
+
+
+    <script>
+        // Reset function to reset the seed and arrays, and re-initialize the app
+        async function resetApp() {
+            console.log(`[${new Date().toISOString()}] Resetting the app.`);
+
+            // Reset seed and arrays before re-initializing
+            window.seed = 0;
+            seedSet = false;
+            arraysInitialized = false;
+
+            // Re-run the initialization process
+            await initApp();
+        }
+
+        // Example of how to trigger a reset (e.g., from a button click)
+        // You can modify this to add a reset button or other trigger in your HTML
+        // document.getElementById('resetButton').addEventListener('click', resetApp);
     </script>
 
- <style>
- body {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;display: flex;justify-content: center;align-items: center;}#canvas-container {width: 50vmin;height: 50vmin;display: flex;justify-content: center;align-items: center;background-color: white;position: relative;}body, html {height: 100%;margin: 0;display: flex;align-items: center;justify-content: center;background-color: #000000;position: relative;transform: scale(0.7);}.text-element, .play-text {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;z-index: 10001;opacity: 1;transition: opacity 5s ease-in-out;}.play-text {font-size: 125px;font-style: bold;font-weight: 700;color: #ff00bf;z-index: 10001;opacity: 1;transition: opacity 30s ease-in-out;}.sqyzy {font-family: Arial, bold, sans-serif;color: #000000;}.freedom {font-size: 125px;font-weight: 700;font-style: bold;}.melophonic {font-family: "Trebuchet MS", bold, sans-serif;font-size: 65px;color: #000;}.sqyzy {font-size: 96px;font-weight: 500;}.fade-overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: #000;z-index: 10000;opacity: 1;transition: opacity 10s ease-in-out;}
+    <defineScriptsToLoad>
+    <script>
+        // Array of scripts to load
+        window.scriptsToLoad = [
+                "/content/61895db1f0d62d24cea96570e66b92435a8a4979e3d3fef8041680ed2afeddc8i0", // audioContextManager.js
+                "/content/1b036f9d60a04f0612af8c53753273f66339e69d7843138007eb3573703b1218i0", // jsonLoader.js
+                "/content/150e020d5e6ea8b53b7b3d2160f25f65c2e550d413f9c53d9e1cfb101d6914f2i0", // audioProcessing.js
+                "/content/935828577e4762caaf32b76a0f74cb4f37bdcdbdae1d27a7c93d000d5cfe9d28i0", // playBuffer
+                "/content/bab2b37e0abcce41d784d65d94a5c3c266228c2d8bd3ecdee4fba7986f5a042ei0", // visualiserMessaging
+                "/content/1a5cafb61e4a320434fc4087e203d2a5f695ba9112635b960fc9d7dcb961d9fci0", // startPlaybackLoop
+                "/content/a3d8a40fcde6935f16b49ad7c9e9aa185f01d1618f4e35828415f6cc27377a47i0", // dispatchSequenceEvents
+                "/content/17c6cb4f92d47043da52ce8334c41961c588b7955488e56f08264840ef63a4eei0", // initialiseWorker
+                "/content/3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
+                "/content/4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
+                "/content/0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
+                "/content/87bb49f5617a241e29512850176e53169c3da4a76444d5d8fcd6c1e41489a4b3i0", // colourSettingsLevel1 
+                "/content/cea34b6ad754f3a4e992976125bbd1dd59213aab3de03c9fe2eb10ddbe387f76i0", // colourSettingsLevel2
+                "/content/bcee9a2e880510772f0129c735a4ecea5bb45277f3b99ff640c1bd393dddd6dfi0", // colourSettingsLevel3
+                "/content/90d910fe4088c53a16eb227ec2fe59802091dc4ea51564b2665090403c34f59ci0", // colourSettingsLevel4
+                "/content/916fd1731cdecf82706a290d03448c6dc505c01d6ec44bbca20281a19723d617i0", // colourSettingsLevel5
+                "/content/6a5e5c8b42793dd35512dfddd81dbbe211f052ac79839dd54b53461f5783a390i0", // colourSettingsLevel6
+                "/content/c0ee69121238f6438be8398038301cf5b1d876cce30a0d45a3a5e0b927826940i0", // colourSettingsLevel7
+                "/content/6f1def70a3290c50793773a8b1712c9a1b0561b3674ee50a06c13bc4e492f459i0", // colourSettingsLevel8
+                "/content/c7c92a81d5279950be7d0bd3e755ad620551bc65e6e514d6f7c29b4c24465d0ai0", // initVisualiser.js
+                "/content/99ecc0668e27f03cf202f9ebc49d0332ac8f594bc9b5483969108b83723a0e9di0", // visualiserLogging.js
+                "/content/305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
+                "/content/0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
+                "/content/287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
+                "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
+                "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0" // PFP module
+            ];
+    </script>
+    </defineScriptsToLoad>
 
-/* New Styles to Handle Canvas */
-canvas#cv {
-    position: absolute; /* Ensure it's not affecting the flow of the document */
-    top: 50%; /* Center vertically */
-    left: 50%; /* Center horizontally */
-    transform: translate(-50%, -50%); /* Translate it back to the center */
-    z-index: 9999; /* Place it below the text elements but above other content */
-    pointer-events: none; /* Prevent the canvas from intercepting any pointer events */
-}
+    <dynamicContentUtilities>
+    <script>
+    const loadScript=e=>{document.body.append(Object.assign(document.createElement("script"),{src:e}))},fadeOutElementById=(e,t=100)=>{const a=document.getElementById(e);a&&setTimeout((()=>a.style.opacity="0"),t)},displayTextElements=e=>{e.forEach((({text:e,className:t,fadeIn:a,fadeOut:l})=>{const s=createTextElement(e,t);setTimeout((()=>s.style.opacity="1"),a),setTimeout((()=>s.style.opacity="0"),l)}))};Object.assign(window,{loadScript:loadScript,fadeOutElementById:fadeOutElementById,displayTextElements:displayTextElements,createTextElement:createTextElement}),console.log(`[${(new Date).toISOString()}] CustomElementsModule initialized.`);
+    </script>
+    </dynamicContentUtilities>
 
-</style>
-</head>
-<body>
+    <dataProcessingUtilities>
+    <script>
+    // Hashing and dataProcessingUtilities.js - Inscribed - a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0
+    function hashString(e){console.log(`[${(new Date).toISOString()}] hashString function called with input:`,e);const t=parseInt(e.split("i")[1]);console.log(`[${(new Date).toISOString()}] Rotation count parsed:`,t),e=e.slice(t)+e.slice(0,t),console.log(`[${(new Date).toISOString()}] String after rotation:`,e);let n=0;for(let t=0;t<e.length;t++)n=(31*n+e.charCodeAt(t))%Number.MAX_SAFE_INTEGER;const a=n%14e8;return console.log(`[${(new Date).toISOString()}] Final hash calculated:`,a),a}const seedValue=hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");function seededRandom(e){const t=1e4*Math.sin(e);return t-Math.floor(t)}function setPlaybackStatus(e){window.playbackStarted=e}function initializePlayback(){void 0===window.playbackStarted&&(window.playbackStarted=!1),document.addEventListener("playbackStarted",(()=>{window.psTime=Date.now(),setPlaybackStatus(!0),"function"==typeof displayPlayText&&displayPlayText()})),document.addEventListener("playbackStopped",(()=>{setPlaybackStatus(!1)}))}console.log(`[${(new Date).toISOString()}] Hash string returned seed value:`,seedValue);const keyMap={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},reverseKeyMap=Object.fromEntries(Object.entries(keyMap).map((([e,t])=>[t,+e]))),channelMap=Array.from({length:26},((e,t)=>String.fromCharCode(65+t))),reverseChannelMap=Object.fromEntries(channelMap.map(((e,t)=>[e,t])));function decompressSteps(e){return e.flatMap((e=>{if("number"==typeof e)return e;if("object"==typeof e&&"r"in e){const[t,n]=e.r;return Array.from({length:n-t+1},((e,n)=>t+n))}return"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:void 0}))}function deserialize(e){const t=e=>Array.isArray(e)?e.map((e=>"object"==typeof e?t(e):e)):"object"==typeof e&&null!==e?Object.entries(e).reduce(((e,[n,a])=>{const o=keyMap[n]??n;return e[o]="projectSequences"===o?Object.entries(a).reduce(((e,[t,n])=>(e[t.replace("s","Sequence")]=Object.entries(n).reduce(((e,[t,n])=>(e[`ch${reverseChannelMap[t]}`]={steps:decompressSteps(n[reverseKeyMap.steps]||[])},e)),{}),e)),{}):t(a),e}),{}):e;return t(e)}initializePlayback(),window.onload=function(){console.log(`[${(new Date).toISOString()}] window.onload triggered.`)},console.log(`[${(new Date).toISOString()}] ProcessingUtilities initialized.`);
+    </script>
+    </dataProcessingUtilities>
 
-<userDefinedData>
-<script>
-function createTextElement(text, className) {
-    try {
-        const element = document.createElement("div");
-        element.textContent = text || "";
-        if (className) {
-            element.classList.add(className);
+    <dataProcessingCore>
+    <script>
+    // loadPako and deserialise functions <dataProcessingCore> inscribed - 01341644e144bba44e6da53bc9ce2f4d29299e24a39e934cbc2d2eb81dd8eb7fi0
+        async function loadPako(){
+        try{
+            const e=await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),
+            t=await e.text(),
+            n=(new DOMParser).parseFromString(t,"text/html").querySelector("script");
+            if(!n||!n.textContent.includes("pako")) throw new Error("Pako library not found in the HTML content.");
+            document.head.append(Object.assign(document.createElement("script"),{textContent:n.textContent}));
+        } catch(e){
+            console.error("Error occurred during Pako loading:",e);
         }
-        document.body.append(element);
-        return element;
-    } catch (error) {
-        console.error("Error creating element:", error);
     }
-}
 
-console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
-
-
-const init = () => {
-    console.log(`[${new Date().toISOString()}] init function called.`);
-
-    const songDataUrls =[   "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
-                                    "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
-                                    "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // CHEESE
-                                    "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // KORA
-                                    "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN' IT UP
-                                    "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK I HAVE A DREAM
-                                    "/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // ModernProgress
-                                    "/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
-                                    "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // MintyFresh Vibes
-                                    "/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
-                                    "/content/85436950f53c57aa0c510071d2d5f1c187e1d21e4e57210fcae152c4c7b6a768i0", // Rhythm and Bass 240
-                                    "/content/e3ca12dd7516b4e486af4e3fa7f4ebc535d825034ff3c9da4954f354572dcf61i0", // Crazy Ass Bitch
-                                    "/content/d0496a8e1657ce470807c8d47dcb5f1018a32d8ec8e50d490ad49411ffee1457i0", // Rhythm and Bass 60 
-                                ];
-
-            const VOLUME_CONTROLS = [   [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
-                                        [1, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 1, 1, 0.0001, 0.0001, 0.0001, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
-                                        [0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5, 2, 1, 1, 1], // HUMANITY
-                                        [0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 0.7, 0.7, 1, 1, 1, 1, 1], // MintyFresh Vibes
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1], // ON DAY ONE
-                                        [0.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.3, 1, 1], // Rhythm and Bass 240
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 0.01, 1, 1, 1, 1], // Crazy Ass Bitch (Channel 12 muted)
-                                        [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60 
-                                    ];
-
-            const SPEED_CONTROLS = [    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // HUMANITY
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.9, 1, 1, 1, 1, 1, 1], // MintyFresh Vibes
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Crazy Ass Bitch
-                                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
-                                    ];
-    
-
-    if (songDataUrls.length > 0) {
-        console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
-        processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS);
-        console.log(`[${new Date().toISOString()}] processSerializedData completed successfully.`);
-    } else {
-        console.warn(`[${new Date().toISOString()}] songDataUrls array is empty.`);
-    }
-};
-
-window.init = init;
-
-
-
-
-window.addEventListener("load", () => {
-    console.log(`[${new Date().toISOString()}] Window load event triggered.`);
-    init();
-    console.log(`[${new Date().toISOString()}] init function execution completed.`);
-});
-
-console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
-
-const enforceDocumentTitle = () => {
-    document.title = "? ? ? ? ? ? ?";
-    new MutationObserver(() => {
-        if (document.title !== "? ? ? ? ? ? ?") {
-            document.title = "? ? ? ? ? ? ?";
+    async function fetchAndDeserialize(e){
+        try{
+            const t=await fetch(e);
+            if(!t.ok) throw new Error(`Network response was not ok for URL: ${e}`);
+            const n=await t.arrayBuffer(), 
+                r=pako.inflate(new Uint8Array(n));
+            return deserialize(JSON.parse(new TextDecoder("utf-8").decode(r)));
+        } catch(e){
+            throw console.error("Error in fetchAndDeserialize:",e),e;
         }
-    }).observe(document.querySelector("title"), { childList: true, subtree: true });
-};
-
-const displayText = (texts) => {
-    texts.forEach(({ text, className, fadeIn, fadeOut }) => {
-        const element = createTextElement(text, className);
-        setTimeout(() => element.style.opacity = "1", fadeIn);
-        setTimeout(() => element.style.opacity = "0", fadeOut);
-    });
-};
-
-window.onload = () => {
-    try {
-        initialFadeIn();
-        document.title = "? ? ? ? ? ? ?";
-        displayPlayText();
-    } catch (error) {
-        console.error("Error during window.onload execution:", error);
     }
-};
 
-const texts = [
-    { text: "? ? ? ? ?", className: "freedom", fadeIn: 0, fadeOut: 15740 },
-    { text: "?elo?honi?", className: "melophonic", fadeIn: 15740, fadeOut: 41480 },
-    { text: "?Q?Z?", className: "sqyzy", fadeIn: 41480, fadeOut: 57800 }
-];
-
-displayText(texts);
-
-const displayPlayText = () => {
-    try {
-        const element = createTextElement("? ? ? ? ?", "play-text");
-        setTimeout(() => element.style.opacity = "0", 100);
-    } catch (error) {
-        console.error("Error in displayPlayText:", error);
+    /**
+     * Shuffles an array in place using a seeded random function.
+     * @param {Array} array - The array to shuffle.
+     * @param {number} seed - The seed value for consistent shuffling.
+     * @returns {Array} - The shuffled array.
+     */
+    function shuffleArray(array, seed) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(seededRandom(seed++) * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        console.log(`[${new Date().toISOString()}] After shuffling - Playback Speeds:`, array.map(item => item.speed), "Trim Settings:", array.map(item => item.trim));
+        return array;
     }
-};
-</script>
-</userDefinedData>
 
-<defineScriptsToLoad>
-<script>
-       // Array of scripts to load
-       window.scriptsToLoad = [
-            "/content/61895db1f0d62d24cea96570e66b92435a8a4979e3d3fef8041680ed2afeddc8i0", // audioContextManager.js
-            "/content/1b036f9d60a04f0612af8c53753273f66339e69d7843138007eb3573703b1218i0", // jsonLoader.js
-            "/content/150e020d5e6ea8b53b7b3d2160f25f65c2e550d413f9c53d9e1cfb101d6914f2i0", // audioProcessing.js
-            "/content/935828577e4762caaf32b76a0f74cb4f37bdcdbdae1d27a7c93d000d5cfe9d28i0", // playBuffer
-            "/content/bab2b37e0abcce41d784d65d94a5c3c266228c2d8bd3ecdee4fba7986f5a042ei0", // visualiserMessaging
-            "/content/1a5cafb61e4a320434fc4087e203d2a5f695ba9112635b960fc9d7dcb961d9fci0", // startPlaybackLoop
-            "/content/a3d8a40fcde6935f16b49ad7c9e9aa185f01d1618f4e35828415f6cc27377a47i0", // dispatchSequenceEvents
-            "/content/17c6cb4f92d47043da52ce8334c41961c588b7955488e56f08264840ef63a4eei0", // initialiseWorker
-            // "/content/4915e144695ab04171092a45e2d49cfa7b5e92c9a35ce612e7b749457acc92ddi0", // titleDisplays_2.js
-            "/content/3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
-            "/content/4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
-            "/content/0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
-            "/content/87bb49f5617a241e29512850176e53169c3da4a76444d5d8fcd6c1e41489a4b3i0", // colourSettingsLevel1 
-            "/content/cea34b6ad754f3a4e992976125bbd1dd59213aab3de03c9fe2eb10ddbe387f76i0", // colourSettingsLevel2
-            "/content/bcee9a2e880510772f0129c735a4ecea5bb45277f3b99ff640c1bd393dddd6dfi0", // colourSettingsLevel3
-            "/content/90d910fe4088c53a16eb227ec2fe59802091dc4ea51564b2665090403c34f59ci0", // colourSettingsLevel4
-            "/content/916fd1731cdecf82706a290d03448c6dc505c01d6ec44bbca20281a19723d617i0", // colourSettingsLevel5
-            "/content/6a5e5c8b42793dd35512dfddd81dbbe211f052ac79839dd54b53461f5783a390i0", // colourSettingsLevel6
-            "/content/c0ee69121238f6438be8398038301cf5b1d876cce30a0d45a3a5e0b927826940i0", // colourSettingsLevel7
-            "/content/6f1def70a3290c50793773a8b1712c9a1b0561b3674ee50a06c13bc4e492f459i0", // colourSettingsLevel8
-            "/content/c7c92a81d5279950be7d0bd3e755ad620551bc65e6e514d6f7c29b4c24465d0ai0", // initVisualiser.js
-            "/content/99ecc0668e27f03cf202f9ebc49d0332ac8f594bc9b5483969108b83723a0e9di0", // visualiserLogging.js
-            "/content/305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
-            "/content/0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
-            "/content/287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
-            "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
-            "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0" // PFP module
-        ];
-</script>
-</defineScriptsToLoad>
 
-<dynamicContentUtilities>
-<script>
-const loadScript=e=>{document.body.append(Object.assign(document.createElement("script"),{src:e}))},fadeOutElementById=(e,t=100)=>{const a=document.getElementById(e);a&&setTimeout((()=>a.style.opacity="0"),t)},displayTextElements=e=>{e.forEach((({text:e,className:t,fadeIn:a,fadeOut:l})=>{const s=createTextElement(e,t);setTimeout((()=>s.style.opacity="1"),a),setTimeout((()=>s.style.opacity="0"),l)}))};Object.assign(window,{loadScript:loadScript,fadeOutElementById:fadeOutElementById,displayTextElements:displayTextElements,createTextElement:createTextElement,displayPlayText:displayPlayText}),console.log(`[${(new Date).toISOString()}] CustomElementsModule initialized.`);
-</script>
-</dynamicContentUtilities>
+    const BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
 
-<dataProcessingUtilities>
-<script>
-// Hashing and dataProcessingUtilities.js - Inscribed - a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0
-function hashString(e){console.log(`[${(new Date).toISOString()}] hashString function called with input:`,e);const t=parseInt(e.split("i")[1]);console.log(`[${(new Date).toISOString()}] Rotation count parsed:`,t),e=e.slice(t)+e.slice(0,t),console.log(`[${(new Date).toISOString()}] String after rotation:`,e);let n=0;for(let t=0;t<e.length;t++)n=(31*n+e.charCodeAt(t))%Number.MAX_SAFE_INTEGER;const a=n%14e8;return console.log(`[${(new Date).toISOString()}] Final hash calculated:`,a),a}const seedValue=hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");function seededRandom(e){const t=1e4*Math.sin(e);return t-Math.floor(t)}function setPlaybackStatus(e){window.playbackStarted=e}function initializePlayback(){void 0===window.playbackStarted&&(window.playbackStarted=!1),document.addEventListener("playbackStarted",(()=>{window.psTime=Date.now(),setPlaybackStatus(!0),"function"==typeof displayPlayText&&displayPlayText()})),document.addEventListener("playbackStopped",(()=>{setPlaybackStatus(!1)}))}console.log(`[${(new Date).toISOString()}] Hash string returned seed value:`,seedValue);const keyMap={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},reverseKeyMap=Object.fromEntries(Object.entries(keyMap).map((([e,t])=>[t,+e]))),channelMap=Array.from({length:26},((e,t)=>String.fromCharCode(65+t))),reverseChannelMap=Object.fromEntries(channelMap.map(((e,t)=>[e,t])));function decompressSteps(e){return e.flatMap((e=>{if("number"==typeof e)return e;if("object"==typeof e&&"r"in e){const[t,n]=e.r;return Array.from({length:n-t+1},((e,n)=>t+n))}return"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:void 0}))}function deserialize(e){const t=e=>Array.isArray(e)?e.map((e=>"object"==typeof e?t(e):e)):"object"==typeof e&&null!==e?Object.entries(e).reduce(((e,[n,a])=>{const o=keyMap[n]??n;return e[o]="projectSequences"===o?Object.entries(a).reduce(((e,[t,n])=>(e[t.replace("s","Sequence")]=Object.entries(n).reduce(((e,[t,n])=>(e[`ch${reverseChannelMap[t]}`]={steps:decompressSteps(n[reverseKeyMap.steps]||[])},e)),{}),e)),{}):t(a),e}),{}):e;return t(e)}initializePlayback(),window.onload=function(){console.log(`[${(new Date).toISOString()}] window.onload triggered.`),enforceDocumentTitle(),"function"==typeof displayPlayText&&displayPlayText(),console.log(`[${(new Date).toISOString()}] onload functions executed successfully.`)},console.log(`[${(new Date).toISOString()}] ProcessingUtilities initialized.`);
-</script>
-</dataProcessingUtilities>
-
-<dataProcessingCore>
-<script>
-// loadPako and deserialise functions <dataProcessingCore> inscribed - 01341644e144bba44e6da53bc9ce2f4d29299e24a39e934cbc2d2eb81dd8eb7fi0
-    async function loadPako(){
-    try{
-        const e=await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),
-        t=await e.text(),
-        n=(new DOMParser).parseFromString(t,"text/html").querySelector("script");
-        if(!n||!n.textContent.includes("pako")) throw new Error("Pako library not found in the HTML content.");
-        document.head.append(Object.assign(document.createElement("script"),{textContent:n.textContent}));
-    } catch(e){
-        console.error("Error occurred during Pako loading:",e);
+    /**
+     * Selects a BPM value based on a seeded random function.
+     * @param {number} seed - The seed value for consistent BPM selection.
+     * @returns {number} - The selected BPM value.
+     */
+    function selectBPM(seed) {
+        return BPM_VALUES[Math.floor(seededRandom(seed) * BPM_VALUES.length)];
     }
-}
 
-async function fetchAndDeserialize(e){
-    try{
-        const t=await fetch(e);
-        if(!t.ok) throw new Error(`Network response was not ok for URL: ${e}`);
-        const n=await t.arrayBuffer(), 
-              r=pako.inflate(new Uint8Array(n));
-        return deserialize(JSON.parse(new TextDecoder("utf-8").decode(r)));
-    } catch(e){
-        throw console.error("Error in fetchAndDeserialize:",e),e;
+
+    /**
+     * Fetches and processes data from a list of URLs.
+     * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+     * @returns {Array<Object>} - Array of deserialized and validated data.
+     * @throws {Error} - Throws an error if no valid data is processed.
+     */
+    async function fetchAndProcessData(songDataUrls) {
+        const deserializedDataPromises = songDataUrls.map(async (url) => {
+            try {
+                const data = await fetchAndDeserialize(url);
+                if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+                console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
+                return data;
+            } catch (error) {
+                console.error("Error processing URL:", error);
+                return null;
+            }
+        });
+
+        const deserializedDataResults = await Promise.all(deserializedDataPromises);
+        const deserializedData = deserializedDataResults.filter(data => data !== null);
+
+        if (!deserializedData.length) throw new Error("No valid data was processed.");
+
+        return deserializedData;
     }
-}
+    /**
+     * Adjusts channel playback speeds, trim settings, and volumes.
+     * @param {Object} data - The song data object to adjust.
+     * @param {number} dataIndex - Index of the song data in the array.
+     * @param {number} selectedBPM - The BPM selected for this processing run.
+     * @param {Array<Array<number>>} VOLUME_CONTROLS - The volume controls for each song and channel.
+     * @param {Array<Array<number>>} SPEED_CONTROLS - The speed controls for each song and channel.
+     * @param {string} songId - The ID or name of the song (extracted from the URL).
+     */
+    function adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId) {
+        const adjustmentFactor = selectedBPM / data.projectBPM;
+        console.log(`[${new Date().toISOString()}] Adjustment Factor for song (${songId}): ${adjustmentFactor}`);
 
-/**
- * Shuffles an array in place using a seeded random function.
- * @param {Array} array - The array to shuffle.
- * @param {number} seed - The seed value for consistent shuffling.
- * @returns {Array} - The shuffled array.
- */
- function shuffleArray(array, seed) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(seededRandom(seed++) * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+            const speedControlMultiplier = SPEED_CONTROLS[dataIndex][channelIndex] || 1; // Use 1 as default if not specified
+            const adjustedSpeed = speed * adjustmentFactor * speedControlMultiplier;
+            console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Speed: ${speed}, Speed Control Multiplier: ${speedControlMultiplier}, Adjusted Speed: ${adjustedSpeed}`);
+
+            let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
+            const originalDuration = trim.endSliderValue - trim.startSliderValue;
+
+            const adjustedDuration = adjustedSpeed > speed
+                ? originalDuration / adjustedSpeed
+                : originalDuration * (speed / adjustedSpeed);
+
+            if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+                trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
+                console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+            } else {
+                console.warn(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted duration invalid or zero. Using default trim settings.`);
+                trim = { startSliderValue: 0, endSliderValue: 100 };
+            }
+
+            return adjustedSpeed;
+        });
+
+        const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+        const masterVolumeMultiplier = volumeControls[0] || 1;
+
+        data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+            const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+            const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
+            console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+            return adjustedVolume;
+        });
+
+        console.log(`[${new Date().toISOString()}] After Adjustment for song (${songId}) - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
     }
-    console.log(`[${new Date().toISOString()}] After shuffling - Playback Speeds:`, array.map(item => item.speed), "Trim Settings:", array.map(item => item.trim));
-    return array;
-}
 
+    /**
+     * Assembles the processed song object after adjusting channels.
+     * @param {Array<Object>} deserializedData - Array of deserialized and adjusted song data.
+     * @param {number} selectedBPM - The BPM selected for this processing run.
+     * @returns {Object} - The final processed song object.
+     */
+    function assembleProcessedSong(deserializedData, selectedBPM) {
+        const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+            data.channelURLs.map((url, channelIndex) => ({
+                url,
+                volume: data.channelVolume[channelIndex],
+                speed: data.channelPlaybackSpeed[channelIndex],
+                trim: data.trimSettings[channelIndex],
+                source: `data${dataIndex + 1}`,
+                index: channelIndex
+            }))
+        );
 
-const BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
+        const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
 
-/**
- * Selects a BPM value based on a seeded random function.
- * @param {number} seed - The seed value for consistent BPM selection.
- * @returns {number} - The selected BPM value.
- */
-function selectBPM(seed) {
-    return BPM_VALUES[Math.floor(seededRandom(seed) * BPM_VALUES.length)];
-}
+        console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`,
+            shuffledChannels.map(channel => channel.speed),
+            "Trim Settings:",
+            shuffledChannels.map(channel => channel.trim)
+        );
 
+        const processedSong = {
+            ...deserializedData[0],
+            projectBPM: selectedBPM,
+            channelURLs: shuffledChannels.map(channel => channel.url),
+            channelVolume: shuffledChannels.map(channel => channel.volume),
+            channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+            trimSettings: shuffledChannels.map(channel => channel.trim),
+            projectSequences: {}
+        };
 
-/**
- * Fetches and processes data from a list of URLs.
- * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
- * @returns {Array<Object>} - Array of deserialized and validated data.
- * @throws {Error} - Throws an error if no valid data is processed.
- */
- async function fetchAndProcessData(songDataUrls) {
-    const deserializedDataPromises = songDataUrls.map(async (url) => {
+        const dataSourceMap = deserializedData.reduce((acc, data, index) => ({
+            ...acc,
+            [`data${index + 1}`]: data
+        }), {});
+
+        for (const sequenceKey in deserializedData[0].projectSequences) {
+            processedSong.projectSequences[sequenceKey] = {};
+            shuffledChannels.forEach((channel, newIndex) => {
+                const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+                processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
+            });
+        }
+
+        return processedSong;
+    }
+
+    /**
+     * Main function to process serialized data for song generation.
+     * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+     * @param {Array<Array<number>>} VOLUME_CONTROLS - Volume controls for each song and channel.
+     * @param {Array<Array<number>>} SPEED_CONTROLS - Speed controls for each song and channel.
+     */
+    async function processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS) {
         try {
-            const data = await fetchAndDeserialize(url);
-            if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
-            console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
-            return data;
+            await loadPako();
+
+            const deserializedData = await fetchAndProcessData(songDataUrls);
+
+            const selectedBPM = selectBPM(window.seed);
+            console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
+
+            deserializedData.forEach((data, dataIndex) => {
+                const songId = songDataUrls[dataIndex].split('/').pop(); // Extracts the file name or ID from the URL
+                console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1} (ID: ${songId})`);
+                adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId);
+            });
+
+            const processedSong = assembleProcessedSong(deserializedData, selectedBPM);
+
+            window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
+            document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+            console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
+
         } catch (error) {
-            console.error("Error processing URL:", error);
-            return null;
+            console.error("Error processing data in processSerializedData:", error);
         }
-    });
-
-    const deserializedDataResults = await Promise.all(deserializedDataPromises);
-    const deserializedData = deserializedDataResults.filter(data => data !== null);
-
-    if (!deserializedData.length) throw new Error("No valid data was processed.");
-
-    return deserializedData;
-}
-/**
- * Adjusts channel playback speeds, trim settings, and volumes.
- * @param {Object} data - The song data object to adjust.
- * @param {number} dataIndex - Index of the song data in the array.
- * @param {number} selectedBPM - The BPM selected for this processing run.
- * @param {Array<Array<number>>} VOLUME_CONTROLS - The volume controls for each song and channel.
- * @param {Array<Array<number>>} SPEED_CONTROLS - The speed controls for each song and channel.
- * @param {string} songId - The ID or name of the song (extracted from the URL).
- */
- function adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId) {
-    const adjustmentFactor = selectedBPM / data.projectBPM;
-    console.log(`[${new Date().toISOString()}] Adjustment Factor for song (${songId}): ${adjustmentFactor}`);
-
-    data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
-        const speedControlMultiplier = SPEED_CONTROLS[dataIndex][channelIndex] || 1; // Use 1 as default if not specified
-        const adjustedSpeed = speed * adjustmentFactor * speedControlMultiplier;
-        console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Speed: ${speed}, Speed Control Multiplier: ${speedControlMultiplier}, Adjusted Speed: ${adjustedSpeed}`);
-
-        let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
-        const originalDuration = trim.endSliderValue - trim.startSliderValue;
-
-        const adjustedDuration = adjustedSpeed > speed
-            ? originalDuration / adjustedSpeed
-            : originalDuration * (speed / adjustedSpeed);
-
-        if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
-            trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
-            console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
-        } else {
-            console.warn(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted duration invalid or zero. Using default trim settings.`);
-            trim = { startSliderValue: 0, endSliderValue: 100 };
-        }
-
-        return adjustedSpeed;
-    });
-
-    const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
-    const masterVolumeMultiplier = volumeControls[0] || 1;
-
-    data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
-        const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
-        const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
-        console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
-        return adjustedVolume;
-    });
-
-    console.log(`[${new Date().toISOString()}] After Adjustment for song (${songId}) - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
-}
-
-/**
- * Assembles the processed song object after adjusting channels.
- * @param {Array<Object>} deserializedData - Array of deserialized and adjusted song data.
- * @param {number} selectedBPM - The BPM selected for this processing run.
- * @returns {Object} - The final processed song object.
- */
-function assembleProcessedSong(deserializedData, selectedBPM) {
-    const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
-        data.channelURLs.map((url, channelIndex) => ({
-            url,
-            volume: data.channelVolume[channelIndex],
-            speed: data.channelPlaybackSpeed[channelIndex],
-            trim: data.trimSettings[channelIndex],
-            source: `data${dataIndex + 1}`,
-            index: channelIndex
-        }))
-    );
-
-    const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
-
-    console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`,
-        shuffledChannels.map(channel => channel.speed),
-        "Trim Settings:",
-        shuffledChannels.map(channel => channel.trim)
-    );
-
-    const processedSong = {
-        ...deserializedData[0],
-        projectBPM: selectedBPM,
-        channelURLs: shuffledChannels.map(channel => channel.url),
-        channelVolume: shuffledChannels.map(channel => channel.volume),
-        channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
-        trimSettings: shuffledChannels.map(channel => channel.trim),
-        projectSequences: {}
-    };
-
-    const dataSourceMap = deserializedData.reduce((acc, data, index) => ({
-        ...acc,
-        [`data${index + 1}`]: data
-    }), {});
-
-    for (const sequenceKey in deserializedData[0].projectSequences) {
-        processedSong.projectSequences[sequenceKey] = {};
-        shuffledChannels.forEach((channel, newIndex) => {
-            const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
-            processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
-        });
     }
 
-    return processedSong;
-}
+    console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
 
-/**
- * Main function to process serialized data for song generation.
- * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
- * @param {Array<Array<number>>} VOLUME_CONTROLS - Volume controls for each song and channel.
- * @param {Array<Array<number>>} SPEED_CONTROLS - Speed controls for each song and channel.
- */
-async function processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS) {
-    try {
-        await loadPako();
+    // async function processSerializedData(songDataUrls, VOLUME_CONTROLS) {
+    //     try {
+    //         await loadPako();
 
-        const deserializedData = await fetchAndProcessData(songDataUrls);
+    //         const deserializedData = await Promise.all(
+    //             songDataUrls.map(async (url) => {
+    //                 try {
+    //                     const data = await fetchAndDeserialize(url);
+    //                     if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+    //                     console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
+    //                     return data;
+    //                 } catch (error) {
+    //                     console.error("Error processing URL:", error);
+    //                     return null;
+    //                 }
+    //             })
+    //         ).then(results => results.filter(Boolean));
 
-        const selectedBPM = selectBPM(window.seed);
-        console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
+    //         if (deserializedData.length === 0) throw new Error("No valid data was processed.");
 
-        deserializedData.forEach((data, dataIndex) => {
-            const songId = songDataUrls[dataIndex].split('/').pop(); // Extracts the file name or ID from the URL
-            console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1} (ID: ${songId})`);
-            adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId);
-        });
+    //         const selectedBPM = selectBPM(window.seed);
+    //         console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
 
-        const processedSong = assembleProcessedSong(deserializedData, selectedBPM);
+    //         deserializedData.forEach((data, dataIndex) => {
+    //             console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1}`);
+    //             const adjustmentFactor = selectedBPM / data.projectBPM;
+    //             console.log(`[${new Date().toISOString()}] Adjustment Factor for this song: ${adjustmentFactor}`);
 
-        window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
-        document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
-        console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
+    //             data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+    //                 const adjustedSpeed = speed * adjustmentFactor;
+    //                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Speed: ${speed}, Adjusted Speed: ${adjustedSpeed}`);
+                    
+    //                 let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
+    //                 const originalDuration = trim.endSliderValue - trim.startSliderValue;
 
-    } catch (error) {
-        console.error("Error processing data in processSerializedData:", error);
-    }
-}
+    //                 const adjustedDuration = adjustedSpeed > speed 
+    //                     ? originalDuration / adjustedSpeed 
+    //                     : originalDuration * (speed / adjustedSpeed);
 
-console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
+    //                 if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+    //                     trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
+    //                     console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+    //                 } else {
+    //                     console.warn(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
+    //                     trim = { startSliderValue: 0, endSliderValue: 100 };
+    //                 }
 
-// async function processSerializedData(songDataUrls, VOLUME_CONTROLS) {
-//     try {
-//         await loadPako();
+    //                 return adjustedSpeed;
+    //             });
 
-//         const deserializedData = await Promise.all(
-//             songDataUrls.map(async (url) => {
-//                 try {
-//                     const data = await fetchAndDeserialize(url);
-//                     if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
-//                     console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
-//                     return data;
-//                 } catch (error) {
-//                     console.error("Error processing URL:", error);
-//                     return null;
-//                 }
-//             })
-//         ).then(results => results.filter(Boolean));
+    //             const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+    //             const masterVolumeMultiplier = volumeControls[0] || 1;
 
-//         if (deserializedData.length === 0) throw new Error("No valid data was processed.");
+    //             data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+    //                 const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+    //                 const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
+    //                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+    //                 return adjustedVolume;
+    //             });
 
-//         const selectedBPM = selectBPM(window.seed);
-//         console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
+    //             console.log(`[${new Date().toISOString()}] After Adjustment - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
+    //         });
 
-//         deserializedData.forEach((data, dataIndex) => {
-//             console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1}`);
-//             const adjustmentFactor = selectedBPM / data.projectBPM;
-//             console.log(`[${new Date().toISOString()}] Adjustment Factor for this song: ${adjustmentFactor}`);
+    //         const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+    //             data.channelURLs.map((url, channelIndex) => ({
+    //                 url,
+    //                 volume: data.channelVolume[channelIndex],
+    //                 speed: data.channelPlaybackSpeed[channelIndex],
+    //                 trim: data.trimSettings[channelIndex],
+    //                 source: `data${dataIndex + 1}`,
+    //                 index: channelIndex
+    //             }))
+    //         );
 
-//             data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
-//                 const adjustedSpeed = speed * adjustmentFactor;
-//                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Speed: ${speed}, Adjusted Speed: ${adjustedSpeed}`);
-                
-//                 let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
-//                 const originalDuration = trim.endSliderValue - trim.startSliderValue;
+    //         const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
 
-//                 const adjustedDuration = adjustedSpeed > speed 
-//                     ? originalDuration / adjustedSpeed 
-//                     : originalDuration * (speed / adjustedSpeed);
+    //         console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`, 
+    //             shuffledChannels.map(channel => channel.speed), 
+    //             "Trim Settings:", 
+    //             shuffledChannels.map(channel => channel.trim)
+    //         );
 
-//                 if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
-//                     trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
-//                     console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
-//                 } else {
-//                     console.warn(`[${new Date().toISOString()}] Channel ${channelIndex}: Adjusted duration invalid or zero. Using default trim settings.`);
-//                     trim = { startSliderValue: 0, endSliderValue: 100 };
-//                 }
+    //         const processedSong = {
+    //             ...deserializedData[0],
+    //             projectBPM: selectedBPM,
+    //             channelURLs: shuffledChannels.map(channel => channel.url),
+    //             channelVolume: shuffledChannels.map(channel => channel.volume),
+    //             channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+    //             trimSettings: shuffledChannels.map(channel => channel.trim),
+    //             projectSequences: {}
+    //         };
 
-//                 return adjustedSpeed;
-//             });
+    //         const dataSourceMap = deserializedData.reduce((acc, data, index) => ({ 
+    //             ...acc, 
+    //             [`data${index + 1}`]: data 
+    //         }), {});
 
-//             const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
-//             const masterVolumeMultiplier = volumeControls[0] || 1;
+    //         for (const sequenceKey in deserializedData[0].projectSequences) {
+    //             processedSong.projectSequences[sequenceKey] = {};
+    //             shuffledChannels.forEach((channel, newIndex) => {
+    //                 const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+    //                 processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
+    //             });
+    //         }
 
-//             data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
-//                 const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
-//                 const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
-//                 console.log(`[${new Date().toISOString()}] Channel ${channelIndex}: Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
-//                 return adjustedVolume;
-//             });
+    //         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
+    //         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+    //         console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
 
-//             console.log(`[${new Date().toISOString()}] After Adjustment - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
-//         });
+    //     } catch (error) {
+    //         console.error("Error processing data in processSerializedData:", error);
+    //     }
+    // }
 
-//         const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
-//             data.channelURLs.map((url, channelIndex) => ({
-//                 url,
-//                 volume: data.channelVolume[channelIndex],
-//                 speed: data.channelPlaybackSpeed[channelIndex],
-//                 trim: data.trimSettings[channelIndex],
-//                 source: `data${dataIndex + 1}`,
-//                 index: channelIndex
-//             }))
-//         );
-
-//         const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
-
-//         console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`, 
-//             shuffledChannels.map(channel => channel.speed), 
-//             "Trim Settings:", 
-//             shuffledChannels.map(channel => channel.trim)
-//         );
-
-//         const processedSong = {
-//             ...deserializedData[0],
-//             projectBPM: selectedBPM,
-//             channelURLs: shuffledChannels.map(channel => channel.url),
-//             channelVolume: shuffledChannels.map(channel => channel.volume),
-//             channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
-//             trimSettings: shuffledChannels.map(channel => channel.trim),
-//             projectSequences: {}
-//         };
-
-//         const dataSourceMap = deserializedData.reduce((acc, data, index) => ({ 
-//             ...acc, 
-//             [`data${index + 1}`]: data 
-//         }), {});
-
-//         for (const sequenceKey in deserializedData[0].projectSequences) {
-//             processedSong.projectSequences[sequenceKey] = {};
-//             shuffledChannels.forEach((channel, newIndex) => {
-//                 const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
-//                 processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
-//             });
-//         }
-
-//         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
-//         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
-//         console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
-
-//     } catch (error) {
-//         console.error("Error processing data in processSerializedData:", error);
-//     }
-// }
-
-// console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
+    // console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
 
 
-</script>
-</dataProcessingCore>
+    </script>
+    </dataProcessingCore>
 
-<scriptLoader>
-<script>
-// ScriptLoader.js - Inscribed - 8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0
-!async function(){const t=document.createElement("canvas");t.id="cv",document.body.append(t),Object.assign(document.body.style,{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",margin:"0"});const o=()=>{window.cci2=0,window.initialCCI2=0,resetAllStates(),loadJsonFromUrl(window.jsonDataUrl),initializeWorker()};try{await new Promise((t=>{const o=()=>window.jsonDataUrl?t():setTimeout(o,100);o()})),console.log("Fetching from URL:",window.jsonDataUrl);const t=await fetch(window.jsonDataUrl);if(!t.ok)throw new Error(`HTTP error! status: ${t.status}`);window.settings=await t.json(),console.log("Settings loaded:",window.settings),await(async t=>{for(const o of t)await new Promise(((t,n)=>{const e=document.createElement("script");e.src=o,e.onload=t,e.onerror=()=>n(new Error(`Failed to load script: ${o}`)),document.head.append(e)}))})(window.scriptsToLoad),await ensureAudioContextState(),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",o):o()}catch(t){console.error("Error initializing the app:",t)}console.log(`[${(new Date).toISOString()}] [debugScriptloading] ScriptLoader initialized.`)}();
-</script>
-</scriptLoader>
+    <scriptLoader>
+    <script>
+    // ScriptLoader.js - Inscribed - 8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0
+    !async function(){const t=document.createElement("canvas");t.id="cv",document.body.append(t),Object.assign(document.body.style,{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",margin:"0"});const o=()=>{window.cci2=0,window.initialCCI2=0,resetAllStates(),loadJsonFromUrl(window.jsonDataUrl),initializeWorker()};try{await new Promise((t=>{const o=()=>window.jsonDataUrl?t():setTimeout(o,100);o()})),console.log("Fetching from URL:",window.jsonDataUrl);const t=await fetch(window.jsonDataUrl);if(!t.ok)throw new Error(`HTTP error! status: ${t.status}`);window.settings=await t.json(),console.log("Settings loaded:",window.settings),await(async t=>{for(const o of t)await new Promise(((t,n)=>{const e=document.createElement("script");e.src=o,e.onload=t,e.onerror=()=>n(new Error(`Failed to load script: ${o}`)),document.head.append(e)}))})(window.scriptsToLoad),await ensureAudioContextState(),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",o):o()}catch(t){console.error("Error initializing the app:",t)}console.log(`[${(new Date).toISOString()}] [debugScriptloading] ScriptLoader initialized.`)}();
+    </script>
+    </scriptLoader>
 
-          
-</body>
-</html>
+            
+    </body>
+    </html>
