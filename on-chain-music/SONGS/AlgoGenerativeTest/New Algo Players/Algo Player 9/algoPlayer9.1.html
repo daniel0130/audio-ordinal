@@ -1,0 +1,1165 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>? ? ? ? ? ? ?</title>
+<script>
+            window.seed = 7864601959420714;  // Default seed
+</script>
+
+<script>
+// Placeholder function to prevent errors from missing enforceDocumentTitle definition in other files.
+// This function might be used to update the document title, but currently does nothing meaningful.
+// It is here for future reference in case document title management is needed.
+function enforceDocumentTitle() {
+    // Placeholder logic to avoid throwing an error in external files that expect this function.
+    // If title management is needed in the future, it can be implemented here.
+    // console.log("[enforceDocumentTitle] This is a placeholder function to prevent errors.");
+}
+
+</script> 
+
+<style>
+body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000000;
+    position: relative;
+    transform: scale(0.7);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#canvas-container {
+    width: 50vmin;
+    height: 50vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    position: relative;
+}
+
+.text-element, .play-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10001;
+    opacity: 1;
+    transition: opacity 5s ease-in-out;
+}
+
+.play-text {
+    font-size: 125px;
+    font-style: bold;
+    font-weight: 700;
+    color: #ff00bf;
+    z-index: 10001;
+    opacity: 1;
+    transition: opacity 30s ease-in-out;
+}
+
+.sqyzy {
+    font-family: Arial, bold, sans-serif;
+    font-size: 96px;
+    font-weight: 500;
+    color: #000000;
+}
+
+.freedom {
+    font-size: 125px;
+    font-weight: 700;
+    font-style: bold;
+}
+
+.melophonic {
+    font-family: "Trebuchet MS", bold, sans-serif;
+    font-size: 65px;
+    color: #000;
+}
+
+.fade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 10000;
+    opacity: 1;
+    transition: opacity 10s ease-in-out;
+}
+        
+        /* New Styles to Handle Canvas */
+        canvas#cv {
+            position: absolute; /* Ensure it's not affecting the flow of the document */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Translate it back to the center */
+            z-index: 9999; /* Place it below the text elements but above other content */
+            pointer-events: none; /* Prevent the canvas from intercepting any pointer events */
+        }
+
+       /* Styles for the Continue and Reset buttons */
+        #continue-button, #reset-button {
+            position: fixed;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 10002;
+            transition: background-color 0.3s;
+        }
+
+        /* Stack the buttons vertically */
+        #continue-button {
+            top: 60px; /* Adjust this value as needed for desired spacing */
+            background-color: #ff00bf;
+        }
+
+        #reset-button {
+            top: 10px;
+            background-color: #2200ff;
+        }
+
+        #continue-button:hover {
+            background-color: #ff33c9;
+        }
+
+        /* New Styles for Seed Display */
+        #seed-display {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 20px;
+            color: #000;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 2s ease-in-out;
+            z-index: 10002;
+        }
+
+</style>
+<!-- Continue button to resume code execution -->
+<button id="reset-button">Reset</button>
+<button id="continue-button">Continue</button>
+<!-- Div to Display Seed -->
+<div id="seed-display">Seed: 0</div>
+<seedAndInitialise>
+    <script>
+
+
+        const VOLUME_CONTROLS = [   [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+                                    [0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5, 2, 1, 1, 1], // HUMANITY
+                                    [0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 0.7, 0.7, 1, 1, 1, 1, 1], // MintyFresh Vibes
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1], // ON DAY ONE
+                                    [0.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.3, 1, 1], // Rhythm and Bass 240
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 0.01, 1, 1, 1, 1], // Crazy Ass Bitch (Channel 12 muted)
+                                    [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60 
+                                ];
+
+        const SPEED_CONTROLS = [    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHEESE
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // KORA
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // CHOPPIN' IT UP
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // MLK I HAVE A DREAM
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ModernProgress
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // HUMANITY
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.9, 1, 1, 1, 1, 1, 1], // MintyFresh Vibes
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // ON DAY ONE
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 240
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Crazy Ass Bitch
+                                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Rhythm and Bass 60
+                                ];
+
+        let seedSet = false;  // Track seed state
+        let arraysInitialized = false;  // Track array initialization state
+        let audioElements = []; // Array to hold all audio elements
+
+
+       // Generate a random seed with up to 16 digits
+    function generateRandomSeed() {
+        return Math.floor(Math.random() * 1e16);
+    }
+
+  // Set the seed; if it's 0, generate a random seed
+
+// Set the seed; if it's 0, generate a random seed
+async function setSeed() {
+    console.log(`[${new Date().toISOString()}] Starting seed generation...`);
+    
+    if (window.seed === 0) {
+        window.seed = generateRandomSeed();
+        console.log(`[${new Date().toISOString()}] New seed generated: ${window.seed}`);
+    } else {
+        console.log(`[${new Date().toISOString()}] Using existing seed: ${window.seed}`);
+    }
+    
+    seedSet = true;
+
+    // Display the seed in the seed-display div (but delay showing it until playback starts)
+    const seedDisplay = document.getElementById('seed-display');
+
+    // Wait for the playback to start to trigger the display and countdown
+    document.addEventListener('playbackStarted', () => {
+        console.log(`[${new Date().toISOString()}] Playback started. Displaying seed.`);
+
+        seedDisplay.textContent = `Seed: ${window.seed}`;
+        seedDisplay.style.opacity = '1';  // Show the seed display
+
+        // Fade out the seed display after 10 seconds
+        setTimeout(() => {
+            seedDisplay.style.opacity = '0';  // Fade out effect
+        }, 10000);  // 10 seconds before fade out
+    });
+
+    return window.seed;
+}
+
+    // Initialize multiplier arrays
+    async function initializeMultiplierArrays() {
+        try {
+            console.log(`[${new Date().toISOString()}] Multiplier arrays initialized.`);
+            arraysInitialized = true;
+            return true;
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Error initializing arrays:`, error);
+            throw error;
+        }
+    }
+
+
+  // Pause execution until the Continue button is clicked
+function pauseBeforeContinue() {
+    return new Promise((resolve) => {
+        const continueButton = document.getElementById('continue-button');
+        continueButton.style.display = 'block';  // Show the Continue button
+        continueButton.addEventListener('click', () => {
+            continueButton.style.display = 'none';  // Hide the button after it's clicked
+            resolve();
+        }, { once: true });  // Ensure the event only fires once
+    });
+}
+
+// Main initialization function (executed step by step)
+async function initApp() {
+    console.log(`[${new Date().toISOString()}] App initialization started.`);
+
+    // Step 1: Set seed
+    await setSeed();
+
+    // Step 2: Initialize multiplier arrays
+    await initializeMultiplierArrays();
+
+    // Wait for user to click the "Continue" button
+    await pauseBeforeContinue();
+
+    // Step 3: Proceed with the remaining app initialization
+    init();  // Call the main app logic here after the Continue button is pressed
+}
+</script>
+</seedAndInitialise>
+<script>
+    // Init function, which contains the main application logic
+    function init() {
+        console.log(`[${new Date().toISOString()}] init function called.`);
+        
+        const songDataUrls = [
+            "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+            "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
+            "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // CHEESE
+            "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // KORA
+            "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN' IT UP
+            "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK I HAVE A DREAM
+            "/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // ModernProgress
+            "/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
+            "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // MintyFresh Vibes
+            "/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
+            "/content/85436950f53c57aa0c510071d2d5f1c187e1d21e4e57210fcae152c4c7b6a768i0", // Rhythm and Bass 240
+            "/content/e3ca12dd7516b4e486af4e3fa7f4ebc535d825034ff3c9da4954f354572dcf61i0", // Crazy Ass Bitch
+            "/content/d0496a8e1657ce470807c8d47dcb5f1018a32d8ec8e50d490ad49411ffee1457i0", // Rhythm and Bass 60
+        ];
+
+        // Will all be translated to play in on of the followiung BPMs 80, 100, 120, 140, 160, 180, 240 
+        // Where possible keys will also be matched
+
+        if (songDataUrls.length > 0) {
+            console.log(`[${new Date().toISOString()}] songDataUrls array has ${songDataUrls.length} items.`);
+            processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS);
+        } else {
+            console.warn(`[${new Date().toISOString()}] songDataUrls array is empty.`);
+        }
+    }
+
+    // // Reset function to reset the seed and arrays, and re-initialize the app
+    // async function resetApp() {
+    //     console.log(`[${new Date().toISOString()}] Resetting the app.`);
+    //     window.seed = 0;
+    //     seedSet = false;
+    //     arraysInitialized = false;
+        
+    //     // Make sure the Continue button is visible again for the new flow
+    //     const continueButton = document.getElementById('continue-button');
+    //     continueButton.style.display = 'none';  // Hide the Continue button initially
+        
+    //     // Reset the initialization and wait for the user to click Continue again
+    //     await initApp();
+    // }
+
+    // // Event listener for the Reset button
+    // document.getElementById('reset-button').addEventListener('click', resetApp);
+
+    // On window load, trigger the initial app setup
+    window.addEventListener("load", async () => {
+        console.log(`[${new Date().toISOString()}] Window load event triggered.`);
+        await initApp();  // Start the initialization process
+    });
+
+ </script>
+
+    </head>
+     
+    <body>
+        <script>
+
+async function safeSuspendAudioContext() {
+    console.log(`[${new Date().toISOString()}] [safeSuspendAudioContext] AudioContext state: ${audioCtx.state}`);
+
+    if (audioCtx.state === 'running') {
+        console.log(`[${new Date().toISOString()}] Suspending AudioContext...`);
+        await audioCtx.suspend();
+        console.log(`[${new Date().toISOString()}] AudioContext suspended. State: ${audioCtx.state}`);
+    } else if (audioCtx.state === 'suspended') {
+        console.log(`[${new Date().toISOString()}] AudioContext is already suspended.`);
+    } else {
+        console.error(`[${new Date().toISOString()}] Cannot suspend AudioContext as it's already closed.`);
+    }
+}
+
+
+async function stopPlayback() {
+    // Stop all active sources
+    Object.keys(activeSources).forEach((a => {
+        activeSources[a].forEach(({ source, gainNode }) => {
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeDuration);
+            source.stop(audioCtx.currentTime + fadeDuration);
+            source.disconnect();
+            gainNode.disconnect();
+        });
+        activeSources[a] = [];
+    }));
+
+    // Delay suspension to allow fade-out
+    setTimeout(async () => {
+        // Safely suspend the AudioContext using our wrapper
+        await safeSuspendAudioContext();
+
+        resetPlaybackState();
+    }, 50);
+}
+
+
+     // audioContextManager.js
+!function() {
+    if (!window.AudioContextManager) {
+        class AudioContextManager {
+            constructor() {
+                if (!AudioContextManager.instance) {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log(`[constructor] New AudioContext created. Initial state: ${this.audioCtx.state}`);
+                    AudioContextManager.instance = this;
+                }
+                return AudioContextManager.instance;
+            }
+
+            getAudioContext() {
+                return this.audioCtx;
+            }
+
+            // Resume AudioContext if it's suspended or closed
+            async resume() {
+                console.log(`[resume] AudioContext state before resuming: ${this.audioCtx.state}`);
+                if (this.audioCtx.state === "suspended") {
+                    await this.audioCtx.resume();
+                    console.log(`[resume] AudioContext resumed. Current state: ${this.audioCtx.state}`);
+                } else if (this.audioCtx.state === "closed") {
+                    console.log(`[resume] AudioContext is closed, resetting...`);
+                    await this.resetAudioContext(); // Reset if it's closed
+                    console.log(`[resume] AudioContext reset. Current state: ${this.audioCtx.state}`);
+                } else {
+                    console.log(`[resume] AudioContext is already running.`);
+                }
+            }
+
+            // Safely suspend the AudioContext, only if it's running or suspended
+            async suspend() {
+                console.log(`[suspend] Attempting to suspend. Current state: ${this.audioCtx.state}`);
+                if (this.audioCtx.state === "running") {
+                    await this.audioCtx.suspend();
+                    console.log(`[suspend] AudioContext suspended. Current state: ${this.audioCtx.state}`);
+                } else if (this.audioCtx.state === "suspended") {
+                    console.log(`[suspend] AudioContext is already suspended. State: ${this.audioCtx.state}`);
+                } else if (this.audioCtx.state === "closed") {
+                    console.log(`[suspend] AudioContext is closed. Cannot suspend.`);
+                }
+            }
+
+            // Reset the AudioContext if it's closed
+            async resetAudioContext() {
+                console.log(`[resetAudioContext] Current AudioContext state: ${this.audioCtx.state}`);
+                if (this.audioCtx.state !== "closed") {
+                    await this.audioCtx.close();
+                    console.log(`[resetAudioContext] AudioContext closed.`);
+                }
+                // Create a new AudioContext
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                console.log(`[resetAudioContext] New AudioContext created. State: ${this.audioCtx.state}`);
+            }
+        }
+        window.AudioContextManager = new AudioContextManager();
+    }
+}();
+
+
+        </script>
+        
+        <script>
+           let globalVolumeMultiplier = 1;
+    let globalJsonData = null;
+    let bpm = 0;
+    const sourceChannelMap = new Map();
+    let globalTrimTimes = {};
+    let globalVolumeLevels = {};
+    let globalPlaybackSpeeds = {};
+    let activeSources = [];
+    let globalGainNodes = new Map();
+    let globalAudioBuffers = [];
+    let globalReversedAudioBuffers = {};
+    let isReversePlay = false;
+    let isToggleInProgress = false;
+    const gainNodes = {};
+    const audioCtx = window.AudioContextManager.getAudioContext();
+
+    let audioWorker;
+    let preprocessedSequences = {};
+    let isReadyToPlay = false;
+    let currentStep = 0;
+    let beatCount = 0;
+    let barCount = 0;
+    let currentSequence = 0;
+    let isPlaying = false;
+    let playbackTimeoutId = null;
+    let nextNoteTime = 0;
+    let totalSequences = 0;
+
+    const AudionalPlayerMessages = new BroadcastChannel("channel_playback");
+
+    // Function to reset the entire application state
+   // Function to reset the entire application state
+async function resetApp() {
+    // Increment the seed
+    window.seed += 1;
+    console.log(`[${new Date().toISOString()}] Seed incremented: ${window.seed}`);
+
+    // Reset global variables
+    globalVolumeMultiplier = 1;
+    globalJsonData = null;
+    bpm = 0;
+    sourceChannelMap.clear();
+    globalTrimTimes = {};
+    globalVolumeLevels = {};
+    globalPlaybackSpeeds = {};
+    activeSources = [];
+    globalGainNodes = new Map();
+    globalAudioBuffers = [];
+    globalReversedAudioBuffers = {};
+    isReversePlay = false;
+    isToggleInProgress = false;
+
+    // Reset audio-related states
+    if (audioWorker) {
+        console.log(`[${new Date().toISOString()}] Terminating audio worker.`);
+        audioWorker.terminate(); // Stop any active web workers
+        audioWorker = null;
+    }
+
+    preprocessedSequences = {};
+    isReadyToPlay = false;
+    currentStep = 0;
+    beatCount = 0;
+    barCount = 0;
+    currentSequence = 0;
+    isPlaying = false;
+    nextNoteTime = 0;
+    totalSequences = 0;
+
+    // Clear any playback timeout
+    if (playbackTimeoutId !== null) {
+        console.log(`[${new Date().toISOString()}] Clearing playback timeout.`);
+        clearTimeout(playbackTimeoutId);
+        playbackTimeoutId = null;
+    }
+
+    // Reset the AudioContext
+    console.log(`[${new Date().toISOString()}] Resetting AudioContext...`);
+    await window.AudioContextManager.resetAudioContext();
+    console.log(`[${new Date().toISOString()}] AudioContext reset.`);
+
+    // Reinitialize the application after resetting
+    console.log(`[${new Date().toISOString()}] Re-initializing app...`);
+    await initApp();
+
+    console.log(`[${new Date().toISOString()}] Application has been reset to the initial state.`);
+}
+
+// Attach the reset functionality to the reset button
+document.getElementById('reset-button').addEventListener('click', resetApp);
+
+        </script>
+
+     <script>
+
+    // Function to load JSON data from a URL
+    async function loadJsonFromUrl(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            globalJsonData = await response.json();
+            
+            const analysisResults = {
+                channelsWithUrls: 0,
+                sequencesCount: 0,
+                activeStepsPerSequence: {},
+                activeChannelsPerSequence: {},
+                types: {}
+            };
+
+            analyzeJsonStructure(globalJsonData, analysisResults);
+
+            const preparedData = prepareForPlayback(globalJsonData, analysisResults);
+            await fetchAndProcessAudioData(preparedData.channelURLs);
+            preprocessAndSchedulePlayback(preparedData);
+
+        } catch (error) {
+            console.error("Could not load JSON data from URL:", error);
+        }
+    }
+
+    // Analyze JSON structure to gather statistics and other details
+    function analyzeJsonStructure(jsonData, analysisResults) {
+        if (jsonData.projectSequences && typeof jsonData.projectSequences === "object") {
+            for (const [sequenceKey, sequenceData] of Object.entries(jsonData.projectSequences)) {
+                analysisResults.activeStepsPerSequence[sequenceKey] = 0;
+                analysisResults.activeChannelsPerSequence[sequenceKey] = [];
+
+                for (const [channelKey, channelData] of Object.entries(sequenceData)) {
+                    const channelName = `Channel ${parseInt(channelKey.slice(2)) + 1}`;
+                    analysisResults.activeStepsPerSequence[sequenceKey] += channelData.steps.length;
+                    analysisResults.activeChannelsPerSequence[sequenceKey].push(channelName);
+                }
+            }
+        }
+
+        for (const [key, value] of Object.entries(jsonData)) {
+            if (key !== "projectSequences") {
+                const valueType = Array.isArray(value) ? "array" : typeof value;
+                analysisResults.types[valueType] = (analysisResults.types[valueType] || 0) + 1;
+
+                if (valueType === "object" || valueType === "array") {
+                    analyzeJsonStructure(value, analysisResults);
+                }
+            }
+        }
+    }
+
+    // Set the last non-empty sequence as the end sequence
+    function findAndSetEndSequence(data) {
+        if (data && data.sequences) {
+            let lastNonEmptySequence = null;
+            let isEndSequenceSet = false;
+
+            for (const [sequenceKey, sequenceData] of Object.entries(data.sequences)) {
+                const isSequenceEmpty = Object.values(sequenceData.normalSteps).every(steps => steps.length === 0);
+
+                if (isSequenceEmpty && lastNonEmptySequence) {
+                    data.endSequence = lastNonEmptySequence;
+                    isEndSequenceSet = true;
+                    console.log("End sequence set to:", lastNonEmptySequence);
+                    break;
+                }
+
+                if (!isSequenceEmpty) {
+                    lastNonEmptySequence = sequenceData;
+                }
+            }
+
+            if (!isEndSequenceSet && lastNonEmptySequence) {
+                data.endSequence = lastNonEmptySequence;
+                console.log("End sequence set to the last non-empty sequence:", lastNonEmptySequence);
+            }
+        }
+    }
+
+    // Prepare the data for playback
+    function prepareForPlayback(jsonData, analysisResults) {
+        const { channelURLs, trimSettings, channelVolume, channelPlaybackSpeed, projectSequences, projectName, projectBPM, currentSequence } = jsonData;
+
+        bpm = projectBPM;
+        totalSequences = currentSequence;
+        globalTrimTimes = {};
+        globalVolumeLevels = {};
+        globalPlaybackSpeeds = {};
+
+        channelURLs.forEach((url, index) => {
+            const channelIndex = index + 1;
+            const trimSetting = trimSettings[index] || {};
+            
+            globalTrimTimes[`Channel ${channelIndex}`] = {
+                startTrim: Number((trimSetting.startSliderValue || 0) / 100).toFixed(3),
+                endTrim: Number((trimSetting.endSliderValue || 100) / 100).toFixed(3),
+            };
+
+            globalVolumeLevels[`Channel ${channelIndex}`] = Number(channelVolume[index] || 1).toFixed(3);
+            globalPlaybackSpeeds[`Channel ${channelIndex}`] = Number(Math.max(0.1, Math.min(channelPlaybackSpeed[index], 100)) || 1).toFixed(3);
+        });
+
+        logVolumeSettings();
+
+        const sequences = Object.entries(projectSequences).reduce((result, [sequenceKey, sequenceData]) => {
+            const normalSteps = {};
+            const reverseSteps = {};
+
+            Object.entries(sequenceData).forEach(([channelKey, channelData]) => {
+                const channelName = `Channel ${parseInt(channelKey.slice(2)) + 1}`;
+                normalSteps[channelName] = [];
+                reverseSteps[channelName] = [];
+
+                channelData.steps.forEach(step => {
+                    const stepIndex = typeof step === "object" ? step.index : step;
+                    if (step.reverse) {
+                        reverseSteps[channelName].push(stepIndex);
+                    } else {
+                        normalSteps[channelName].push(stepIndex);
+                    }
+                });
+            });
+
+            result[sequenceKey] = { normalSteps, reverseSteps };
+            return result;
+        }, {});
+
+        const playbackData = {
+            projectName,
+            bpm: projectBPM,
+            channels: channelURLs.length,
+            channelURLs,
+            trimTimes: globalTrimTimes,
+            stats: {
+                channelsWithUrls: analysisResults.channelsWithUrls,
+                sequencesCount: analysisResults.sequencesCount,
+                activeStepsPerSequence: analysisResults.activeStepsPerSequence,
+                activeChannelsPerSequence: analysisResults.activeChannelsPerSequence,
+            },
+            sequences,
+        };
+
+        findAndSetEndSequence(playbackData);
+        return playbackData;
+    }
+
+    // Preprocess steps for scheduling playback
+    function preprocessAndSchedulePlayback(playbackData) {
+        if (!playbackData || !playbackData.sequences) {
+            return console.error("Playback data is not available or empty.");
+        }
+
+        bpm = playbackData.bpm;
+        preprocessedSequences = Object.fromEntries(
+            Object.entries(playbackData.sequences).map(([sequenceKey, sequenceData]) => [
+                sequenceKey,
+                {
+                    normalSteps: processSteps(sequenceData.normalSteps),
+                    reverseSteps: processSteps(sequenceData.reverseSteps),
+                },
+            ])
+        );
+
+        isReadyToPlay = Object.values(preprocessedSequences).some(
+            sequence => Object.keys(sequence.normalSteps).length > 0 || Object.keys(sequence.reverseSteps).length > 0
+        );
+    }
+
+    // Process steps to calculate timing
+    function processSteps(steps) {
+        return Object.fromEntries(
+            Object.entries(steps)
+                .filter(([, stepArray]) => Array.isArray(stepArray) && stepArray.length)
+                .map(([channel, stepArray]) => [
+                    channel,
+                    stepArray.map(step => ({
+                        step,
+                        timing: Number(step * (60 / bpm)).toFixed(3),
+                    })),
+                ])
+        );
+    }
+
+    // Log volume settings for debugging
+    function logVolumeSettings() {
+        for (const [channel, volume] of Object.entries(globalVolumeLevels)) {
+            // Log volume levels for each channel
+        }
+    }
+</script>
+
+
+    <defineScriptsToLoad>
+    <script>
+
+        // Function to start the playback loop, with error handling and state checks
+        // function startPlaybackLoop() {
+        //     if (!globalJsonData || !globalJsonData.projectBPM) {
+        //         console.error(`[${new Date().toISOString()}] Playback loop cannot start: globalJsonData or projectBPM is missing.`);
+        //         return;
+        //     }
+            
+        //     bpm = globalJsonData.projectBPM;
+        //     console.log(`[${new Date().toISOString()}] Playback loop started with BPM: ${bpm}`);
+        // }
+
+        // // Asynchronously initialize playback, with proper AudioContext state management
+        // async function initializePlayback() {
+        //     try {
+        //         await resumeAudioContext(); // Safely resume the AudioContext if needed
+        //         console.log(`[${new Date().toISOString()}] AudioContext resumed successfully.`);
+
+        //         startPlaybackLoop(); // Start the loop with proper data validation
+        //         startWorker(); // Start worker if needed for background processing
+        //     } catch (error) {
+        //         console.error(`[${new Date().toISOString()}] Error initializing playback:`, error);
+        //     }
+        // }
+
+        // // Asynchronously stop playback, with robust AudioContext state management
+        // async function stopPlayback() {
+        //     console.log(`[${new Date().toISOString()}] Stopping playback...`);
+
+        //     // Safely stop all active audio sources
+        //     Object.keys(activeSources).forEach(key => {
+        //         activeSources[key].forEach(({ source, gainNode }) => {
+        //             gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        //             gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        //             gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeDuration);
+        //             source.stop(audioCtx.currentTime + fadeDuration);
+        //             source.disconnect();
+        //             gainNode.disconnect();
+        //         });
+        //         activeSources[key] = [];
+        //     });
+
+        //     // Check the state of the AudioContext before suspending it
+        //     setTimeout(async () => {
+        //         if (audioCtx.state === "running") {
+        //             await audioCtx.suspend();
+        //             console.log(`[${new Date().toISOString()}] AudioContext suspended.`);
+        //         } else {
+        //             console.warn(`[${new Date().toISOString()}] AudioContext not suspended because it is in state: ${audioCtx.state}`);
+        //         }
+        //         resetPlaybackState(); // Reset other playback-related states
+        //     }, 50); // Small delay for fade-out
+        // }
+
+        // // A helper function to safely resume the AudioContext if needed
+        // async function resumeAudioContext() {
+        //     if (audioCtx.state === "suspended") {
+        //         await audioCtx.resume();
+        //         console.log(`[${new Date().toISOString()}] AudioContext resumed.`);
+        //     } else if (audioCtx.state === "closed") {
+        //         console.warn(`[${new Date().toISOString()}] AudioContext is closed. Resetting AudioContext.`);
+        //         await window.AudioContextManager.resetAudioContext();
+        //         console.log(`[${new Date().toISOString()}] New AudioContext created and resumed.`);
+        //     } else {
+        //         console.log(`[${new Date().toISOString()}] AudioContext is already running.`);
+        //     }
+        // }
+
+        // function startPlaybackLoop(){globalJsonData&&(bpm=globalJsonData.projectBPM)}async function initializePlayback(){await resumeAudioContext(),startPlaybackLoop(),startWorker()}async function stopPlayback(){Object.keys(activeSources).forEach((a=>{activeSources[a].forEach((({source:a,gainNode:e})=>{e.gain.cancelScheduledValues(audioCtx.currentTime),e.gain.setValueAtTime(e.gain.value,audioCtx.currentTime),e.gain.linearRampToValueAtTime(0,audioCtx.currentTime+fadeDuration),a.stop(audioCtx.currentTime+fadeDuration),a.disconnect(),e.disconnect()})),activeSources[a]=[]})),setTimeout((async()=>{await audioCtx.suspend(),resetPlaybackState()}),50)}
+
+        // Array of scripts to load
+        window.scriptsToLoad = [
+                // "/content/61895db1f0d62d24cea96570e66b92435a8a4979e3d3fef8041680ed2afeddc8i0", // audioContextManager.js
+                // "/content/1b036f9d60a04f0612af8c53753273f66339e69d7843138007eb3573703b1218i0", // jsonLoader.js
+                "/content/1a5cafb61e4a320434fc4087e203d2a5f695ba9112635b960fc9d7dcb961d9fci0", // startPlaybackLoop
+
+                "/content/150e020d5e6ea8b53b7b3d2160f25f65c2e550d413f9c53d9e1cfb101d6914f2i0", // audioProcessing.js
+                "/content/935828577e4762caaf32b76a0f74cb4f37bdcdbdae1d27a7c93d000d5cfe9d28i0", // playBuffer
+                "/content/bab2b37e0abcce41d784d65d94a5c3c266228c2d8bd3ecdee4fba7986f5a042ei0", // visualiserMessaging
+                "/content/a3d8a40fcde6935f16b49ad7c9e9aa185f01d1618f4e35828415f6cc27377a47i0", // dispatchSequenceEvents
+                "/content/17c6cb4f92d47043da52ce8334c41961c588b7955488e56f08264840ef63a4eei0", // initialiseWorker
+
+
+                // The scrips below are all related to the visualiser and do not effect audio playback
+
+                // "/content/3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
+                // "/content/4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
+                // "/content/0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
+                // "/content/87bb49f5617a241e29512850176e53169c3da4a76444d5d8fcd6c1e41489a4b3i0", // colourSettingsLevel1 
+                // "/content/cea34b6ad754f3a4e992976125bbd1dd59213aab3de03c9fe2eb10ddbe387f76i0", // colourSettingsLevel2
+                // "/content/bcee9a2e880510772f0129c735a4ecea5bb45277f3b99ff640c1bd393dddd6dfi0", // colourSettingsLevel3
+                // "/content/90d910fe4088c53a16eb227ec2fe59802091dc4ea51564b2665090403c34f59ci0", // colourSettingsLevel4
+                // "/content/916fd1731cdecf82706a290d03448c6dc505c01d6ec44bbca20281a19723d617i0", // colourSettingsLevel5
+                // "/content/6a5e5c8b42793dd35512dfddd81dbbe211f052ac79839dd54b53461f5783a390i0", // colourSettingsLevel6
+                // "/content/c0ee69121238f6438be8398038301cf5b1d876cce30a0d45a3a5e0b927826940i0", // colourSettingsLevel7
+                // "/content/6f1def70a3290c50793773a8b1712c9a1b0561b3674ee50a06c13bc4e492f459i0", // colourSettingsLevel8
+                // "/content/c7c92a81d5279950be7d0bd3e755ad620551bc65e6e514d6f7c29b4c24465d0ai0", // initVisualiser.js
+                // "/content/99ecc0668e27f03cf202f9ebc49d0332ac8f594bc9b5483969108b83723a0e9di0", // visualiserLogging.js
+                // "/content/305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
+                // "/content/0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
+                // "/content/287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
+                // "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
+                // "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0" // PFP module
+            ];
+    </script>
+    </defineScriptsToLoad>
+
+    <dataProcessingUtilities>
+        <script src="/content/a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0"></script>
+    <!-- <script>
+    // Hashing and dataProcessingUtilities.js - Inscribed - a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0
+    function hashString(e){console.log(`[${(new Date).toISOString()}] hashString function called with input:`,e);const t=parseInt(e.split("i")[1]);console.log(`[${(new Date).toISOString()}] Rotation count parsed:`,t),e=e.slice(t)+e.slice(0,t),console.log(`[${(new Date).toISOString()}] String after rotation:`,e);let n=0;for(let t=0;t<e.length;t++)n=(31*n+e.charCodeAt(t))%Number.MAX_SAFE_INTEGER;const a=n%14e8;return console.log(`[${(new Date).toISOString()}] Final hash calculated:`,a),a}const seedValue=hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");function seededRandom(e){const t=1e4*Math.sin(e);return t-Math.floor(t)}function setPlaybackStatus(e){window.playbackStarted=e}function initializePlayback(){void 0===window.playbackStarted&&(window.playbackStarted=!1),document.addEventListener("playbackStarted",(()=>{window.psTime=Date.now(),setPlaybackStatus(!0),"function"==typeof displayPlayText&&displayPlayText()})),document.addEventListener("playbackStopped",(()=>{setPlaybackStatus(!1)}))}console.log(`[${(new Date).toISOString()}] Hash string returned seed value:`,seedValue);const keyMap={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},reverseKeyMap=Object.fromEntries(Object.entries(keyMap).map((([e,t])=>[t,+e]))),channelMap=Array.from({length:26},((e,t)=>String.fromCharCode(65+t))),reverseChannelMap=Object.fromEntries(channelMap.map(((e,t)=>[e,t])));function decompressSteps(e){return e.flatMap((e=>{if("number"==typeof e)return e;if("object"==typeof e&&"r"in e){const[t,n]=e.r;return Array.from({length:n-t+1},((e,n)=>t+n))}return"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:void 0}))}function deserialize(e){const t=e=>Array.isArray(e)?e.map((e=>"object"==typeof e?t(e):e)):"object"==typeof e&&null!==e?Object.entries(e).reduce(((e,[n,a])=>{const o=keyMap[n]??n;return e[o]="projectSequences"===o?Object.entries(a).reduce(((e,[t,n])=>(e[t.replace("s","Sequence")]=Object.entries(n).reduce(((e,[t,n])=>(e[`ch${reverseChannelMap[t]}`]={steps:decompressSteps(n[reverseKeyMap.steps]||[])},e)),{}),e)),{}):t(a),e}),{}):e;return t(e)}initializePlayback(),window.onload=function(){console.log(`[${(new Date).toISOString()}] window.onload triggered.`)},console.log(`[${(new Date).toISOString()}] ProcessingUtilities initialized.`);
+    </script> -->
+    </dataProcessingUtilities>
+
+    <dataProcessingCore>
+    <script>
+    // loadPako and deserialise functions <dataProcessingCore> inscribed - 01341644e144bba44e6da53bc9ce2f4d29299e24a39e934cbc2d2eb81dd8eb7fi0
+        async function loadPako(){
+        try{
+            const e=await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),
+            t=await e.text(),
+            n=(new DOMParser).parseFromString(t,"text/html").querySelector("script");
+            if(!n||!n.textContent.includes("pako")) throw new Error("Pako library not found in the HTML content.");
+            document.head.append(Object.assign(document.createElement("script"),{textContent:n.textContent}));
+        } catch(e){
+            console.error("Error occurred during Pako loading:",e);
+        }
+    }
+
+    async function fetchAndDeserialize(e){
+        try{
+            const t=await fetch(e);
+            if(!t.ok) throw new Error(`Network response was not ok for URL: ${e}`);
+            const n=await t.arrayBuffer(), 
+                r=pako.inflate(new Uint8Array(n));
+            return deserialize(JSON.parse(new TextDecoder("utf-8").decode(r)));
+        } catch(e){
+            throw console.error("Error in fetchAndDeserialize:",e),e;
+        }
+    }
+
+    /**
+     * Shuffles an array in place using a seeded random function.
+     * @param {Array} array - The array to shuffle.
+     * @param {number} seed - The seed value for consistent shuffling.
+     * @returns {Array} - The shuffled array.
+     */
+    function shuffleArray(array, seed) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(seededRandom(seed++) * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        console.log(`[${new Date().toISOString()}] After shuffling - Playback Speeds:`, array.map(item => item.speed), "Trim Settings:", array.map(item => item.trim));
+        return array;
+    }
+
+
+    const BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
+
+    /**
+     * Selects a BPM value based on a seeded random function.
+     * @param {number} seed - The seed value for consistent BPM selection.
+     * @returns {number} - The selected BPM value.
+     */
+    function selectBPM(seed) {
+        return BPM_VALUES[Math.floor(seededRandom(seed) * BPM_VALUES.length)];
+    }
+
+
+    /**
+     * Fetches and processes data from a list of URLs.
+     * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+     * @returns {Array<Object>} - Array of deserialized and validated data.
+     * @throws {Error} - Throws an error if no valid data is processed.
+     */
+    async function fetchAndProcessData(songDataUrls) {
+        const deserializedDataPromises = songDataUrls.map(async (url) => {
+            try {
+                const data = await fetchAndDeserialize(url);
+                if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+                console.log(`[${new Date().toISOString()}] Data fetched and deserialized for URL: ${url}`);
+                return data;
+            } catch (error) {
+                console.error("Error processing URL:", error);
+                return null;
+            }
+        });
+
+        const deserializedDataResults = await Promise.all(deserializedDataPromises);
+        const deserializedData = deserializedDataResults.filter(data => data !== null);
+
+        if (!deserializedData.length) throw new Error("No valid data was processed.");
+
+        return deserializedData;
+    }
+    /**
+     * Adjusts channel playback speeds, trim settings, and volumes.
+     * @param {Object} data - The song data object to adjust.
+     * @param {number} dataIndex - Index of the song data in the array.
+     * @param {number} selectedBPM - The BPM selected for this processing run.
+     * @param {Array<Array<number>>} VOLUME_CONTROLS - The volume controls for each song and channel.
+     * @param {Array<Array<number>>} SPEED_CONTROLS - The speed controls for each song and channel.
+     * @param {string} songId - The ID or name of the song (extracted from the URL).
+     */
+    function adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId) {
+        const adjustmentFactor = selectedBPM / data.projectBPM;
+        console.log(`[${new Date().toISOString()}] Adjustment Factor for song (${songId}): ${adjustmentFactor}`);
+
+        data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+            const speedControlMultiplier = SPEED_CONTROLS[dataIndex][channelIndex] || 1; // Use 1 as default if not specified
+            const adjustedSpeed = speed * adjustmentFactor * speedControlMultiplier;
+            console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Speed: ${speed}, Speed Control Multiplier: ${speedControlMultiplier}, Adjusted Speed: ${adjustedSpeed}`);
+
+            let trim = data.trimSettings[channelIndex] || { startSliderValue: 0, endSliderValue: 100 };
+            const originalDuration = trim.endSliderValue - trim.startSliderValue;
+
+            const adjustedDuration = adjustedSpeed > speed
+                ? originalDuration / adjustedSpeed
+                : originalDuration * (speed / adjustedSpeed);
+
+            if (!isNaN(adjustedDuration) && adjustedDuration > 0) {
+                trim.endSliderValue = Math.min(Math.max(trim.startSliderValue + adjustedDuration, 0), 100);
+                console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted Trim Start: ${trim.startSliderValue}, Adjusted Trim End: ${trim.endSliderValue}`);
+            } else {
+                console.warn(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Adjusted duration invalid or zero. Using default trim settings.`);
+                trim = { startSliderValue: 0, endSliderValue: 100 };
+            }
+
+            return adjustedSpeed;
+        });
+
+        const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+        const masterVolumeMultiplier = volumeControls[0] || 1;
+
+        data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+            const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+            const adjustedVolume = volume * masterVolumeMultiplier * channelVolumeMultiplier;
+            console.log(`[${new Date().toISOString()}] Channel ${channelIndex} (Song: ${songId}): Original Volume: ${volume}, Adjusted Volume: ${adjustedVolume}`);
+            return adjustedVolume;
+        });
+
+        console.log(`[${new Date().toISOString()}] After Adjustment for song (${songId}) - Playback Speeds:`, data.channelPlaybackSpeed, "Trim Settings:", data.trimSettings, "Volumes:", data.channelVolume);
+    }
+
+    /**
+     * Assembles the processed song object after adjusting channels.
+     * @param {Array<Object>} deserializedData - Array of deserialized and adjusted song data.
+     * @param {number} selectedBPM - The BPM selected for this processing run.
+     * @returns {Object} - The final processed song object.
+     */
+    function assembleProcessedSong(deserializedData, selectedBPM) {
+        const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+            data.channelURLs.map((url, channelIndex) => ({
+                url,
+                volume: data.channelVolume[channelIndex],
+                speed: data.channelPlaybackSpeed[channelIndex],
+                trim: data.trimSettings[channelIndex],
+                source: `data${dataIndex + 1}`,
+                index: channelIndex
+            }))
+        );
+
+        const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 24);
+
+        console.log(`[${new Date().toISOString()}] Selected 24 Channels - Playback Speeds:`,
+            shuffledChannels.map(channel => channel.speed),
+            "Trim Settings:",
+            shuffledChannels.map(channel => channel.trim)
+        );
+
+        const processedSong = {
+            ...deserializedData[0],
+            projectBPM: selectedBPM,
+            channelURLs: shuffledChannels.map(channel => channel.url),
+            channelVolume: shuffledChannels.map(channel => channel.volume),
+            channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+            trimSettings: shuffledChannels.map(channel => channel.trim),
+            projectSequences: {}
+        };
+
+        const dataSourceMap = deserializedData.reduce((acc, data, index) => ({
+            ...acc,
+            [`data${index + 1}`]: data
+        }), {});
+
+        for (const sequenceKey in deserializedData[0].projectSequences) {
+            processedSong.projectSequences[sequenceKey] = {};
+            shuffledChannels.forEach((channel, newIndex) => {
+                const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+                processedSong.projectSequences[sequenceKey][`ch${newIndex}`] = originalSequence?.[`ch${channel.index}`] || { steps: [] };
+            });
+        }
+
+        return processedSong;
+    }
+
+    /**
+     * Main function to process serialized data for song generation.
+     * @param {Array<string>} songDataUrls - Array of URLs to fetch data from.
+     * @param {Array<Array<number>>} VOLUME_CONTROLS - Volume controls for each song and channel.
+     * @param {Array<Array<number>>} SPEED_CONTROLS - Speed controls for each song and channel.
+     */
+    async function processSerializedData(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS) {
+        try {
+            await loadPako();
+
+            const deserializedData = await fetchAndProcessData(songDataUrls);
+
+            const selectedBPM = selectBPM(window.seed);
+            console.log(`[${new Date().toISOString()}] Selected Master BPM: ${selectedBPM}`);
+
+            deserializedData.forEach((data, dataIndex) => {
+                const songId = songDataUrls[dataIndex].split('/').pop(); // Extracts the file name or ID from the URL
+                console.log(`[${new Date().toISOString()}] Processing data from song ${dataIndex + 1} (ID: ${songId})`);
+                adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId);
+            });
+
+            const processedSong = assembleProcessedSong(deserializedData, selectedBPM);
+
+            window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(processedSong)], { type: "application/json" }));
+            document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+            console.log(`[${new Date().toISOString()}] [debugScriptloading] Data processing complete.`);
+
+        } catch (error) {
+            console.error("Error processing data in processSerializedData:", error);
+        }
+    }
+
+    console.log(`[${new Date().toISOString()}] DataProcessingCore initialized.`);
+
+    </script>
+    </dataProcessingCore>
+
+    <scriptLoader>
+        <!-- <script src = "/content/8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0"></script> -->
+
+    <script>
+    // ScriptLoader.js - Inscribed - 8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0
+    // Anonymous async function to initialize the app
+    !async function() {
+        // Create a canvas element and add it to the document body
+        const canvas = document.createElement("canvas");
+        canvas.id = "cv";
+        document.body.append(canvas);
+    
+        // Style the document body for centered content
+        Object.assign(document.body.style, {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            margin: "0"
+        });
+    
+        // Function to reset states, load JSON data, and initialize the worker
+        const initializeApp = () => {
+            window.cci2 = 0;
+            window.initialCCI2 = 0;
+            resetAllStates(); // Custom function to reset app states
+            loadJsonFromUrl(window.jsonDataUrl); // Load JSON from URL
+            initializeWorker(); // Initialize any worker processes
+        };
+    
+        try {
+            // Wait for window.jsonDataUrl to be defined
+            await new Promise((resolve) => {
+                const checkJsonDataUrl = () => window.jsonDataUrl ? resolve() : setTimeout(checkJsonDataUrl, 100);
+                checkJsonDataUrl();
+            });
+    
+            console.log("Fetching from URL:", window.jsonDataUrl);
+    
+            // Fetch JSON data from the URL
+            const response = await fetch(window.jsonDataUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+            // Load settings from the fetched JSON
+            window.settings = await response.json();
+            console.log("Settings loaded:", window.settings);
+    
+            // Load additional scripts dynamically
+            await (async (scripts) => {
+                for (const scriptUrl of scripts) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement("script");
+                        script.src = scriptUrl;
+                        script.onload = resolve;
+                        script.onerror = () => reject(new Error(`Failed to load script: ${scriptUrl}`));
+                        document.head.append(script);
+                    });
+                }
+            })(window.scriptsToLoad); // Assuming window.scriptsToLoad is an array of script URLs
+    
+            // Ensure that the AudioContext is ready
+            await ensureAudioContextState();
+    
+            // If the document is still loading, wait for DOMContentLoaded, then initialize the app
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initializeApp);
+            } else {
+                initializeApp(); // If document is ready, initialize immediately
+            }
+        } catch (error) {
+            console.error("Error initializing the app:", error);
+        }
+    
+        console.log(`[${(new Date()).toISOString()}] [debugScriptLoading] ScriptLoader initialized.`);
+    }();
+        </script>
+    </scriptLoader>
+
+            
+    </body>
+    </html>

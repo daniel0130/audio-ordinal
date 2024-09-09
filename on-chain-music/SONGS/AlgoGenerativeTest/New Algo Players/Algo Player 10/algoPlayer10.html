@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="bpm-selector">
+            <button class="bpm-button" data-bpm="80">80</button>
+            <button class="bpm-button" data-bpm="100">100</button>
+            <button class="bpm-button" data-bpm="120">120</button>
+            <button class="bpm-button" data-bpm="140">140</button>
+            <button class="bpm-button" data-bpm="160">160</button>
+            <button class="bpm-button" data-bpm="180">180</button>
+            <button class="bpm-button" data-bpm="240">240</button>
+        </div>
+
+        <div class="controls">
+            <button class="prev-button" id="prev-song">⏮ Previous</button>
+            <button class="next-button" id="next-song">Next ⏭</button>
+        </div>
+        
+
+        <div class="frame">
+            <canvas id="visualizer"></canvas>
+        </div>
+
+        <div class="seed-display">
+            <p>Seed value: <span id="seed-value">#123456</span></p>
+        </div>
+
+        <div class="seed-history">
+            <p>Previous Seeds:</p>
+            <ul id="seed-list">
+                <li>#123450</li>
+                <li>#123451</li>
+                <li>#123452</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

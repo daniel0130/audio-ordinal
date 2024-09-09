@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>? ? ? ? ? ? ?</title>
+    <script>
+        window.seed = 169;  // Default seed
+    
+    </script>
+ <style>
+ body {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;display: flex;justify-content: center;align-items: center;}#canvas-container {width: 50vmin;height: 50vmin;display: flex;justify-content: center;align-items: center;background-color: white;position: relative;}body, html {height: 100%;margin: 0;display: flex;align-items: center;justify-content: center;background-color: #000000;position: relative;transform: scale(0.7);}.text-element, .play-text {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;z-index: 10001;opacity: 1;transition: opacity 5s ease-in-out;}.play-text {font-size: 125px;font-style: bold;font-weight: 700;color: #ff00bf;z-index: 10001;opacity: 1;transition: opacity 30s ease-in-out;}.sqyzy {font-family: Arial, bold, sans-serif;color: #000000;}.freedom {font-size: 125px;font-weight: 700;font-style: bold;}.melophonic {font-family: "Trebuchet MS", bold, sans-serif;font-size: 65px;color: #000;}.sqyzy {font-size: 96px;font-weight: 500;}.fade-overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: #000;z-index: 10000;opacity: 1;transition: opacity 10s ease-in-out;}
+
+/* New Styles to Handle Canvas */
+canvas#cv {
+    position: absolute; /* Ensure it's not affecting the flow of the document */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Translate it back to the center */
+    z-index: 9999; /* Place it below the text elements but above other content */
+    pointer-events: none; /* Prevent the canvas from intercepting any pointer events */
+}
+
+</style>
+</head>
+<body>
+
+<userDefinedData>
+<script>
+function createTextElement(e,t){try{const n=Object.assign(document.createElement("div"),{textContent:e||""});return t&&n.classList.add(t),document.body.append(n),n}catch(e){console.error("Error creating element:",e)}}console.log(`[${(new Date).toISOString()}] First IIFE [init] starting with seed:`,window.seed);const init=()=>{console.log(`[${(new Date).toISOString()}] init function called.`);try{const e=["/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0","/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0","/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0","/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0","/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0","/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0","/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0","/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0","/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0"];e.length>0?(console.log(`[${(new Date).toISOString()}] songDataUrls array is defined and has ${e.length} items. Proceeding with processing...`),processSerializedData(e),console.log(`[${(new Date).toISOString()}] processSerializedData completed successfully.`)):console.warn(`[${(new Date).toISOString()}] songDataUrls array is empty.`)}catch(e){console.error(`[${(new Date).toISOString()}] Error in init function:`,e)}};window.init=init,window.addEventListener("load",(()=>{console.log(`[${(new Date).toISOString()}] Window load event triggered.`),init(),console.log(`[${(new Date).toISOString()}] init function execution completed.`)})),console.log(`[${(new Date).toISOString()}] First IIFE [init] completed.`);const enforceDocumentTitle=()=>{document.title="? ? ? ? ? ? ?";new MutationObserver((()=>{"? ? ? ? ? ? ?"!==document.title&&(document.title="? ? ? ? ? ? ?")})).observe(document.querySelector("title"),{childList:!0,subtree:!0})},displayText=e=>{e.forEach((({text:e,className:t,fadeIn:n,fadeOut:a})=>{const o=createTextElement(e,t);setTimeout((()=>o.style.opacity="1"),n),setTimeout((()=>o.style.opacity="0"),a)}))};window.onload=()=>{try{initialFadeIn(),document.title="? ? ? ? ? ? ?",displayPlayText()}catch(e){console.error("Error during window.onload execution:",e)}};const texts=[{text:"? ? ? ? ?",className:"freedom",fadeIn:0,fadeOut:15740},{text:"?elo?honi?",className:"melophonic",fadeIn:15740,fadeOut:41480},{text:"?Q?Z?",className:"sqyzy",fadeIn:41480,fadeOut:57800}];displayText(texts);const displayPlayText=()=>{try{const e=createTextElement("? ? ? ? ?","play-text");setTimeout((()=>e.style.opacity="0"),100)}catch(e){console.error("Error in displayPlayText:",e)}};
+</script>
+</userDefinedData>
+
+
+
+
+<defineScriptsToLoad>
+<!-- <script src="/content/8438bbc23fa7eddb1cac3457e0df3d2e2a8bcc0bdc7fdea8af5b2467a1e2e2f0i0"></script> -->
+<script> 
+    // defineScriptsToLoad.js - Inscribed - /content/8438bbc23fa7eddb1cac3457e0df3d2e2a8bcc0bdc7fdea8af5b2467a1e2e2f0i0
+        // Utility function to prepend the base URL
+        const prependBaseURL = (baseURL, ids) => ids.map(id => `${baseURL}${id}`);
+    
+        // Array of script IDs to load
+        const scriptIds = [
+            "61895db1f0d62d24cea96570e66b92435a8a4979e3d3fef8041680ed2afeddc8i0", // audioContextManager.js
+            "1b036f9d60a04f0612af8c53753273f66339e69d7843138007eb3573703b1218i0", // jsonLoader.js
+            "150e020d5e6ea8b53b7b3d2160f25f65c2e550d413f9c53d9e1cfb101d6914f2i0", // audioProcessing.js
+            "935828577e4762caaf32b76a0f74cb4f37bdcdbdae1d27a7c93d000d5cfe9d28i0", // playBuffer
+            "bab2b37e0abcce41d784d65d94a5c3c266228c2d8bd3ecdee4fba7986f5a042ei0", // visualiserMessaging
+            "1a5cafb61e4a320434fc4087e203d2a5f695ba9112635b960fc9d7dcb961d9fci0", // startPlaybackLoop
+            "a3d8a40fcde6935f16b49ad7c9e9aa185f01d1618f4e35828415f6cc27377a47i0", // dispatchSequenceEvents
+            "17c6cb4f92d47043da52ce8334c41961c588b7955488e56f08264840ef63a4eei0", // initialiseWorker
+            // "4915e144695ab04171092a45e2d49cfa7b5e92c9a35ce612e7b749457acc92ddi0", // titleDisplays_2.js
+            "3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
+            "4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
+            "0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
+            "87bb49f5617a241e29512850176e53169c3da4a76444d5d8fcd6c1e41489a4b3i0", // colourSettingsLevel1 
+            "cea34b6ad754f3a4e992976125bbd1dd59213aab3de03c9fe2eb10ddbe387f76i0", // colourSettingsLevel2
+            "bcee9a2e880510772f0129c735a4ecea5bb45277f3b99ff640c1bd393dddd6dfi0", // colourSettingsLevel3
+            "90d910fe4088c53a16eb227ec2fe59802091dc4ea51564b2665090403c34f59ci0", // colourSettingsLevel4
+            "916fd1731cdecf82706a290d03448c6dc505c01d6ec44bbca20281a19723d617i0", // colourSettingsLevel5
+            "6a5e5c8b42793dd35512dfddd81dbbe211f052ac79839dd54b53461f5783a390i0", // colourSettingsLevel6
+            "c0ee69121238f6438be8398038301cf5b1d876cce30a0d45a3a5e0b927826940i0", // colourSettingsLevel7
+            "6f1def70a3290c50793773a8b1712c9a1b0561b3674ee50a06c13bc4e492f459i0", // colourSettingsLevel8
+            "c7c92a81d5279950be7d0bd3e755ad620551bc65e6e514d6f7c29b4c24465d0ai0", // initVisualiser.js
+            "99ecc0668e27f03cf202f9ebc49d0332ac8f594bc9b5483969108b83723a0e9di0", // visualiserLogging.js
+            "305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
+            "0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
+            "287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
+            "214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
+            "97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0" // PFP module
+        ];
+    
+        // Define the base URL
+        const baseURL = "/content/";
+    
+        // Prepend the base URL to each script ID
+        window.scriptsToLoad = prependBaseURL(baseURL, scriptIds);
+
+        const POSSIBLE_BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
+
+        function selectBPMBasedOnSeed(seed) {
+            return POSSIBLE_BPM_VALUES[Math.floor(seededRandom(seed) * POSSIBLE_BPM_VALUES.length)];
+        }
+
+        function seededRandom(e){const t=1e4*Math.sin(e);return t-Math.floor(t)}
+    </script>
+</defineScriptsToLoad>
+    
+<dynamicCustomContentUtilities>
+<!-- <script src="/content/9a592eee1d42d51597f69007defe0174f87ffe0a83e94c246461e1a1d1e5a16fi0"></script> -->
+<script>
+//  dynamicCustomContentUtilities.js - Inscribed - /content/9a592eee1d42d51597f69007defe0174f87ffe0a83e94c246461e1a1d1e5a16fi0 
+const loadScript=e=>{document.body.append(Object.assign(document.createElement("script"),{src:e}))},fadeOutElementById=(e,t=100)=>{const a=document.getElementById(e);a&&setTimeout((()=>a.style.opacity="0"),t)},displayTextElements=e=>{e.forEach((({text:e,className:t,fadeIn:a,fadeOut:l})=>{const s=createTextElement(e,t);setTimeout((()=>s.style.opacity="1"),a),setTimeout((()=>s.style.opacity="0"),l)}))};Object.assign(window,{loadScript:loadScript,fadeOutElementById:fadeOutElementById,displayTextElements:displayTextElements,createTextElement:createTextElement,displayPlayText:displayPlayText}),console.log(`[${(new Date).toISOString()}] CustomElementsModule initialized.`);
+</script>
+</dynamicCustomContentUtilities>
+
+<dataProcessingUtilities>
+<!-- Load dataProcessingUtilities.js -->
+<!-- <script src="/content/a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0"></script> -->
+<script>
+// Hashing and dataProcessingUtilities.js - Inscribed - /content/a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0
+function hashString(e){console.log(`[${(new Date).toISOString()}] hashString function called with input:`,e);const t=parseInt(e.split("i")[1]);console.log(`[${(new Date).toISOString()}] Rotation count parsed:`,t),e=e.slice(t)+e.slice(0,t),console.log(`[${(new Date).toISOString()}] String after rotation:`,e);let n=0;for(let t=0;t<e.length;t++)n=(31*n+e.charCodeAt(t))%Number.MAX_SAFE_INTEGER;const a=n%14e8;return console.log(`[${(new Date).toISOString()}] Final hash calculated:`,a),a}const seedValue=hashString("4482324585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0");function setPlaybackStatus(e){window.playbackStarted=e}function initializePlayback(){void 0===window.playbackStarted&&(window.playbackStarted=!1),document.addEventListener("playbackStarted",(()=>{window.psTime=Date.now(),setPlaybackStatus(!0),"function"==typeof displayPlayText&&displayPlayText()})),document.addEventListener("playbackStopped",(()=>{setPlaybackStatus(!1)}))}console.log(`[${(new Date).toISOString()}] Hash string returned seed value:`,seedValue);const keyMap={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},reverseKeyMap=Object.fromEntries(Object.entries(keyMap).map((([e,t])=>[t,+e]))),channelMap=Array.from({length:26},((e,t)=>String.fromCharCode(65+t))),reverseChannelMap=Object.fromEntries(channelMap.map(((e,t)=>[e,t])));function decompressSteps(e){return e.flatMap((e=>{if("number"==typeof e)return e;if("object"==typeof e&&"r"in e){const[t,n]=e.r;return Array.from({length:n-t+1},((e,n)=>t+n))}return"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:void 0}))}function deserialize(e){const t=e=>Array.isArray(e)?e.map((e=>"object"==typeof e?t(e):e)):"object"==typeof e&&null!==e?Object.entries(e).reduce(((e,[n,a])=>{const o=keyMap[n]??n;return e[o]="projectSequences"===o?Object.entries(a).reduce(((e,[t,n])=>(e[t.replace("s","Sequence")]=Object.entries(n).reduce(((e,[t,n])=>(e[`ch${reverseChannelMap[t]}`]={steps:decompressSteps(n[reverseKeyMap.steps]||[])},e)),{}),e)),{}):t(a),e}),{}):e;return t(e)}initializePlayback(),window.onload=function(){console.log(`[${(new Date).toISOString()}] window.onload triggered.`),enforceDocumentTitle(),"function"==typeof displayPlayText&&displayPlayText(),console.log(`[${(new Date).toISOString()}] onload functions executed successfully.`)},console.log(`[${(new Date).toISOString()}] ProcessingUtilities initialized.`);
+</script>
+</dataProcessingUtilities>
+
+<dataProcessingCore>
+<!-- Load dataProcessingCore -->
+<!-- <script src="/content/01341644e144bba44e6da53bc9ce2f4d29299e24a39e934cbc2d2eb81dd8eb7fi0"></script> -->
+<script>
+// loadPako and deserialise functions <dataProcessingCore> inscribed - /content/01341644e144bba44e6da53bc9ce2f4d29299e24a39e934cbc2d2eb81dd8eb7fi0
+    async function loadPakoLibrary() {
+    try {
+        // Fetch the HTML content from the given URL
+        const response = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+        const htmlContent = await response.text();
+
+        // Parse the HTML content and look for a script tag containing "pako"
+        const parsedHTML = (new DOMParser()).parseFromString(htmlContent, "text/html");
+        const scriptElement = parsedHTML.querySelector("script");
+
+        // If the script tag with "pako" is not found, throw an error
+        if (!scriptElement || !scriptElement.textContent.includes("pako")) {
+            throw new Error("Pako library not found in the HTML content.");
+        }
+
+        // Append the script to the document head
+        const newScript = document.createElement("script");
+        newScript.textContent = scriptElement.textContent;
+        document.head.append(newScript);
+
+    } catch (error) {
+        console.error("Error occurred during Pako loading:", error);
+    }
+}
+
+async function fetchAndDeserializeData(url) {
+    try {
+        // Fetch the data from the provided URL
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok for URL: ${url}`);
+        }
+
+        // Convert the response data to an ArrayBuffer, inflate it using Pako, and deserialize it
+        const arrayBuffer = await response.arrayBuffer();
+        const inflatedData = pako.inflate(new Uint8Array(arrayBuffer));
+        const decodedData = new TextDecoder("utf-8").decode(inflatedData);
+
+        return deserialize(JSON.parse(decodedData));
+    } catch (error) {
+        console.error("Error in fetchAndDeserializeData:", error);
+        throw error;
+    }
+}
+
+function shuffleArrayWithSeededRandom(array, seed) {
+    for (let index = array.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(seededRandom(seed++) * (index + 1));
+        [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
+    }
+    return array;
+}
+
+// Initialize global storage for trim settings
+window.globalTrimSettings = {};
+
+
+async function processSerializedData(urls) {
+    try {
+        await loadPakoLibrary();
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Pako library loaded.`);
+
+        const deserializedDataArray = (await Promise.all(urls.map(async (url) => {
+            try {
+                const data = await fetchAndDeserializeData(url);
+                if (!data?.projectSequences) {
+                    throw new Error(`Invalid data at URL ${url}`);
+                }
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Data received from URL ${url}:`, data);
+                return data;
+            } catch (error) {
+                console.error(`[${(new Date).toISOString()}] [debugTrimSettings] Error processing URL ${url}:`, error);
+                return null;
+            }
+        }))).filter(Boolean);
+
+        if (!deserializedDataArray.length) {
+            throw new Error("No valid data was processed.");
+        }
+
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Deserialized data array:`, deserializedDataArray);
+
+        const selectedBPM = selectBPMBasedOnSeed(window.seed);
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Selected BPM (Master BPM): ${selectedBPM}`);
+
+        deserializedDataArray.forEach((data, dataIndex) => {
+            console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Processing data index ${dataIndex}:`);
+            console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Original project BPM: ${data.projectBPM}`);
+
+            data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, index) => {
+                const originalBPM = data.projectBPM;
+                const speedAdjustmentFactor = selectedBPM / originalBPM;
+                const adjustedSpeed = speed * speedAdjustmentFactor;
+
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - Original Speed: ${speed}, Adjustment Factor: ${speedAdjustmentFactor}, Adjusted Speed: ${adjustedSpeed}`);
+
+                let trimSettings = data.trimSettings[index];
+                if (!trimSettings || trimSettings.start === undefined || trimSettings.end === undefined) {
+                    console.warn(`[${(new Date).toISOString()}] [debugTrimSettings] Trim settings for channel ${index} are undefined. Defaulting to full range.`);
+                    trimSettings = { start: 0, end: 100 };
+                }
+
+                const originalTrimStart = trimSettings.start;
+                const originalTrimEnd = trimSettings.end;
+                const originalTrimDuration = originalTrimEnd - originalTrimStart;
+                const newTrimEnd = originalTrimStart + (originalTrimDuration / adjustedSpeed);
+
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - New Trim Duration: Original Duration - ${originalTrimDuration}, Adjusted Duration - ${newTrimEnd - originalTrimStart}`);
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - New Trim Settings: Start - ${originalTrimStart}, End - ${newTrimEnd}`);
+
+                // Store the trim settings in the global object
+                window.globalTrimSettings[`data${dataIndex}_channel${index}`] = {
+                    start: originalTrimStart,
+                    end: newTrimEnd,
+                };
+
+                return adjustedSpeed;
+            });
+        });
+
+        // Shuffle and trim the array of channels, then prepare the final data structure
+        const shuffledChannels = shuffleArrayWithSeededRandom(
+            deserializedDataArray.flatMap((data, dataIndex) =>
+                data.channelURLs.map((url, channelIndex) => ({
+                    url,
+                    volume: data.channelVolume[channelIndex],
+                    speed: data.channelPlaybackSpeed[channelIndex],
+                    trim: data.trimSettings[channelIndex],
+                    source: `data${dataIndex + 1}`,
+                    index: channelIndex,
+                }))
+            ), window.seed
+        ).slice(0, 24);
+
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Shuffled and trimmed channels:`, shuffledChannels);
+
+        // Construct the final project data
+        const finalProjectData = {
+            ...deserializedDataArray[0],
+            projectBPM: selectedBPM,
+            channelURLs: shuffledChannels.map(channel => channel.url),
+            channelVolume: shuffledChannels.map(channel => channel.volume),
+            channelPlaybackSpeed: shuffledChannels.map(channel => channel.speed),
+            trimSettings: shuffledChannels.map(channel => channel.trim),
+            projectSequences: {},
+        };
+
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Final project data before sequence mapping:`, finalProjectData);
+
+        // Map sequences for the shuffled channels
+        const sourceDataMapping = deserializedDataArray.reduce((mapping, data, dataIndex) => {
+            return { ...mapping, [`data${dataIndex + 1}`]: data };
+        }, {});
+
+        for (const sequenceKey in deserializedDataArray[0].projectSequences) {
+            finalProjectData.projectSequences[sequenceKey] = {};
+            shuffledChannels.forEach((channel, channelIndex) => {
+                const sourceSequence = sourceDataMapping[channel.source]?.projectSequences[sequenceKey];
+                finalProjectData.projectSequences[sequenceKey][`ch${channelIndex}`] = sourceSequence?.[`ch${channel.index}`] || { steps: [] };
+
+                // Log each sequence mapping
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Sequence Mapping: Sequence - ${sequenceKey}, Channel - ${channelIndex}, Source - ${channel.source}`);
+            });
+        }
+
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Final project data after sequence mapping:`, finalProjectData);
+
+        // Create a JSON blob and set it as the data URL
+        window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(finalProjectData)], { type: "application/json" }));
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] JSON data URL created: ${window.jsonDataUrl}`);
+
+        // Dispatch an event indicating the data processing is complete
+        document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Data processing complete.`);
+
+
+    } catch (error) {
+        console.error("Error processing data in processSerializedData:", error);
+    }
+}
+
+console.log(`[${(new Date).toISOString()}] DataProcessingCore initialized.`);
+
+</script>
+</dataProcessingCore>
+
+<scriptLoader>
+    <script>
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Trim settings before ScriptLoader initialization:`, window.settings?.trimSettings || 'No trim settings available');
+    </script>
+<!-- Load ScriptLoader.js -->
+<script src="/content/8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0"></script>
+<!-- <script>
+// ScriptLoader.js - Inscribed - /content/8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0
+!async function(){const t=document.createElement("canvas");t.id="cv",document.body.append(t),Object.assign(document.body.style,{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",margin:"0"});const o=()=>{window.cci2=0,window.initialCCI2=0,resetAllStates(),loadJsonFromUrl(window.jsonDataUrl),initializeWorker()};try{await new Promise((t=>{const o=()=>window.jsonDataUrl?t():setTimeout(o,100);o()})),console.log("Fetching from URL:",window.jsonDataUrl);const t=await fetch(window.jsonDataUrl);if(!t.ok)throw new Error(`HTTP error! status: ${t.status}`);window.settings=await t.json(),console.log("Settings loaded:",window.settings),await(async t=>{for(const o of t)await new Promise(((t,n)=>{const e=document.createElement("script");e.src=o,e.onload=t,e.onerror=()=>n(new Error(`Failed to load script: ${o}`)),document.head.append(e)}))})(window.scriptsToLoad),await ensureAudioContextState(),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",o):o()}catch(t){console.error("Error initializing the app:",t)}console.log(`[${(new Date).toISOString()}] [debugScriptloading] ScriptLoader initialized.`)}();
+</script> -->
+</scriptLoader>
+
+
+</body>
+</html>

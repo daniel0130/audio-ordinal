@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GZip Decompression and JSON Display</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <script src="songGenerator.js"></script> <!-- Load the external module -->
+</head>
+<body>
+    <h1>GZip Decompression and JSON Display</h1>
+    <pre id="output"></pre>
+
+    <script>
+        // Function to fetch and decompress data from a given URL
+        async function fetchAndDecompress(url) {
+            try {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                const decompressed = pako.ungzip(new Uint8Array(arrayBuffer), { to: 'string' });
+                const data = JSON.parse(decompressed);
+                console.log(`Data from ${url}:`, data); // Log data to check structure
+                return data;
+            } catch (error) {
+                console.error(`Failed to fetch or decompress data from ${url}:`, error);
+                return null;
+            }
+        }
+
+        // Asynchronous function to process multiple files
+        async function processFiles(urls) {
+            const outputElement = document.getElementById('output');
+            let allData = [];
+
+            for (const url of urls) {
+                const data = await fetchAndDecompress(url);
+                if (data) {
+                    allData.push(data);
+                } else {
+                    outputElement.innerHTML += `Failed to load data from: ${url}\n\n`;
+                }
+            }
+
+            // Display the processed data as JSON
+            console.log('All data fetched, proceeding to song generation:', allData);
+            outputElement.innerHTML += JSON.stringify(allData, null, 2);
+
+            // Generate and serialize a new song from the collected data using songGenerator module
+            console.log('Calling songGenerator to create New Song with:', allData);
+            const serializedNewSong = songGenerator.createAndSerializeNewSong(allData);
+
+            // Display the generated song JSON
+            outputElement.innerHTML += `\nGenerated New Song:\n${serializedNewSong}`;
+        }
+
+        const baseUrl = 'https://ordinals.com';
+        const urls = [
+            "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", 
+            "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", 
+            "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
+            "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
+            "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", 
+            "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0"
+        ].map(endpoint => `${baseUrl}${endpoint}`);
+
+        processFiles(urls);
+    </script>
+</body>
+</html>
+
+
+// NOTES
+// The JSON structure and the detailed comments below are based on analyzing typical data returned from the provided URLs:
+
+// Example JSON data structure based on typical outputs:
+// {
+//   0: "Choppin' It Up",             // Project name or identifier
+//   1: '',                           // Metadata or empty field, possibly reserved for future use
+//   2: 105,                          // BPM (Beats Per Minute), indicates the tempo of the project
+//   3: 0,                            // Starting Sequence
+//   4: Array(16),                    // Array of URLs, each corresponding to a channel's media file (audio, video, etc.)
+//   5: Array(16),                    // Array of volume settings, each index matches the corresponding channel in '4'
+//   6: Array(16),                    // Array of playback speeds, each index matches the corresponding channel in '4'
+//   7: Array(16),                    // Array of trim settings, each index matches the corresponding channel in '4'
+//   8: Array(16),                    // Array of identifiers or step sequences, likely matching with the indices of channels
+//   14: {…},                         // Complex nested object, typically containing channel sequences, steps, and mapping data
+//   channelSettings: {…},            // Object containing per-channel settings, e.g., volume, pitch, etc.
+//   globalPlaybackSpeed: 1           // A global playback speed multiplier applied across the entire project
+// }
+
+// Detailed Comments:
+
+// "0": Project Name or Identifier
+// - This string represents the name of the project. It is used for identification purposes within the UI or metadata handling.
+// - If not provided, it typically defaults to "Unnamed Project".
+
+// "1": Metadata or Empty Field
+// - Often left empty but could be reserved for future use, such as for descriptions, tags, or other metadata identifiers.
+// - Defaults to an empty string if not specified.
+
+// "2": BPM (Beats Per Minute)
+// - Indicates the tempo of the project, which influences the playback speed of the channels. Adjustments may be necessary for synchronization with other projects.
+// - Defaults to a standard BPM (e.g., 120 BPM) if not specified.
+
+// "3": Flag or State Indicator
+// - Typically an integer, this field may represent the project's state (e.g., completed, in progress) or specific settings flags.
+// - Defaults to 0 if not specified.
+
+// "4": Array of Channel URLs
+// - This array contains URLs pointing to media files for each channel in the project. Each index corresponds to a channel, ensuring proper synchronization of audio or video resources.
+// - Defaults to an empty array if not provided, preventing errors if data is missing.
+
+// "5": Array of Volume Settings
+// - Contains volume levels for each channel, where each index matches the corresponding channel in the '4' array. Each channel's volume is independently adjustable.
+// - Defaults to a volume level of 1 per channel if not specified.
+
+// "6": Array of Playback Speeds
+// - Contains playback speed multipliers for each channel. These speeds are relative to the project's BPM and allow for individual synchronization of channels.
+// - Defaults to 1 for each channel if not specified, meaning no speed change by default.
+
+// "7": Array of Trim Settings
+// - Contains objects with trim details for each channel, such as start time, end time, and possibly other attributes like length. These settings control how much of each channel's media is played.
+// - Defaults to an object with `start`, `end`, and `length` set to 0 if not specified, ensuring no trimming by default.
+
+// "8": Array of Identifiers or Sequences
+// - Likely represents steps or sequence identifiers that correlate with the channels. Each element might refer to specific segments within the channels that are part of a sequence or arrangement.
+// - Defaults to an empty array if not specified, ensuring no errors when sequences are accessed.
+
+// "14": Complex Nested Object (Channel Sequences and Steps)
+// - A deeply nested object containing mappings of sequences and steps for each channel. These mappings dictate the playback structure across channels, often involving sequences (e.g., `s0`, `s1`) with step arrays.
+// - Defaults to an empty object if not provided, ensuring the program does not fail if this data is missing.
+
+// "channelSettings": Channel-specific Settings
+// - Contains settings like `volume` and `pitch` for each channel, referenced by channel identifiers like `ch0`, `ch1`, etc. Allows for fine-tuned control beyond what's defined in arrays `5` and `6`.
+// - Defaults to an empty object if not specified, ensuring continuity even without specific settings.
+
+// "globalPlaybackSpeed": Global Playback Speed Multiplier
+// - Applies a global playback speed adjustment across the entire project, uniformly affecting all channels. This multiplier works in conjunction with individual channel playback speeds to achieve the desired timing and synchronization.
+// - Defaults to 1 if not provided, ensuring no global speed adjustment by default.

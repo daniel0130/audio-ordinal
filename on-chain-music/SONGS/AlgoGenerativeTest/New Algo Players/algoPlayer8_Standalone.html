@@ -2,9 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent HTML with Embedded iFrame</title>
-    <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>? ? ?</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* Hide overflow to prevent scrollbars */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    #canvas-container {
+            width: 50vmin; /* 50% of the viewport's smaller dimension */
+            height: 50vmin; /* Equal to width to maintain square aspect ratio */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            position: relative;
+        }
+
+
+</style>
+ <style>
         /* Style to center the iframe */
         body, html {
             height: 100%;
@@ -12,108 +37,193 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f0f0f0;
+            background-color: #000000;
+            position: relative; /* Allow absolute positioning of controls */
+            transform: scale(0.7); /* Shrink everything on the page by 70% */
+
+
         }
-        iframe {
-            width: 80%;
-            height: 80%;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+        .text-element,
+    .play-text {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 10001;
+        opacity: 0;
+        transition: opacity 7.87s ease-in-out;
+    }
+
+ 
+    .sqyzy {
+        font-family: Arial, bold, sans-serif;
+        color: #000000;
+    }
+
+    .freedom {
+        font-size: 65px;
+        font-weight: 700;
+    }
+
+    .melophonic {
+        font-family: "Trebuchet MS", bold, sans-serif;
+        font-size: 65px;
+        color: #000;
+    }
+
+    .sqyzy {
+        font-size: 96px;
+        font-weight: 500;
+    }
+
+    .fade-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 10000;
+        opacity: 1;
+        transition: opacity 18s ease-in-out;
+    }
+
+    .play-text {
+        font-size: 65px;
+        font-weight: 700;
+        color: #ff00bf;
+        z-index: 10001;
+        opacity: 1;
+        transition: opacity 10s ease-in-out;
+    }
+
     </style>
+    
+<script>
+    window.addEventListener('message', function(event) {
+        if (event.data.scale !== undefined) {
+            const baseScale = 1; // Start at full scale
+            document.getElementById('canvas-container').style.transform = 'scale(' + (event.data.scale * baseScale) + ')';
+        }
+    });
+</script>
 </head>
 <body>
-    <iframe id="childFrame" srcdoc="
-    <!DOCTYPE html>
-    <html lang=&quot;en&quot;>
-        <head>
-            <meta charset=&quot;UTF-8&quot;>
-            <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-            <title>Seed Input Page</title>
-        </head>
-        <body>
-            <div id=&quot;input-container&quot;>
-                <label for=&quot;seedInput&quot;>Enter Seed:</label>
-                <input type=&quot;number&quot; id=&quot;seedInput&quot; value=&quot;5&quot;>
-                <button id=&quot;applySeedButton&quot;>Apply Seed</button>
-            </div>
-            <div id=&quot;button-container&quot;>
-                <button id=&quot;reloadButton&quot;>Reload Scripts</button>
-            </div>
-        
-            <script>
-                function setSeedAndReinitialize() {
-                    const seedInput = document.getElementById('seedInput').value;
-                    window.seed = parseInt(seedInput, 10);
-                    localStorage.setItem('userSeed', seedInput);
-                    console.log('User-defined seed set to:', window.seed);
-                    initializeProgram();
-                }
-        
-                let userSeed = localStorage.getItem('userSeed');
-                if (userSeed !== null) {
-                    window.seed = parseInt(userSeed, 10);
-                    console.log('User-defined seed set to:', window.seed);
-                } else {
-                    window.seed = 1;
-                    console.log('Initial globalSeed set to:', window.seed);
-                }
-        
-                document.getElementById('applySeedButton').addEventListener('click', setSeedAndReinitialize);
-        
-                function initializeProgram() {
-                    console.log('Running main scripts with global seed:', window.seed);
-                    IIFE1();
-                    IIFE2();
-                    IIFE3();
-                    IIFE4();
-                    IIFE5();
-                    IIFE6();
-                }
-        // Main script execution
-        console.log('Running main scripts with global seed:', window.seed);
-        // IFE #1
-        (function IIFE1() {
-            console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
 
-            function init() {
-                console.log(`[${new Date().toISOString()}] init function called.`);
-                try {
-                    setupStylesAndCanvas();
-                    const songDataUrls = [
-                        &quot;/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0&quot;, 
-                        &quot;/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0&quot;, 
-                        &quot;/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0&quot;,
-                        &quot;/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0&quot;,
-                        &quot;/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0&quot;, 
-                        &quot;/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0&quot;
-                    ];
-                    
-                    if (songDataUrls && songDataUrls.length > 0) {
-                        processSerializedData(songDataUrls);
-                    } else {
-                        console.warn(`[${new Date().toISOString()}] songDataUrls array is either undefined or empty.`);
-                    }
-                } catch (error) {
-                    console.error(`[${new Date().toISOString()}] Error in init function:`, error);
-                }
+    <script>
+        // Function to initialize the canvas and its properties
+        function initializeCanvas() {
+            const canvas = document.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+            // Your canvas drawing logic here
+            ctx.fillStyle = 'red';
+            ctx.fillRect(10, 10, 150, 100);
+            // Update canvas size dynamically
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
             }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+        }
 
-            window.init = init;
-            window.addEventListener('load', function() {
-                init();
-            });
+        // Initialize the canvas on load
+        window.onload = initializeCanvas;
+    </script>
 
-        })();
+    <script>
+        // Function to set seed and reinitialize the program
+        function setSeedAndReinitialize() {
+            const seedInput = document.getElementById("seedInput").value;
+            window.seed = parseInt(seedInput, 10);
+            localStorage.setItem("userSeed", seedInput);
+            console.log("User-defined seed set to:", window.seed);
+            initializeProgram();
+        }
+
+        // Listen for seed value from parent
+        window.addEventListener('message', function(event) {
+            if (event.data.seed !== undefined) {
+                window.seed = event.data.seed;
+                console.log('Received seed from parent:', window.seed);
+                initializeProgram();
+            }
+        });
+
+        // Request seed value from parent
+        window.parent.postMessage('requestSeed', '*');
+
+        // Function to initialize the program
+        function initializeProgram() {
+            console.log("Running main scripts with global seed:", window.seed);
+            // Clear any previous state if necessary
+            // For example, remove dynamically added elements or reset global variables
+            // Re-run all necessary IIFEs or functions to reinitialize the program
+            IIFE1();
+            IIFE2();
+            IIFE3();
+            IIFE4();
+            IIFE5();
+            IIFE6();
+        }
 
 
-// IIFE #2
+        // Main script execution
+        console.log("Running main scripts with global seed:", window.seed);
+   
+    // IFE #1
+    (function IIFE1() {
+        console.log(`[${new Date().toISOString()}] First IIFE [init] starting with seed:`, window.seed);
+
+        function init() {
+            console.log(`[${new Date().toISOString()}] init function called.`);
+            try {
+                console.log(`[${new Date().toISOString()}] Calling setupStylesAndCanvas...`);
+                setupStylesAndCanvas();
+                console.log(`[${new Date().toISOString()}] setupStylesAndCanvas completed successfully.`);
+                
+                const songDataUrls = [
+                    "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+                    "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", // On-Chain in the Membrane
+                    "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", // CHEESE
+                    "/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // KORA
+                    "/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN' IT UP
+                    // "/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK I HAVE A DREAM
+                    "/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // ModernProgress
+                    "/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
+                    "/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // MintyFresh Vibes
+                    "/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
+                ];
+                
+                if (songDataUrls && songDataUrls.length > 0) {
+                    console.log(`[${new Date().toISOString()}] songDataUrls array is defined and has ${songDataUrls.length} items. Proceeding with processing...`);
+                    processSerializedData(songDataUrls);
+                    console.log(`[${new Date().toISOString()}] processSerializedData completed successfully.`);
+                } else {
+                    console.warn(`[${new Date().toISOString()}] songDataUrls array is either undefined or empty.`);
+                }
+            } catch (error) {
+                console.error(`[${new Date().toISOString()}] Error in init function:`, error);
+            }
+        }
+
+        window.init = init;
+        window.addEventListener('load', function() {
+            console.log(`[${new Date().toISOString()}] Window load event triggered.`);
+            init();
+            console.log(`[${new Date().toISOString()}] init function execution completed.`);
+        });
+
+        console.log(`[${new Date().toISOString()}] First IIFE [init] completed.`);
+    })();
+// IFE #2
 (function IIFE2() {
-    console.log(`[${new Date().toISOString()}] Second IIFE [hashString] starting with seed:`, window.seed);
+    console.log(`[${new Date().toISOString()}] Second IIFE [hashstring] starting with seed:`, window.seed);
 
     function hashString(str) {
         console.log(`[${new Date().toISOString()}] hashString function called with input:`, str);
-        let rotationCount = parseInt(str.split("i")[1], 10);
+        let rotationCount = parseInt(str.split("i")[1]);
         console.log(`[${new Date().toISOString()}] Rotation count parsed:`, rotationCount);
         
         let characters = str.split("");
@@ -202,88 +312,88 @@
     // Initialize the playback settings
     initializePlayback();
 
-    console.log(`[${new Date().toISOString()}] Second IIFE [hashString] completed.`);
+    console.log(`[${new Date().toISOString()}] Second IIFE [hashstring] completed.`);
 })();
 
-// IIFE #3
+// IFE #3
 (function IIFE3() {
     console.log(`[${new Date().toISOString()}] Third IIFE [setupStylesAndCanvas] running with global seed:`, window.seed);
 
     function setupStylesAndCanvas() {
         console.log(`[${new Date().toISOString()}] setupStylesAndCanvas function called.`);
         
-        try {
-            console.log(`[${new Date().toISOString()}] Creating style element...`);
-            const styleElement = document.createElement("style");
-            styleElement.textContent = `
-                canvas {
-                    position: absolute;
-                }
-                body {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                    background-color: black;
-                    position: relative;
-                }
-                #canvas-container {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    width: 100%;
-                    height: 100%;
-                    position: relative;
-                }
-                #cv, body {
-                    background: #000;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                }
-                #title-display-container {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    text-align: center;
-                    z-index: 9999;
-                    pointer-events: none;
-                }
-                #project-name-display, 
-                #by-display, 
-                #artist-name-display, 
-                #visual-artist-display, 
-                #visual-artist-name-display {
-                    opacity: 0;
-                    font-weight: bold;
-                    position: absolute;
-                    text-align: center;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: auto;
-                    white-space: nowrap;
-                    margin: 0;
-                    padding: 0;
-                    line-height: normal;
-                    font-size: 50px;
-                }
-            `;
-            document.head.appendChild(styleElement);
-            console.log(`[${new Date().toISOString()}] Style element appended to head.`);
+        // try {
+        //     console.log(`[${new Date().toISOString()}] Creating style element...`);
+        //     const styleElement = document.createElement("style");
+        //     styleElement.textContent = `
+        //         canvas {
+        //             position: absolute;
+        //         }
+        //         // body {
+        //         //     display: flex;
+        //         //     justify-content: center;
+        //         //     align-items: center;
+        //         //     height: 100vh;
+        //         //     margin: 0;
+        //         //     background-color: black;
+        //         //     position: relative;
+        //         // }
+        //         // #canvas-container {
+        //         //     display: flex;
+        //         //     justify-content: center;
+        //         //     align-items: center;
+        //         //     width: 100%;
+        //         //     height: 100%;
+        //         //     position: relative;
+        //         // }
+        //         // #cv, body {
+        //         //     background: #000;
+        //         //     display: flex;
+        //         //     justify-content: center;
+        //         //     align-items: center;
+        //         //     height: 100vh;
+        //         // }
+        //         // #title-display-container {
+        //         //     position: fixed;
+        //         //     top: 50%;
+        //         //     left: 50%;
+        //         //     transform: translate(-50%, -50%);
+        //         //     text-align: center;
+        //         //     z-index: 9999;
+        //         //     pointer-events: none;
+        //         // }
+        //         // #project-name-display, 
+        //         // #by-display, 
+        //         // #artist-name-display, 
+        //         // #visual-artist-display, 
+        //         // #visual-artist-name-display {
+        //         //     opacity: 0;
+        //         //     font-weight: bold;
+        //         //     position: absolute;
+        //         //     text-align: center;
+        //         //     left: 50%;
+        //         //     transform: translate(-50%, -50%);
+        //         //     width: auto;
+        //         //     white-space: nowrap;
+        //         //     margin: 0;
+        //         //     padding: 0;
+        //         //     line-height: normal;
+        //         //     font-size: 50px;
+        //         // }
+        //     `;
+        //     document.head.appendChild(styleElement);
+        //     console.log(`[${new Date().toISOString()}] Style element appended to head.`);
 
-            console.log(`[${new Date().toISOString()}] Creating canvas container...`);
-            const canvasContainer = document.createElement("div");
-            canvasContainer.id = "canvas-container";
-            const canvas = document.createElement("canvas");
-            canvasContainer.appendChild(canvas);
-            document.body.appendChild(canvasContainer);
-            console.log(`[${new Date().toISOString()}] Canvas and container appended to body.`);
-        } catch (error) {
-            console.error(`[${new Date().toISOString()}] Error in setupStylesAndCanvas:`, error);
-        }
+        //     console.log(`[${new Date().toISOString()}] Creating canvas container...`);
+        //     const canvasContainer = document.createElement("div");
+        //     canvasContainer.id = "canvas-container";
+        //     const canvas = document.createElement("canvas");
+        //     canvasContainer.appendChild(canvas);
+        //     document.body.appendChild(canvasContainer);
+        //     console.log(`[${new Date().toISOString()}] Canvas and container appended to body.`);
+        // } catch (error) {
+        //     console.error(`[${new Date().toISOString()}] Error in setupStylesAndCanvas:`, error);
+        // }
     }
 
     window.setupStylesAndCanvas = setupStylesAndCanvas;
@@ -291,7 +401,7 @@
     console.log(`[${new Date().toISOString()}] Third IIFE [setupStylesAndCanvas] completed.`);
 })();
 
-// IIFE #4
+// IFE #4
 (function IIFE4() {
     console.log(`[${new Date().toISOString()}] Fourth IIFE [keymap] running with seed:`, window.seed);
 
@@ -315,7 +425,7 @@
                 const [r, t] = e.r;
                 return Array.from({ length: t - r + 1 }, (e, t) => r + t);
             }
-            return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: true } : undefined;
+            return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: true } : void 0;
         });
     }
 
@@ -324,15 +434,15 @@
         const r = e => Array.isArray(e) ? e.map(e => typeof e === "object" ? r(e) : e) : typeof e === "object" && e !== null ? Object.entries(e).reduce((e, [t, n]) => {
             const a = keyMap[t] ?? t;
             return e[a] = a === "projectSequences" ? Object.entries(n).reduce((e, [r, t]) => (e[r.replace("s", "Sequence")] = Object.entries(t).reduce((e, [r, t]) => {
-                const n = t[reverseKeyMap.steps] || [];
-                return e[`ch${reverseChannelMap[r]}`] = { steps: n.flatMap(e => {
+                var n;
+                return e[`ch${reverseChannelMap[r]}`] = { steps: (n = t[reverseKeyMap.steps] || [], n.flatMap(e => {
                     if (typeof e === "number") return e;
                     if (typeof e === "object" && "r" in e) {
                         const [r, t] = e.r;
                         return Array.from({ length: t - r + 1 }, (e, t) => r + t);
                     }
-                    return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: true } : undefined;
-                }) }, e;
+                    return typeof e === "string" && e.endsWith("r") ? { index: parseInt(e.slice(0, -1), 10), reverse: true } : void 0;
+                })) }, e;
             }, {}), e), {}) : r(n), e;
         }, {}) : e;
         return r(e);
@@ -389,7 +499,9 @@
     console.log(`[${new Date().toISOString()}] Fourth IIFE [keymap] completed.`);
 })();
 
-// IIFE #5     
+
+     
+// IFE #5     
 (function IIFE5() {
     console.log(`[${new Date().toISOString()}] Fifth IIFE [fetchAndDeserialize] running with seed:`, window.seed);
 
@@ -421,7 +533,7 @@
             throw error;  // Re-throw the error to be handled by the caller
         }
     }
-
+    
     function seededRandom(localSeed) {
         console.log(`[${new Date().toISOString()}] seededRandom function called with localSeed:`, localSeed);
         const x = Math.sin(localSeed) * 10000;
@@ -528,7 +640,7 @@
             const shuffledChannels = shuffleArray(allChannels, window.seed);
             console.log(`[${new Date().toISOString()}] Array shuffled in ${Date.now() - shuffleStart}ms.`);
 
-            const selectedChannels = shuffledChannels.slice(0, 24);
+            const selectedChannels = shuffledChannels.slice(0, 24);  // Selecting 24 channels
             console.log(`[${new Date().toISOString()}] Channels shuffled and selected, count: ${selectedChannels.length}`);
 
             const combinedData = {
@@ -593,15 +705,16 @@
 
     console.log(`[${new Date().toISOString()}] Fifth IIFE [fetchAndDeserialize] completed.`);
 })();
-// IIFE #6
+
+// IFE #6
 (function IIFE6() {
     console.log(`[${new Date().toISOString()}] Sixth IIFE [pfp and text scripts] running with seed:`, window.seed);
 
     function loadPFPScript() {
         console.log(`[${new Date().toISOString()}] loadPFPScript called.`);
         try {
-            const scriptElement = document.createElement('script');
-            scriptElement.src = '/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0';
+            const scriptElement = document.createElement("script");
+            scriptElement.src = "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0";
             document.body.appendChild(scriptElement);
             console.log(`[${new Date().toISOString()}] PFP script appended to body.`);
         } catch (error) {
@@ -612,9 +725,9 @@
     function createTextElement(text, className) {
         console.log(`[${new Date().toISOString()}] createTextElement called with text: ${text} and className: ${className}`);
         try {
-            const element = document.createElement('div');
+            const element = document.createElement("div");
             element.textContent = text;
-            element.classList.add('text-element', className);
+            element.classList.add("text-element", className);
             document.body.appendChild(element);
             console.log(`[${new Date().toISOString()}] Text element created and appended to body.`);
             return element;
@@ -626,10 +739,10 @@
     function initialFadeIn() {
         console.log(`[${new Date().toISOString()}] initialFadeIn called.`);
         try {
-            const fadeOverlay = document.getElementById('fadeOverlay');
+            const fadeOverlay = document.getElementById("fadeOverlay");
             if (fadeOverlay) {
                 setTimeout(() => {
-                    fadeOverlay.style.opacity = '0';
+                    fadeOverlay.style.opacity = "0";
                     console.log(`[${new Date().toISOString()}] Fade overlay opacity set to 0.`);
                 }, 100);
             } else {
@@ -643,20 +756,20 @@
     function displayText() {
         console.log(`[${new Date().toISOString()}] displayText called.`);
         const texts = [
-            { text: '?\u2003\u2008\?\u2003\u2008\?', className: 'freedom', fadeIn: 0, fadeOut: 15740 }, // \u2003 is an em space
-            { text: '?elo?honi?', className: 'melophonic', fadeIn: 15740, fadeOut: 31480 },
-            { text: '?Q?Z?', className: 'sqyzy', fadeIn: 31480, fadeOut: 47800 }
+            { text: "?\u2003\u2008?\u2003\u2008?", className: "freedom", fadeIn: 0, fadeOut: 15740 }, // \u2003 is an em space
+            { text: "?elo?honi?", className: "melophonic", fadeIn: 15740, fadeOut: 31480 },
+            { text: "?Q?Z?", className: "sqyzy", fadeIn: 31480, fadeOut: 47800 }
         ];
 
         texts.forEach(({ text, className, fadeIn, fadeOut }) => {
             console.log(`[${new Date().toISOString()}] Scheduling display of text: ${text} with className: ${className}`);
             const textElement = createTextElement(text, className);
             setTimeout(() => {
-                textElement.style.opacity = '1';
+                textElement.style.opacity = "1";
                 console.log(`[${new Date().toISOString()}] Text ${text} faded in.`);
             }, fadeIn);
             setTimeout(() => {
-                textElement.style.opacity = '0';
+                textElement.style.opacity = "0";
                 console.log(`[${new Date().toISOString()}] Text ${text} faded out.`);
             }, fadeOut);
         });
@@ -665,14 +778,14 @@
     function displayPlayText() {
         console.log(`[${new Date().toISOString()}] displayPlayText called.`);
         try {
-            const playTextElement = document.createElement('div');
-            playTextElement.textContent = '?\u2003\u2008\?\u2003\u2008\?'; // \u2003 is an em space
-            playTextElement.className = 'play-text';
+            const playTextElement = document.createElement("div");
+            playTextElement.textContent = "?\u2003\u2008?\u2003\u2008?"; // \u2003 is an em space
+            playTextElement.className = "play-text";
             document.body.appendChild(playTextElement);
             console.log(`[${new Date().toISOString()}] Play text element appended to body.`);
 
             setTimeout(() => {
-                playTextElement.style.opacity = '0';
+                playTextElement.style.opacity = "0";
                 console.log(`[${new Date().toISOString()}] Play text faded out.`);
             }, 100);
         } catch (error) {
@@ -684,8 +797,8 @@
         console.log(`[${new Date().toISOString()}] window.onload triggered.`);
         try {
             initialFadeIn();
-            document.title = '?  ?  ?';
-            console.log(`[${new Date().toISOString()}] Document title set to '?  ?  ?'.`);
+            document.title = "?  ?  ?";
+            console.log(`[${new Date().toISOString()}] Document title set to "?  ?  ?".`);
             displayPlayText();
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Error during window.onload execution:`, error);
@@ -706,10 +819,9 @@
     console.log(`[${new Date().toISOString()}] Sixth IIFE [pfp and text scripts] completed.`);
 })();
 </script>
-</body>
-</html>"
-frameborder="0">
-</iframe>
+<script>
+    window.seed = 111;  // Default seed
 
+</script>
 </body>
 </html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>FREEDOM</title>
+    <style>
+        [style*="Impact, charcoal, sans-serif"] {
+            display: none !important;
+        }
+        .text-element, .play-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #000;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 7.87s ease-in-out;
+        }
+        .text-element {
+            font-weight: bold;
+        }
+        .freedom {
+            font-size: 65px;
+        }
+        .melophonic {
+            font-size: 62px;
+        }
+        .sqyzy {
+            font-size: 96px;
+            font-weight: 500;
+        }
+        .fade-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 15s ease-in-out;
+        }
+        .play-text {
+            font-size: 65px;
+            color: white;
+            z-index: 10001;
+        }
+    </style>
+  <script>
+    window.seed = 111;
+    window.songDataUrl = "/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0";
+</script>
+</head>
+<body>
+    <div id="fadeOverlay" class="fade-overlay"></div>
+    <script>
+        const customizationData = {
+            scriptSrc: "/content/8ab830bf8385d5f68e944948fd1f6109de5d7acc68c62b7f7827f330d40ac2bdi0",
+            songDataUrls: [
+                "/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0", 
+                "/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0", 
+                "/content/songData3"
+            ],
+            title: "Freedom to Transact",
+            fadeOverlayDelay: 100,
+            playTextDelay: 100,
+            texts: [
+                { text: "FREEDOM", className: "freedom", fadeIn: 0, fadeOut: 15740 },
+                { text: "melophonic", className: "melophonic", fadeIn: 15740, fadeOut: 31480 },
+                { text: "SQYZY", className: "sqyzy", fadeIn: 31480, fadeOut: 47800 }
+            ],
+            hashStringSeed: "4482928585393f1523e8c28a02605c0b1c95d2779510921da0f131a5e6da5843i0"
+        };
+
+        // Load and process all song data URLs
+        async function loadAndProcessAllSongData(urls, seed) {
+            const allChannels = [];
+            const combinedSettings = {
+                projectName: '',
+                artistName: '',
+                projectBPM: 120,
+                currentSequence: 0,
+                channelSettings: {
+                    volumes: [],
+                    pitches: [],
+                    timings: [],
+                    labels: []
+                },
+                globalPlaybackSpeed: 1
+            };
+
+            // Load and accumulate channels and settings from each song data URL
+            await Promise.all(urls.map(async (url) => {
+                const songData = await fetchSongData(url);
+
+                // Accumulate channels
+                const channels = flattenChannels(songData);
+                allChannels.push(...channels);
+
+                // Merge settings, assuming they are consistent across all song data files
+                mergeSettings(combinedSettings, songData);
+            }));
+
+            // Filter out empty channels or sequences
+            const filteredChannels = allChannels.filter(hasActiveSteps);
+
+            // Shuffle channels using the seed and select a subset
+            const selectedChannels = selectRandomChannels(filteredChannels, 16, seed);  // Select 16 channels
+
+            // Generate and return the new song data URL
+            return generateNewSongDataUrl(selectedChannels, combinedSettings);
+        }
+
+      // Fetch and parse song data
+async function fetchSongData(url) {
+    console.log(`[algoDebug] Fetching song data from URL: ${url}`);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to load song data from ${url}`);
+    const songData = await response.json();
+    console.log(`[algoDebug] Successfully fetched and parsed song data from URL: ${url}`);
+    return songData; // Assuming the song data is in JSON format
+}
+
+// Flatten channels from song data
+function flattenChannels(songData) {
+    console.log(`[algoDebug] Flattening channels from song data with project name: ${songData.projectName}`);
+    const flattenedChannels = songData.channelURLs.map((url, index) => ({
+        url: url,
+        volume: songData.channelVolume[index],
+        speed: songData.channelPlaybackSpeed[index],
+        trim: songData.trimSettings[index]
+    }));
+    console.log(`[algoDebug] Flattened ${flattenedChannels.length} channels from song data.`);
+    return flattenedChannels;
+}
+
+// Check if a channel has active steps
+function hasActiveSteps(channel) {
+    const active = channel.steps && channel.steps.some(step => step.active);
+    if (active) {
+        console.log(`[algoDebug] Channel ${channel.url} has active steps.`);
+    } else {
+        console.log(`[algoDebug] Channel ${channel.url} has no active steps.`);
+    }
+    return active;
+}
+
+// Select random channels based on a seed
+function selectRandomChannels(channels, count, seed) {
+    console.log(`[algoDebug] Selecting ${count} random channels from a total of ${channels.length} available channels using seed: ${seed}`);
+    const rng = new SeededRNG(seed);
+    const shuffledChannels = channels.sort(() => rng.next() - 0.5);
+    const selectedChannels = shuffledChannels.slice(0, count);
+    console.log(`[algoDebug] Selected ${selectedChannels.length} channels after shuffling.`);
+    return selectedChannels;
+}
+
+// Generate a new song data URL
+function generateNewSongDataUrl(selectedChannels, settings) {
+    console.log(`[algoDebug] Generating new song data JSON with ${selectedChannels.length} channels.`);
+    const newSongDataJson = {
+        projectName: settings.projectName,
+        artistName: settings.artistName,
+        projectBPM: settings.projectBPM,
+        currentSequence: settings.currentSequence,
+        channelURLs: selectedChannels.map(ch => ch.url),
+        channelVolume: selectedChannels.map(ch => ch.volume),
+        channelPlaybackSpeed: selectedChannels.map(ch => ch.speed),
+        trimSettings: selectedChannels.map(ch => ch.trim),
+        sequences: settings.sequences,
+        globalPlaybackSpeed: settings.globalPlaybackSpeed
+    };
+    console.log("[algoDebug] New song data JSON generated:", newSongDataJson);
+    return URL.createObjectURL(new Blob([JSON.stringify(newSongDataJson)], { type: 'application/json' }));
+}
+
+// Merge settings from song data
+function mergeSettings(targetSettings, songData) {
+    console.log(`[algoDebug] Merging settings from song data with project name: ${songData.projectName}`);
+    targetSettings.projectName = songData.projectName || targetSettings.projectName;
+    targetSettings.artistName = songData.artistName || targetSettings.artistName;
+    targetSettings.projectBPM = songData.projectBPM || targetSettings.projectBPM;
+    targetSettings.currentSequence = songData.currentSequence || targetSettings.currentSequence;
+
+    Object.keys(targetSettings.channelSettings).forEach(key => {
+        if (songData.channelSettings[key]) {
+            console.log(`[algoDebug] Merging channel settings for key: ${key}`);
+            targetSettings.channelSettings[key] = targetSettings.channelSettings[key].concat(songData.channelSettings[key]);
+        }
+    });
+
+    targetSettings.globalPlaybackSpeed = songData.globalPlaybackSpeed || targetSettings.globalPlaybackSpeed;
+    console.log(`[algoDebug] Merged settings:`, targetSettings);
+}
+
+        // Seeded random number generator utility
+        function SeededRNG(seed) {
+            this.seed = seed;
+            this.next = function () {
+                const x = Math.sin(this.seed++) * 10000;
+                return x - Math.floor(x);
+            };
+        }
+
+        // Update the song data URL in customization data with the newly generated song
+        loadAndProcessAllSongData(customizationData.songDataUrls, customizationData.hashStringSeed)
+            .then(newSongDataUrl => {
+                customizationData.songDataUrl = newSongDataUrl;
+
+                // Trigger the original process with the updated songDataUrl
+                document.body.appendChild(Object.assign(document.createElement("script"), {
+                    src: customizationData.scriptSrc,
+                    defer: true
+                }));
+            })
+            .catch(err => console.error("Error processing song data:", err));
+
+        // Hash string function
+        function hashString(str) {
+            const [, d] = str.split("i");
+            let t = str.split("");
+            for (let i = 0; i < parseInt(d); i++) t.push(t.shift());
+            return t.reduce((o, c) => (31 * o + c.charCodeAt(0)) % Number.MAX_SAFE_INTEGER, 0) % 14e8;
+        }
+    </script>
+
+
+        
+    <script>
+    
+        // Load external script
+        document.body.appendChild(Object.assign(document.createElement("script"), {
+            src: customizationData.scriptSrc,
+            defer: true
+        }));
+    
+        // Function to create text elements
+        function createTextElement(text, className) {
+            const element = document.createElement("div");
+            element.textContent = text;
+            element.className = `text-element ${className}`;
+            document.body.appendChild(element);
+            return element;
+        }
+    
+        // Function to fade overlay
+        function fadeOverlay(delay) {
+            setTimeout(() => {
+                document.getElementById('fadeOverlay').style.opacity = '0';
+            }, delay);
+        }
+    
+        // Function to display text elements
+        function displayText(texts) {
+            texts.forEach(({ text, className, fadeIn, fadeOut }) => {
+                const el = createTextElement(text, className);
+                setTimeout(() => el.style.opacity = "1", fadeIn);
+                setTimeout(() => el.style.opacity = "0", fadeOut);
+            });
+        }
+    
+        // Function to display play text
+        function displayPlayText(text, delay) {
+            const playText = createTextElement(text, "play-text");
+            playText.style.opacity = '1';
+            setTimeout(() => playText.style.opacity = '0', delay);
+        }
+    
+        // Function to update document title
+        function updateTitle(expectedTitle) {
+            const observer = new MutationObserver(() => {
+                if (document.title !== expectedTitle) {
+                    document.title = expectedTitle;
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.querySelector("title"), { childList: true, subtree: true });
+        }
+    
+        // Initialize playback listeners
+        function initializePlaybackListeners(texts) {
+            const setPlaybackStarted = (state) => window.playbackStarted = state;
+    
+            document.addEventListener("playbackStarted", () => {
+                window.psTime = Date.now();
+                setPlaybackStarted(true);
+                displayText(texts);
+            });
+    
+            document.addEventListener("playbackStopped", () => {
+                setPlaybackStarted(false);
+            });
+        }
+    
+
+        // Window onload function
+        window.onload = () => {
+            fadeOverlay(customizationData.fadeOverlayDelay);
+            document.title = customizationData.title;
+            displayPlayText(customizationData.texts[0].text, customizationData.playTextDelay);
+            if (window.playbackStarted) displayText(customizationData.texts);
+            initializePlaybackListeners(customizationData.texts);
+            updateTitle(customizationData.title);
+            testSongDataUrlAccess(); // Test the songDataUrl access
+
+        };
+    
+        // Call hashString with predefined seed
+        hashString(customizationData.hashStringSeed);
+    </script>
+
+    <script>
+        function testSongDataUrlAccess() {
+    // Log the initial value of songDataUrl
+    console.log("Initial songDataUrl:", window.songDataUrl);
+
+    // Set a timeout to check the value after a short delay
+    setTimeout(() => {
+        console.log("SongDataUrl after initial load:", window.songDataUrl);
+    }, 1000); // Adjust the delay as needed
+
+    // Optionally, set an interval to continuously check the value
+    setInterval(() => {
+        console.log("Current songDataUrl:", window.songDataUrl);
+    }, 5000); // Logs the value every 5 seconds
+}
+
+    </script>
+    
+</body>
+</html>
