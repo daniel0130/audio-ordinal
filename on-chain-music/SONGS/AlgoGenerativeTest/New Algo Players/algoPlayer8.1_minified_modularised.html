@@ -163,51 +163,69 @@ function shuffleArrayWithSeededRandom(array, seed) {
     return array;
 }
 
+// Initialize global storage for trim settings
+window.globalTrimSettings = {};
+
 
 async function processSerializedData(urls) {
     try {
-        // Ensure Pako library is loaded
         await loadPakoLibrary();
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Pako library loaded.`);
 
-        // Fetch and deserialize data from all URLs
         const deserializedDataArray = (await Promise.all(urls.map(async (url) => {
             try {
                 const data = await fetchAndDeserializeData(url);
                 if (!data?.projectSequences) {
                     throw new Error(`Invalid data at URL ${url}`);
                 }
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Data received from URL ${url}:`, data);
                 return data;
             } catch (error) {
-                console.error("Error processing URL:", error);
+                console.error(`[${(new Date).toISOString()}] [debugTrimSettings] Error processing URL ${url}:`, error);
                 return null;
             }
         }))).filter(Boolean);
 
-        // If no valid data was processed, throw an error
         if (!deserializedDataArray.length) {
             throw new Error("No valid data was processed.");
         }
 
-        // Select BPM based on the window seed
-        const selectedBPM = selectBPMBasedOnSeed(window.seed);
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Deserialized data array:`, deserializedDataArray);
 
-        // Adjust playback speed for each channel based on the selected BPM
-        deserializedDataArray.forEach((data) => {
-            const speedAdjustmentFactor = selectedBPM / data.projectBPM;
+        const selectedBPM = selectBPMBasedOnSeed(window.seed);
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Selected BPM (Master BPM): ${selectedBPM}`);
+
+        deserializedDataArray.forEach((data, dataIndex) => {
+            console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Processing data index ${dataIndex}:`);
+            console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Original project BPM: ${data.projectBPM}`);
+
             data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, index) => {
-                const adjustedSpeed = Math.abs(selectedBPM - data.projectBPM) >= selectedBPM / 2 ? speed : speed * speedAdjustmentFactor;
-                
-                // Adjust the trim end time proportionally
-                const originalTrimStart = data.trimSettings[index].start;
-                const originalTrimEnd = data.trimSettings[index].end;
+                const originalBPM = data.projectBPM;
+                const speedAdjustmentFactor = selectedBPM / originalBPM;
+                const adjustedSpeed = speed * speedAdjustmentFactor;
+
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - Original Speed: ${speed}, Adjustment Factor: ${speedAdjustmentFactor}, Adjusted Speed: ${adjustedSpeed}`);
+
+                let trimSettings = data.trimSettings[index];
+                if (!trimSettings || trimSettings.start === undefined || trimSettings.end === undefined) {
+                    console.warn(`[${(new Date).toISOString()}] [debugTrimSettings] Trim settings for channel ${index} are undefined. Defaulting to full range.`);
+                    trimSettings = { start: 0, end: 100 };
+                }
+
+                const originalTrimStart = trimSettings.start;
+                const originalTrimEnd = trimSettings.end;
                 const originalTrimDuration = originalTrimEnd - originalTrimStart;
-                
-                // Calculate new trim end time based on adjusted speed
                 const newTrimEnd = originalTrimStart + (originalTrimDuration / adjustedSpeed);
-                
-                // Update the trim end time in the settings
-                data.trimSettings[index].end = newTrimEnd;
-                
+
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - New Trim Duration: Original Duration - ${originalTrimDuration}, Adjusted Duration - ${newTrimEnd - originalTrimStart}`);
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Channel ${index} - New Trim Settings: Start - ${originalTrimStart}, End - ${newTrimEnd}`);
+
+                // Store the trim settings in the global object
+                window.globalTrimSettings[`data${dataIndex}_channel${index}`] = {
+                    start: originalTrimStart,
+                    end: newTrimEnd,
+                };
+
                 return adjustedSpeed;
             });
         });
@@ -226,6 +244,8 @@ async function processSerializedData(urls) {
             ), window.seed
         ).slice(0, 24);
 
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Shuffled and trimmed channels:`, shuffledChannels);
+
         // Construct the final project data
         const finalProjectData = {
             ...deserializedDataArray[0],
@@ -237,6 +257,9 @@ async function processSerializedData(urls) {
             projectSequences: {},
         };
 
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Final project data before sequence mapping:`, finalProjectData);
+
+        // Map sequences for the shuffled channels
         const sourceDataMapping = deserializedDataArray.reduce((mapping, data, dataIndex) => {
             return { ...mapping, [`data${dataIndex + 1}`]: data };
         }, {});
@@ -246,16 +269,22 @@ async function processSerializedData(urls) {
             shuffledChannels.forEach((channel, channelIndex) => {
                 const sourceSequence = sourceDataMapping[channel.source]?.projectSequences[sequenceKey];
                 finalProjectData.projectSequences[sequenceKey][`ch${channelIndex}`] = sourceSequence?.[`ch${channel.index}`] || { steps: [] };
+
+                // Log each sequence mapping
+                console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Sequence Mapping: Sequence - ${sequenceKey}, Channel - ${channelIndex}, Source - ${channel.source}`);
             });
         }
 
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Final project data after sequence mapping:`, finalProjectData);
+
         // Create a JSON blob and set it as the data URL
         window.jsonDataUrl = URL.createObjectURL(new Blob([JSON.stringify(finalProjectData)], { type: "application/json" }));
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] JSON data URL created: ${window.jsonDataUrl}`);
 
         // Dispatch an event indicating the data processing is complete
         document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Data processing complete.`);
 
-        console.log(`[${(new Date).toISOString()}] [debugScriptloading] Data processing complete.`);
 
     } catch (error) {
         console.error("Error processing data in processSerializedData:", error);
@@ -263,10 +292,14 @@ async function processSerializedData(urls) {
 }
 
 console.log(`[${(new Date).toISOString()}] DataProcessingCore initialized.`);
+
 </script>
 </dataProcessingCore>
 
 <scriptLoader>
+    <script>
+        console.log(`[${(new Date).toISOString()}] [debugTrimSettings] Trim settings before ScriptLoader initialization:`, window.settings?.trimSettings || 'No trim settings available');
+    </script>
 <!-- Load ScriptLoader.js -->
 <script src="/content/8a8c42109b7d730f9cbfa4160e0a5f474dfcabf4b50d96db0843cdf7572685fdi0"></script>
 <!-- <script>
