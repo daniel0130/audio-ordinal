@@ -395,7 +395,7 @@ class UnifiedSequencerSettings {
     
         // Manual flags to control which files are downloaded
         const downloadFullFormat = true; // Change to false to disable downloading full format JSON
-        const downloadSerializedFormat = true; // Change to false to disable downloading serialized JSON
+        const downloadSerializedFormat = false; // Change to false to disable downloading serialized JSON
     
         // Use the project name in the filenames
         if (downloadFullFormat && exportedSettings && exportedSettings.length > 2) {
