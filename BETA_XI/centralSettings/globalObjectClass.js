@@ -244,7 +244,7 @@ class UnifiedSequencerSettings {
             const deserializedData = {};
             Object.entries(data).forEach(([key, value]) => {
                 const originalKey = keyMap[key] || key;
-    
+        
                 if (originalKey === 'projectSequences') {
                     deserializedData[originalKey] = Object.entries(value).reduce((acc, [seqKey, channels]) => {
                         const originalSeqKey = seqKey.replace('s', 'Sequence');
@@ -259,6 +259,15 @@ class UnifiedSequencerSettings {
                         acc[originalSeqKey] = restoredChannels;
                         return acc;
                     }, {});
+                } else if (originalKey === 'trimSettings') {
+                    // Handle trim settings mapping
+                    deserializedData[originalKey] = value.map(trimSetting => ({
+                        startSliderValue: trimSetting[9],
+                        endSliderValue: trimSetting[10],
+                        totalSampleDuration: trimSetting[11],
+                        ...(trimSetting[12] !== undefined && { start: trimSetting[12] }),
+                        ...(trimSetting[13] !== undefined && { end: trimSetting[13] })
+                    }));
                 } else {
                     deserializedData[originalKey] = value;
                 }
