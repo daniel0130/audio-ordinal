@@ -10,11 +10,12 @@
     <link rel="stylesheet" type="text/css" href="styles/popups-modals.css">
     <link rel="stylesheet" type="text/css" href="styles/animations-keyframes.css">
     <link rel="stylesheet" type="text/css" href="styles/utility-buttons.css">
-    <link rel="stylesheet" type="text/css" href="AudioTrimModule/audio-trim-module.css">
     <link rel="stylesheet" type="text/css" href="styles/custom-menus.css">
     <link rel="stylesheet" type="text/css" href="styles/modal-styles.css">
     <link rel="stylesheet" type="text/css" href="styles/step-button-settings-menu.css">
     <link rel="stylesheet" type="text/css" href="styles/synthContainerAndIframes.css">
+    <link rel="stylesheet" type="text/css" href="AudioTrimModule/audio-trim-module.css">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    
 </head>
@@ -131,6 +132,13 @@
                         <span class="letter">T</span>
                         <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
                     </button>
+
+                    <div id="audio-trimmer-modal" class="modal" hidden>
+                        <div class="trimmer-modal-content">
+                            <span class="close-button">&times;</span>
+                            <div id="audio-trimmer-container"></div>
+                        </div>
+                    </div>
                     
                     <button class="control-button clear-button tooltip">
                         <span class="letter">C</span>
@@ -195,12 +203,7 @@
         <script src="loadSynthModule.js"></script>
 
 
-        <div id="audio-trimmer-modal" class="modal" hidden>
-            <div class="trimmer-modal-content">
-                <span class="close-button">&times;</span>
-                <div id="audio-trimmer-container"></div>
-            </div>
-        </div>
+
        
     </div>
 </div> 

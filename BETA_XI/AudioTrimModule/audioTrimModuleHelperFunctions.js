@@ -41,6 +41,7 @@ function stopAudioForChannel(channelIndex) {
 }
 
 // Initialize audio trimmer modal with channel-specific settings
+// Initialize audio trimmer modal with channel-specific settings
 function initializeAudioTrimmer(channelIndex) {
     currentTrimmerChannelIndex = channelIndex;
 
@@ -71,10 +72,12 @@ function initializeAudioTrimmer(channelIndex) {
                     console.error('Error during audio trimmer initialization:', error);
                 }
             });
-            document.getElementById('audio-trimmer-modal').style.display = 'block';
+            const modal = document.getElementById('audio-trimmer-modal');
+            modal.style.display = 'block';
         })
         .catch(error => console.error('Error loading audio trimmer module:', error));
 }
+
 
 // Apply trim settings for the channel
 function applyTrimSettings(channelIndex) {
