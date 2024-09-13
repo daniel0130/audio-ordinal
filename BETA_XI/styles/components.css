@@ -32,8 +32,13 @@
     background-color: #00ff00;
 }
 
+#stop.selected {
+    background-color: red;
+}
+
+
 .stop-button {
-    background-color: var(--accent-color);
+    background-color: red;
 }
 
 .button-label.stop {
