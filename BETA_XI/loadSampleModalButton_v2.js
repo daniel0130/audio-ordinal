@@ -116,7 +116,8 @@ function openModal(index, loadSampleButton) {
 
     const inputs = [
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
-        { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' }
+        { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain audio sample:' },
+        { placeholder: 'Enter sOrdinal ID:', type: 'text', className: 'sOrdinal-input', text: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' }
     ];
 
     const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
@@ -260,12 +261,13 @@ function createOGDropdown(label, options) {
 function handleAction(index, modal, loadSampleButton) {
     const audionalInput = modal.querySelector('.audional-input');
     const ipfsInput = modal.querySelector('.ipfs-input');
+    const sOrdinalInput = modal.querySelector('.sOrdinal-input');
     // const fileInput = modal.querySelector('.file-input');
 
     // console.log('File Input:', fileInput);
     // console.log('Files Available:', fileInput.files);
 
-    handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton);
+    handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
 }
 
 // Simplified createElement function to reduce redundancy
@@ -314,11 +316,12 @@ function handleDropdownChange(event, index, modal, loadSampleButton) {
     const selectedValue = event.target.value;
     const audionalInput = modal.querySelector('.audional-input');
     const ipfsInput = modal.querySelector('.ipfs-input');
+    const sOrdinalInput = modal.querySelector('.sOrdinal-input');
 
     // Check if the selected value is valid (not the default disabled option)
     if (selectedValue) {
         // Call handleLoad directly from here, assuming you have a valid URL or input
-        handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton);
+        handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
     }
 }
 
@@ -373,7 +376,7 @@ function showChannelNamingModal(channelIndex, loadSampleButton) {
     input.focus();  // Focus the input for user convenience
 }
 
-function handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton, directUrl = null, directSampleName = null) {
+function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton, directUrl = null, directSampleName = null) {
     console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
     let url = directUrl;
     let sampleName = directSampleName;
@@ -389,6 +392,9 @@ function handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton, di
         } else if (ipfsInput && ipfsInput.value.trim()) {
             url = 'https://ipfs.io/ipfs/' + ipfsInput.value.trim();
             sampleName = ipfsInput.value.trim().split('/').pop();
+        } else if (sOrdinalInput && sOrdinalInput.value.trim()) {
+            url = 'https://content.sordinals.io/inscription-data/' + sOrdinalInput.value.trim();
+            sampleName = sOrdinalInput.value.trim().split('/').pop();
         // Uncomment and adjust the following if file input handling is re-enabled:
         // } else if (fileInput && fileInput.files.length > 0) {
         //     url = URL.createObjectURL(fileInput.files[0]);
@@ -413,6 +419,7 @@ function handleLoad(index, audionalInput, ipfsInput, modal, loadSampleButton, di
         alert("Failed to identify the audio to load. Please check your selections.");
     }
 }
+
 
 
 function processLoad(url, sampleName, index, loadSampleButton, modal) {
