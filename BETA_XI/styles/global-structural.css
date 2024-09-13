@@ -78,17 +78,29 @@ h3:hover .subtext {
 
 .trimmer-modal-content {
     background-color: #fefefe;
-    margin: 5% auto; /* 5% from the top and centered */
+    margin: 5% auto; /* Center it vertically */
     padding: 20px;
     border: 1px solid #888;
-    width: 90%; /* Could be more or less, depending on screen size */
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-    /* Add animation - The modal will slide in from the top of the screen */
-    -webkit-animation-name: slideIn;
-    -webkit-animation-duration: 0.4s;
-    animation-name: slideIn;
-    animation-duration: 0.4s
+    width: 90%; /* Take up to 90% of the sequencer width */
+    max-width: 100%; /* Ensure it does not overflow the parent container */
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    animation: slideIn 0.4s;
 }
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ensure that the modal adapts responsively */
+@media (max-width: 768px) {
+    .trimmer-modal-content {
+        width: 100%; /* For smaller screens, let it take the full width */
+        max-width: 100%;
+    }
+}
+
 
 /* The Close Button */
 .close-button {
