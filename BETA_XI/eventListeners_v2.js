@@ -217,15 +217,21 @@ document.querySelector('.close-button').addEventListener('click', function() {
     console.log('Modal closed');
 });
 
-// Close the modal when the user clicks anywhere outside of the modal
-window.onclick = function(event) {
+// Close the modal when the user clicks anywhere outside the modal content
+window.addEventListener('click', function(event) {
     const modal = document.getElementById('audio-trimmer-modal');
-    if (event.target === modal) {
-        console.log('Clicked outside the modal');
-        modal.style.display = 'none';
-        console.log('Modal closed');
+    const modalContent = document.querySelector('.trimmer-modal-content');
+    
+    // Check if the modal is visible
+    if (modal.style.display === 'block') {
+        // Ensure the click is outside of the modal content but inside the modal background
+        if (!modalContent.contains(event.target) && event.target === modal) {
+            console.log('Clicked outside the modal content');
+            modal.style.display = 'none'; // Close the modal
+            console.log('Modal closed');
+        }
     }
-};
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const projectNameInput = document.getElementById('project-name');

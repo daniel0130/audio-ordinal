@@ -109,99 +109,35 @@ function getOrdinalId(index) {
 }
 
 function openModal(index, loadSampleButton) {
-    const modal = createElement('div', 'loadSampleModalButton');
-    const modalContent = createElement('div', 'loadSampleModalButton-content');
+    const modal = createModal('loadSampleModalButton');
+    const modalContent = createModalContent();
 
-    // Apply flexbox column layout
-    modalContent.style.display = 'flex';
-    modalContent.style.flexDirection = 'column';
-    modalContent.style.alignItems = 'flex-start'; // Align inputs and text to the left
     modal.appendChild(modalContent);
     openModals.push(modal);
 
-    // Set a consistent width for all elements
-    const consistentWidth = '400px'; // Set the width to a desired size
+    const consistentWidth = '400px'; // Set consistent width for all inputs and dropdowns
 
+    // Create inputs
     const inputs = [
-        { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
-        { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain audio sample:' },
-        { placeholder: 'Enter sOrdinal ID:', type: 'text', className: 'sOrdinal-input', text: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' }
+        { placeholder: 'Enter ORD ID:', className: 'audional-input', label: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
+        { placeholder: 'Enter IPFS ID:', className: 'ipfs-input', label: 'Or, enter an IPFS ID for an off-chain audio sample:' },
+        { placeholder: 'Enter sOrdinal ID:', className: 'sOrdinal-input', label: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' }
     ];
 
-    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
-    ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
-
-    // Set the width of the dropdown
-    ogAudionalDropdown.style.width = consistentWidth;
-
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = `
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
-        }
-        .pulse-green {
-            animation: pulse-green 2s infinite;
-        }
-        @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 165, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 165, 0, 0); }
-        }
-        .pulse-orange {
-            animation: pulse-orange 2s infinite;
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 220px;
-            background-color: black;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -110px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-    `;
-    document.head.appendChild(style);
-
-    ogAudionalDropdown.classList.add('pulse-green');
-    modalContent.appendChild(ogAudionalDropdown);
-    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-
-    inputs.forEach(({ text, placeholder, type, className }) => {
-        const containerDiv = document.createElement('div');
-        containerDiv.style.display = 'flex';
-        containerDiv.style.flexDirection = 'column'; // Ensure vertical stacking
-        containerDiv.style.marginBottom = '10px'; // Add spacing between input sections
-
-        const textPara = createTextParagraph(text);
-        textPara.style.marginBottom = '5px'; // Add space between label and input
-
-        const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
-        inputElement.style.width = consistentWidth; // Ensure uniform width across inputs
-        inputElement.style.boxSizing = 'border-box'; // Ensure padding doesn't affect width
-
-        containerDiv.appendChild(textPara);
-        containerDiv.appendChild(inputElement);
-        modalContent.appendChild(containerDiv);
+    inputs.forEach(({ label, placeholder, className }) => {
+        const inputContainer = createInputContainer(label, placeholder, className, consistentWidth);
+        modalContent.appendChild(inputContainer);
     });
 
+    // Create dropdown
+    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls, consistentWidth);
+    ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
+    modalContent.appendChild(ogAudionalDropdown);
+
+    // Add event listener to dropdown
+    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
+
+    // Create action buttons
     const actions = [
         { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
         { text: 'Cancel', action: () => closeModal(modal) },
@@ -214,61 +150,99 @@ function openModal(index, loadSampleButton) {
     ];
 
     actions.forEach(({ text, action, tooltip, className }) => {
-        const button = createButton(text, action);
-        if (tooltip) {
-            const tooltipSpan = document.createElement('span');
-            tooltipSpan.className = 'tooltiptext';
-            tooltipSpan.textContent = tooltip;
-            
-            const tooltipDiv = document.createElement('div');
-            tooltipDiv.className = 'tooltip';
-            tooltipDiv.appendChild(button);
-            tooltipDiv.appendChild(tooltipSpan);
-            
-            if (className) {
-                button.classList.add(className);
-            }
-            
-            modalContent.appendChild(tooltipDiv);
-        } else {
-            if (className) {
-                button.classList.add(className);
-            }
-            modalContent.appendChild(button);
-        }
+        const actionButton = createActionButton(text, action, tooltip, className);
+        modalContent.appendChild(actionButton);
     });
 
     document.body.appendChild(modal);
     return modal;
 }
 
-function createOGDropdown(label, options) {
+// Centralized function to create modal elements
+function createModal(className) {
+    return createElement('div', className);
+}
+
+function createModalContent() {
+    const modalContent = createElement('div', 'loadSampleModalButton-content');
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    modalContent.style.alignItems = 'flex-start';
+    return modalContent;
+}
+
+// Create a container for inputs with label and input box
+function createInputContainer(labelText, placeholder, className, width) {
+    const containerDiv = createElement('div', 'input-container');
+    containerDiv.style.display = 'flex';
+    containerDiv.style.flexDirection = 'column';
+    containerDiv.style.marginBottom = '10px';
+
+    const label = createTextParagraph(labelText);
+    label.style.marginBottom = '5px';
+
+    const input = createElement('input', className, { type: 'text', placeholder: placeholder });
+    input.style.width = width;
+    input.style.boxSizing = 'border-box';
+
+    containerDiv.appendChild(label);
+    containerDiv.appendChild(input);
+
+    return containerDiv;
+}
+
+// Create a dropdown for OG Audional selection
+function createOGDropdown(label, options, width) {
     const container = createElement('div', 'dropdown-container');
-    container.style.marginTop = '20px';  // Add 20px space above the dropdown
+    container.style.marginTop = '20px';
 
     const labelElement = createElement('label', 'dropdown-label', { textContent: label });
     const select = createElement('select', 'dropdown-select');
 
-    // Add a default, non-selectable option as the first item
     const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
-    defaultOption.disabled = true;  // Make it non-selectable
-    defaultOption.selected = true;  // Make it selected by default
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
     select.appendChild(defaultOption);
 
-    // Append other options from the provided array
     options.forEach(({ value, text }) => {
         const option = createElement('option', '', { value: value, textContent: text });
         select.appendChild(option);
     });
 
-    // Set consistent width for the dropdown
-    const consistentWidth = '400px';  // Use the same width as inputs
-    select.style.width = consistentWidth;
-    select.style.boxSizing = 'border-box';  // Ensure padding/borders don't affect width
+    select.style.width = width;
+    select.style.boxSizing = 'border-box';
 
     container.appendChild(labelElement);
     container.appendChild(select);
     return container;
+}
+
+// Create action buttons
+function createActionButton(text, action, tooltip, className) {
+    const button = createElement('button', className, { textContent: text });
+    button.onclick = action;
+
+    if (tooltip) {
+        const tooltipSpan = createElement('span', 'tooltiptext', { textContent: tooltip });
+        const tooltipDiv = createElement('div', 'tooltip');
+        tooltipDiv.appendChild(button);
+        tooltipDiv.appendChild(tooltipSpan);
+        return tooltipDiv;
+    }
+    
+    return button;
+}
+
+// Utility function to create elements
+function createElement(type, className, attributes = {}) {
+    const element = document.createElement(type);
+    if (className) element.className = className;
+    Object.assign(element, attributes);
+    return element;
+}
+
+function createTextParagraph(text) {
+    return createElement('p', null, { textContent: text });
 }
 
 
@@ -282,28 +256,6 @@ function handleAction(index, modal, loadSampleButton) {
     // console.log('Files Available:', fileInput.files);
 
     handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
-}
-
-// Simplified createElement function to reduce redundancy
-function createElement(type, className, attributes = {}) {
-    const element = document.createElement(type);
-    element.className = className;
-    Object.keys(attributes).forEach(key => {
-        element[key] = attributes[key];
-    });
-    return element;
-}
-// function createElement(type, className, properties = {}) {
-//     const element = document.createElement(type);
-//     element.className = className;
-//     Object.keys(properties).forEach(key => element[key] = properties[key]);
-//     return element;
-// }
-
-function createTextParagraph(text) {
-    const p = document.createElement('p');
-    p.textContent = text;
-    return p;
 }
 
 
@@ -797,13 +749,6 @@ function createContextMenu(x, y) {
     return menu;
 }
 
-function createMenuOption(label, action) {
-    const menuOption = document.createElement('div');
-    menuOption.className = 'custom-context-menu-option';
-    menuOption.textContent = label;
-    menuOption.onclick = action;
-    return menuOption;
-}
 
 function getButtonText(index) {
     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;

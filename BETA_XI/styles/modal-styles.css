@@ -1,29 +1,34 @@
-/* modal-styles.css */
+/* Modal Container Styles */
 .loadSampleModalButton {
     position: fixed;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    overflow: hidden; /* Prevent scrolling when modal is open */
 }
 
+/* Modal Content Styles */
 .loadSampleModalButton-content {
-    background-color: rgb(0, 0, 0);
+    background-color: #000; /* Dark background for modal content */
+    color: #fff; /* White text for better contrast */
     padding: 20px;
     border-radius: 10px;
     width: 50%;
-    max-height: 500px;
-    overflow-y: auto;
+    max-width: 600px; /* Ensure modal doesn't get too wide on large screens */
+    max-height: 80vh; /* Responsive height based on viewport */
+    overflow-y: auto; /* Allow content to scroll if it overflows */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Subtle shadow */
 }
 
 /* Text Paragraph Styles */
 .loadSampleModalButton-text {
-    color: black;
+    color: white;
     margin-bottom: 10px; /* Space between text and input field */
 }
 
@@ -31,7 +36,10 @@
 .loadSampleModalButton-input {
     margin-bottom: 10px;
     width: 100%;
+    padding: 8px;
     box-sizing: border-box;
+    border: 1px solid #ddd; /* Light border for input field */
+    border-radius: 5px;
 }
 
 /* Button Styles */
@@ -40,35 +48,44 @@
     padding: 10px 15px; /* Padding inside the button */
     border: none;
     border-radius: 5px;
-    background-color: black;
+    background-color: #000; /* Dark button background */
     color: white;
     cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover transitions */
 }
 
 .loadSampleModalButton button:hover {
-    background-color: #f6ff00; /* Darker shade for hover effect */
-    color: black;
+    background-color: #f6ff00; /* Bright hover background */
+    color: #000; /* Dark text on hover */
 }
 
-/* Additional styles for specific buttons can be added as needed */
+/* Channel Naming Modal */
 .channel-naming-modal {
     position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
+    color: black;
     padding: 20px;
     border-radius: 10px;
     z-index: 1000;
-    /* Add more styling as needed */
+    max-width: 500px; /* Max width for smaller modals */
+    width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Shadow effect */
 }
 
+/* Channel Name Input */
 .channel-name-input {
     width: 100%;
     margin-bottom: 10px;
-    /* Add more styling as needed */
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
+/* Link Button Styles */
 .loadSampleModalButton-link {
     padding: 10px;
     margin-top: 10px;
@@ -77,28 +94,49 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
+
 .loadSampleModalButton-link:hover {
-    background-color: #bb00ff;
+    background-color: #9c00d1; /* Slightly darker shade on hover */
 }
 
+/* Cancel Button */
 .cancelButton {
-    background-color: #dc3545; /* Red */
-    /* Other styles... */
+    background-color: #dc3545; /* Red background for cancel button */
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
+.cancelButton:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+/* Search Button */
 .searchButton {
-    background-color: #bb00ff; /* Purple */
-    /* Other styles... */
+    background-color: #bb00ff; /* Purple background */
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-/* Tooltip container */
+.searchButton:hover {
+    background-color: #9c00d1; /* Darker purple on hover */
+}
+
+/* Tooltip Styles */
 .tooltip {
     position: relative;
     display: inline-block;
 }
 
-/* Tooltip text */
 .tooltip .tooltiptext {
     visibility: hidden;
     width: 120px;
@@ -106,42 +144,56 @@
     color: #fff;
     text-align: center;
     border-radius: 6px;
-    padding: 5px 0;
+    padding: 5px;
     position: absolute;
-    z-index: 1;
+    z-index: 1000;
     bottom: 125%;
-    left: 100%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-/* Tooltip arrow */
-.tooltip .tooltiptext::after {
-    content: "";
-    position: absolute;
-    top: 100%;
     left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Show the tooltip text when you hover over the tooltip container */
 .tooltip:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
 }
 
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+/* Help Modal */
 .help-modal {
     position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
+    color: black;
     padding: 20px;
     border-radius: 10px;
     z-index: 1000;
-    /* Add more styling as needed */
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .loadSampleModalButton-content, .channel-naming-modal, .help-modal {
+        width: 90%; /* Adjust modal width for smaller screens */
+    }
+
+    .tooltip .tooltiptext {
+        width: 100px; /* Adjust tooltip size for smaller screens */
+    }
 }

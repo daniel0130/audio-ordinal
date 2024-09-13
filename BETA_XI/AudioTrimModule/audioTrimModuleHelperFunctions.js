@@ -1,140 +1,128 @@
 // audioTrimmerModuleHelperFunctions.js
 let currentTrimmerInstance = null;
-let currentTrimmerChannelIndex = null; // Define at a higher scope
+let currentTrimmerChannelIndex = null; // Higher scope for global state tracking
 
-
-
-
-// Helper function to update the audio trimmer with the buffer
+// Helper function to fetch audio buffer and update trimmer
 function updateAudioTrimmerWithBufferHelper(url, channelIndex) {
-    console.log("updateAudioTrimmerWithBufferHelper entered");
-    if (audioBuffers.has(url)) {
-        const audioBuffer = audioBuffers.get(url);
+    const audioBuffer = audioBuffers.get(url);
+    if (audioBuffer) {
         updateAudioTrimmerWithBuffer(audioBuffer, channelIndex);
     } else {
         console.error(`Audio buffer not found for URL: ${url}`);
     }
 }
 
+// Function to update the trimmer with audio buffer and refresh UI
 function updateAudioTrimmerWithBuffer(audioBuffer) {
-    console.log("updateAudioTrimmerWithBuffer entered");
     if (currentTrimmerInstance) {
         currentTrimmerInstance.setAudioBuffer(audioBuffer);
         currentTrimmerInstance.drawWaveform();
-        console.log(" updateDimmedAreas method called from updateaudioTrimmerWithBuffer");
         currentTrimmerInstance.updateSliderValues();
         currentTrimmerInstance.updateDimmedAreas();
     }
 }
 
+// Play trimmed audio for a specific channel
 function playTrimmedAudioForChannel(channelIndex) {
-    console.log("playTrimmedAudioForChannel entered");
     if (currentTrimmerInstance && currentTrimmerChannelIndex === channelIndex) {
         currentTrimmerInstance.playTrimmedAudio();
     } else {
-        console.error('No active trimmer instance for the channel or channel index mismatch');
+        console.error('No active trimmer instance or channel index mismatch');
     }
 }
 
+// Stop audio playback for a specific channel
 function stopAudioForChannel(channelIndex) {
     if (currentTrimmerInstance && currentTrimmerInstance.channelIndex === channelIndex) {
         currentTrimmerInstance.stopAudio();
     } else {
-        console.error('No active trimmer instance for the channel or channel index mismatch');
+        console.error('No active trimmer instance or channel index mismatch');
     }
 }
 
-
-document.addEventListener('DOMContentLoaded', function() {
-
-function openAudioTrimmerModal(channelIndex) {
-    console.log('openAudioTrimmerModal entered');
-    console.log('channelIndex:', channelIndex); // Log the channel index
-    currentTrimmerChannelIndex = channelIndex; // Store the channel index
+// Initialize audio trimmer modal with channel-specific settings
+function initializeAudioTrimmer(channelIndex) {
+    currentTrimmerChannelIndex = channelIndex;
 
     fetch('AudioTrimModule/audioTrimModule.html')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error(`Failed to load audio trim module: ${response.statusText}`);
+            return response.text();
+        })
         .then(html => {
             const container = document.getElementById('audio-trimmer-container');
+            if (!container) throw new Error('Audio trimmer container not found in the DOM.');
+
             container.innerHTML = html;
-            console.log("[HTML Injection] Content injected into audio-trimmer-container:", container.innerHTML);
-
-            // Wait for the browser to render the injected HTML
             requestAnimationFrame(() => {
-                currentTrimmerInstance = new AudioTrimmer(channelIndex);
-                currentTrimmerInstance.initialize(); // Call initialize which should call addEventListeners
-            
-                if (document.getElementById('waveformCanvas')) {
-                    // currentTrimmerInstance.initialize();
-        
-                    // Retrieve trim settings for the channel from the global object
-                    const trimSettings = getTrimSettings(channelIndex);
-                    if (trimSettings) {
-                        // Apply the trim settings to the current trimmer instance
-                        currentTrimmerInstance.startSlider.value = trimSettings.startSliderValue;
-                        currentTrimmerInstance.endSlider.value = trimSettings.endSliderValue;
-                        currentTrimmerInstance.setIsLooping(trimSettings.isLooping); // Set looping state
-        
-                        // Update the trimmer instance with the new slider values
-                        currentTrimmerInstance.updateSliderValues();
-                    }
-                } else {
-                    console.error('Required elements not found in the DOM');
-                }
+                try {
+                    currentTrimmerInstance = new AudioTrimmer(channelIndex);
+                    currentTrimmerInstance.initialize();
 
-                // Retrieve the URL from the global settings
-                const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-                updateAudioTrimmerWithBufferHelper(url, channelIndex);
-            });           
-            document.getElementById('audio-trimmer-modal').style.display = 'block';
+                    applyTrimSettings(channelIndex); // Apply channel-specific settings
+
+                    const url = getChannelUrl(channelIndex);
+                    if (url) {
+                        updateAudioTrimmerWithBufferHelper(url, channelIndex);
+                    } else {
+                        console.error(`No URL found for channel index: ${channelIndex}`);
+                    }
+                } catch (error) {
+                    console.error('Error during audio trimmer initialization:', error);
+                }
+            });
+            const modal = document.getElementById('audio-trimmer-modal');
+            modal.style.display = 'block';
         })
-        .catch(error => {
-            console.error('Error loading audio trimmer module:', error);
-        });
+        .catch(error => console.error('Error loading audio trimmer module:', error));
 }
 
+
+// Apply trim settings for the channel
+function applyTrimSettings(channelIndex) {
+    const waveformCanvas = document.getElementById('waveformCanvas');
+    if (!waveformCanvas) return console.error('Waveform canvas not found in the DOM.');
+
+    const trimSettings = getTrimSettings(channelIndex);
+    if (trimSettings) {
+        currentTrimmerInstance.startSlider.value = trimSettings.startSliderValue;
+        currentTrimmerInstance.endSlider.value = trimSettings.endSliderValue;
+        currentTrimmerInstance.setIsLooping(trimSettings.isLooping);
+        currentTrimmerInstance.updateSliderValues();
+    }
+}
+
+// Helper to get the channel URL from global settings
+function getChannelUrl(channelIndex) {
+    return window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
+}
+
+// Open audio trimmer modal on button click
+document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.open-audio-trimmer').forEach((button, channelIndex) => {
         button.addEventListener('click', () => {
-            console.log('Clicked button with channelIndex:', channelIndex); // Log the channel index
-
-            // Get the URL for the audio sample from the global settings
-            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-
+            const url = getChannelUrl(channelIndex);
             if (!url) {
                 console.error(`No URL found for channel index: ${channelIndex}`);
-                return; // Exit if no URL is found
+                return;
             }
-
-            // Call the helper function to update the audio trimmer with the buffer
             updateAudioTrimmerWithBufferHelper(url, channelIndex);
-
-            openAudioTrimmerModal(channelIndex);
+            initializeAudioTrimmer(channelIndex);
         });
     });
 
-
-// Close modal functionality
-document.querySelector('.close-button').addEventListener('click', function() {
-    if (currentTrimmerInstance) {
-        const settings = {
-            startSliderValue: currentTrimmerInstance.getStartSliderValue(),
-            endSliderValue: currentTrimmerInstance.getEndSliderValue(),
-            isLooping: currentTrimmerInstance.getIsLooping()
-        };
-        setTrimSettings(currentTrimmerChannelIndex, settings.startSliderValue, settings.endSliderValue, settings.isLooping);
-    }
-
-    document.getElementById('audio-trimmer-modal').style.display = 'none';
-    currentTrimmerInstance = null;
-    currentTrimmerChannelIndex = null;
-});
-
-
-function createAudioTrimmer(channelIndex) {
-    console.log('createAudioTrimmer method entered');
-    const trimmer = new AudioTrimmer(channelIndex);
-    trimmer.initialize();
-    console.log('createAudioTrimmer method called');
-    return trimmer;
-}
+    // Close modal functionality
+    document.querySelector('.close-button').addEventListener('click', () => {
+        if (currentTrimmerInstance) {
+            const settings = {
+                startSliderValue: currentTrimmerInstance.getStartSliderValue(),
+                endSliderValue: currentTrimmerInstance.getEndSliderValue(),
+                isLooping: currentTrimmerInstance.getIsLooping()
+            };
+            setTrimSettings(currentTrimmerChannelIndex, settings.startSliderValue, settings.endSliderValue, settings.isLooping);
+        }
+        document.getElementById('audio-trimmer-modal').style.display = 'none';
+        currentTrimmerInstance = null;
+        currentTrimmerChannelIndex = null;
+    });
 });

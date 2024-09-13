@@ -78,6 +78,9 @@ function setupLoadSampleButton(channel, index) {
     loadSampleButton.onclick = function() {
         const modal = openModal(index, loadSampleButton); // Capture the modal returned by openModal
         openModals.push(modal); // Add this modal to the tracking array
+
+        // Add event listener for closing modal when clicking outside of the content
+        closeModalOnOutsideClick(modal);
     };
 
     // Updating the button text possibly when a modal submits
@@ -117,39 +120,30 @@ function openModal(index, loadSampleButton) {
         { placeholder: 'Enter new channel name', type: 'text', className: 'channel-name-input', text: 'Update Channel Name:' },
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
         { placeholder: 'Enter IPFS ID:', type: 'text', className: 'ipfs-input', text: 'Or, enter an IPFS ID for an off-chain Audional:' }
-        // { placeholder: '', type: 'file', className: 'file-input', text: 'Or, select a local audio file (MP3, WAV, FLAC, Base64):' }
     ];
-    
 
-// Find the dropdown element
-const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
-ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
-
-// Inject CSS for pulsing effect into the head of the document
-const style = document.createElement('style');
-style.type = 'text/css';
-style.innerHTML = `
-    @keyframes pulse-green {
-        0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
-    }
-    .pulse-green {
-        animation: pulse-green 2s infinite;
-    }
-`;
-document.head.appendChild(style);
-
-// Add the 'pulse-green' class to the dropdown
-ogAudionalDropdown.classList.add('pulse-green');
-
-modalContent.appendChild(ogAudionalDropdown);
-ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-
+    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
+
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = `
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+        }
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+    `;
+    document.head.appendChild(style);
+
+    ogAudionalDropdown.classList.add('pulse-green');
     modalContent.appendChild(ogAudionalDropdown);
+
     ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-    
+
     const actions = [
         { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
         { text: 'Cancel', action: () => closeModal(modal) },
@@ -158,15 +152,10 @@ ogAudionalDropdown.querySelector('select').addEventListener('change', (event) =>
 
     inputs.forEach(({ text, placeholder, type, className }) => {
         const textPara = createTextParagraph(text);
-        textPara.style.display = 'inline-block'; // Change display to inline-block
-        textPara.style.width = 'auto'; // Auto width to adjust with content
-        textPara.style.marginRight = '20px'; // Space between text and input
-        
         const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
-        inputElement.style.width = '300px'; // Set the width of the input
-        inputElement.style.display = 'inline-block'; // Display inline-block for alignment
+        inputElement.style.width = '300px';
 
-        const containerDiv = document.createElement('div'); // Create a container div for each input group
+        const containerDiv = document.createElement('div');
         containerDiv.appendChild(textPara);
         containerDiv.appendChild(inputElement);
         modalContent.appendChild(containerDiv);
@@ -177,8 +166,21 @@ ogAudionalDropdown.querySelector('select').addEventListener('change', (event) =>
     });
 
     document.body.appendChild(modal);
+
     return modal;
 }
+
+function closeModalOnOutsideClick(modal) {
+    document.addEventListener('click', function(event) {
+        const modalContent = modal.querySelector('.loadSampleModalButton-content');
+
+        // Check if the clicked element is outside the modal content
+        if (!modalContent.contains(event.target) && modal.contains(event.target)) {
+            closeModal(modal); // Close the modal
+        }
+    });
+}
+
 
 
 function createOGDropdown(label, options) {

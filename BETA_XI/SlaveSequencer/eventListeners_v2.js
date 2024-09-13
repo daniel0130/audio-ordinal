@@ -197,11 +197,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // loadInternalPreset5.addEventListener('click', () => loadPresetFromFile('Preset_Json_Files/Koto2.json'));
 });
 
-// Message event listener handling load, play, stop, pause commands
-// window.addEventListener('message', function(event) {
-//     // Implementation for handling 'load', 'play', 'stop', and 'pause' commands
-// });
-
 
 // Close the modal when the user clicks on <span> (x)
 document.querySelector('.close-button').addEventListener('click', function() {
@@ -210,12 +205,15 @@ document.querySelector('.close-button').addEventListener('click', function() {
     console.log('Modal closed');
 });
 
-// Close the modal when the user clicks anywhere outside of the modal
+// Close the modal when the user clicks anywhere outside the modal content
 window.onclick = function(event) {
     const modal = document.getElementById('audio-trimmer-modal');
-    if (event.target === modal) {
-        console.log('Clicked outside the modal');
-        modal.style.display = 'none';
+    const modalContent = modal.querySelector('.trimmer-modal-content'); // Ensure we're targeting modal content
+
+    // Check if the click is outside of the modal content but within the modal background
+    if (modal.style.display === 'block' && !modalContent.contains(event.target)) {
+        console.log('Clicked outside the modal content');
+        modal.style.display = 'none'; // Close the modal
         console.log('Modal closed');
     }
 };
@@ -238,36 +236,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-
-
-    // loadFileInput.addEventListener('change', () => {
-    //     console.log('[Save/Load debug] loadFileInput change event');
-    //     let file = loadFileInput.files[0];
-    //     let reader = new FileReader();
-    //     reader.onload = async function(e) {
-    //         console.log("File read start");
-    //         let loadedSettings = JSON.parse(e.target.result);
-    //         console.log("[loadFileInput] File content:", loadedSettings);
-        
-    //         // Load new settings and update UI
-    //         window.unifiedSequencerSettings.loadSettings(loadedSettings);
-
-    
-    //         // Fetch audio for each URL in the loaded settings
-    //         if (loadedSettings.channelURLs && Array.isArray(loadedSettings.channelURLs)) {
-    //             for (let i = 0; i < loadedSettings.channelURLs.length; i++) {
-    //                 const url = loadedSettings.channelURLs[i];
-    //                 if (url) {
-    //                     // Continue with the existing logic to call fetchAudio
-    //                     const loadSampleButtonElement = document.getElementById(`load-sample-button-${i}`);
-    //                     await fetchAudio(url, i, loadSampleButtonElement);
-    //                 }
-    //             }
-    //         }
-            
-    //     };
-    
-    //     reader.readAsText(file);
-    // });
-    
