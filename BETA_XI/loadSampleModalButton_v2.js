@@ -77,7 +77,7 @@ function setupLoadSampleButton(channel, index) {
 
     // Attach event handlers
     loadSampleButton.onclick = function() {
-        const modal = openModal(index, loadSampleButton); // Capture the modal returned by openModal
+        const modal = openLoadSampleModal(index, loadSampleButton); // Capture the modal returned by openModal
         openModals.push(modal); // Add this modal to the tracking array
     };
 
@@ -108,7 +108,7 @@ function getOrdinalId(index) {
     return extractOrdinalIdFromUrl(window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index]);
 }
 
-function openModal(index, loadSampleButton) {
+function openLoadSampleModal(index, loadSampleButton) {
     const modal = createModal('loadSampleModalButton');
     const modalContent = createModalContent();
 
