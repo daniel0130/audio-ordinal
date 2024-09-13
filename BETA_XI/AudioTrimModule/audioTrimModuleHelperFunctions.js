@@ -41,7 +41,6 @@ function stopAudioForChannel(channelIndex) {
 }
 
 // Initialize audio trimmer modal with channel-specific settings
-// Initialize audio trimmer modal with channel-specific settings
 function initializeAudioTrimmer(channelIndex) {
     currentTrimmerChannelIndex = channelIndex;
 
