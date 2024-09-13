@@ -38,8 +38,9 @@
 
 
 .stop-button {
-    background-color: red;
+    background-color: red !important;
 }
+
 
 .button-label.stop {
     color: #ff0000;
