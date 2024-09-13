@@ -227,12 +227,7 @@ function createElement(type, className, attributes = {}) {
     });
     return element;
 }
-// function createElement(type, className, properties = {}) {
-//     const element = document.createElement(type);
-//     element.className = className;
-//     Object.keys(properties).forEach(key => element[key] = properties[key]);
-//     return element;
-// }
+
 
 function createTextParagraph(text) {
     const p = document.createElement('p');
@@ -468,16 +463,29 @@ function showVisualMessage(message) {
         messageDiv.remove();
     }, 2000); // Remove message after 2 seconds
 }
-
-function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButton) {
+function showCustomContextMenu(contextEvent, channelIndex, loadSampleButton) {
     console.log('Creating custom context menu');
 
     closeCustomContextMenu();
 
-    const menu = createContextMenu(x, y);
-    menu.style.position = 'absolute';
+    const menu = createContextMenu();
+    menu.style.position = 'fixed';
+    
+    // Calculate the center position
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const menuWidth = 300; // Assumed width of the menu
+    const menuHeight = 400; // Assumed height of the menu
+
+    // Calculate the left and top to center the menu
+    const x = (windowWidth / 2) - (menuWidth / 2);
+    const y = (windowHeight / 2) - (menuHeight / 2);
+
+    // Set the position of the menu
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
+    menu.style.width = `${menuWidth}px`;
+    menu.style.height = `${menuHeight}px`;
     menu.className = 'custom-context-menu';
 
     const options = [
@@ -570,8 +578,7 @@ function closeCustomContextMenu() {
 function createContextMenu(x, y) {
     const menu = document.createElement('div');
     menu.className = 'custom-context-menu';
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
+
     return menu;
 }
 
