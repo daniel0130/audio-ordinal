@@ -38,7 +38,7 @@ class AudioTrimmer {
         console.log("[Class Functions] initialize");
 
         const elementIds = [
-            'ordinalIdInput', 'loadSampleButton', 'waveformCanvas', 'playbackCanvas',
+            'waveformCanvas', 'playbackCanvas',
             'trimmerPlayButton', 'trimmerStopButton', 'loopButton', 'startDimmed', 'endDimmed', 'startSlider', 'endSlider'
         ];
         const allElementsAvailable = elementIds.every(id => this[id] = document.getElementById(id));
@@ -190,20 +190,7 @@ class AudioTrimmer {
         this.endSlider.addEventListener('mousedown', (event) => sliderMouseDown(event, false));
     }
 
-    async loadSample() {
-        if (!this.ordinalIdInput.value) return;
 
-        try {
-            this.audioBuffer = await fetchAudio(`https://ordinals.com/content/${this.ordinalIdInput.value}`);
-            const trimSettings = getTrimSettings(this.channelIndex);
-            this.trimSettings = { ...trimSettings, totalSampleDuration: this.audioBuffer.duration };
-
-            this.drawWaveform();
-            this.updateSliderValues();
-        } catch (error) {
-            console.error('Error loading audio:', error);
-        }
-    }
 
     playTrimmedAudio() {
         if (!this.audioBuffer || this.isPlaying) return;
