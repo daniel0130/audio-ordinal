@@ -1,72 +1,61 @@
-/* Modal Container Styles */
-/* Modal Overlay */
-
+/* Modal Container and Overlay Styles */
 .load-sample-button {
-    flex: 1; /* Flex grow and shrink */
-    /* overflow: auto; */
+    flex: 1;
     text-overflow: ellipsis;
-    font-size: 0.8em; /* Consider making this responsive as well */
+    font-size: 0.8em;
     height: 20px;
     max-width: 15%;
-    min-width: 10%; /* Example of a responsive width */
+    min-width: 10%;
     padding: 1px;
     font-weight: bold;
 }
 
 .load-sample-button:hover::after {
-    content: attr(title); /* Display the title attribute text as tooltip */
+    content: attr(title);
     position: absolute;
-    bottom: 150%; /* Position above the button */
+    bottom: 150%;
     left: 0;
-    background: rgba(0, 0, 0, 0.8); /* Slightly opaque background */
-    color: white; /* Text color */
-    padding: 5px; /* Add padding for better readability */
-    pointer-events: none; /* Allow clicks to go through the tooltip */
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 5px;
+    pointer-events: none;
 }
 
-.modal-overlay {
+.modal-overlay, .loadSampleModalButton {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
 
+.modal-overlay {
+    height: 100%;
+}
+
 .loadSampleModalButton {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
     height: 30%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     z-index: 9999;
-    overflow: hidden; /* Ensure no overflow from modal container */
+    overflow: hidden;
 }
 
 .loadSampleModalButton-content {
-    background-color: rgb(0, 0, 0);
+    background-color: #000;
     padding: 20px;
     border-radius: 10px;
     width: 50%;
-    max-width: 600px; /* Limit the width to avoid stretching too much */
-    max-height: 80%; /* Allow the modal content to scale up to 80% of the viewport height */
-    overflow-y: auto; /* Scroll if content overflows vertically */
-    box-sizing: border-box; /* Ensure padding is included in the width and height calculations */
+    max-width: 600px;
+    max-height: 80%;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
-
-
-
 /* Channel Naming Modal */
-.channel-naming-modal {
+.channel-naming-modal, .help-modal {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -76,13 +65,21 @@
     padding: 20px;
     border-radius: 10px;
     z-index: 1000;
-    max-width: 500px; /* Max width for smaller modals */
-    width: 90%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Shadow effect */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
 }
 
-/* Channel Name Input */
-.channel-name-input {
+.channel-naming-modal {
+    max-width: 500px;
+    width: 90%;
+}
+
+.help-modal {
+    width: 80%;
+    max-width: 600px;
+}
+
+.channel-name-input, select {
     width: 100%;
     margin-bottom: 10px;
     padding: 8px;
@@ -91,34 +88,55 @@
     border-radius: 5px;
 }
 
-/* Cancel Button */
-.cancelButton {
-    background-color: #dc3545; /* Red background for cancel button */
+/* Button Styles */
+.cancelButton, .searchButton, .green-button, .red-button, .yellow-button {
     padding: 10px 15px;
     border-radius: 5px;
     border: none;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+.cancelButton {
+    background-color: #dc3545;
 }
 
 .cancelButton:hover {
-    background-color: #c82333; /* Darker red on hover */
+    background-color: #c82333;
 }
 
-/* Search Button */
 .searchButton {
-    background-color: #bb00ff; /* Purple background */
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    background-color: #bb00ff;
 }
 
 .searchButton:hover {
-    background-color: #9c00d1; /* Darker purple on hover */
+    background-color: #9c00d1;
+}
+
+.green-button {
+    background-color: #28a745;
+}
+
+.green-button:hover {
+    background-color: #218838;
+}
+
+.red-button {
+    background-color: #dc3545;
+}
+
+.red-button:hover {
+    background-color: #c82333;
+}
+
+.yellow-button {
+    background-color: #ffc107;
+    color: black;
+}
+
+.yellow-button:hover {
+    background-color: #e0a800;
 }
 
 /* Tooltip Styles */
@@ -160,75 +178,8 @@
     border-color: black transparent transparent transparent;
 }
 
-/* Help Modal */
-.help-modal {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    color: black;
-    padding: 20px;
-    border-radius: 10px;
-    z-index: 1000;
-    width: 80%;
-    max-width: 600px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
-}
-
+/* Dropdown Container */
 .audional-dropdown-container {
-    margin: 10px 0; /* Adds space above and below the dropdown */
-    padding: 5px; /* Optional padding inside the container */
-}
-
-select {
-    width: 100%; /* Ensures the dropdown takes full width inside its container */
-}
-
-.action-button {
-    margin: 5px; /* Adds space around buttons */
-}
-
-/* Button Color Styles */
-.green-button {
-    background-color: #28a745; /* Bootstrap green */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.green-button:hover {
-    background-color: #218838; /* Darker green on hover */
-}
-
-.red-button {
-    background-color: #dc3545; /* Bootstrap red */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.red-button:hover {
-    background-color: #c82333; /* Darker red on hover */
-}
-
-.yellow-button {
-    background-color: #ffc107; /* Bootstrap yellow */
-    color: black;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.yellow-button:hover {
-    background-color: #e0a800; /* Darker yellow on hover */
+    margin: 10px 0;
+    padding: 5px;
 }

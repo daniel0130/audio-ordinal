@@ -1,31 +1,31 @@
 /* --- Variables and Media Queries --- */
 :root {
-    --scale-factor: 1vw; /* This can be adjusted to scale with viewport width */
+    --scale-factor: 1vw;
     --main-bg-color: #000;
     --secondary-bg-color: #333;
     --primary-color: #fff;
     --accent-color: #f00;
-    --button-dimension: 5vw; /* Using viewport width for relative sizing */
-    --control-button-dimension: 18px; /* Fixed size */
+    --button-dimension: 5vw;
+    --control-button-dimension: 18px;
     --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;
     --default-font: Arial, sans-serif;
 }
 
 /* --- Global Styles --- */
 body {
-    background-color: var(--main-bg-color);
+    background: var(--main-bg-color);
     color: var(--primary-color);
-    font: normal normal normal 100%/1 var(--default-font);
+    font: 100%/1 var(--default-font);
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* Ensures all elements respect padding and borders */
+    box-sizing: border-box;
 }
 
 /* --- Drum Machine Container --- */
 #drum-machine {
     margin: 50 auto;
     padding: 50px;
-    background-color: var(--secondary-bg-color);
+    background: var(--secondary-bg-color);
     box-sizing: border-box;
 }
 
@@ -61,7 +61,6 @@ h3:hover .subtext {
 }
 
 .centered, .centered-text {
-    display: block;
     text-align: center;
 }
 
@@ -69,7 +68,7 @@ h3:hover .subtext {
     color: #f7931a;
 }
 
-/* Additional font size settings for modal content */
+/* Modal content */
 .modal-text-small {
     font-size: 0.9em;
 }
@@ -99,8 +98,7 @@ h3:hover .subtext {
     font-weight: bold;
 }
 
-.close-button:hover,
-.close-button:focus {
+.close-button:hover, .close-button:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -118,32 +116,28 @@ h3:hover .subtext {
 }
 
 /* --- Button Styles --- */
-.control-button-demo {
+.control-button-demo, .step-button.demo {
     display: inline-block;
+    text-align: center;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.control-button-demo {
     width: 20px;
     height: 20px;
     color: white;
-    text-align: center;
-    margin-right: 5px;
-    font-weight: bold;
     border-radius: 3px;
 }
 
 .step-button.demo {
-    display: inline-block;
     width: 15px;
     height: 15px;
-    margin-right: 5px;
     border: 1px solid #555;
 }
 
 /* Project Name Input */
-#project-name {
-    z-index: 1000;
-    position: relative;
-}
-
-label[for="project-name"] {
+#project-name, label[for="project-name"] {
     z-index: 1000;
     position: relative;
 }

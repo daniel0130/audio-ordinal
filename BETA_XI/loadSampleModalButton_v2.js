@@ -117,7 +117,8 @@ function openLoadSampleModal(index, loadSampleButton) {
     const modalContent = createModalContent();
 
     modal.appendChild(modalContent);
-    openModals.push(modal);
+    // Removed the second push of the modal. Only overlay is pushed to openModals
+    openModals.push(modalOverlay); // Add only the overlay to the tracking array
 
     const consistentWidth = '400px'; // Set consistent width for all inputs and dropdowns
 
@@ -161,7 +162,7 @@ function openLoadSampleModal(index, loadSampleButton) {
     // Append the modal content to the overlay
     modalOverlay.appendChild(modal);
 
-    return modal;
+    return modalOverlay; // Return the modalOverlay only
 }
 
 // Function to create the full-screen modal overlay
@@ -190,13 +191,49 @@ function createModalOverlay() {
     return overlay;
 }
 
-// Function to close the modal
+// Function to close a specific modal
 function closeModal(modalOverlay) {
     if (modalOverlay && document.body.contains(modalOverlay)) {
-        document.body.removeChild(modalOverlay);
-        openModals = openModals.filter(m => m !== modalOverlay);  // Update the openModals array
+        try {
+            document.body.removeChild(modalOverlay);
+            console.log(`[HTML Debugging] Modal successfully removed:`, modalOverlay);
+        } catch (error) {
+            console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
+        }
+
+        // Update the openModals array to remove the closed modal
+        openModals = openModals.filter(m => m !== modalOverlay);
+    } else {
+        console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
     }
 }
+
+// Function to close all open modals
+function closeAllModals() {
+    // Ensure the openModals array only contains unique modals
+    openModals = [...new Set(openModals)];  // Remove duplicate modals
+
+    console.log('Closing all modals. Current open modals:', openModals);
+
+    openModals.forEach(modal => {
+        if (modal && document.body.contains(modal)) {
+            try {
+                document.body.removeChild(modal);
+                console.log(`[HTML Debugging] Modal successfully removed:`, modal);
+            } catch (error) {
+                console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
+            }
+        } else {
+            console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
+        }
+    });
+
+    // Clear the array after removing all modals
+    openModals = [];
+    console.log('All modals closed. Current open modals:', openModals);
+}
+
+
 
 
 // Centralized function to create modal elements
@@ -294,16 +331,6 @@ function handleAction(index, modal, loadSampleButton) {
 }
 
 
-function closeAllModals() {
-    console.log('Closing all modals. Current open modals:', openModals);
-    openModals.forEach(modal => {
-        if (document.body.contains(modal)) {
-            document.body.removeChild(modal);
-        }
-    });
-    openModals = [];  // Clear the array after removing all modals
-    console.log('All modals closed. Current open modals:', openModals);
-}
 
 function handleDropdownChange(event, index, modal, loadSampleButton) {
     const selectedValue = event.target.value;
@@ -388,10 +415,6 @@ function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadS
         } else if (sOrdinalInput && sOrdinalInput.value.trim()) {
             url = 'https://content.sordinals.io/inscription-data/' + sOrdinalInput.value.trim();
             sampleName = sOrdinalInput.value.trim().split('/').pop();
-        // Uncomment and adjust the following if file input handling is re-enabled:
-        // } else if (fileInput && fileInput.files.length > 0) {
-        //     url = URL.createObjectURL(fileInput.files[0]);
-        //     sampleName = fileInput.files[0].name;
         } else if (ogAudionalDropdown && ogAudionalDropdown.value) {
             url = ogAudionalDropdown.value;
             sampleName = ogAudionalDropdown.options[ogAudionalDropdown.selectedIndex].text;
@@ -414,16 +437,25 @@ function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadS
 }
 
 
-
 function processLoad(url, sampleName, index, loadSampleButton, modal) {
     if (url) {
+        console.log(`[HTML Debugging] [processLoad] Attempting to load audio from URL: ${url} with sample name: ${sampleName}`);
+        
         fetchAudio(url, index, sampleName).then(() => {
             updateProjectChannelNamesUI(index, sampleName);
             loadSampleButton.textContent = sampleName;
+            console.log(`[HTML Debugging] [processLoad] Successfully loaded: ${sampleName}`);
             closeAllModals();  // Close all modals upon successful loading
         }).catch(error => {
-            console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
-            alert("Failed to load audio. Please check the console for details.");
+            console.error(`[HTML Debugging] [processLoad] Error loading audio: ${error.message || error}`);
+            // Provide more detailed error message
+            if (error.message.includes('404')) {
+                alert("Audio not found (404). Please check the URL or input.");
+            } else if (error.message.includes('network')) {
+                alert("Network error occurred while loading audio. Please check your connection.");
+            } else {
+                alert("Failed to load audio. Please check the console for details.");
+            }
         });
     }
 }
