@@ -50,6 +50,7 @@
 </head>
 <body>
     <h1>Transcription List</h1>
+    <input type="text" id="search-box" placeholder="Search transcriptions..." style="width: 100%; padding: 1vw; font-size: 2vw; margin-bottom: 20px;">
     <ul id="transcription-list">
         <!-- JavaScript will populate this list -->
     </ul>
@@ -59,21 +60,35 @@
     
     <script>
         const transcriptions = [
-            'transcription_f08c567328dee4bb80383a5950014bae653037c878e99bb1c25e4d3ad8e7f0a4i0.js',
-            'transcription_4caf62d01a7a407bb5632f8aaa6b0358960c6c29a75437defdd25ff55a596c46i0.js',
-            'transcription_38fb4fce4bbaf46181d4d1b149822950c216e14d10f794fe8fa9e06310bf8f84i0.js',
-            'transcription_84db05cf6a1ffd54cfa45d3fbff18d8b4289bfcf4e376e198a5118e707e7da4ci0.js',
-            'transcription_6161fa640850c60e4e614a6602fe74d767f804b8e6ad3b42e0e1275d8612ee13i0.js',
-            'transcription_5779431600cc6a12c974b8af5a180c3120183e4ca8924f591ed6a2b7436e3a79i0.js',
-            'transcription_c3842d731fbd59dc1b40d7684681813c02c9bf081bfd825e503f2085ff8c2c75i0.js',
-            'transcription_dfe512a827c20719c8b59fce01211af2eea0b8c40f0a3221990b3d3e89573f85i0.js'
+            'transcription_0a0b43916671ba052862f6772a11e80c4286ab13e7d00afc0cbc63833ab1ac40i0.js',
+            'transcription_0a2fc435404ebe3151ef051fadb0c40e37eff22e11ce01ac8d46d3db46c19a03i0.csv',
+            // Add the rest of the files here
         ];
 
         const transcriptionList = document.getElementById('transcription-list');
         const transcriptionDisplay = document.getElementById('transcription-display');
+        const searchBox = document.getElementById('search-box');
+
+        function displayList(filteredFiles) {
+            transcriptionList.innerHTML = '';
+            filteredFiles.forEach((file) => {
+                const id = file.match(/transcription_(.+)\.(js|csv)/)[1];
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `?file=${file}`;
+                link.textContent = id;
+                listItem.appendChild(link);
+                transcriptionList.appendChild(listItem);
+            });
+        }
+
+        function filterFiles(query) {
+            const lowerCaseQuery = query.toLowerCase();
+            return transcriptions.filter(file => file.toLowerCase().includes(lowerCaseQuery));
+        }
 
         transcriptions.forEach((file) => {
-            const id = file.match(/transcription_(.+)\.js/)[1];
+            const id = file.match(/transcription_(.+)\.(js|csv)/)[1];
             const listItem = document.createElement('li');
             const link = document.createElement('a');
             link.href = `?file=${file}`;
@@ -82,51 +97,82 @@
             transcriptionList.appendChild(listItem);
         });
 
+        searchBox.addEventListener('input', (e) => {
+            const filteredFiles = filterFiles(e.target.value);
+            displayList(filteredFiles);
+        });
+
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
         function loadTranscription(file) {
+            if (file.endsWith('.js')) {
+                loadJSFile(file);
+            } else if (file.endsWith('.csv')) {
+                loadCSVFile(file);
+            }
+        }
+
+        function loadJSFile(file) {
             const script = document.createElement('script');
             script.src = file;
             script.onload = () => {
-                const table = document.createElement('table');
-                const thead = document.createElement('thead');
-                const tbody = document.createElement('tbody');
-
-                const headerRow = document.createElement('tr');
-                const headers = ['Word', 'Start Time', 'End Time'];
-                headers.forEach(headerText => {
-                    const th = document.createElement('th');
-                    th.textContent = headerText;
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                if (typeof transcriptionData !== 'undefined') {
-                    transcriptionData.forEach(row => {
-                        const tr = document.createElement('tr');
-                        const wordCell = document.createElement('td');
-                        wordCell.textContent = row.word;
-                        const startTimeCell = document.createElement('td');
-                        startTimeCell.textContent = row.start_time;
-                        const endTimeCell = document.createElement('td');
-                        endTimeCell.textContent = row.end_time;
-                        tr.appendChild(wordCell);
-                        tr.appendChild(startTimeCell);
-                        tr.appendChild(endTimeCell);
-                        tbody.appendChild(tr);
-                    });
-
-                    table.appendChild(tbody);
-                    transcriptionDisplay.appendChild(table);
-                } else {
-                    transcriptionDisplay.innerHTML = 'No data found.';
-                }
+                const table = createTableFromData(transcriptionData);
+                transcriptionDisplay.innerHTML = '';
+                transcriptionDisplay.appendChild(table);
             };
             document.body.appendChild(script);
+        }
+
+        function loadCSVFile(file) {
+            fetch(file)
+                .then(response => response.text())
+                .then(text => {
+                    const rows = text.split('\n').slice(1); // Skip header row
+                    const csvData = rows.map(row => {
+                        const [word, start_time, end_time] = row.split(',');
+                        return { word, start_time, end_time };
+                    });
+
+                    const table = createTableFromData(csvData);
+                    transcriptionDisplay.innerHTML = '';
+                    transcriptionDisplay.appendChild(table);
+                });
+        }
+
+        function createTableFromData(data) {
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            const headerRow = document.createElement('tr');
+            const headers = ['Word', 'Start Time', 'End Time'];
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const wordCell = document.createElement('td');
+                wordCell.textContent = row.word;
+                const startTimeCell = document.createElement('td');
+                startTimeCell.textContent = row.start_time;
+                const endTimeCell = document.createElement('td');
+                endTimeCell.textContent = row.end_time;
+                tr.appendChild(wordCell);
+                tr.appendChild(startTimeCell);
+                tr.appendChild(endTimeCell);
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            return table;
         }
 
         const file = getQueryParam('file');

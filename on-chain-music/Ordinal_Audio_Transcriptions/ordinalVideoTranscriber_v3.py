@@ -7,8 +7,12 @@ import os
 import time
 import threading
 import subprocess
+import concurrent.futures
 
 BASE_URL = "https://ordinals.com/content/"
+MAX_RETRIES = 3
+CONCURRENCY_LIMIT = 5
+EXTRACTION_TIMEOUT = 120  # Extended timeout for larger files
 
 # Log status every 10-15 seconds in a separate thread
 class ProgressLogger:
@@ -31,14 +35,40 @@ class ProgressLogger:
 
 progress_logger = ProgressLogger()
 
-def extract_audio_from_video(video_file_path):
-    """Extract audio from video using ffmpeg."""
+def extract_audio_from_video(video_file_path, retries=MAX_RETRIES):
+    """Extract audio from video using ffmpeg with retry mechanism."""
     temp_audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
     command = [
         "ffmpeg", "-i", video_file_path, "-q:a", "0", "-map", "a", temp_audio_path
     ]
-    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-    return temp_audio_path
+    attempt = 0
+    while attempt < retries:
+        try:
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, timeout=EXTRACTION_TIMEOUT)
+            return temp_audio_path
+        except subprocess.TimeoutExpired:
+            print(f"Audio extraction timed out for {video_file_path}, attempt {attempt + 1}/{retries}")
+        except subprocess.CalledProcessError as e:
+            print(f"ffmpeg failed for {video_file_path}: {e}")
+        attempt += 1
+    print(f"Failed to extract audio after {retries} attempts for {video_file_path}")
+    return None
+
+def download_file_with_retry(url, headers, retries=MAX_RETRIES):
+    """Attempt to download the file with retry logic."""
+    attempt = 0
+    while attempt < retries:
+        try:
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()  # Raise exception for HTTP errors
+            if response.status_code == 200 and response.content:
+                return response
+        except requests.exceptions.RequestException as e:
+            attempt += 1
+            print(f"Attempt {attempt}/{retries} failed: {e}")
+            if attempt == retries:
+                print(f"Failed to download file after {retries} attempts.")
+                return None
 
 def transcribe_words(ordinal_id):
     try:
@@ -56,14 +86,11 @@ def transcribe_words(ordinal_id):
 
         progress_logger.current_task = f"Fetching audio for {ordinal_id}"
 
-        # Fetch the audio or video file from the URL with a timeout
-        try:
-            response = requests.get(audio_url, headers=headers, timeout=30)
-            response.raise_for_status()  # Raise an exception for bad HTTP responses
-        except requests.exceptions.RequestException as e:
-            print(f"Error downloading audio for {ordinal_id}: {e}")
-            return  # Skip this item and move to the next one
-        
+        # Fetch the audio or video file with retries
+        response = download_file_with_retry(audio_url, headers)
+        if not response:
+            return  # Skip if download failed
+
         # Determine if the content is a video or audio
         content_type = response.headers.get('Content-Type', '')
         is_video = "video" in content_type
@@ -79,6 +106,9 @@ def transcribe_words(ordinal_id):
                 progress_logger.current_task = f"Extracting audio from video for {ordinal_id}"
                 temp_audio_file_path = extract_audio_from_video(temp_file_path)
                 os.remove(temp_file_path)  # Remove the original video file
+                if not temp_audio_file_path:
+                    print(f"Failed to extract audio from video for {ordinal_id}")
+                    return  # Skip this item if audio extraction failed
             else:
                 temp_audio_file_path = temp_file_path  # If it's audio, just use the file directly
 
@@ -161,13 +191,19 @@ def save_as_js_module(dataframe, file_name, constant_name):
         js_file.write(js_content)
 
 def process_ordinal_ids(ordinal_ids):
-    """Iterate over the list of ordinal IDs and transcribe each."""
+    """Process a list of ordinal IDs concurrently with a concurrency limit."""
     try:
         progress_logger.start_logging()  # Start logging progress
 
-        for ordinal_id in ordinal_ids:
-            print(f"Processing ordinal ID: {ordinal_id}")
-            transcribe_words(ordinal_id)
+        # Process the videos in parallel with a concurrency limit
+        with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY_LIMIT) as executor:
+            future_to_ordinal = {executor.submit(transcribe_words, ordinal_id): ordinal_id for ordinal_id in ordinal_ids}
+            for future in concurrent.futures.as_completed(future_to_ordinal):
+                ordinal_id = future_to_ordinal[future]
+                try:
+                    future.result()
+                except Exception as exc:
+                    print(f"Ordinal ID {ordinal_id} generated an exception: {exc}")
 
     finally:
         progress_logger.stop_logging()  # Stop logging when finished
