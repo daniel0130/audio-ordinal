@@ -24,6 +24,19 @@
     pointer-events: none; /* Allow clicks to go through the tooltip */
 }
 
+.modal-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
 .loadSampleModalButton {
     position: fixed;
     left: 0;
@@ -162,4 +175,60 @@
     max-width: 600px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     overflow-y: auto;
+}
+
+.audional-dropdown-container {
+    margin: 10px 0; /* Adds space above and below the dropdown */
+    padding: 5px; /* Optional padding inside the container */
+}
+
+select {
+    width: 100%; /* Ensures the dropdown takes full width inside its container */
+}
+
+.action-button {
+    margin: 5px; /* Adds space around buttons */
+}
+
+/* Button Color Styles */
+.green-button {
+    background-color: #28a745; /* Bootstrap green */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.green-button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.red-button {
+    background-color: #dc3545; /* Bootstrap red */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.red-button:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+.yellow-button {
+    background-color: #ffc107; /* Bootstrap yellow */
+    color: black;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.yellow-button:hover {
+    background-color: #e0a800; /* Darker yellow on hover */
 }

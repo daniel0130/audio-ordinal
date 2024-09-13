@@ -109,6 +109,10 @@ function getOrdinalId(index) {
 }
 
 function openLoadSampleModal(index, loadSampleButton) {
+    // Create overlay that covers the entire screen
+    const modalOverlay = createModalOverlay();
+    document.body.appendChild(modalOverlay);
+
     const modal = createModal('loadSampleModalButton');
     const modalContent = createModalContent();
 
@@ -139,13 +143,13 @@ function openLoadSampleModal(index, loadSampleButton) {
 
     // Create action buttons
     const actions = [
-        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
-        { text: 'Cancel', action: () => closeModal(modal) },
+        { text: 'Load', action: () => handleAction(index, modal, loadSampleButton), className: 'green-button' },  // Green button
+        { text: 'Cancel', action: () => closeModal(modalOverlay), className: 'red-button' },  // Red button
         { 
-            text: 'Search for more on-chain audio', 
+            text: 'Find More Samples', 
             action: () => window.open('https://ordinals.hiro.so/inscriptions?f=audio', '_blank'), 
             tooltip: 'Find any onchain audio you like. Simply copy the ordinal ID and paste it into the form above to load it into the sequencer for remixing.',
-            className: 'pulse-orange'
+            className: 'yellow-button'  // Yellow button
         }
     ];
 
@@ -154,9 +158,46 @@ function openLoadSampleModal(index, loadSampleButton) {
         modalContent.appendChild(actionButton);
     });
 
-    document.body.appendChild(modal);
+    // Append the modal content to the overlay
+    modalOverlay.appendChild(modal);
+
     return modal;
 }
+
+// Function to create the full-screen modal overlay
+function createModalOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black background
+    overlay.style.zIndex = '1000'; // Ensure it's on top of other elements
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+
+    // Add event listener to detect clicks outside the modal content
+    overlay.addEventListener('click', function(event) {
+        const modalContent = overlay.querySelector('.loadSampleModalButton-content');
+        if (!modalContent.contains(event.target)) {
+            closeModal(overlay); // Close the modal if clicked outside
+        }
+    });
+
+    return overlay;
+}
+
+// Function to close the modal
+function closeModal(modalOverlay) {
+    if (modalOverlay && document.body.contains(modalOverlay)) {
+        document.body.removeChild(modalOverlay);
+        openModals = openModals.filter(m => m !== modalOverlay);  // Update the openModals array
+    }
+}
+
 
 // Centralized function to create modal elements
 function createModal(className) {
@@ -192,44 +233,38 @@ function createInputContainer(labelText, placeholder, className, width) {
 }
 
 // Create a dropdown for OG Audional selection
-function createOGDropdown(label, options, width) {
-    const container = createElement('div', 'dropdown-container');
-    container.style.marginTop = '20px';
+function createOGDropdown(labelText, options, width) {
+    const container = document.createElement('div');
+    container.classList.add('audional-dropdown-container'); // Add the CSS class
 
-    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
-    const select = createElement('select', 'dropdown-select');
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    container.appendChild(label);
 
-    const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    select.appendChild(defaultOption);
-
-    options.forEach(({ value, text }) => {
-        const option = createElement('option', '', { value: value, textContent: text });
-        select.appendChild(option);
+    const select = document.createElement('select');
+    select.style.width = width; // Set the width dynamically
+    options.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.text = option.text;
+        optionElement.value = option.value;
+        select.add(optionElement);
     });
 
-    select.style.width = width;
-    select.style.boxSizing = 'border-box';
-
-    container.appendChild(labelElement);
     container.appendChild(select);
     return container;
 }
 
+
 // Create action buttons
 function createActionButton(text, action, tooltip, className) {
-    const button = createElement('button', className, { textContent: text });
-    button.onclick = action;
-
+    const button = document.createElement('button');
+    button.classList.add('action-button'); // Add this class for styling
+    if (className) button.classList.add(className);
+    button.textContent = text;
+    button.addEventListener('click', action);
     if (tooltip) {
-        const tooltipSpan = createElement('span', 'tooltiptext', { textContent: tooltip });
-        const tooltipDiv = createElement('div', 'tooltip');
-        tooltipDiv.appendChild(button);
-        tooltipDiv.appendChild(tooltipSpan);
-        return tooltipDiv;
+        button.title = tooltip;
     }
-    
     return button;
 }
 
@@ -258,14 +293,6 @@ function handleAction(index, modal, loadSampleButton) {
     handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
 }
 
-
-
-function closeModal(modal) {
-    if (modal && document.body.contains(modal)) {
-        document.body.removeChild(modal);
-        openModals = openModals.filter(m => m !== modal);  // Update the openModals array
-    }
-}
 
 function closeAllModals() {
     console.log('Closing all modals. Current open modals:', openModals);
