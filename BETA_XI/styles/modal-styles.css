@@ -1,4 +1,5 @@
 /* Modal Container Styles */
+/* Modal Overlay */
 .loadSampleModalButton {
     position: fixed;
     top: 0;
@@ -15,49 +16,66 @@
 
 /* Modal Content Styles */
 .loadSampleModalButton-content {
-    background-color: #000; /* Dark background for modal content */
-    color: #fff; /* White text for better contrast */
+    background-color: #000;
+    color: #fff;
     padding: 20px;
     border-radius: 10px;
     width: 50%;
-    max-width: 600px; /* Ensure modal doesn't get too wide on large screens */
-    max-height: 80vh; /* Responsive height based on viewport */
-    overflow-y: auto; /* Allow content to scroll if it overflows */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto; /* Allow scrolling if content exceeds height */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    text-align: center; /* Center content text */
 }
 
-/* Text Paragraph Styles */
-.loadSampleModalButton-text {
-    color: white;
-    margin-bottom: 10px; /* Space between text and input field */
-}
-
-/* Input Field Styles */
+/* Text and Input Field */
+.loadSampleModalButton-text, 
 .loadSampleModalButton-input {
     margin-bottom: 10px;
     width: 100%;
+}
+
+.loadSampleModalButton-input {
     padding: 8px;
     box-sizing: border-box;
-    border: 1px solid #ddd; /* Light border for input field */
+    border: 1px solid #ddd;
     border-radius: 5px;
 }
 
-/* Button Styles */
-.loadSampleModalButton button {
-    margin-top: 10px; /* Space above the button */
-    padding: 10px 15px; /* Padding inside the button */
+/* Button Styles (Common) */
+.loadSampleModalButton button, 
+.loadSampleModalButton-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    background-color: #000; /* Dark button background */
-    color: white;
     cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover transitions */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Specific Button Styles */
+.loadSampleModalButton button {
+    background-color: #000;
+    color: #fff;
 }
 
 .loadSampleModalButton button:hover {
-    background-color: #f6ff00; /* Bright hover background */
-    color: #000; /* Dark text on hover */
+    background-color: #f6ff00;
+    color: #000;
 }
+
+/* Link Button Specific Styles */
+.loadSampleModalButton-link {
+    background-color: #bb00ff;
+    color: #fff;
+}
+
+.loadSampleModalButton-link:hover {
+    background-color: #9c00d1;
+}
+
+
 
 /* Channel Naming Modal */
 .channel-naming-modal {
@@ -83,22 +101,6 @@
     box-sizing: border-box;
     border: 1px solid #ddd;
     border-radius: 5px;
-}
-
-/* Link Button Styles */
-.loadSampleModalButton-link {
-    padding: 10px;
-    margin-top: 10px;
-    color: white;
-    background-color: #bb00ff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.loadSampleModalButton-link:hover {
-    background-color: #9c00d1; /* Slightly darker shade on hover */
 }
 
 /* Cancel Button */
