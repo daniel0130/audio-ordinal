@@ -38,9 +38,10 @@
 }
 
 .loadSampleModalButton {
-    height: 30%;
+    height: 30vh; 
+    max-height: 80%; /* Limit max height to prevent overflow */
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto; /* Allow scrolling if content exceeds modal height */
 }
 
 .loadSampleModalButton-content {
