@@ -38,7 +38,7 @@ class AudioTrimmer {
         console.log("[Class Functions] initialize");
 
         const elementIds = [
-            'ordinalIdInput', 'loadSampleButton', 'waveformCanvas', 'playbackCanvas',
+            'waveformCanvas', 'playbackCanvas',
             'trimmerPlayButton', 'trimmerStopButton', 'loopButton', 'startDimmed', 'endDimmed', 'startSlider', 'endSlider'
         ];
         const allElementsAvailable = elementIds.every(id => this[id] = document.getElementById(id));
@@ -101,12 +101,10 @@ class AudioTrimmer {
         console.log("Trimmed Sample Duration:", this.trimmedSampleDuration);
     }
 
-    // Helper function to convert slider values to timecode
     sliderValueToTimecode(sliderValue, totalDuration) {
         return (sliderValue / 100) * totalDuration;
     }
 
-    // Reusable helper to calculate slider left position
     getSliderLeft(sliderValue) {
         return (sliderValue / 100) * this.sliderTrack.offsetWidth;
     }
@@ -192,20 +190,7 @@ class AudioTrimmer {
         this.endSlider.addEventListener('mousedown', (event) => sliderMouseDown(event, false));
     }
 
-    async loadSample() {
-        if (!this.ordinalIdInput.value) return;
 
-        try {
-            this.audioBuffer = await fetchAudio(`https://ordinals.com/content/${this.ordinalIdInput.value}`);
-            const trimSettings = getTrimSettings(this.channelIndex);
-            this.trimSettings = { ...trimSettings, totalSampleDuration: this.audioBuffer.duration };
-
-            this.drawWaveform();
-            this.updateSliderValues();
-        } catch (error) {
-            console.error('Error loading audio:', error);
-        }
-    }
 
     playTrimmedAudio() {
         if (!this.audioBuffer || this.isPlaying) return;
@@ -265,7 +250,6 @@ class AudioTrimmer {
         return this.isLooping;
     }
 
-
     // Method to set the isLooping flag
     setIsLooping(isLooping) {
         this.isLooping = isLooping;
@@ -288,25 +272,6 @@ class AudioTrimmer {
             if (datum > max) max = datum;
         }
         return { min, max };
-    }
-
-    updateDimmedAreas() {
-        if (this.startSliderValue === undefined || this.endSliderValue === undefined) {
-            console.error("Slider values are undefined, skipping update of dimmed areas.");
-            return;
-        }
-
-        this.startDimmed.style.width = `${this.startSliderValue}%`;
-        this.endDimmed.style.width = `${100 - this.endSliderValue}%`;
-        this.endDimmed.style.left = `${this.endSliderValue}%`;
-    }
-
-  
-
-    displayValues() {
-        console.log("Start Slider Value:", this.startSliderValue);
-        console.log("End Slider Value:", this.endSliderValue);
-        console.log("Trimmed Sample Duration:", this.trimmedSampleDuration);
     }
 
     // Method to get the current value of the start slider

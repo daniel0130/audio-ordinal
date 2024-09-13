@@ -79,39 +79,44 @@ canvas {
 canvas#playbackCanvas {
     z-index: 10; /* Ensure it's below the sliders */
 }
+/* 
 
-/* Responsive design for smaller screens */
-@media (max-width: 600px) {
-    .waveform-container {
-        height: 150px; /* Reduce height on smaller screens */
-    }
 
-    .slider {
-        width: 15px; /* Make sliders smaller */
-        height: 15px;
-    }
+/* Modal content box */
+.trimmer-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* Reduce margin for more space on smaller screens */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 70%;
+    max-width: 1000px; /* Limit maximum width */
+    max-height: 80vh; /* Limit maximum height based on viewport height */
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+    overflow-y: auto; /* Allow scrolling inside the modal if content overflows */
+}
 
-    .slider-track {
-        height: 8px; /* Reduce track height */
+/* Trimmer container */
+#audio-trimmer-container {
+    max-height: 350px; /* Maximum height for the trimmer container */
+    overflow-y: auto;  /* Allow scrolling if content exceeds the height */
+    width: 100%;       /* Ensure container takes full width */
+    padding: 10px;     /* Add padding to avoid content touching edges */
+    box-sizing: border-box; /* Ensure padding and borders are accounted for */
+}
+
+/* Ensure that the modal adapts responsively */
+@media (max-width: 768px) {
+    .trimmer-modal-content {
+        width: 90%; /* Take most of the width on smaller screens */
+        max-width: 100%; /* Ensure it doesn't exceed screen width */
+        max-height: 90vh; /* Slightly increase height to use available space */
     }
 }
 
-@media (max-width: 400px) {
-    .waveform-container {
-        height: 120px; /* Further reduce height for very small screens */
-    }
-    
-    .slider {
-        width: 12px;
-        height: 12px;
-    }
-    
-    .slider-track {
-        height: 6px;
-    }
-}
 
-
-#ordinalIdInput, #loadSampleButton {
-    display: none;
+/* Animation to slide modal in */
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }

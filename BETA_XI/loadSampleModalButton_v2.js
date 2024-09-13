@@ -77,7 +77,7 @@ function setupLoadSampleButton(channel, index) {
 
     // Attach event handlers
     loadSampleButton.onclick = function() {
-        const modal = openModal(index, loadSampleButton); // Capture the modal returned by openModal
+        const modal = openLoadSampleModal(index, loadSampleButton); // Capture the modal returned by openModal
         openModals.push(modal); // Add this modal to the tracking array
     };
 
@@ -108,12 +108,17 @@ function getOrdinalId(index) {
     return extractOrdinalIdFromUrl(window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index]);
 }
 
-function openModal(index, loadSampleButton) {
+function openLoadSampleModal(index, loadSampleButton) {
+    // Create overlay that covers the entire screen
+    const modalOverlay = createModalOverlay();
+    document.body.appendChild(modalOverlay);
+
     const modal = createModal('loadSampleModalButton');
     const modalContent = createModalContent();
 
     modal.appendChild(modalContent);
-    openModals.push(modal);
+    // Removed the second push of the modal. Only overlay is pushed to openModals
+    openModals.push(modalOverlay); // Add only the overlay to the tracking array
 
     const consistentWidth = '400px'; // Set consistent width for all inputs and dropdowns
 
@@ -139,13 +144,13 @@ function openModal(index, loadSampleButton) {
 
     // Create action buttons
     const actions = [
-        { text: 'Load Audio', action: () => handleAction(index, modal, loadSampleButton) },
-        { text: 'Cancel', action: () => closeModal(modal) },
+        { text: 'Load', action: () => handleAction(index, modal, loadSampleButton), className: 'green-button' },  // Green button
+        { text: 'Cancel', action: () => closeModal(modalOverlay), className: 'red-button' },  // Red button
         { 
-            text: 'Search for more on-chain audio', 
+            text: 'Find More Samples', 
             action: () => window.open('https://ordinals.hiro.so/inscriptions?f=audio', '_blank'), 
             tooltip: 'Find any onchain audio you like. Simply copy the ordinal ID and paste it into the form above to load it into the sequencer for remixing.',
-            className: 'pulse-orange'
+            className: 'yellow-button'  // Yellow button
         }
     ];
 
@@ -154,9 +159,82 @@ function openModal(index, loadSampleButton) {
         modalContent.appendChild(actionButton);
     });
 
-    document.body.appendChild(modal);
-    return modal;
+    // Append the modal content to the overlay
+    modalOverlay.appendChild(modal);
+
+    return modalOverlay; // Return the modalOverlay only
 }
+
+// Function to create the full-screen modal overlay
+function createModalOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black background
+    overlay.style.zIndex = '1000'; // Ensure it's on top of other elements
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+
+    // Add event listener to detect clicks outside the modal content
+    overlay.addEventListener('click', function(event) {
+        const modalContent = overlay.querySelector('.loadSampleModalButton-content');
+        if (!modalContent.contains(event.target)) {
+            closeModal(overlay); // Close the modal if clicked outside
+        }
+    });
+
+    return overlay;
+}
+
+// Function to close a specific modal
+function closeModal(modalOverlay) {
+    if (modalOverlay && document.body.contains(modalOverlay)) {
+        try {
+            document.body.removeChild(modalOverlay);
+            console.log(`[HTML Debugging] Modal successfully removed:`, modalOverlay);
+        } catch (error) {
+            console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
+        }
+
+        // Update the openModals array to remove the closed modal
+        openModals = openModals.filter(m => m !== modalOverlay);
+    } else {
+        console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
+    }
+}
+
+// Function to close all open modals
+function closeAllModals() {
+    // Ensure the openModals array only contains unique modals
+    openModals = [...new Set(openModals)];  // Remove duplicate modals
+
+    console.log('Closing all modals. Current open modals:', openModals);
+
+    openModals.forEach(modal => {
+        if (modal && document.body.contains(modal)) {
+            try {
+                document.body.removeChild(modal);
+                console.log(`[HTML Debugging] Modal successfully removed:`, modal);
+            } catch (error) {
+                console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
+            }
+        } else {
+            console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
+        }
+    });
+
+    // Clear the array after removing all modals
+    openModals = [];
+    console.log('All modals closed. Current open modals:', openModals);
+}
+
+
+
 
 // Centralized function to create modal elements
 function createModal(className) {
@@ -192,44 +270,38 @@ function createInputContainer(labelText, placeholder, className, width) {
 }
 
 // Create a dropdown for OG Audional selection
-function createOGDropdown(label, options, width) {
-    const container = createElement('div', 'dropdown-container');
-    container.style.marginTop = '20px';
+function createOGDropdown(labelText, options, width) {
+    const container = document.createElement('div');
+    container.classList.add('audional-dropdown-container'); // Add the CSS class
 
-    const labelElement = createElement('label', 'dropdown-label', { textContent: label });
-    const select = createElement('select', 'dropdown-select');
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    container.appendChild(label);
 
-    const defaultOption = createElement('option', '', { value: '', textContent: 'Select Audional sample to load' });
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    select.appendChild(defaultOption);
-
-    options.forEach(({ value, text }) => {
-        const option = createElement('option', '', { value: value, textContent: text });
-        select.appendChild(option);
+    const select = document.createElement('select');
+    select.style.width = width; // Set the width dynamically
+    options.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.text = option.text;
+        optionElement.value = option.value;
+        select.add(optionElement);
     });
 
-    select.style.width = width;
-    select.style.boxSizing = 'border-box';
-
-    container.appendChild(labelElement);
     container.appendChild(select);
     return container;
 }
 
+
 // Create action buttons
 function createActionButton(text, action, tooltip, className) {
-    const button = createElement('button', className, { textContent: text });
-    button.onclick = action;
-
+    const button = document.createElement('button');
+    button.classList.add('action-button'); // Add this class for styling
+    if (className) button.classList.add(className);
+    button.textContent = text;
+    button.addEventListener('click', action);
     if (tooltip) {
-        const tooltipSpan = createElement('span', 'tooltiptext', { textContent: tooltip });
-        const tooltipDiv = createElement('div', 'tooltip');
-        tooltipDiv.appendChild(button);
-        tooltipDiv.appendChild(tooltipSpan);
-        return tooltipDiv;
+        button.title = tooltip;
     }
-    
     return button;
 }
 
@@ -259,24 +331,6 @@ function handleAction(index, modal, loadSampleButton) {
 }
 
 
-
-function closeModal(modal) {
-    if (modal && document.body.contains(modal)) {
-        document.body.removeChild(modal);
-        openModals = openModals.filter(m => m !== modal);  // Update the openModals array
-    }
-}
-
-function closeAllModals() {
-    console.log('Closing all modals. Current open modals:', openModals);
-    openModals.forEach(modal => {
-        if (document.body.contains(modal)) {
-            document.body.removeChild(modal);
-        }
-    });
-    openModals = [];  // Clear the array after removing all modals
-    console.log('All modals closed. Current open modals:', openModals);
-}
 
 function handleDropdownChange(event, index, modal, loadSampleButton) {
     const selectedValue = event.target.value;
@@ -361,10 +415,6 @@ function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadS
         } else if (sOrdinalInput && sOrdinalInput.value.trim()) {
             url = 'https://content.sordinals.io/inscription-data/' + sOrdinalInput.value.trim();
             sampleName = sOrdinalInput.value.trim().split('/').pop();
-        // Uncomment and adjust the following if file input handling is re-enabled:
-        // } else if (fileInput && fileInput.files.length > 0) {
-        //     url = URL.createObjectURL(fileInput.files[0]);
-        //     sampleName = fileInput.files[0].name;
         } else if (ogAudionalDropdown && ogAudionalDropdown.value) {
             url = ogAudionalDropdown.value;
             sampleName = ogAudionalDropdown.options[ogAudionalDropdown.selectedIndex].text;
@@ -387,16 +437,25 @@ function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadS
 }
 
 
-
 function processLoad(url, sampleName, index, loadSampleButton, modal) {
     if (url) {
+        console.log(`[HTML Debugging] [processLoad] Attempting to load audio from URL: ${url} with sample name: ${sampleName}`);
+        
         fetchAudio(url, index, sampleName).then(() => {
             updateProjectChannelNamesUI(index, sampleName);
             loadSampleButton.textContent = sampleName;
+            console.log(`[HTML Debugging] [processLoad] Successfully loaded: ${sampleName}`);
             closeAllModals();  // Close all modals upon successful loading
         }).catch(error => {
-            console.error("[HTML Debugging] [handleLoad] Error loading audio:", error);
-            alert("Failed to load audio. Please check the console for details.");
+            console.error(`[HTML Debugging] [processLoad] Error loading audio: ${error.message || error}`);
+            // Provide more detailed error message
+            if (error.message.includes('404')) {
+                alert("Audio not found (404). Please check the URL or input.");
+            } else if (error.message.includes('network')) {
+                alert("Network error occurred while loading audio. Please check your connection.");
+            } else {
+                alert("Failed to load audio. Please check the console for details.");
+            }
         });
     }
 }

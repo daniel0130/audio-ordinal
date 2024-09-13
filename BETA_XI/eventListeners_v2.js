@@ -213,9 +213,15 @@ loadFileInput.addEventListener('change', async () => {
 // Close the modal when the user clicks on <span> (x)
 document.querySelector('.close-button').addEventListener('click', function() {
     console.log('Close button clicked');
+
+    if (currentTrimmerInstance) {
+        currentTrimmerInstance.stopAudio();  // Stop audio playback before closing the modal
+    }
+
     document.getElementById('audio-trimmer-modal').style.display = 'none';
     console.log('Modal closed');
 });
+
 
 // Close the modal when the user clicks anywhere outside the modal content
 window.addEventListener('click', function(event) {
@@ -227,6 +233,11 @@ window.addEventListener('click', function(event) {
         // Ensure the click is outside of the modal content but inside the modal background
         if (!modalContent.contains(event.target) && event.target === modal) {
             console.log('Clicked outside the modal content');
+
+            if (currentTrimmerInstance) {
+                currentTrimmerInstance.stopAudio();  // Stop audio playback before closing the modal
+            }
+
             modal.style.display = 'none'; // Close the modal
             console.log('Modal closed');
         }

@@ -39,44 +39,7 @@
 .button-label.stop {
     color: #ff0000;
 }
-
-div[idModalContent] div {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 10px;
-    cursor: pointer;
-}
-
-div[idModalContent] div button {
-    margin-right: 10px;
-    background-color: #f0f0f0;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-div[idModalContent] div button:hover {
-    background-color: #ddd;
-}
-
-div[idModalContent] div a {
-    text-decoration: none;
-    display: flex;
-    color: black;
-    transition: color 0.3s ease;
-}
-
-div[idModalContent] div a:hover {
-    color: #666;
-}
-
+/* 
 
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
@@ -94,6 +57,7 @@ div[idModalContent] div a:hover {
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s; /* Smooth transition for hover effect */
+    margin: 5px; /* Add margin to separate buttons */
 }
 
 .action-button:hover {

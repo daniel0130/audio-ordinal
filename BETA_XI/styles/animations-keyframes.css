@@ -11,6 +11,15 @@
     100% { background-color: rgb(153, 153, 2); }
 }
 
-.clear-button.flashing {
-    animation: flashingYellow 0.5s infinite; /* Will make it blink twice per second */
+.flashing {
+    animation: flashingYellow 0.5s infinite; /* Used for any flashing element */
+}
+
+#play {
+    animation: flash 2s infinite ease-in-out;
+}
+
+#play.selected,
+#stop.selected ~ #play {
+    animation: none;
 }
