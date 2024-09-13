@@ -111,8 +111,16 @@ function getOrdinalId(index) {
 function openModal(index, loadSampleButton) {
     const modal = createElement('div', 'loadSampleModalButton');
     const modalContent = createElement('div', 'loadSampleModalButton-content');
+
+    // Apply flexbox column layout
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    modalContent.style.alignItems = 'flex-start'; // Align inputs and text to the left
     modal.appendChild(modalContent);
     openModals.push(modal);
+
+    // Set a consistent width for all elements
+    const consistentWidth = '400px'; // Set the width to a desired size
 
     const inputs = [
         { placeholder: 'Enter ORD ID:', type: 'text', className: 'audional-input', text: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
@@ -122,6 +130,9 @@ function openModal(index, loadSampleButton) {
 
     const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls);
     ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
+
+    // Set the width of the dropdown
+    ogAudionalDropdown.style.width = consistentWidth;
 
     const style = document.createElement('style');
     style.type = 'text/css';
@@ -170,21 +181,22 @@ function openModal(index, loadSampleButton) {
     document.head.appendChild(style);
 
     ogAudionalDropdown.classList.add('pulse-green');
-
     modalContent.appendChild(ogAudionalDropdown);
     ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
 
     inputs.forEach(({ text, placeholder, type, className }) => {
-        const textPara = createTextParagraph(text);
-        textPara.style.display = 'inline-block';
-        textPara.style.width = 'auto';
-        textPara.style.marginRight = '20px';
-        
-        const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
-        inputElement.style.width = '300px';
-        inputElement.style.display = 'inline-block';
-
         const containerDiv = document.createElement('div');
+        containerDiv.style.display = 'flex';
+        containerDiv.style.flexDirection = 'column'; // Ensure vertical stacking
+        containerDiv.style.marginBottom = '10px'; // Add spacing between input sections
+
+        const textPara = createTextParagraph(text);
+        textPara.style.marginBottom = '5px'; // Add space between label and input
+
+        const inputElement = createElement('input', className, { type: type, placeholder: placeholder });
+        inputElement.style.width = consistentWidth; // Ensure uniform width across inputs
+        inputElement.style.boxSizing = 'border-box'; // Ensure padding doesn't affect width
+
         containerDiv.appendChild(textPara);
         containerDiv.appendChild(inputElement);
         modalContent.appendChild(containerDiv);
@@ -229,8 +241,6 @@ function openModal(index, loadSampleButton) {
     document.body.appendChild(modal);
     return modal;
 }
-
-
 
 
 
