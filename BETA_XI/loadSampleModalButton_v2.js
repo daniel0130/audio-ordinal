@@ -242,8 +242,6 @@ function openModal(index, loadSampleButton) {
     return modal;
 }
 
-
-
 function createOGDropdown(label, options) {
     const container = createElement('div', 'dropdown-container');
     container.style.marginTop = '20px';  // Add 20px space above the dropdown
@@ -263,10 +261,16 @@ function createOGDropdown(label, options) {
         select.appendChild(option);
     });
 
+    // Set consistent width for the dropdown
+    const consistentWidth = '400px';  // Use the same width as inputs
+    select.style.width = consistentWidth;
+    select.style.boxSizing = 'border-box';  // Ensure padding/borders don't affect width
+
     container.appendChild(labelElement);
     container.appendChild(select);
     return container;
 }
+
 
 function handleAction(index, modal, loadSampleButton) {
     const audionalInput = modal.querySelector('.audional-input');
