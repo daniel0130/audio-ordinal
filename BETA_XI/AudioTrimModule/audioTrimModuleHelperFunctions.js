@@ -46,52 +46,68 @@ function stopAudioForChannel(channelIndex) {
 
 
 document.addEventListener('DOMContentLoaded', function() {
-
-function openAudioTrimmerModal(channelIndex) {
-    console.log('openAudioTrimmerModal entered');
-    console.log('channelIndex:', channelIndex); // Log the channel index
-    currentTrimmerChannelIndex = channelIndex; // Store the channel index
-
-    fetch('AudioTrimModule/audioTrimModule.html')
-        .then(response => response.text())
-        .then(html => {
-            const container = document.getElementById('audio-trimmer-container');
-            container.innerHTML = html;
-            console.log("[HTML Injection] Content injected into audio-trimmer-container:", container.innerHTML);
-
-            // Wait for the browser to render the injected HTML
-            requestAnimationFrame(() => {
-                currentTrimmerInstance = new AudioTrimmer(channelIndex);
-                currentTrimmerInstance.initialize(); // Call initialize which should call addEventListeners
-            
-                if (document.getElementById('waveformCanvas')) {
-                    // currentTrimmerInstance.initialize();
-        
-                    // Retrieve trim settings for the channel from the global object
-                    const trimSettings = getTrimSettings(channelIndex);
-                    if (trimSettings) {
-                        // Apply the trim settings to the current trimmer instance
-                        currentTrimmerInstance.startSlider.value = trimSettings.startSliderValue;
-                        currentTrimmerInstance.endSlider.value = trimSettings.endSliderValue;
-                        currentTrimmerInstance.setIsLooping(trimSettings.isLooping); // Set looping state
-        
-                        // Update the trimmer instance with the new slider values
-                        currentTrimmerInstance.updateSliderValues();
-                    }
-                } else {
-                    console.error('Required elements not found in the DOM');
+    function openAudioTrimmerModal(channelIndex) {
+        console.log('openAudioTrimmerModal entered');
+        console.log('channelIndex:', channelIndex); // Log the channel index
+        currentTrimmerChannelIndex = channelIndex; // Store the channel index
+    
+        fetch('AudioTrimModule/audioTrimModule.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load audio trim module: ${response.statusText}`);
                 }
-
-                // Retrieve the URL from the global settings
-                const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-                updateAudioTrimmerWithBufferHelper(url, channelIndex);
-            });           
-            document.getElementById('audio-trimmer-modal').style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error loading audio trimmer module:', error);
-        });
-}
+                return response.text();
+            })
+            .then(html => {
+                const container = document.getElementById('audio-trimmer-container');
+                if (!container) {
+                    throw new Error('Audio trimmer container not found in the DOM.');
+                }
+                container.innerHTML = html;
+                console.log("[HTML Injection] Content injected into audio-trimmer-container:", container.innerHTML);
+    
+                // Wait for the browser to render the injected HTML
+                requestAnimationFrame(() => {
+                    try {
+                        currentTrimmerInstance = new AudioTrimmer(channelIndex);
+                        currentTrimmerInstance.initialize(); // Call initialize which should call addEventListeners
+                    
+                        const waveformCanvas = document.getElementById('waveformCanvas');
+                        if (waveformCanvas) {
+                            // Retrieve trim settings for the channel from the global object
+                            const trimSettings = getTrimSettings(channelIndex);
+                            if (trimSettings) {
+                                // Apply the trim settings to the current trimmer instance
+                                currentTrimmerInstance.startSlider.value = trimSettings.startSliderValue;
+                                currentTrimmerInstance.endSlider.value = trimSettings.endSliderValue;
+                                currentTrimmerInstance.setIsLooping(trimSettings.isLooping); // Set looping state
+    
+                                // Update the trimmer instance with the new slider values
+                                currentTrimmerInstance.updateSliderValues();
+                            }
+                        } else {
+                            console.error('Waveform canvas not found in the DOM.');
+                        }
+    
+                        // Retrieve the URL from the global settings
+                        const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
+                        if (url) {
+                            updateAudioTrimmerWithBufferHelper(url, channelIndex);
+                        } else {
+                            console.error(`No URL found for channel index: ${channelIndex}`);
+                        }
+                    } catch (error) {
+                        console.error('Error during audio trimmer initialization:', error);
+                    }
+                });
+    
+                document.getElementById('audio-trimmer-modal').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading audio trimmer module:', error);
+            });
+    }
+    
 
     document.querySelectorAll('.open-audio-trimmer').forEach((button, channelIndex) => {
         button.addEventListener('click', () => {
