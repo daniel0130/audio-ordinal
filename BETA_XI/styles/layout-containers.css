@@ -4,14 +4,10 @@
     display: flex;
     flex-direction: column;
     align-items: center; /* Center items horizontally */
-    width: 100%;
+    max-width: 100vw; /* Ensure the container doesn't exceed the viewport width */
     height: 100%;
     padding: 20px;
     box-sizing: border-box;
-}
-/* Hide all step containers by default */
-.steps-container {
-    display: none;
 }
 
 /* Show only the step containers that are inside the drum machine container */

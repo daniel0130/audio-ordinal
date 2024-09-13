@@ -1,15 +1,30 @@
+/* --- Variables and Media Queries --- */
+:root {
+    --scale-factor: 1vw; /* This can be adjusted to scale with viewport width */
+    --main-bg-color: #000;
+    --secondary-bg-color: #333;
+    --primary-color: #fff;
+    --accent-color: #f00;
+    --button-dimension: 5vw; /* Using viewport width for relative sizing */
+    --control-button-dimension: 18px; /* Fixed size */
+    --box-shadow-style: 0 0 1vw var(--main-bg-color) inset;
+    --default-font: Arial, sans-serif;
+}
+
 /* --- Global Styles --- */
 body {
     background-color: var(--main-bg-color);
     color: var(--primary-color);
     font: normal normal normal 100%/1 var(--default-font);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Ensures all elements respect padding and borders */
 }
 
 /* --- Drum Machine Container --- */
 #drum-machine {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0;
+    margin: 50 auto;
+    padding: 50px;
     background-color: var(--secondary-bg-color);
     box-sizing: border-box;
 }
@@ -56,27 +71,25 @@ h3:hover .subtext {
 
 /* Additional font size settings for modal content */
 .modal-text-small {
-    font-size: 0.9em; /* Slightly smaller than default */
+    font-size: 0.9em;
 }
 
 .modal-text-smaller {
-    font-size: 0.8em; /* Even smaller for more content fit */
+    font-size: 0.8em;
 }
 
 .modal-title-small {
-    font-size: 1.2em; /* Smaller title font size */
+    font-size: 1.2em;
 }
 
 .modal-header {
-    font-size: 1em; /* Reduced size for section headers */
+    font-size: 1em;
 }
-  
-  .modal-content {
+
+.modal-content {
     display: flex;
     justify-content: space-between;
 }
-
-
 
 /* The Close Button */
 .close-button {
@@ -95,48 +108,42 @@ h3:hover .subtext {
 
 /* Add Zoom Animation */
 @-webkit-keyframes slideIn {
-    from {top: -300px; opacity: 0} 
-    to {top: 0; opacity: 1}
+    from { top: -300px; opacity: 0; }
+    to { top: 0; opacity: 1; }
 }
 
 @keyframes slideIn {
-    from {top: -300px; opacity: 0}
-    to {top: 0; opacity: 1}
+    from { top: -300px; opacity: 0; }
+    to { top: 0; opacity: 1; }
 }
 
-.modal-column {
-    width: 48%; /* Adjust width as needed */
-    padding: 1%; /* Provides some spacing between columns */
-    box-sizing: border-box; /* Includes padding in the width */
-}
-
+/* --- Button Styles --- */
 .control-button-demo {
     display: inline-block;
-    width: 20px; /* Width of the button */
-    height: 20px; /* Height of the button */
-    color: white; /* Text color */
-    text-align: center; /* Center the text inside the button */
-    margin-right: 5px; /* Margin to separate button from text */
-    font-weight: bold; /* Bold text */
-    border-radius: 3px; /* Rounded corners if your buttons have them */
+    width: 20px;
+    height: 20px;
+    color: white;
+    text-align: center;
+    margin-right: 5px;
+    font-weight: bold;
+    border-radius: 3px;
 }
+
 .step-button.demo {
     display: inline-block;
     width: 15px;
     height: 15px;
     margin-right: 5px;
     border: 1px solid #555;
-    /* Additional styles to match your step buttons */
 }
 
+/* Project Name Input */
 #project-name {
-    z-index: 1000; /* 1000 is arbitrary, it just needs to be higher than other elements */
-    position: relative; /* z-index only works on positioned elements */
-}
-
-/* If the label also needs to be visible */
-label[for="project-name"] {
-    z-index: 1000; /* Same z-index as the input for consistency */
+    z-index: 1000;
     position: relative;
 }
 
+label[for="project-name"] {
+    z-index: 1000;
+    position: relative;
+}
