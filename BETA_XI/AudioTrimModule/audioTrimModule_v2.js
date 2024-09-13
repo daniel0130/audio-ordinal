@@ -241,193 +241,127 @@ class AudioTrimmer {
         };
     }
 
-        
-        getMinMax(channelData, startIndex, step) {
-        let min = 1.0, max = -1.0;
-        for (let i = 0; i < step; i++) {
+    getMinMax(channelData, startIndex, step) {
+        let min = channelData[startIndex], max = min; // Start with the first element
+        for (let i = 1; i < step; i++) {  // Start loop from 1 to skip re-checking the first element
             const datum = channelData[startIndex + i];
             if (datum < min) min = datum;
             if (datum > max) max = datum;
         }
         return { min, max };
-        }
-
-       
+    }
     
-         // Method to get the current value of the isLooping flag
-         getIsLooping() {
-            return this.isLooping;
+    // Method to get the current value of the isLooping flag
+    getIsLooping() {
+        return this.isLooping;
+    }
+    
+    // Method to set the isLooping flag
+    setIsLooping(isLooping) {
+        this.isLooping = isLooping;
+        this.updateLoopButtonState(); // Only one responsibility in this method
+    }
+    
+    // Method to update the loop button's visual state based on isLooping flag
+    updateLoopButtonState() {
+        if (!this.loopButton) return;
+        const action = this.isLooping ? 'add' : 'remove';
+        this.loopButton.classList[action]('on');
+        this.loopButton.classList[action === 'add' ? 'remove' : 'add']('off');
+    }
+    
+    playTrimmedAudio() {
+        console.log("[playTrimmedAudio] [Class Functions] playTrimmedAudio");
+    
+        if (this.isPlaying || !this.audioBuffer) {
+            console.log("[playTrimmedAudio] Audio is already playing or no audio buffer loaded");
+            return;
         }
-
-        // Method to set the isLooping flag
-        setIsLooping(isLooping) {
-            this.isLooping = isLooping;
-            this.updateLoopButtonState();
+    
+        this.isPlaying = true;
+        console.log("[playTrimmedAudio] isPlaying set to true, starting new playback");
+    
+        const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
+        const endTime = this.sliderValueToTimecode(this.endSliderValue, this.audioBuffer.duration);
+    
+        if (this.sourceNode) this.sourceNode.disconnect();
+    
+        this.sourceNode = this.audioContext.createBufferSource();
+        this.sourceNode.buffer = this.audioBuffer;
+        this.sourceNode.connect(this.audioContext.destination);
+        
+        this.sourceNode.loop = this.isLooping;
+        if (this.isLooping) {
+            this.sourceNode.loopStart = startOffset;
+            this.sourceNode.loopEnd = endTime;
         }
-
-        // Method to update the loop button's visual state based on isLooping flag
-        updateLoopButtonState() {
-            console.log(`[updateLoopButtonState] isLooping: ${this.isLooping}`); // Add this line
-
-            if (this.loopButton) {
-                if (this.isLooping) {
-                    this.loopButton.classList.add('on');
-                    this.loopButton.classList.remove('off');
-                } else {
-                    this.loopButton.classList.add('off');
-                    this.loopButton.classList.remove('on');
-                }
-            }
-        }
-        
-        
-        playTrimmedAudio() {
-            console.log("[playTrimmedAudio] [Class Functions] playTrimmedAudio");
-        
-            // If audio is already playing, return without starting new playback
-            if (this.isPlaying) {
-                console.log("[playTrimmedAudio] Audio is already playing, not starting new playback");
-                return;
-            }
-        
-            if (!this.audioBuffer) {
-                console.error("[playTrimmedAudio] No audio buffer loaded");
-                return;
-            }
-        
-            // Set isPlaying to true immediately to block concurrent playbacks
-            this.isPlaying = true;
-            console.log("[playTrimmedAudio] isPlaying set to true, starting new playback");
-        
-            // Convert the start slider value to a timecode and add it to the current context time
-            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
-            this.startTime = this.audioContext.currentTime - startOffset;
-
-        
-            // Convert internal state slider values to timecodes
-            const startTime = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
-            const endTime = this.sliderValueToTimecode(this.endSliderValue, this.audioBuffer.duration);
-        
-            // Disconnect any existing source node
-            if (this.sourceNode) {
-                this.sourceNode.disconnect();
-            }
-        
-            // Create and configure the audio source node
-            this.sourceNode = this.audioContext.createBufferSource();
-            this.sourceNode.buffer = this.audioBuffer;
-            this.sourceNode.connect(this.audioContext.destination);
-        
-            // Set looping if enabled
-            this.sourceNode.loop = this.isLooping;
+    
+        this.sourceNode.start(0, startOffset, endTime - startOffset);
+        console.log("[playTrimmedAudio] Playback started");
+        this.animatePlayback();
+    
+        this.sourceNode.onended = () => {
+            this.isPlaying = false;
+            console.log("[playTrimmedAudio] Playback ended");
             if (this.isLooping) {
-                this.sourceNode.loopStart = startTime;
-                this.sourceNode.loopEnd = endTime;
-            }
-        
-            // Start playback and animation
-            this.sourceNode.start(0, startTime, endTime - startTime);
-            console.log("[playTrimmedAudio] Playback started");
-            this.animatePlayback();  // Start animating the playback bar
-        
-            // Handle the end of playback
-            this.sourceNode.onended = () => {
-                this.isPlaying = false;
-                if (this.isLooping) {
-                    this.playTrimmedAudio(); // Restart playback if looping
-                } else {
-                    // Handle the end of playback when not looping
-                    console.log("[playTrimmedAudio] Playback ended, isPlaying set to false");
-                    if (this.animationFrameRequest) {
-                        cancelAnimationFrame(this.animationFrameRequest); // Stop the animation when playback stops
-                    }
-                }
-            };
-        }
-        
-
-        stopAudio() {
-            console.log("[Class Functions] stopAudio");
-            this.setIsLooping(false); // Use setIsLooping to ensure consistent state management
-
-            if (this.isPlaying && this.sourceNode) {
-                this.sourceNode.stop(); // Stop the audio playback
-                this.sourceNode.disconnect();
-                this.sourceNode = null;
-                this.isPlaying = false;
-            }
-            if (this.animationFrameRequest) {
+                this.playTrimmedAudio();  // Restart if looping
+            } else if (this.animationFrameRequest) {
                 cancelAnimationFrame(this.animationFrameRequest);
             }
+        };
+    }
+    
+    stopAudio() {
+        console.log("[Class Functions] stopAudio");
+        this.setIsLooping(false);
+    
+        if (this.isPlaying) {
+            this.sourceNode?.stop();
+            this.sourceNode?.disconnect();
+            this.sourceNode = null;
+            this.isPlaying = false;
         }
-        
-
-        toggleLoop() {
-            console.log("[Class Functions] toggleLoop");
-        
-            this.isLooping = !this.isLooping;
-            this.updateLoopButtonState(); // Ensure the visual state is updated
-            if (this.isPlaying) {
-                this.playTrimmedAudio(); // Restart playback with new loop setting if already playing
-            }
+        cancelAnimationFrame(this.animationFrameRequest);
+    }
+    
+    toggleLoop() {
+        this.setIsLooping(!this.isLooping);  // Use setIsLooping for consistent state management
+        if (this.isPlaying) this.playTrimmedAudio();  // Restart playback if already playing
+    }
+    
+    getCurrentPlaybackPosition() {
+        if (!this.isPlaying) return 0;
+        const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
+        return ((this.audioContext.currentTime - this.startTime) % this.audioBuffer.duration) + startOffset;
+    }
+    
+    updatePlaybackCanvas() {
+        const actualCurrentPosition = this.audioContext.currentTime - this.startTime;
+        const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
+        const endOffset = this.sliderValueToTimecode(this.endSliderValue, this.audioBuffer.duration);
+        const trimmedDuration = endOffset - startOffset;
+    
+        const relativePosition = (actualCurrentPosition - startOffset) % trimmedDuration;
+        if (relativePosition < 0 || relativePosition > trimmedDuration) return;
+    
+        const canvasWidth = this.playbackCanvas.width;
+        const startSliderCanvasPosition = (this.startSliderValue / 100) * canvasWidth;
+        const endSliderCanvasPosition = (this.endSliderValue / 100) * canvasWidth;
+        const xPosition = startSliderCanvasPosition + (relativePosition / trimmedDuration) * (endSliderCanvasPosition - startSliderCanvasPosition);
+    
+        this.playbackCtx.clearRect(0, 0, canvasWidth, this.playbackCanvas.height);
+        this.playbackCtx.beginPath();
+        this.playbackCtx.moveTo(xPosition, 0);
+        this.playbackCtx.lineTo(xPosition, this.playbackCanvas.height);
+        this.playbackCtx.strokeStyle = '#FF0000';
+        this.playbackCtx.lineWidth = 2;
+        this.playbackCtx.stroke();
+    }
+    
+    animatePlayback() {
+        if (this.isPlaying) {
+            this.updatePlaybackCanvas();
+            this.animationFrameRequest = requestAnimationFrame(() => this.animatePlayback());
         }
-        
-
-        getCurrentPlaybackPosition() {
-            if (!this.isPlaying) return 0;
-            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration);
-            return ((this.audioContext.currentTime - this.startTime) % this.audioBuffer.duration) + startOffset;
-        }
-        
-        
-        
-        updatePlaybackCanvas() {
-            // 1. Calculate Exact Current Position
-            const actualCurrentPosition = this.audioContext.currentTime - this.startTime; // Current position in the actual audio playback
-            const startOffset = this.sliderValueToTimecode(this.startSliderValue, this.audioBuffer.duration); // Start of the trimmed audio
-            const endOffset = this.sliderValueToTimecode(this.endSliderValue, this.audioBuffer.duration); // End of the trimmed audio
-            const trimmedDuration = endOffset - startOffset; // Duration of the trimmed audio
-        
-            // 2. Map Current Position to Trimmed Segment
-            // Ensuring the position loops correctly within the trimmed segment if looping is enabled
-            const relativePosition = (actualCurrentPosition - startOffset) % trimmedDuration;
-            if (relativePosition < 0 || relativePosition > trimmedDuration) {
-                // If outside the trimmed segment, don't draw the playbar
-                return;
-            }
-        
-            // 3. Scale Position to Canvas
-            const canvasWidth = this.playbackCanvas.width;
-            const canvasHeight = this.playbackCanvas.height;
-            const startSliderCanvasPosition = (this.startSliderValue / 100) * canvasWidth; // Canvas position of the start slider
-            const endSliderCanvasPosition = (this.endSliderValue / 100) * canvasWidth; // Canvas position of the end slider
-            const trimmedSegmentCanvasWidth = endSliderCanvasPosition - startSliderCanvasPosition; // Width of the trimmed segment on the canvas
-        
-            // Calculate the xPosition for the playback bar within the trimmed segment on the canvas
-            const xPosition = startSliderCanvasPosition + (relativePosition / trimmedDuration) * trimmedSegmentCanvasWidth;
-        
-            // Clear the previous position and draw the playbar at the new position
-            this.playbackCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-            this.playbackCtx.beginPath();
-            this.playbackCtx.moveTo(xPosition, 0);
-            this.playbackCtx.lineTo(xPosition, canvasHeight);
-            this.playbackCtx.strokeStyle = '#FF0000';
-            this.playbackCtx.lineWidth = 2;
-            this.playbackCtx.stroke();
-        }         
-        
-        
-        
-        animatePlayback() {
-            if (this.isPlaying) {
-                console.log("[animatePlayback] Animation frame requested.");
-                this.updatePlaybackCanvas();
-                this.animationFrameRequest = requestAnimationFrame(() => this.animatePlayback());
-            } else {
-                console.log("[animatePlayback] Animation stopped. 'isPlaying' is false.");
-            }
-        }
-    }             
-
-
-
+    }
+}    
