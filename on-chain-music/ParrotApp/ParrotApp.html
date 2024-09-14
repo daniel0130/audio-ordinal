@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parrot Voice App</title>
+</head>
+<body>
+    <h1>Parrot Voice Repeater</h1>
+    <button id="recordButton">Start Recording</button>
+    <button id="playButton" disabled>Play Parrot Sound</button>
+
+    <!-- <script src="app.js"></script> -->
+     <script>
+        let audioContext;
+let mediaRecorder;
+let audioChunks = [];
+let audioBuffer;
+
+// Set up audio pitch shifting
+function pitchShift(audioBuffer) {
+    const pitchFactor = 1.8; // Adjust to make it sound more like a parrot
+    const playbackRate = pitchFactor;
+
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+
+    // Apply playback rate to pitch the audio
+    source.playbackRate.value = playbackRate;
+
+    // Connect the source to the output (speakers)
+    source.connect(audioContext.destination);
+    return source;
+}
+
+// Handle recording
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks);
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            const arrayBuffer = await fetch(audioUrl).then(res => res.arrayBuffer());
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            document.getElementById('playButton').disabled = false;
+        };
+
+        mediaRecorder.start();
+        document.getElementById('recordButton').textContent = "Stop Recording";
+    });
+}
+
+// Stop recording and process the audio
+function stopRecording() {
+    mediaRecorder.stop();
+    document.getElementById('recordButton').textContent = "Start Recording";
+}
+
+// Play the parrot sound effect
+function playParrotSound() {
+    const source = pitchShift(audioBuffer);
+    source.start();
+}
+
+// Button event listeners
+document.getElementById('recordButton').addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+
+document.getElementById('playButton').addEventListener('click', playParrotSound);
+
+     </script>
+</body>
+</html>
