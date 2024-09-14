@@ -48,27 +48,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pasteButton) {
         pasteButton.addEventListener('click', function() {
             console.log('[copyPasteDebug] pasteButton clicked');
-
+    
             if (!copiedData || copiedData.type !== 'sequence') {
                 alert('No sequence data copied to paste!');
                 return;
             }
-
+    
             const currentSequenceIndex = window.unifiedSequencerSettings.getCurrentSequence();
             console.log(`[copyPasteDebug] Current sequence index: ${currentSequenceIndex}`);
-
-            // Replace the entire sequence settings of the target sequence with the copied data
-            window.unifiedSequencerSettings.setSequenceSettings(currentSequenceIndex, copiedData.sequenceSettings);
-            
-            console.log(`[copyPasteDebug] Sequence settings pasted to sequence index ${currentSequenceIndex}: ${JSON.stringify(copiedData)}`);
+    
+            // Create a new deep copy of the copied data for each paste
+            const newSequenceSettings = JSON.parse(JSON.stringify(copiedData.sequenceSettings));
+    
+            // Paste the deep-copied sequence settings into the current sequence
+            window.unifiedSequencerSettings.setSequenceSettings(currentSequenceIndex, newSequenceSettings);
+    
+            console.log(`[copyPasteDebug] Sequence settings pasted to sequence index ${currentSequenceIndex}: ${JSON.stringify(newSequenceSettings)}`);
             updateUIForSequence(currentSequenceIndex);
             console.log(`[copyPasteDebug] updateUIForSequence called with sequence index: ${currentSequenceIndex}`);
             console.log(`[copyPasteDebug] Current sequence index according to the global object is now: ${window.unifiedSequencerSettings.getCurrentSequence()}`);
-
+    
             this.classList.remove('flashing');
             validateAndUpdateUI(currentSequenceIndex);
         });
     }
+    
 });
 
 function isValidSequence(seq) {
