@@ -125,8 +125,8 @@ function openLoadSampleModal(index, loadSampleButton) {
     // Create inputs
     const inputs = [
         { placeholder: 'Enter ORD ID:', className: 'audional-input', label: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
-        { placeholder: 'Enter IPFS ID:', className: 'ipfs-input', label: 'Or, enter an IPFS ID for an off-chain audio sample:' },
-        { placeholder: 'Enter sOrdinal ID:', className: 'sOrdinal-input', label: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' }
+        { placeholder: 'Enter sOrdinal ID:', className: 'sOrdinal-input', label: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' },
+        { placeholder: 'Enter IPFS ID:', className: 'ipfs-input', label: 'Or, enter an IPFS ID for an off-chain audio sample:' }
     ];
 
     inputs.forEach(({ label, placeholder, className }) => {
