@@ -103,7 +103,7 @@ function openAudionalSequencerInIframe() {
         sequencerIframe.style.width = '100%'; // Set the width to 100% of the container
         
         // Set the height of the iframe as desired (e.g., 600px)
-        sequencerIframe.style.height = '550px';
+        sequencerIframe.style.height = '80vh'; // Set the height to 80% of the viewport height
 
         // Apply CSS scaling to shrink the content of the iframe
         var scaleValue = 0.9; // e.g., shrink to 80% of the original size
@@ -112,7 +112,7 @@ function openAudionalSequencerInIframe() {
 
         // Adjust the width and height of the iframe element to fit the scaled content
         sequencerIframe.style.width = (100 / scaleValue) + '%';
-        sequencerIframe.style.height = (540 / scaleValue) + 'px';
+        sequencerIframe.style.height = (700 / scaleValue) + 'px';
 
         // Add the iframe to the container
         sequencerContainer.appendChild(sequencerIframe);
