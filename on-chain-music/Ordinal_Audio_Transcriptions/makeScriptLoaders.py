@@ -8,21 +8,11 @@ def generate_script_tags(directory):
         # Filter only .js files that start with 'transcription_' and end with '.js'
         js_files = [file for file in files if file.startswith('transcription_') and file.endswith('.js')]
 
-        # Generate the <script> tags with wrapped code for each valid .js file
+        # Generate the <script> tags for each valid .js file
         script_lines = []
         for js_file in js_files:
-            # Create a script tag that wraps the content in the window.transcriptions object
-            script_line = f'''
-<script>
-    fetch('{js_file}')
-    .then(response => response.text())
-    .then(text => {{
-        // Evaluate the file's content, but store the variable in window.transcriptions
-        eval(text.replace(/^const TD/, "window.transcriptions['TD"));
-    }})
-    .catch(error => console.error("Error loading {js_file}: ", error));
-</script>
-            '''
+            # Create a simple <script src="..."> tag
+            script_line = f'<script src="./{js_file}"></script>'
             script_lines.append(script_line)
 
         return script_lines

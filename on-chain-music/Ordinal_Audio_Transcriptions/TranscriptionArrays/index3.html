@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcription Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #searchInput {
+            width: 300px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Transcription Search</h1>
+    <input type="text" id="searchInput" placeholder="Enter a word to search..." />
+    <button id="searchButton">Search</button>
+
+    <div id="results"></div>
+
+    <!-- Script tags for transcription files -->
+    <script src="./transcription_0a0b43916671ba052862f6772a11e80c4286ab13e7d00afc0cbc63833ab1ac40i0.js"></script>
+    <script src="./transcription_0a8d347b79aabeb2804a5dc46ae2fc95bc2355953bb2bdd4bc6d454052ae1dc5i0.js"></script>
+    <script src="./transcription_d4507d263fdcd976a3f93f79553f328e53cb4d4bc7a93cb48f1e8e6f50e70b9ci0.js"></script>
+
+    <script>
+        // Use a global object to store all loaded transcriptions
+        window.transcriptions = {};
+
+        // Debugging log to ensure scripts are loaded
+        console.log('Script loading started.');
+
+        // Function to dynamically load the transcriptions by finding arrays from window
+        function getAllTranscriptions() {
+            console.log('Fetching all transcriptions from window.transcriptions...');
+            const allTranscriptions = [];
+
+            // Loop through all properties of window.transcriptions and add them to the array
+            for (const key in window.transcriptions) {
+                if (window.transcriptions.hasOwnProperty(key)) {
+                    console.log(`Adding transcription: ${key}`);
+                    allTranscriptions.push({ name: key, transcription: window.transcriptions[key] });
+                }
+            }
+
+            console.log(`Total transcriptions found: ${allTranscriptions.length}`);
+            return allTranscriptions;
+        }
+
+        // Function to search through all transcription arrays
+        function searchTranscriptions(query) {
+            console.log(`Search query received: "${query}"`);
+            const results = [];
+            const lowerCaseQuery = query.toLowerCase();
+
+            // Fetch all dynamically loaded transcriptions
+            const allTranscriptions = getAllTranscriptions();
+
+            allTranscriptions.forEach(({ name, transcription }) => {
+                console.log(`Searching in transcription: ${name}`);
+                transcription.forEach(({ word, start_time, end_time }) => {
+                    console.log(`Checking word: "${word}"`);
+                    if (word.toLowerCase().includes(lowerCaseQuery)) {
+                        console.log(`Match found: ${word}`);
+                        results.push({ name, word, start_time, end_time });
+                    }
+                });
+            });
+
+            console.log(`Total matches found: ${results.length}`);
+            return results;
+        }
+
+        // Function to display results
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
+
+            if (results.length === 0) {
+                resultsDiv.textContent = 'No results found';
+                console.log('No results found.');
+                return;
+            }
+
+            results.forEach(({ name, word, start_time, end_time }) => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('result-item');
+                resultItem.innerHTML = `Word: <strong>${word}</strong>, Start time: ${start_time}s, End time: ${end_time}s, Array: ${name}`;
+                resultsDiv.appendChild(resultItem);
+                console.log(`Displayed result: ${word}`);
+            });
+        }
+
+        // Add event listener to the search button
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim() === '') {
+                alert('Please enter a word to search');
+                console.log('Search query is empty.');
+                return;
+            }
+
+            const results = searchTranscriptions(query);
+            displayResults(results);
+        });
+
+        // Debugging log after scripts are loaded
+        window.onload = () => {
+            console.log('All scripts loaded, and page is ready.');
+        };
+    </script>
+</body>
+</html>
