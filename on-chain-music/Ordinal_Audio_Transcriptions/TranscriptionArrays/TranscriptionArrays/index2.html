@@ -27,7 +27,7 @@
     </style>
 </head>
 <body>
-    <h1>Transcription Search</h1>
+    <h1>Ordinal Audio Search Engine</h1>
     <input type="text" id="searchInput" placeholder="Enter a word to search..." />
     <button id="searchButton">Search</button>
 
@@ -1619,36 +1619,52 @@
 
             return results;
         }
+    // Function to display results
+    function displayResults(results) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = ''; // Clear previous results
 
-        // Function to display results
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = ''; // Clear previous results
-
-            if (results.length === 0) {
-                resultsDiv.textContent = 'No results found';
-                return;
-            }
-
-            results.forEach(({ name, word, start_time, end_time }) => {
-                const resultItem = document.createElement('div');
-                resultItem.classList.add('result-item');
-                resultItem.innerHTML = `Word: <strong>${word}</strong>, Start time: ${start_time}s, End time: ${end_time}s, Array: ${name}`;
-                resultsDiv.appendChild(resultItem);
-            });
+        if (results.length === 0) {
+            resultsDiv.textContent = 'No results found';
+            return;
         }
 
-        // Add event listener to the search button
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const query = document.getElementById('searchInput').value;
-            if (query.trim() === '') {
-                alert('Please enter a word to search');
-                return;
-            }
+        results.forEach(({ name, word, start_time, end_time }) => {
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
 
-            const results = searchTranscriptions(query);
-            displayResults(results);
+            // Remove 'TD' prefix to get the ID for the link
+            const id = name.replace('TD', '');
+            
+            // Start time adjusted to be 1 second earlier, but not less than 0
+            const adjusted_start_time = Math.max(0, start_time - 1);
+            const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time}`;
+
+            // Create the clickable link for the ID
+            resultItem.innerHTML = `
+                Word: <strong>${word}</strong>, 
+                Start time: ${start_time}s, 
+                End time: ${end_time}s, 
+                Array: <a href="${url}" target="_blank">${name}</a>
+            `;
+            
+            resultsDiv.appendChild(resultItem);
         });
+    }
+
+    // Add event listener to the search button
+    document.getElementById('searchButton').addEventListener('click', () => {
+        const query = document.getElementById('searchInput').value;
+        if (query.trim() === '') {
+            alert('Please enter a word to search');
+            return;
+        }
+
+        const results = searchTranscriptions(query);
+        displayResults(results);
+    });
+
+
     </script>
 </body>
 </html>
