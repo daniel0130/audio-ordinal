@@ -1,7 +1,6 @@
 import whisperx
 import requests
 import tempfile
-import pandas as pd
 import os
 import time
 import threading
@@ -53,9 +52,8 @@ def detect_leading_silence(temp_audio_file_path):
         return silence_duration[0][0] / 1000
     return 0
 
-def process_audio(ordinal_id, temp_audio_file_path):
+def process_audio(ordinal_id, temp_audio_file_path, model):
     try:
-        model = whisperx.load_model("large-v2", device="cpu", compute_type="int8")
         audio = whisperx.load_audio(temp_audio_file_path)
         leading_silence = detect_leading_silence(temp_audio_file_path)
         print(f"Detected leading silence of {leading_silence} seconds for {ordinal_id}.")
@@ -83,17 +81,12 @@ def process_audio(ordinal_id, temp_audio_file_path):
         print(f"An error occurred while processing {ordinal_id}: {e}")
         return []
 
-def save_transcription_as_csv(words, ordinal_id):
-    transcription_df = pd.DataFrame(words, columns=["word", "start_time", "end_time"])
-    transcription_df.to_csv(f"transcription_{ordinal_id}.csv", index=False)
-    return transcription_df
-
-def save_transcription_as_js_module(dataframe, ordinal_id):
+def save_transcription_as_js_module(words, ordinal_id):
     constant_name = f"TD{ordinal_id}"
     js_content = f"const {constant_name} = [\n"
     js_content += ''.join(
-        f"  {{ word: '{escape_js_string(row['word'])}', start_time: {row['start_time']}, end_time: {row['end_time']} }},\n"
-        for _, row in dataframe.iterrows()
+        f"  {{ word: '{escape_js_string(word_dict['word'])}', start_time: {word_dict['start_time']}, end_time: {word_dict['end_time']} }},\n"
+        for word_dict in words
     )
     js_content += "];\n"
     with open(f"transcription_{ordinal_id}.js", 'w') as js_file:
@@ -102,27 +95,29 @@ def save_transcription_as_js_module(dataframe, ordinal_id):
 def escape_js_string(s):
     return s.replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
 
-def transcribe_words(ordinal_id):
+def transcribe_words(ordinal_id, model):
     progress_logger.current_task = f"Fetching and processing audio for {ordinal_id}"
     temp_audio_file_path = fetch_audio(ordinal_id)
 
     if temp_audio_file_path:
-        words = process_audio(ordinal_id, temp_audio_file_path)
+        words = process_audio(ordinal_id, temp_audio_file_path, model)
         if words:
-            transcription_df = save_transcription_as_csv(words, ordinal_id)
-            save_transcription_as_js_module(transcription_df, ordinal_id)
-            print(transcription_df)
+            save_transcription_as_js_module(words, ordinal_id)
+            print(words)
         os.remove(temp_audio_file_path)
         print(f"Deleted temporary audio file: {temp_audio_file_path}")
 
-def process_ordinal_ids(ordinal_ids):
+def process_ordinal_ids(ordinal_ids, model):
     progress_logger.start()
     try:
         for ordinal_id in ordinal_ids:
             print(f"Processing ordinal ID: {ordinal_id}")
-            transcribe_words(ordinal_id)
+            transcribe_words(ordinal_id, model)
     finally:
         progress_logger.stop()  # Stop logging when finished
+
+# Load the WhisperX model once
+model = whisperx.load_model("large-v2", device="cpu", compute_type="int8")
 
 # Example usage with a list of ordinal IDs
 ordinal_ids = [
@@ -131,4 +126,4 @@ ordinal_ids = [
     "53e12bab6fb5d5f2c83f3e0d2b70e6ac35e34480045662b30d4b1f46405b4e89i0"
 ]
 
-process_ordinal_ids(ordinal_ids)
+process_ordinal_ids(ordinal_ids, model)
