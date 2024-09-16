@@ -1766,6 +1766,7 @@
                 const resultItem = document.createElement('div');
                 resultItem.classList.add('result-item');
 
+                // Remove 'TD' from both the link URL and the visible link text
                 const id = name.replace('TD', '');
 
                 let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);
@@ -1851,9 +1852,10 @@
                     });
                 });
 
+                // Update the link text to show only the ID, without the 'TD'
                 const link = document.createElement('a');
                 link.href = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
-                link.textContent = name;
+                link.textContent = id; // Show only the ID (with 'TD' removed)
                 link.classList.add('link');
                 link.target = "_blank";
 
