@@ -7,20 +7,20 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 2vh;
-            font-size: 2rem; /* Increase base font size */
+            margin: 1vh;
+            font-size: 0.75rem; /* Increase base font size */
         }
     
         #searchInput {
-            width: 15vw; /* Adjust the width of the search bar */
-            padding: 0.6rem; /* Adjust padding */
-            margin-bottom: 1.5vh;
-            font-size: 1.5rem; /* Adjust font size */
+            width: 7vw; /* Adjust the width of the search bar */
+            padding: 1rem; /* Adjust padding */
+            margin-bottom: 1vh;
+            font-size: 0.75rem; /* Adjust font size */
         }
 
         .search-button {
-            padding: 0.6rem 1.2rem; /* Adjust padding */
-            font-size: 2rem; /* Adjust font size */
+            padding: 1rem 1.2rem; /* Adjust padding */
+            font-size: 0.75rem; /* Adjust font size */
         }
     
         #results {
@@ -38,9 +38,9 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            padding: 1vh; /* Adjust padding */
+            padding: 0.5vh; /* Adjust padding */
             border-bottom: 0.1vh solid #ddd;
-            gap: 1vw; /* Adjust gap */
+            gap: 0.5vw; /* Adjust gap */
             width: 100%;
         }
     
@@ -48,17 +48,17 @@
             display: flex;
             align-items: center;
             gap: 0.5vw; /* Adjust gap */
-            width: 12vw; /* Adjust width */
-            font-size: 1.5rem; /* Adjust font size */
+            width: 6vw; /* Adjust width */
+            font-size: 0.75rem; /* Adjust font size */
         }
     
         .time-input {
-            width: 5vw; /* Adjust width */
-            height: 2.5vh; /* Adjust height */
-            padding: 0.3rem; /* Adjust padding */
+            width: 2.5vw; /* Adjust width */
+            height: 2vh; /* Adjust height */
+            padding: 0.15rem; /* Adjust padding */
             box-sizing: border-box;
             flex-shrink: 0;
-            font-size: 1.5rem; /* Adjust font size */
+            font-size: 0.75rem; /* Adjust font size */
         }
      
         .link {
@@ -66,18 +66,18 @@
             text-decoration: none;
             color: blue;
             flex-shrink: 0;
-            font-size: 1.5rem; /* Adjust font size */
+            font-size: 0.75rem; /* Adjust font size */
         }
     
         .controls label {
             font-weight: bold;
-            font-size: 1.5rem; /* Adjust label font size */
+            font-size: 0.75rem; /* Adjust label font size */
         }
 
         .controls {
             display: none; /* Initially hide Play All and Pause */
-            width: 30vw; /* Adjust width */
-            margin-left: 20vw; /* Adjust margin */
+            width: 15vw; /* Adjust width */
+            margin-left: 10vw; /* Adjust margin */
             margin-bottom: 0.5vh; 
             align-items: center;
             justify-content: center; /* Center the controls horizontally */
@@ -85,12 +85,7 @@
 
      
 
-        .play-all-container {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding-left: 8vw; /* Adjust padding to align with play buttons */
-        }
+     
 
         .play-button {
             cursor: pointer;
@@ -98,22 +93,27 @@
             border: none;
             padding: 0.3rem 0.6rem;
             flex-shrink: 0;
-            font-size: 1.5rem;
+            font-size: 0.75rem;
         }
 
         .play-button.active {
             background-color: rgb(255, 255, 0);
         }
 
+        .play-all-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
         .play-all-button {
             background-color: rgb(255, 170, 0);
             border: none;
-            padding: 0.4rem 0.8rem;
+            padding: 0.2rem 0.4rem;
             cursor: pointer;
-            font-size: 1.5rem;
-            margin-right: 2vw;
-            min-width: 8rem; /* Ensure button keeps the same width */
-            min-height: 3rem; /* Ensure button keeps the same height */
+            font-size: 0.75rem;
+            min-width: 4rem; /* Ensure button keeps the same width */
+            min-height: 1.5rem; /* Ensure button keeps the same height */
             text-align: center;
         }
 
@@ -121,8 +121,8 @@
             background-color: rgb(255, 255, 0); /* Change to yellow when active */
             border: none;
             cursor: pointer;
-            min-width: 8rem; /* Maintain same width when active */
-            min-height: 3rem; /* Maintain same height when active */
+            min-width: 4rem; /* Maintain same width when active */
+            min-height: 1.5rem; /* Maintain same height when active */
             text-align: center;
         }
 
