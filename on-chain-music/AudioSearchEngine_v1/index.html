@@ -21,14 +21,45 @@
         }
 
         .result-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
             padding: 10px;
             border-bottom: 1px solid #ddd;
+            gap: 10px;
+            width: 100%;  /* Ensure full width */
         }
 
+        /* Align the word, start time, and end time in a single line */
+        .result-text {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 10%; /* Adjust as needed to fit content */
+        }
+
+        .time-input {
+            width: 2%; /* Increase width to fit both numbers and arrows */
+            height: 2%;
+            padding: 5px; /* Add some padding for better spacing */
+            box-sizing: border-box; /* Ensure padding doesn't exceed the defined width */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+
         .play-button {
-            margin-left: 10px;
             cursor: pointer;
             background-color: rgb(255, 170, 0);
+            border: none;
+            padding: 5px 10px;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .link {
+            margin-left: 10px;
+            text-decoration: none;
+            color: blue;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
     </style>
@@ -39,6 +70,8 @@
     <button id="searchButton">Search</button>
 
     <div id="results"></div>
+
+    
 <scriptsToLoad>
     <script src="./TranscriptionArrays/transcription_a7eb2f92b225350e7cbc7d7b6c5f9e8e18fc925fc6ec232548eb748a6027bd99i0.js"></script>
     <script src="./TranscriptionArrays/transcription_d60205433a5839d38a74d84fa62f92d4967b83d6d221afa9ca69cd729603c21ei0.js"></script>
@@ -1628,84 +1661,101 @@
             return results;
         }
 
-        // Function to display results
-function displayResults(results) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = ''; // Clear previous results
+      // Function to display results
+     
+      function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
 
-    if (results.length === 0) {
-        resultsDiv.textContent = 'No results found';
-        return;
-    }
+            if (results.length === 0) {
+                resultsDiv.textContent = 'No results found';
+                return;
+            }
 
-    results.forEach(({ name, word, start_time, end_time }, index) => {
-        const resultItem = document.createElement('div');
-        resultItem.classList.add('result-item');
+            results.forEach(({ name, word, start_time, end_time }, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('result-item');
 
-        // Remove 'TD' prefix to get the ID for the link
-        const id = name.replace('TD', '');
+                // Remove 'TD' prefix to get the ID for the link
+                const id = name.replace('TD', '');
 
-        // Start time adjusted to be slightly earlier, but not less than 0
-        const adjustedStartTime = Math.max(0, start_time - 0.1);
-        const adjustedEndTime = end_time - 0.1;
+                // Start and end time adjusted initially by 0.1 seconds
+                let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);  // Format to 2 decimal places
+                let adjustedEndTime = (end_time + 0.1).toFixed(2);  // Format to 2 decimal places
 
-        // Check for the specific ID to log additional information with precise timecodes
-        if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
-            console.log(`[${performance.now().toFixed(3)}ms] Processing word '${word}' for ID: ${id}`);
-            console.log(`[${performance.now().toFixed(3)}ms] Start time: ${start_time}s, Adjusted start time: ${adjustedStartTime}s, End time: ${end_time}s, Adjusted end time: ${adjustedEndTime}s`);
+                // Text information (inline: word, start time, end time)
+                const resultText = document.createElement('div');
+                resultText.classList.add('result-text');
+                resultText.innerHTML = `
+                    <strong>${word}:</strong> Start: ${start_time.toFixed(2)}s, End: ${end_time.toFixed(2)}s
+                `;
+
+                // Create input fields for start and end time adjustment
+                const startTimeInput = document.createElement('input');
+                startTimeInput.type = 'number';
+                startTimeInput.step = '0.01';  // Increment by 0.01 seconds
+                startTimeInput.value = adjustedStartTime;
+                startTimeInput.classList.add('time-input');
+
+                const endTimeInput = document.createElement('input');
+                endTimeInput.type = 'number';
+                endTimeInput.step = '0.01';  // Increment by 0.01 seconds
+                endTimeInput.value = adjustedEndTime;
+                endTimeInput.classList.add('time-input');
+
+                // Update the adjusted start and end times when the user changes the inputs
+                startTimeInput.addEventListener('input', () => {
+                    adjustedStartTime = parseFloat(startTimeInput.value).toFixed(2);
+                });
+
+                endTimeInput.addEventListener('input', () => {
+                    adjustedEndTime = parseFloat(endTimeInput.value).toFixed(2);
+                });
+
+                // Create play button
+                const playButton = document.createElement('button');
+                playButton.textContent = 'Play';
+                playButton.classList.add('play-button');
+
+                // Play the audio when the button is clicked
+                playButton.addEventListener('click', () => {
+                    // Create a new audio element for each play to avoid overlap
+                    const audio = new Audio(`https://ordinals.com/content/${id}`);
+
+                    // Ensure the audio plays from the adjusted start time
+                    audio.addEventListener('loadedmetadata', () => {
+                        audio.currentTime = parseFloat(adjustedStartTime);  // Parse to float for precision
+                        audio.play();
+
+                        // Listen for time updates during playback to pause at the correct time
+                        audio.addEventListener('timeupdate', () => {
+                            if (audio.currentTime >= parseFloat(adjustedEndTime)) {  // Parse to float for precision
+                                audio.pause();
+                                audio.currentTime = 0; // Reset after pausing
+                            }
+                        });
+                    });
+                });
+
+                // Create the clickable link for the ID
+                const link = document.createElement('a');
+                link.href = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
+                link.textContent = name;
+                link.classList.add('link');
+                link.target = "_blank";
+
+                // Append all elements to result item
+                resultItem.appendChild(resultText);      // Word, Start, End in one line
+                resultItem.appendChild(startTimeInput);  // Adjusted Start Time input
+                resultItem.appendChild(endTimeInput);    // Adjusted End Time input
+                resultItem.appendChild(playButton);      // Play button
+                resultItem.appendChild(link);            // Link at the far right
+
+                resultsDiv.appendChild(resultItem);      // Add the result item to the results div
+            });
         }
 
-        // Build the URL with both start and end time parameters
-        const url = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
 
-        // Create the clickable link for the ID
-        resultItem.innerHTML = `
-            Word: <strong>${word}</strong>, 
-            Start time: ${start_time}s, 
-            End time: ${end_time}s, 
-            Array: <a href="${url}" target="_blank">${name}</a>
-        `;
-
-        // Create play button
-        const playButton = document.createElement('button');
-        playButton.textContent = 'Play';
-        playButton.classList.add('play-button');
-
-        // Play the audio when the button is clicked
-        playButton.addEventListener('click', () => {
-            // Create a new audio element for each play to avoid overlap
-            const audio = new Audio(`https://ordinals.com/content/${id}`);
-
-            // Ensure the audio plays from the adjusted start time
-            audio.addEventListener('loadedmetadata', () => {
-                audio.currentTime = adjustedStartTime;
-                audio.play();
-
-                // Log the play event for the specific ID with timecode
-                if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
-                    console.log(`[${performance.now().toFixed(3)}ms] Playing word '${word}' from adjusted start time: ${adjustedStartTime}s, duration: ${(adjustedEndTime - adjustedStartTime)}s`);
-                }
-
-                // Listen for time updates during playback to pause at the correct time
-                audio.addEventListener('timeupdate', () => {
-                    if (audio.currentTime >= adjustedEndTime) {
-                        audio.pause();
-                        audio.currentTime = 0; // Reset after pausing
-
-                        // Log when the playback stops with timecode
-                        if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
-                            console.log(`[${performance.now().toFixed(3)}ms] Stopped playing word '${word}' at adjusted end time: ${adjustedEndTime}s`);
-                        }
-                    }
-                });
-            });
-        });
-
-        // Append play button to result item
-        resultItem.appendChild(playButton);
-        resultsDiv.appendChild(resultItem);
-    });
-}
 
 
         // Add event listener to the search button
