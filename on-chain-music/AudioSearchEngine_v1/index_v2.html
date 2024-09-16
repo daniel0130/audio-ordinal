@@ -38,7 +38,7 @@
     <button id="searchButton">Search</button>
 
     <div id="results"></div>
-
+<scriptsToLoad>
     <script src="./TranscriptionArrays/transcription_a7eb2f92b225350e7cbc7d7b6c5f9e8e18fc925fc6ec232548eb748a6027bd99i0.js"></script>
     <script src="./TranscriptionArrays/transcription_d60205433a5839d38a74d84fa62f92d4967b83d6d221afa9ca69cd729603c21ei0.js"></script>
     <script src="./TranscriptionArrays/transcription_d61e54bca31423877944c63df4f09ca83410e709ccdbaa0427241cfe25bc77e7i0.js"></script>
@@ -820,7 +820,8 @@
     <script src="./TranscriptionArrays/transcription_34a61ab318caa86d2a5f663526bf3b92f1f2b921545d768a5b52ce33c8bbe196i0.js"></script>
     <script src="./TranscriptionArrays/transcription_e002d4f9b70bf477587363a48e23505d26e9d46739cfb0130b159614cf92104ci0.js"></script>
     <script src="./TranscriptionArrays/transcription_d4507d263fdcd976a3f93f79553f328e53cb4d4bc7a93cb48f1e8e6f50e70b9ci0.js"></script>
-    
+</scriptsToLoad>
+
 
     <script>
 
@@ -1615,7 +1616,8 @@
 ];
 
 
-            allTranscriptions.forEach(({ name, transcription }) => {
+         
+allTranscriptions.forEach(({ name, transcription }) => {
                 transcription.forEach(({ word, start_time, end_time }) => {
                     if (word.toLowerCase().includes(lowerCaseQuery)) {
                         results.push({ name, word, start_time, end_time });
@@ -1625,66 +1627,78 @@
 
             return results;
         }
-   // Function to display results
-// Function to display results
-function displayResults(results) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = ''; // Clear previous results
 
-    if (results.length === 0) {
-        resultsDiv.textContent = 'No results found';
-        return;
-    }
+        // Function to preload and buffer audio for all results
+        function preloadAudioForResults(results) {
+            const audioMap = new Map(); // To store preloaded audio elements
 
-    results.forEach(({ name, word, start_time, end_time }) => {
-        const resultItem = document.createElement('div');
-        resultItem.classList.add('result-item');
+            results.forEach(({ name }) => {
+                const id = name.replace('TD', '');
+                const audio = new Audio(`https://ordinals.com/content/${id}`);
+                audio.preload = 'auto'; // Ensure the audio is preloaded and buffered
+                audioMap.set(id, audio); // Store the preloaded audio
+            });
 
-        // Remove 'TD' prefix to get the ID for the link
-        const id = name.replace('TD', '');
-        
-        // Start time adjusted to be slightly earlier, but not less than 0
-        const adjusted_start_time = Math.max(0, start_time - 0.1);
+            return audioMap;
+        }
 
-        // Build the URL with both start and end time parameters
-        const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time},${end_time}`;
+        // Function to display results
+        function displayResults(results, audioMap) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
 
-        // Create the clickable link for the ID
-        resultItem.innerHTML = `
-            Word: <strong>${word}</strong>, 
-            Start time: ${start_time}s, 
-            End time: ${end_time}s, 
-            Array: <a href="${url}" target="_blank">${name}</a>
-        `;
-        
-        // Create play button
-        const playButton = document.createElement('button');
-        playButton.textContent = 'Play';
-        playButton.classList.add('play-button');
+            if (results.length === 0) {
+                resultsDiv.textContent = 'No results found';
+                return;
+            }
 
-        // Create an audio element for playing the specific segment
-        const audio = new Audio(`https://ordinals.com/content/${id}`);
+            results.forEach(({ name, word, start_time, end_time }) => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('result-item');
 
-        // Play the audio when the button is clicked
-        playButton.addEventListener('click', () => {
-            // Ensure the audio plays from the adjusted start time
-            audio.currentTime = adjusted_start_time;
-            audio.play();
+                // Remove 'TD' prefix to get the ID for the link
+                const id = name.replace('TD', '');
+                
+                // Start time adjusted to be slightly earlier, but not less than 0
+                const adjusted_start_time = Math.max(0, start_time - 0.1);
 
-            // Stop the audio when it reaches the end time
-            const duration = (end_time - adjusted_start_time) * 1000; // Convert to milliseconds
-            setTimeout(() => {
-                audio.pause();
-                audio.currentTime = 0; // Reset the audio after playback
-            }, duration);
-        });
+                // Build the URL with both start and end time parameters
+                const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time},${end_time}`;
 
-        // Append play button to result item
-        resultItem.appendChild(playButton);
-        resultsDiv.appendChild(resultItem);
-    });
-}
+                // Create the clickable link for the ID
+                resultItem.innerHTML = `
+                    Word: <strong>${word}</strong>, 
+                    Start time: ${start_time}s, 
+                    End time: ${end_time}s, 
+                    Array: <a href="${url}" target="_blank">${name}</a>
+                `;
+                
+                // Create play button
+                const playButton = document.createElement('button');
+                playButton.textContent = 'Play';
+                playButton.classList.add('play-button');
 
+                // Get the preloaded audio element from the map
+                const audio = audioMap.get(id);
+
+                // Play the audio when the button is clicked
+                playButton.addEventListener('click', () => {
+                    audio.currentTime = adjusted_start_time;
+                    audio.play();
+
+                    // Stop the audio when it reaches the end time
+                    const duration = (end_time - adjusted_start_time) * 1000; // Convert to milliseconds
+                    setTimeout(() => {
+                        audio.pause();
+                        audio.currentTime = 0; // Reset the audio after playback
+                    }, duration);
+                });
+
+                // Append play button to result item
+                resultItem.appendChild(playButton);
+                resultsDiv.appendChild(resultItem);
+            });
+        }
 
         // Add event listener to the search button
         document.getElementById('searchButton').addEventListener('click', () => {
@@ -1695,7 +1709,8 @@ function displayResults(results) {
             }
 
             const results = searchTranscriptions(query);
-            displayResults(results);
+            const audioMap = preloadAudioForResults(results); // Preload audio for results
+            displayResults(results, audioMap); // Display results with preloaded audio
         });
 
         // Add event listener for 'Enter' key press in the search input field
@@ -1708,7 +1723,8 @@ function displayResults(results) {
                 }
 
                 const results = searchTranscriptions(query);
-                displayResults(results);
+                const audioMap = preloadAudioForResults(results); // Preload audio for results
+                displayResults(results, audioMap); // Display results with preloaded audio
             }
         });
 
