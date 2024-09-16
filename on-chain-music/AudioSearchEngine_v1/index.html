@@ -1627,8 +1627,8 @@
 
             return results;
         }
-   // Function to display results
-// Function to display results
+
+        // Function to display results
 function displayResults(results) {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = ''; // Clear previous results
@@ -1638,18 +1638,25 @@ function displayResults(results) {
         return;
     }
 
-    results.forEach(({ name, word, start_time, end_time }) => {
+    results.forEach(({ name, word, start_time, end_time }, index) => {
         const resultItem = document.createElement('div');
         resultItem.classList.add('result-item');
 
         // Remove 'TD' prefix to get the ID for the link
         const id = name.replace('TD', '');
-        
+
         // Start time adjusted to be slightly earlier, but not less than 0
-        const adjusted_start_time = Math.max(0, start_time - 0.1);
+        const adjustedStartTime = Math.max(0, start_time - 0.1);
+        const adjustedEndTime = end_time - 0.1;
+
+        // Check for the specific ID to log additional information with precise timecodes
+        if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
+            console.log(`[${performance.now().toFixed(3)}ms] Processing word '${word}' for ID: ${id}`);
+            console.log(`[${performance.now().toFixed(3)}ms] Start time: ${start_time}s, Adjusted start time: ${adjustedStartTime}s, End time: ${end_time}s, Adjusted end time: ${adjustedEndTime}s`);
+        }
 
         // Build the URL with both start and end time parameters
-        const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time},${end_time}`;
+        const url = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
 
         // Create the clickable link for the ID
         resultItem.innerHTML = `
@@ -1658,27 +1665,40 @@ function displayResults(results) {
             End time: ${end_time}s, 
             Array: <a href="${url}" target="_blank">${name}</a>
         `;
-        
+
         // Create play button
         const playButton = document.createElement('button');
         playButton.textContent = 'Play';
         playButton.classList.add('play-button');
 
-        // Create an audio element for playing the specific segment
-        const audio = new Audio(`https://ordinals.com/content/${id}`);
-
         // Play the audio when the button is clicked
         playButton.addEventListener('click', () => {
-            // Ensure the audio plays from the adjusted start time
-            audio.currentTime = adjusted_start_time;
-            audio.play();
+            // Create a new audio element for each play to avoid overlap
+            const audio = new Audio(`https://ordinals.com/content/${id}`);
 
-            // Stop the audio when it reaches the end time
-            const duration = (end_time - adjusted_start_time) * 1000; // Convert to milliseconds
-            setTimeout(() => {
-                audio.pause();
-                audio.currentTime = 0; // Reset the audio after playback
-            }, duration);
+            // Ensure the audio plays from the adjusted start time
+            audio.addEventListener('loadedmetadata', () => {
+                audio.currentTime = adjustedStartTime;
+                audio.play();
+
+                // Log the play event for the specific ID with timecode
+                if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
+                    console.log(`[${performance.now().toFixed(3)}ms] Playing word '${word}' from adjusted start time: ${adjustedStartTime}s, duration: ${(adjustedEndTime - adjustedStartTime)}s`);
+                }
+
+                // Listen for time updates during playback to pause at the correct time
+                audio.addEventListener('timeupdate', () => {
+                    if (audio.currentTime >= adjustedEndTime) {
+                        audio.pause();
+                        audio.currentTime = 0; // Reset after pausing
+
+                        // Log when the playback stops with timecode
+                        if (id === '21e74712ee1e549c4f8d0931d9d76f45a519b0ca0f641b4fd979624af85274e7i0') {
+                            console.log(`[${performance.now().toFixed(3)}ms] Stopped playing word '${word}' at adjusted end time: ${adjustedEndTime}s`);
+                        }
+                    }
+                });
+            });
         });
 
         // Append play button to result item
