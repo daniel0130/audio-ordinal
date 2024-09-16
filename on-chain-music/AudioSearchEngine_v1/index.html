@@ -7,69 +7,134 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 2vh;
+            font-size: 2rem; /* Increase base font size */
         }
-
+    
         #searchInput {
-            width: 300px;
-            padding: 10px;
-            margin-bottom: 20px;
+            width: 15vw; /* Adjust the width of the search bar */
+            padding: 0.6rem; /* Adjust padding */
+            margin-bottom: 1.5vh;
+            font-size: 1.5rem; /* Adjust font size */
         }
 
+        .search-button {
+            padding: 0.6rem 1.2rem; /* Adjust padding */
+            font-size: 2rem; /* Adjust font size */
+        }
+    
         #results {
-            margin-top: 20px;
+            margin-top: 0.5vh;
         }
 
+  
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+        }
+    
         .result-item {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            gap: 10px;
-            width: 100%;  /* Ensure full width */
+            padding: 1vh; /* Adjust padding */
+            border-bottom: 0.1vh solid #ddd;
+            gap: 1vw; /* Adjust gap */
+            width: 100%;
         }
-
-        /* Align the word, start time, and end time in a single line */
+    
         .result-text {
             display: flex;
             align-items: center;
-            gap: 5px;
-            width: 10%; /* Adjust as needed to fit content */
+            gap: 0.5vw; /* Adjust gap */
+            width: 12vw; /* Adjust width */
+            font-size: 1.5rem; /* Adjust font size */
         }
-
+    
         .time-input {
-            width: 3%; /* Increase width to fit both numbers and arrows */
-            height: 2%;
-            padding: 5px; /* Add some padding for better spacing */
-            box-sizing: border-box; /* Ensure padding doesn't exceed the defined width */
-            flex-shrink: 0; /* Prevent shrinking */
+            width: 5vw; /* Adjust width */
+            height: 2.5vh; /* Adjust height */
+            padding: 0.3rem; /* Adjust padding */
+            box-sizing: border-box;
+            flex-shrink: 0;
+            font-size: 1.5rem; /* Adjust font size */
         }
-
-
+    
         .play-button {
             cursor: pointer;
             background-color: rgb(255, 170, 0);
             border: none;
-            padding: 5px 10px;
-            flex-shrink: 0; /* Prevent shrinking */
+            padding: 0.3rem 0.6rem; /* Adjust padding */
+            flex-shrink: 0;
+            font-size: 1.5rem; /* Adjust font size */
         }
-
+    
         .link {
-            margin-left: 10px;
+            margin-left: 1vw; /* Adjust margin */
             text-decoration: none;
             color: blue;
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
+            font-size: 1.5rem; /* Adjust font size */
         }
+    
+        .controls label {
+            font-weight: bold;
+            font-size: 1.5rem; /* Adjust label font size */
+        }
+
+        .controls {
+            display: none; /* Initially hide Play All and Pause */
+            width: 30vw; /* Adjust width */
+            margin-left: 20vw; /* Adjust margin */
+            margin-bottom: 0.5vh; 
+            align-items: center;
+            justify-content: center; /* Center the controls horizontally */
+        }
+
+     
+
+        .play-all-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 8vw; /* Adjust padding to align with play buttons */
+        }
+
+        .play-all-button {
+            background-color: rgb(255, 170, 0);
+            border: none;
+            padding: 0.4rem 0.8rem; /* Adjust padding */
+            cursor: pointer;
+            font-size: 1.5rem;
+            margin-right: 2vw; /* Add margin to create space between the button and the label */
+        }
+
 
     </style>
 </head>
 <body>
     <h1>Ordinal Audio Search Engine</h1>
     <input type="text" id="searchInput" placeholder="Enter a word to search..." />
-    <button id="searchButton">Search</button>
+    <button class="search-button" id="searchButton">Search</button>
 
-    <div id="results"></div>
+    <!-- The Play All button and Pause Input will be hidden initially -->
+   <!-- The Play All button and Pause Input will be hidden initially -->
+        <!-- HTML structure -->
+        <div id="results-container" class="results-container">
+            <div class="controls" id="controls" style="display: none;">
+                <div class="play-all-container">
+                    <button class="play-all-button" id="playAllButton">Play All</button>
+                </div>
+                <label for="pauseInput">Pause between samples (in seconds):</label>
+                <input type="number" id="pauseInput" step="0.01" value="0.1" class="time-input" />
+            </div>
+            <div id="results"></div>
+        </div>
+
+
+        <!-- Results will be injected here -->
+        <div id="results"></div>
 
     
 <scriptsToLoad>
@@ -858,6 +923,10 @@
 
 
     <script>
+        let isPlayingAll = false;  // Track whether "Play All" is in progress
+        let stopPlayingAll = false;  // Flag to stop playback
+        let activeAudio = null; // Store the currently playing audio element for individual play/stop control
+
 
         // Function to search through all transcription arrays
         function searchTranscriptions(query) {
@@ -1672,38 +1741,36 @@
                 return;
             }
 
+            // Show controls (Play All button and Pause input) when results are displayed
+            document.getElementById('controls').style.display = 'flex';
+
             results.forEach(({ name, word, start_time, end_time }, index) => {
                 const resultItem = document.createElement('div');
                 resultItem.classList.add('result-item');
 
-                // Remove 'TD' prefix to get the ID for the link
                 const id = name.replace('TD', '');
 
-                // Start and end time adjusted initially by 0.1 / 0.0 seconds
-                let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);  // Format to 2 decimal places
-                let adjustedEndTime = (end_time + 0.0).toFixed(2);  // Format to 2 decimal places
+                let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);
+                let adjustedEndTime = (end_time + 0.0).toFixed(2);
 
-                // Text information (inline: word, start time, end time)
+                // Text information (word, start time, end time)
                 const resultText = document.createElement('div');
                 resultText.classList.add('result-text');
-                resultText.innerHTML = `
-                    <strong>${word}:</strong> Start: ${start_time.toFixed(2)}s, End: ${end_time.toFixed(2)}s
-                `;
+                resultText.innerHTML = `<strong>${word}:</strong> Start: ${start_time.toFixed(2)}s, End: ${end_time.toFixed(2)}s`;
 
                 // Create input fields for start and end time adjustment
                 const startTimeInput = document.createElement('input');
                 startTimeInput.type = 'number';
-                startTimeInput.step = '0.01';  // Increment by 0.01 seconds
+                startTimeInput.step = '0.01';
                 startTimeInput.value = adjustedStartTime;
                 startTimeInput.classList.add('time-input');
 
                 const endTimeInput = document.createElement('input');
                 endTimeInput.type = 'number';
-                endTimeInput.step = '0.01';  // Increment by 0.01 seconds
+                endTimeInput.step = '0.01';
                 endTimeInput.value = adjustedEndTime;
                 endTimeInput.classList.add('time-input');
 
-                // Update the adjusted start and end times when the user changes the inputs
                 startTimeInput.addEventListener('input', () => {
                     adjustedStartTime = parseFloat(startTimeInput.value).toFixed(2);
                 });
@@ -1712,49 +1779,97 @@
                     adjustedEndTime = parseFloat(endTimeInput.value).toFixed(2);
                 });
 
-                // Create play button
                 const playButton = document.createElement('button');
                 playButton.textContent = 'Play';
                 playButton.classList.add('play-button');
 
-                // Play the audio when the button is clicked
                 playButton.addEventListener('click', () => {
-                    // Create a new audio element for each play to avoid overlap
                     const audio = new Audio(`https://ordinals.com/content/${id}`);
-
-                    // Ensure the audio plays from the adjusted start time
                     audio.addEventListener('loadedmetadata', () => {
-                        audio.currentTime = parseFloat(adjustedStartTime);  // Parse to float for precision
+                        audio.currentTime = parseFloat(adjustedStartTime);
                         audio.play();
-
-                        // Listen for time updates during playback to pause at the correct time
                         audio.addEventListener('timeupdate', () => {
-                            if (audio.currentTime >= parseFloat(adjustedEndTime)) {  // Parse to float for precision
+                            if (audio.currentTime >= parseFloat(adjustedEndTime)) {
                                 audio.pause();
-                                audio.currentTime = 0; // Reset after pausing
+                                audio.currentTime = 0;
                             }
                         });
                     });
                 });
 
-                // Create the clickable link for the ID
                 const link = document.createElement('a');
                 link.href = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
                 link.textContent = name;
                 link.classList.add('link');
                 link.target = "_blank";
 
-                // Append all elements to result item
-                resultItem.appendChild(resultText);      // Word, Start, End in one line
-                resultItem.appendChild(startTimeInput);  // Adjusted Start Time input
-                resultItem.appendChild(endTimeInput);    // Adjusted End Time input
-                resultItem.appendChild(playButton);      // Play button
-                resultItem.appendChild(link);            // Link at the far right
+                resultItem.appendChild(resultText);
+                resultItem.appendChild(startTimeInput);
+                resultItem.appendChild(endTimeInput);
+                resultItem.appendChild(playButton);
+                resultItem.appendChild(link);
 
-                resultsDiv.appendChild(resultItem);      // Add the result item to the results div
+                resultsDiv.appendChild(resultItem);
             });
         }
 
+        // Play all function
+        function playAllSamples(results, pauseBetweenSamples) {
+            let index = 0;
+
+            function playNext() {
+                if (index >= results.length || stopPlayingAll) {
+                    // Stop condition: either we reached the end or stopPlayingAll was triggered
+                    document.getElementById('playAllButton').textContent = 'Play All'; // Reset button text to "Play All"
+                    isPlayingAll = false;
+                    stopPlayingAll = false;  // Reset the stop flag
+                    return;
+                }
+
+                const { name, start_time, end_time } = results[index];
+                const id = name.replace('TD', '');
+
+                let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);
+                let adjustedEndTime = (end_time + 0.0).toFixed(2);
+
+                const audio = new Audio(`https://ordinals.com/content/${id}`);
+                audio.addEventListener('loadedmetadata', () => {
+                    audio.currentTime = parseFloat(adjustedStartTime);
+                    audio.play();
+                    audio.addEventListener('timeupdate', () => {
+                        if (audio.currentTime >= parseFloat(adjustedEndTime)) {
+                            audio.pause();
+                            audio.currentTime = 0;
+                            setTimeout(() => {
+                                index++;
+                                playNext(); // Play the next sample after the pause
+                            }, pauseBetweenSamples * 1000); // Convert seconds to milliseconds
+                        }
+                    });
+                });
+            }
+
+            playNext();
+        }
+
+        // Add event listener to the Play All button
+        document.getElementById('playAllButton').addEventListener('click', () => {
+            const playAllButton = document.getElementById('playAllButton');
+            const results = searchTranscriptions(document.getElementById('searchInput').value); // Assume searchTranscriptions function exists
+            const pauseBetweenSamples = parseFloat(document.getElementById('pauseInput').value);
+
+            if (!isPlayingAll) {
+                // Start playing all samples
+                isPlayingAll = true;
+                stopPlayingAll = false;  // Reset stop flag
+                playAllButton.textContent = 'Stop';  // Change the button text to "Stop"
+                playAllSamples(results, pauseBetweenSamples);
+            } else {
+                // Stop playback
+                stopPlayingAll = true;  // Set the flag to stop playback
+                playAllButton.textContent = 'Play All';  // Change the button text back to "Play All"
+            }
+        });
 
 
 
@@ -1784,7 +1899,7 @@
             }
         });
 
-
+      
 
     </script>
 </body>
