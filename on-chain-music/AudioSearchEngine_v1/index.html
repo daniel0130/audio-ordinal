@@ -1619,38 +1619,40 @@
 
             return results;
         }
-    // Function to display results
-    function displayResults(results) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = ''; // Clear previous results
+   // Function to display results
+function displayResults(results) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = ''; // Clear previous results
 
-        if (results.length === 0) {
-            resultsDiv.textContent = 'No results found';
-            return;
-        }
-
-        results.forEach(({ name, word, start_time, end_time }) => {
-            const resultItem = document.createElement('div');
-            resultItem.classList.add('result-item');
-
-            // Remove 'TD' prefix to get the ID for the link
-            const id = name.replace('TD', '');
-            
-            // Start time adjusted to be 1 second earlier, but not less than 0
-            const adjusted_start_time = Math.max(0, start_time - 0.1);
-            const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time}`;
-
-            // Create the clickable link for the ID
-            resultItem.innerHTML = `
-                Word: <strong>${word}</strong>, 
-                Start time: ${start_time}s, 
-                End time: ${end_time}s, 
-                Array: <a href="${url}" target="_blank">${name}</a>
-            `;
-            
-            resultsDiv.appendChild(resultItem);
-        });
+    if (results.length === 0) {
+        resultsDiv.textContent = 'No results found';
+        return;
     }
+
+    results.forEach(({ name, word, start_time, end_time }) => {
+        const resultItem = document.createElement('div');
+        resultItem.classList.add('result-item');
+
+        // Remove 'TD' prefix to get the ID for the link
+        const id = name.replace('TD', '');
+        
+        // Start time adjusted to be slightly earlier, but not less than 0
+        const adjusted_start_time = Math.max(0, start_time - 0.1);
+
+        // Build the URL with both start and end time parameters
+        const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time},${end_time}`;
+
+        // Create the clickable link for the ID
+        resultItem.innerHTML = `
+            Word: <strong>${word}</strong>, 
+            Start time: ${start_time}s, 
+            End time: ${end_time}s, 
+            Array: <a href="${url}" target="_blank">${name}</a>
+        `;
+        
+        resultsDiv.appendChild(resultItem);
+    });
+}
 
 // Add event listener to the search button
 document.getElementById('searchButton').addEventListener('click', () => {
