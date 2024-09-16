@@ -1758,171 +1758,203 @@ const problematicSamples = [
 // Minimum duration for a playable section (e.g., 0.05 seconds)
 const MIN_PLAYABLE_DURATION = 0.05;
 
-// Function to display results
-function displayResults(results) {
+// Assuming these variables are defined globally or in an appropriate scope
+
+
+// Function to clear previous results and reset variables
+function clearResults() {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = ''; // Clear previous results
     playButtons = []; // Reset play buttons array
+}
+
+// Function to show playback controls
+function showControls() {
+    const controls = document.getElementById('controls');
+    controls.style.display = 'flex';
+}
+
+// Function to check if the playable section is valid
+function checkPlayableDuration(adjustedStartTime, adjustedEndTime) {
+    if (!isPlayableSection(adjustedStartTime, adjustedEndTime)) {
+        console.warn(`Warning: The playable section between ${adjustedStartTime}s and ${adjustedEndTime}s is too short or invalid.`);
+    }
+}
+
+// Function to create and append a single result item
+function createResultItem({ name, word, start_time, end_time }, index) {
+    const resultsDiv = document.getElementById('results');
+    const resultItem = document.createElement('div');
+    resultItem.classList.add('result-item');
+
+    const id = name.replace('TD', '');
+
+    let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);
+    let adjustedEndTime = (end_time + 0.0).toFixed(2);
+
+    // Log initial settings if this is one of the problematic samples
+    if (problematicSamples.includes(id)) {
+        console.log(`Problematic Sample [${id}]: Initial Settings - Start: ${adjustedStartTime}, End: ${adjustedEndTime}`);
+    }
+
+    // Create text information
+    const resultText = document.createElement('div');
+    resultText.classList.add('result-text');
+    resultText.innerHTML = `<strong>${word}:</strong> Start: ${start_time.toFixed(2)}s, End: ${end_time.toFixed(2)}s`;
+
+    // Create input fields for start and end time adjustment
+    const startTimeInput = document.createElement('input');
+    startTimeInput.type = 'number';
+    startTimeInput.step = '0.01';
+    startTimeInput.value = adjustedStartTime;
+    startTimeInput.classList.add('time-input');
+
+    const endTimeInput = document.createElement('input');
+    endTimeInput.type = 'number';
+    endTimeInput.step = '0.01';
+    endTimeInput.value = adjustedEndTime;
+    endTimeInput.classList.add('time-input');
+
+    // Event listener for start time adjustment
+    startTimeInput.addEventListener('input', () => {
+        adjustedStartTime = parseFloat(startTimeInput.value).toFixed(2);
+        checkPlayableDuration(adjustedStartTime, adjustedEndTime);
+        if (problematicSamples.includes(id)) {
+            console.log(`Problematic Sample [${id}]: Start Time Adjusted to ${adjustedStartTime}`);
+        }
+    });
+
+    // Event listener for end time adjustment
+    endTimeInput.addEventListener('input', () => {
+        adjustedEndTime = parseFloat(endTimeInput.value).toFixed(2);
+        checkPlayableDuration(adjustedStartTime, adjustedEndTime);
+        if (problematicSamples.includes(id)) {
+            console.log(`Problematic Sample [${id}]: End Time Adjusted to ${adjustedEndTime}`);
+        }
+    });
+
+    // Create Play button
+    const playButton = document.createElement('button');
+    playButton.textContent = 'Play';
+    playButton.classList.add('play-button');
+    playButtons.push(playButton); // Store the button reference
+
+    // Event listener for Play button
+    playButton.addEventListener('click', () => {
+        // Validate the playable duration before playing
+        if (!isPlayableSection(adjustedStartTime, adjustedEndTime)) {
+            console.warn(`Invalid or too short playable section for sample ID: ${id}`);
+            return; // Skip playback if the section is invalid
+        }
+
+        // If the same button is clicked again, toggle playback
+        if (activeAudio && activeButton === playButton) {
+            if (activeAudio.paused) {
+                activeAudio.play();
+                playButton.textContent = 'Stop'; // Change text to "Stop"
+                playButton.classList.add('active'); // Mark as active
+            } else {
+                activeAudio.pause();
+                playButton.textContent = 'Play'; // Change text to "Play"
+                playButton.classList.remove('active'); // Revert button color
+            }
+            return;
+        }
+
+        // If a new button is clicked, stop any currently playing audio
+        if (activeAudio) {
+            activeAudio.pause();
+            activeAudio.currentTime = parseFloat(adjustedStartTime); // Reset to start
+            activeButton.textContent = 'Play'; // Reset previous button text
+            activeButton.classList.remove('active'); // Revert previous button color
+        }
+
+        // Set the new active audio and button
+        activeAudio = new Audio(`https://ordinals.com/content/${id}`);
+        activeButton = playButton;
+
+        activeAudio.addEventListener('loadedmetadata', () => {
+            console.log(`Metadata loaded for ${id}`);
+            activeAudio.currentTime = parseFloat(adjustedStartTime); // Start from adjusted start time
+            playButton.textContent = 'Stop'; // Change text to "Stop"
+            playButton.classList.add('active'); // Mark as active
+            activeAudio.play();
+
+            // Log playback start if problematic
+            if (problematicSamples.includes(id)) {
+                console.log(`Problematic Sample [${id}]: Playback started at ${activeAudio.currentTime}`);
+            }
+
+            // Enforce the end time strictly
+            activeAudio.addEventListener('timeupdate', () => {
+                if (problematicSamples.includes(id)) {
+                    console.log(`Problematic Sample [${id}]: timeupdate - Current Time: ${activeAudio.currentTime}`);
+                }
+                if (activeAudio.currentTime >= parseFloat(adjustedEndTime)) {
+                    activeAudio.pause();
+                    activeAudio.currentTime = parseFloat(adjustedStartTime); // Reset to start time
+                    playButton.textContent = 'Play'; // Change back to "Play"
+                    playButton.classList.remove('active'); // Revert button color
+                    if (problematicSamples.includes(id)) {
+                        console.log(`Problematic Sample [${id}]: Playback stopped at ${activeAudio.currentTime}`);
+                    }
+                }
+            });
+
+            activeAudio.addEventListener('ended', () => {
+                console.log(`Playback ended for ${id}`);
+                activeAudio.currentTime = parseFloat(adjustedStartTime); // Reset to start time
+                playButton.textContent = 'Play'; // Revert to "Play"
+                playButton.classList.remove('active'); // Revert button color
+                if (problematicSamples.includes(id)) {
+                    console.log(`Problematic Sample [${id}]: Playback ended at ${activeAudio.currentTime}`);
+                }
+            });
+
+            activeAudio.addEventListener('error', (e) => {
+                console.error(`Error occurred while trying to play ${id}: `, e);
+            });
+        });
+    });
+
+    // Create link element
+    const link = document.createElement('a');
+    link.href = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
+    link.textContent = id; // Display only the ID
+    link.classList.add('link');
+    link.target = "_blank";
+
+    // Append all elements to the result item
+    resultItem.appendChild(resultText);
+    resultItem.appendChild(startTimeInput);
+    resultItem.appendChild(endTimeInput);
+    resultItem.appendChild(playButton);
+    resultItem.appendChild(link);
+
+    // Append the result item to the results div
+    resultsDiv.appendChild(resultItem);
+}
+
+// Main function to display results
+function displayResults(results) {
+    clearResults(); // Clear previous results
 
     if (results.length === 0) {
+        const resultsDiv = document.getElementById('results');
         resultsDiv.textContent = 'No results found';
         return;
     }
 
-    // Show controls (Play All button and Pause input) when results are displayed
-    document.getElementById('controls').style.display = 'flex';
+    showControls(); // Show playback controls
 
-    results.forEach(({ name, word, start_time, end_time }, index) => {
-        const resultItem = document.createElement('div');
-        resultItem.classList.add('result-item');
+    // Iterate through each result and create its corresponding element
+    results.forEach(createResultItem);
+}
 
-        const id = name.replace('TD', '');
-
-        let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);
-        let adjustedEndTime = (end_time + 0.0).toFixed(2);
-
-        // Log initial settings if this is one of the problematic samples
-        if (problematicSamples.includes(id)) {
-            console.log(`Problematic Sample [${id}]: Initial Settings - Start: ${adjustedStartTime}, End: ${adjustedEndTime}`);
-        }
-
-        // Text information (word, start time, end time)
-        const resultText = document.createElement('div');
-        resultText.classList.add('result-text');
-        resultText.innerHTML = `<strong>${word}:</strong> Start: ${start_time.toFixed(2)}s, End: ${end_time.toFixed(2)}s`;
-
-        // Create input fields for start and end time adjustment
-        const startTimeInput = document.createElement('input');
-        startTimeInput.type = 'number';
-        startTimeInput.step = '0.01';
-        startTimeInput.value = adjustedStartTime;
-        startTimeInput.classList.add('time-input');
-
-        const endTimeInput = document.createElement('input');
-        endTimeInput.type = 'number';
-        endTimeInput.step = '0.01';
-        endTimeInput.value = adjustedEndTime;
-        endTimeInput.classList.add('time-input');
-
-        startTimeInput.addEventListener('input', () => {
-            adjustedStartTime = parseFloat(startTimeInput.value).toFixed(2);
-            checkPlayableDuration(); // Check if the playable section is valid after adjustment
-            if (problematicSamples.includes(id)) {
-                console.log(`Problematic Sample [${id}]: Start Time Adjusted to ${adjustedStartTime}`);
-            }
-        });
-
-        endTimeInput.addEventListener('input', () => {
-            adjustedEndTime = parseFloat(endTimeInput.value).toFixed(2);
-            checkPlayableDuration(); // Check if the playable section is valid after adjustment
-            if (problematicSamples.includes(id)) {
-                console.log(`Problematic Sample [${id}]: End Time Adjusted to ${adjustedEndTime}`);
-            }
-        });
-
-        const playButton = document.createElement('button');
-        playButton.textContent = 'Play';
-        playButton.classList.add('play-button');
-        playButtons.push(playButton); // Store the button reference
-
-        playButton.addEventListener('click', () => {
-            // Validate the playable duration before playing
-            if (!isPlayableSection(adjustedStartTime, adjustedEndTime)) {
-                console.warn(`Invalid or too short playable section for sample ID: ${id}`);
-                return; // Skip playback if the section is invalid
-            }
-
-            // If the same button is clicked again, toggle playback
-            if (activeAudio && activeButton === playButton) {
-                if (activeAudio.paused) {
-                    activeAudio.play();
-                    playButton.textContent = 'Stop'; // Change text to "Stop"
-                    playButton.classList.add('active'); // Mark as active
-                } else {
-                    activeAudio.pause();
-                    playButton.textContent = 'Play'; // Change text to "Play"
-                    playButton.classList.remove('active'); // Revert button color
-                }
-                return;
-            }
-
-            // If a new button is clicked, stop any currently playing audio
-            if (activeAudio) {
-                activeAudio.pause();
-                activeAudio.currentTime = parseFloat(adjustedStartTime); // Ensure previous audio resets to start
-                activeButton.textContent = 'Play'; // Reset previous button text
-                activeButton.classList.remove('active'); // Revert previous button color
-            }
-
-            // Set the new active audio and button
-            activeAudio = new Audio(`https://ordinals.com/content/${id}`);
-            activeButton = playButton;
-
-            activeAudio.addEventListener('loadedmetadata', () => {
-                console.log(`Metadata loaded for ${id}`);
-                activeAudio.currentTime = parseFloat(adjustedStartTime); // Ensure it always starts from adjusted start time
-                playButton.textContent = 'Stop'; // Change text to "Stop"
-                playButton.classList.add('active'); // Mark as active
-                activeAudio.play();
-
-                // Log playback start if this is one of the problematic samples
-                if (problematicSamples.includes(id)) {
-                    console.log(`Problematic Sample [${id}]: Playback started at ${activeAudio.currentTime}`);
-                }
-
-                // Enforce the end time strictly by checking in the timeupdate event
-                activeAudio.addEventListener('timeupdate', () => {
-                    if (problematicSamples.includes(id)) {
-                        console.log(`Problematic Sample [${id}]: timeupdate - Current Time: ${activeAudio.currentTime}`);
-                    }
-                    if (activeAudio.currentTime >= parseFloat(adjustedEndTime)) {
-                        activeAudio.pause();
-                        activeAudio.currentTime = parseFloat(adjustedStartTime); // Reset to original start time
-                        playButton.textContent = 'Play'; // Change text back to "Play"
-                        playButton.classList.remove('active'); // Revert button color
-                        if (problematicSamples.includes(id)) {
-                            console.log(`Problematic Sample [${id}]: Playback stopped at ${activeAudio.currentTime}`);
-                        }
-                    }
-                });
-
-                activeAudio.addEventListener('ended', () => {
-                    console.log(`Playback ended for ${id}`);
-                    activeAudio.currentTime = parseFloat(adjustedStartTime); // Reset to original start time when playback ends
-                    playButton.textContent = 'Play'; // Revert to "Play" when playback ends
-                    playButton.classList.remove('active'); // Revert button color
-                    if (problematicSamples.includes(id)) {
-                        console.log(`Problematic Sample [${id}]: Playback ended at ${activeAudio.currentTime}`);
-                    }
-                });
-
-                activeAudio.addEventListener('error', (e) => {
-                    console.error(`Error occurred while trying to play ${id}: `, e);
-                });
-            });
-        });
-
-        const link = document.createElement('a');
-        link.href = `https://ordinals.com/content/${id}#t=${adjustedStartTime},${adjustedEndTime}`;
-        link.textContent = id; // Show only the ID (with 'TD' removed)
-        link.classList.add('link');
-        link.target = "_blank";
-
-        resultItem.appendChild(resultText);
-        resultItem.appendChild(startTimeInput);
-        resultItem.appendChild(endTimeInput);
-        resultItem.appendChild(playButton);
-        resultItem.appendChild(link);
-
-        resultsDiv.appendChild(resultItem);
-
-        // Function to check if the playable section is valid and log a warning if not
-        function checkPlayableDuration() {
-            if (!isPlayableSection(adjustedStartTime, adjustedEndTime)) {
-                console.warn(`Warning: The playable section between ${adjustedStartTime}s and ${adjustedEndTime}s is too short or invalid.`);
-            }
-        }
-    });
+// Example helper functions (you need to implement these based on your requirements)
+function isPlayableSection(startTime, endTime) {
+    const duration = endTime - startTime;
+    return duration > 0.1; // Example condition: duration must be greater than 0.1 seconds
 }
 
 // Helper function to determine if the section is playable
