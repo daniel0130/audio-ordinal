@@ -1637,7 +1637,7 @@
             const id = name.replace('TD', '');
             
             // Start time adjusted to be 1 second earlier, but not less than 0
-            const adjusted_start_time = Math.max(0, start_time - 1);
+            const adjusted_start_time = Math.max(0, start_time - 0.1);
             const url = `https://ordinals.com/content/${id}#t=${adjusted_start_time}`;
 
             // Create the clickable link for the ID
