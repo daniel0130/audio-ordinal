@@ -1679,8 +1679,8 @@
                 // Remove 'TD' prefix to get the ID for the link
                 const id = name.replace('TD', '');
 
-                // Start and end time adjusted initially by 0.0 seconds
-                let adjustedStartTime = Math.max(0, start_time - 0.0).toFixed(2);  // Format to 2 decimal places
+                // Start and end time adjusted initially by 0.1 / 0.0 seconds
+                let adjustedStartTime = Math.max(0, start_time - 0.1).toFixed(2);  // Format to 2 decimal places
                 let adjustedEndTime = (end_time + 0.0).toFixed(2);  // Format to 2 decimal places
 
                 // Text information (inline: word, start time, end time)
