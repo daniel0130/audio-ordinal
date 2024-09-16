@@ -1,0 +1,30 @@
+
+window.transcriptions = window.transcriptions || {};
+window.transcriptions.TD21b1170d70205d70a69cf8004644fdf1f03997b37bc93b26bc1bec8ae3d7df43i0 = window.transcriptions = window.transcriptions || {};
+window.transcriptions.TD21b1170d70205d70a69cf8004644fdf1f03997b37bc93b26bc1bec8ae3d7df43i0 = TD21b1170d70205d70a69cf8004644fdf1f03997b37bc93b26bc1bec8ae3d7df43i0 = [
+  { word: 'Pigs', start_time: 0.169, end_time: 0.41 },
+  { word: 'can', start_time: 0.47, end_time: 0.59 },
+  { word: 'run', start_time: 0.63, end_time: 0.751 },
+  { word: 'up', start_time: 0.791, end_time: 0.851 },
+  { word: 'to', start_time: 0.891, end_time: 1.232 },
+  { word: '11', start_time: 0.0, end_time: 0.0 },
+  { word: 'miles', start_time: 1.272, end_time: 1.492 },
+  { word: 'per', start_time: 1.533, end_time: 1.653 },
+  { word: 'hour.', start_time: 1.693, end_time: 1.873 },
+  { word: 'That\'s', start_time: 2.956, end_time: 3.236 },
+  { word: 'faster', start_time: 3.256, end_time: 3.617 },
+  { word: 'than', start_time: 3.657, end_time: 3.798 },
+  { word: 'you', start_time: 3.858, end_time: 3.978 },
+  { word: 'might', start_time: 4.038, end_time: 4.279 },
+  { word: 'think.', start_time: 4.399, end_time: 4.72 },
+  { word: 'I', start_time: 5.662, end_time: 5.722 },
+  { word: 'wonder', start_time: 5.762, end_time: 5.983 },
+  { word: 'how', start_time: 6.023, end_time: 6.163 },
+  { word: 'fast', start_time: 6.263, end_time: 6.624 },
+  { word: 'I', start_time: 6.724, end_time: 6.765 },
+  { word: 'could', start_time: 6.805, end_time: 6.965 },
+  { word: 'run', start_time: 7.045, end_time: 7.226 },
+  { word: 'as', start_time: 7.286, end_time: 7.366 },
+  { word: 'an', start_time: 7.386, end_time: 7.446 },
+  { word: 'inscription.', start_time: 7.506, end_time: 8.027 },
+];;;

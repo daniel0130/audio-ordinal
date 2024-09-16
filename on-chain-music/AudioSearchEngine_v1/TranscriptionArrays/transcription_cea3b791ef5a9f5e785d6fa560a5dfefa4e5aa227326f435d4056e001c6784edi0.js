@@ -1,0 +1,30 @@
+
+window.transcriptions = window.transcriptions || {};
+window.transcriptions.TDcea3b791ef5a9f5e785d6fa560a5dfefa4e5aa227326f435d4056e001c6784edi0 = window.transcriptions = window.transcriptions || {};
+window.transcriptions.TDcea3b791ef5a9f5e785d6fa560a5dfefa4e5aa227326f435d4056e001c6784edi0 = TDcea3b791ef5a9f5e785d6fa560a5dfefa4e5aa227326f435d4056e001c6784edi0 = [
+  { word: 'Did', start_time: 0.109, end_time: 0.27 },
+  { word: 'you', start_time: 0.31, end_time: 0.39 },
+  { word: 'know', start_time: 0.45, end_time: 0.591 },
+  { word: 'that', start_time: 0.611, end_time: 0.731 },
+  { word: 'the', start_time: 0.771, end_time: 0.851 },
+  { word: 'total', start_time: 0.911, end_time: 1.232 },
+  { word: 'number', start_time: 1.272, end_time: 1.513 },
+  { word: 'of', start_time: 1.553, end_time: 1.613 },
+  { word: 'possible', start_time: 1.673, end_time: 2.075 },
+  { word: 'Bitcoin', start_time: 2.135, end_time: 2.536 },
+  { word: 'addresses', start_time: 2.556, end_time: 3.037 },
+  { word: 'is', start_time: 3.177, end_time: 3.238 },
+  { word: 'greater', start_time: 3.298, end_time: 3.619 },
+  { word: 'than', start_time: 3.659, end_time: 3.779 },
+  { word: 'the', start_time: 3.799, end_time: 3.899 },
+  { word: 'number', start_time: 3.96, end_time: 4.18 },
+  { word: 'of', start_time: 4.22, end_time: 4.28 },
+  { word: 'atoms', start_time: 4.421, end_time: 4.762 },
+  { word: 'in', start_time: 4.822, end_time: 4.882 },
+  { word: 'the', start_time: 4.922, end_time: 5.002 },
+  { word: 'visible', start_time: 5.042, end_time: 5.464 },
+  { word: 'universe?', start_time: 5.584, end_time: 6.085 },
+  { word: 'Astonishing,', start_time: 6.787, end_time: 7.409 },
+  { word: 'isn\'t', start_time: 7.549, end_time: 7.79 },
+  { word: 'it?', start_time: 7.89, end_time: 7.93 },
+];;;
