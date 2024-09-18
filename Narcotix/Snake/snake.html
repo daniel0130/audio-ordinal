@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Narcotix: Serpent's Stash</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        #mainContainer {
+            display: flex;
+            margin-top: 20px;
+        }
+        #gameContainer {
+            position: relative;
+            margin-right: 20px;
+        }
+        canvas {
+            background-color: #222;
+            border: 2px solid #555;
+        }
+        #stash {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border: 2px solid #555;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #stash h3 {
+            margin-top: 0;
+        }
+        #stash ul {
+            list-style: none;
+            padding: 0;
+        }
+        #stash li {
+            margin-bottom: 5px;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border: 2px solid #555;
+        }
+        #controls button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #333;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        #controls button:hover {
+            background-color: #555;
+        }
+        #instructions {
+            max-width: 300px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 15px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            height: fit-content;
+        }
+        #instructions h2 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 24px;
+        }
+        #instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+        #instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        #instructions li span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="mainContainer">
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="600" height="600" tabindex="0"></canvas>
+
+        <div id="stash">
+            <h3>The Stash</h3>
+            <ul id="stashList">
+                <!-- Stored pills will appear here -->
+            </ul>
+        </div>
+
+        <div id="controls">
+            <button id="startBtn">Start Game</button>
+            <button id="useStashBtn">Use Stash</button>
+        </div>
+    </div>
+
+    <div id="instructions">
+        <h2>How to Play</h2>
+        <ul>
+            <li><span>Objective:</span> Control the snake to collect magic pills and deposit them in The Stash. Avoid collisions with walls and yourself.</li>
+            <li><span>Controls:</span>
+                <ul>
+                    <li><strong>Arrow Up:</strong> Move Up</li>
+                    <li><strong>Arrow Down:</strong> Move Down</li>
+                    <li><strong>Arrow Left:</strong> Move Left</li>
+                    <li><strong>Arrow Right:</strong> Move Right</li>
+                </ul>
+            </li>
+            <li><span>Magic Pills:</span> Different pills grant unique effects. Collect them to gain advantages or strategic benefits.</li>
+            <li><span>The Stash:</span> Navigate the snake into The Stash area (top-right corner) to deposit collected pills. Stored pills persist across game sessions and can be used later.</li>
+            <li><span>Using Stash Items:</span> Click "Use Stash" to apply a random stored pill's effect, or use individual "Use" buttons beside each stash item.</li>
+            <li><span>Game Over:</span> The game ends if the snake collides with walls or itself. Your stash remains intact for future games.</li>
+            <li><span>Tips:</span> Strategically manage your stash and use pills wisely to maximize your score and survive longer.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Game Constants
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 20;
+    const canvasSize = canvas.width;
+    const stashPosition = { x: canvasSize - gridSize*3, y: 0 };
+    const stashSize = gridSize * 3;
+
+    // Game Variables
+    let snake = [{x: 10, y: 10}];
+    let direction = {x: 0, y: 0};
+    let pills = [];
+    let stash = JSON.parse(localStorage.getItem('narcotix_stash')) || [];
+    let gameInterval = null;
+    let speed = 200; // milliseconds per frame
+    let activeEffects = [];
+    let gameOverFlag = false;
+    let growSegments = 0; // New variable to track growth
+    let collectedPills = []; // Optional: To store collected pill info
+
+    // DOM Elements
+    const stashList = document.getElementById('stashList');
+    const startBtn = document.getElementById('startBtn');
+    const useStashBtn = document.getElementById('useStashBtn');
+
+    // Initialize Stash Display
+    function updateStashDisplay() {
+        stashList.innerHTML = '';
+        stash.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${item.name} (${item.symbol})`;
+            const useButton = document.createElement('button');
+            useButton.textContent = 'Use';
+            useButton.style.marginLeft = '10px';
+            useButton.onclick = () => useStashItem(index);
+            li.appendChild(useButton);
+            stashList.appendChild(li);
+        });
+    }
+
+    updateStashDisplay();
+
+    // Handle Keyboard Input with Prevent Default
+    document.addEventListener('keydown', (e) => {
+        const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+        if (arrowKeys.includes(e.key)) {
+            e.preventDefault(); // Prevent the default scrolling behavior
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (direction.y === 0) direction = {x: 0, y: -1};
+                    break;
+                case 'ArrowDown':
+                    if (direction.y === 0) direction = {x: 0, y: 1};
+                    break;
+                case 'ArrowLeft':
+                    if (direction.x === 0) direction = {x: -1, y: 0};
+                    break;
+                case 'ArrowRight':
+                    if (direction.x === 0) direction = {x: 1, y: 0};
+                    break;
+            }
+        }
+    }, false); // Use non-passive event listener to allow preventDefault
+
+    // Start Game
+    startBtn.addEventListener('click', () => {
+        resetGame();
+        if (gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, speed);
+        canvas.focus(); // Optional: Set focus to the canvas to capture key events
+    });
+
+    // Use Stash Items
+    useStashBtn.addEventListener('click', () => {
+        // For simplicity, applying one random effect from stash
+        if (stash.length === 0) {
+            alert('Stash is empty!');
+            return;
+        }
+        const randomIndex = Math.floor(Math.random() * stash.length);
+        const item = stash[randomIndex];
+        applyEffect(item);
+        // Remove used item from stash
+        stash.splice(randomIndex, 1);
+        localStorage.setItem('narcotix_stash', JSON.stringify(stash));
+        updateStashDisplay();
+    });
+
+    function useStashItem(index) {
+        const item = stash[index];
+        applyEffect(item);
+        stash.splice(index, 1);
+        localStorage.setItem('narcotix_stash', JSON.stringify(stash));
+        updateStashDisplay();
+    }
+
+    // Reset Game
+    function resetGame() {
+        snake = [{x: 10, y: 10}];
+        direction = {x: 0, y: 0};
+        pills = [];
+        collectedPills = []; // Reset collected pills
+        activeEffects = [];
+        speed = 200;
+        gameOverFlag = false;
+        resetGameInterval();
+        spawnFood();
+    }
+
+    // Game Loop
+    function gameLoop() {
+        if (gameOverFlag) return;
+        moveSnake();
+        checkCollision();
+        draw();
+    }
+
+    // Move Snake
+    function moveSnake() {
+        const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+        snake.unshift(head);
+        
+        // Check if snake eats a pill
+        const eatenPillIndex = pills.findIndex(pill => pill.x === head.x && pill.y === head.y);
+        if (eatenPillIndex !== -1) {
+            const eatenPill = pills.splice(eatenPillIndex, 1)[0];
+            growSegments += 1; // Increment growth counter
+            collectedPills.push(eatenPill); // Optional: Store pill info
+            increaseSpeed();
+            // Optionally, apply pill-specific effects here
+        }
+        
+        // Handle snake growth
+        if (growSegments > 0) {
+            growSegments -= 1;
+            // Do not remove the tail segment to grow the snake
+        } else {
+            // Remove the last segment if not growing
+            snake.pop();
+            if (collectedPills.length > 0) {
+                collectedPills.shift(); // Remove the oldest collected pill
+            }
+        }
+    }
+
+    // Check Collision
+    function checkCollision() {
+        const head = snake[0];
+        // Wall collision
+        if (head.x < 0 || head.x >= canvasSize / gridSize || head.y < 0 || head.y >= canvasSize / gridSize) {
+            gameOver();
+        }
+        // Self collision
+        for (let i = 1; i < snake.length; i++) {
+            if (head.x === snake[i].x && head.y === snake[i].y) {
+                gameOver();
+            }
+        }
+        // Stash area collision
+        if (head.x >= stashPosition.x / gridSize && head.x < (stashPosition.x + stashSize) / gridSize &&
+            head.y >= stashPosition.y / gridSize && head.y < (stashPosition.y + stashSize) / gridSize) {
+            depositItems();
+        }
+    }
+
+    // Game Over
+    function gameOver() {
+        clearInterval(gameInterval);
+        gameOverFlag = true;
+        alert('Game Over!');
+        // Save stash at game end
+        localStorage.setItem('narcotix_stash', JSON.stringify(stash));
+    }
+
+    // Draw Everything
+    function draw() {
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+        // Draw Stash Area
+        ctx.fillStyle = '#444';
+        ctx.fillRect(stashPosition.x, stashPosition.y, stashSize, stashSize);
+
+        // Draw Snake
+        snake.forEach((segment, index) => {
+            if (index === 0) {
+                // Head
+                ctx.fillStyle = '#0f0';
+            } else {
+                // Body segments
+                ctx.fillStyle = '#fff';
+            }
+            ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+            
+            // Display symbol if available
+            if (index > 0 && collectedPills[index - 1]) {
+                ctx.fillStyle = '#000';
+                ctx.font = '14px Arial';
+                ctx.fillText(collectedPills[index - 1].symbol, segment.x * gridSize + 4, segment.y * gridSize + 16);
+            }
+        });
+
+        // Draw Food/Pills
+        pills.forEach(pill => {
+            ctx.fillStyle = pill.color;
+            ctx.fillRect(pill.x * gridSize, pill.y * gridSize, gridSize, gridSize);
+            ctx.fillStyle = '#fff';
+            ctx.font = '14px Arial';
+            ctx.fillText(pill.symbol, pill.x * gridSize + 4, pill.y * gridSize + 16);
+        });
+
+        // Draw The Stash Label
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px Arial';
+        ctx.fillText('Stash', stashPosition.x + gridSize / 2, stashPosition.y + gridSize * 2);
+    }
+
+    // Spawn Food/Pills
+    function spawnFood() {
+        const types = generatePillTypes();
+        const type = types[Math.floor(Math.random() * types.length)];
+        let position;
+        do {
+            position = {
+                x: Math.floor(Math.random() * (canvasSize / gridSize)),
+                y: Math.floor(Math.random() * (canvasSize / gridSize))
+            };
+        } while (isOccupied(position) || isInStash(position));
+        pills.push({
+            ...type,
+            x: position.x,
+            y: position.y
+        });
+    }
+
+    function isOccupied(position) {
+        return snake.some(segment => segment.x === position.x && segment.y === position.y) ||
+               pills.some(pill => pill.x === position.x && pill.y === position.y);
+    }
+
+    function isInStash(position) {
+        return position.x >= stashPosition.x / gridSize &&
+               position.x < (stashPosition.x + stashSize) / gridSize &&
+               position.y >= stashPosition.y / gridSize &&
+               position.y < (stashPosition.y + stashSize) / gridSize;
+    }
+
+    // Deposit Items into The Stash
+    function depositItems() {
+        if (snake.length <= 1) return; // Nothing to deposit
+        // Extract all body segments (pills)
+        const depositedPills = collectedPills;
+        stash = stash.concat(depositedPills);
+        // Reset snake to size 1
+        snake = [snake[0]];
+        collectedPills = []; // Clear the collected pills
+        localStorage.setItem('narcotix_stash', JSON.stringify(stash));
+        updateStashDisplay();
+    }
+
+    // Apply Food/Pill Effect
+    function applyFoodEffect(pill) {
+        // Currently handled by snake growth and speed increase
+        // Additional pill-specific effects can be implemented here
+    }
+
+    // Apply Stash Item Effect
+    function applyEffect(item) {
+        // Implement effect based on pill type
+        if (item.name === 'Euphoric') {
+            // Example: Speed boost
+            speed = Math.max(50, speed - 10); // Decrease interval by 10ms for speed boost
+            resetGameInterval();
+            activeEffects.push({ name: 'Speed Boost', duration: 15000 }); // 15 seconds
+        }
+        // Add more pill type effects here
+    }
+
+    // Increase Speed when collecting a pill
+    function increaseSpeed() {
+        // Decrease interval by 10ms each time a pill is collected, with a minimum threshold
+        speed = Math.max(50, speed - 10);
+        resetGameInterval();
+    }
+
+    // Reset Game Interval with New Speed
+    function resetGameInterval() {
+        if (gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, speed);
+    }
+
+    // Handle Active Effects
+    setInterval(() => {
+        const now = Date.now();
+        activeEffects = activeEffects.filter(effect => {
+            effect.duration -= 1000;
+            if (effect.duration <= 0) {
+                // Revert effect
+                if (effect.name === 'Speed Boost') {
+                    speed = Math.min(200, speed + 10); // Revert speed boost
+                    resetGameInterval();
+                }
+                return false;
+            }
+            return true;
+        });
+    }, 1000);
+
+    // Define Pill Types
+    function generatePillTypes() {
+        return [
+            { type: 'Depressing', color: '#555', symbol: '😔' },
+            { type: 'Euphoric', color: '#FFD700', symbol: '😊' },
+            { type: 'Villainous', color: '#8B0000', symbol: '😈' },
+            { type: 'Heroic', color: '#1E90FF', symbol: '🦸' },
+            { type: 'Protean', color: '#FF69B4', symbol: '🦊' },
+            { type: 'Mnemonic', color: '#32CD32', symbol: '🧠' },
+            { type: 'Beast', color: '#A52A2A', symbol: '🐾' },
+            { type: 'Crypto', color: '#00CED1', symbol: '💰' },
+            { type: 'Comedic', color: '#FF4500', symbol: '😂' },
+            { type: 'Mind Control', color: '#9400D3', symbol: '🧠' },
+            { type: 'Trickster', color: '#FFD700', symbol: '🤡' },
+            { type: 'Surprise', color: '#FF1493', symbol: '😲' },
+            { type: 'Probability', color: '#00FF7F', symbol: '🎲' },
+            { type: 'Quantum', color: '#00BFFF', symbol: '🔮' },
+            { type: 'Stealth', color: '#696969', symbol: '👻' },
+            { type: 'Hacker', color: '#7FFF00', symbol: '💻' },
+            { type: 'Telekinetic', color: '#FF69B4', symbol: '🧿' },
+            { type: 'Communication', color: '#1E90FF', symbol: '📡' },
+            // Add more pill types as needed
+        ];
+    }
+
+    // Initial Spawn
+    spawnFood();
+
+    // Spawn new pills periodically
+    setInterval(() => {
+        if (!gameOverFlag) {
+            spawnFood();
+        }
+    }, 5000); // Spawn a new pill every 5 seconds
+
+</script>
+
+</body>
+</html>

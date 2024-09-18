@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generative Music Module</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        #controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #controls input, #controls select, #controls button {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #controls input {
+            width: 200px;
+        }
+
+        #controls select {
+            width: 150px;
+            background-color: #444;
+            color: #fff;
+        }
+
+        #controls button {
+            background-color: #555;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #controls button:hover {
+            background-color: #777;
+        }
+
+        #display {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #visualizer {
+            width: 80%;
+            height: 200px;
+            background-color: #111;
+            border: 2px solid #555;
+            border-radius: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            #controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #controls input, #controls select, #controls button {
+                width: 80%;
+            }
+
+            #visualizer {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <input type="text" id="seed-input" placeholder="Enter Seed" />
+        <select id="genre-select">
+            <!-- <option value="default">Default</option> -->
+            <option value="rock">Rock</option>
+            <option value="hiphop">Hip-Hop</option>
+            <option value="jazz">Jazz</option>
+            <!-- <option value="edm">EDM</option>
+            <option value="reggae">Reggae</option>
+            <option value="funk">Funk</option>
+            <option value="drumandbass">Drum & Bass</option>
+            <option value="house">House</option>
+            <option value="latin">Latin</option>
+            <option value="trap">Trap</option> -->
+        </select>
+        <button id="play-button">Play</button>
+        <button id="pause-button" disabled>Pause</button>
+        <button id="reset-button">Reset</button>
+        <button id="continue-button" disabled>Continue</button>
+    </div>
+    <div id="display">
+        <p>Seed: <span id="current-seed">N/A</span></p>
+        <p>Sequence: <span id="current-sequence">0</span>/64</p>
+    </div>
+    <canvas id="visualizer"></canvas>
+
+    <script>
+        // ------------------------------
+        // Seed-Based Random Number Generator
+        // ------------------------------
+        function SeededRNG(seed) {
+            this.seed = seed;
+            // Simple LCG parameters
+            this.a = 1664525;
+            this.c = 1013904223;
+            this.m = Math.pow(2, 32);
+            this.state = seed ? seed % this.m : Math.floor(Math.random() * this.m);
+        }
+
+        SeededRNG.prototype.next = function() {
+            this.state = (this.a * this.state + this.c) % this.m;
+            return this.state / this.m;
+        };
+
+        // ------------------------------
+        // Instrument Channels
+        // ------------------------------
+        const instrumentChannels = [
+            { name: "New Kick", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i3" },
+            { name: "New Snare", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i6" },
+            { name: "Snare Rim", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i5" },
+            { name: "New hat", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i0" },
+            { name: "Hi Tom", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i2" },
+            { name: "Med Tom", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i4" },
+            { name: "Low Tom", url: "https://ordinals.com/content/83407a1c9637e53e76e3d4de711b971f557e7876ad96b9b520a8202109521ba1i1" },
+            { name: "OB1 #5 - Crash", url: "https://ordinals.com/content/5a42d7b2e2fe01e4f31cbad5dd671997f87339d970faaab37f6355c4a2f3be5ai0" },
+            { name: "OB1 #9 - Hard Kick", url: "https://ordinals.com/content/437868aecce108d49f9b29c2f477987cb5834ffdf639a650335af7f0fdd5e55bi0" },
+            { name: "OB1 #10 - Hard Snare", url: "https://ordinals.com/content/3be1f8e37b718f5b9874aecad792504c5822dc8dfc727ad4928594f7725db987i0" },
+            { name: "OB1 #3 - Closed Hat", url: "https://ordinals.com/content/d030eb3d8bcd68b0ed02b0c67fdb981342eea40b0383814f179a48e76927db93i0" },
+            { name: "OB1 #14 - Cowbell", url: "https://ordinals.com/content/3e5fe7bc10e37a145a75f7ddd71debd9079b05568c5b9c5e6b4de3d959a4c46bi0" },
+            { name: "OB1 #1 - 808 Kick", url: "https://ordinals.com/content/e7d344ef3098d0889856978c4d2e81ccf2358f7f8b66feecc71e03036c59ad48i0#" },
+            { name: "OB1 #2 - 808 Snare", url: "https://ordinals.com/content/ef5707e6ecf4d5b6edb4c3a371ca1c57b5d1057c6505ccb5f8bdc8918b0c4d94i0" },
+            { name: "OB1 #4 - 808 Clap", url: "https://ordinals.com/content/3b7482a832c4f27c32fc1da7cc4249bbbac1cbdfbdb8673079cad0c33486d233i0" },
+            { name: "Bass Drop", url: "https://ordinals.com/content/b77fb3b299477ca55ab2626dbbc12c0d5fa9d4cf51ae00850caae6e36baef745i0" }
+        ];
+        class AudioManager {
+    constructor() {
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        this.buffers = {}; // Stores AudioBuffers indexed by channel
+        this.loadCount = 0; // Tracks loaded audio files
+        this.totalSounds = instrumentChannels.length;
+    }
+
+    async loadAllSounds() {
+        const loadPromises = instrumentChannels.map((channel, index) => this.loadSound(channel, index));
+        await Promise.all(loadPromises);
+    }
+
+    async loadSound(channel, index) {
+        try {
+            console.log(`Attempting to load sound for channel: ${channel.name}`);
+
+            const response = await fetch(channel.url);
+            const contentType = response.headers.get('Content-Type');
+
+            // Fetch and decode the audio, whether it's raw or inside an HTML file
+            const audioBuffer = await this.fetchAndDecodeAudio(response, contentType);
+
+            if (audioBuffer) {
+                this.buffers[`ch${index}`] = audioBuffer;
+                console.log(`Successfully decoded audio for ${channel.name}`);
+                this.loadCount++;
+            } else {
+                throw new Error(`Failed to decode audio for ${channel.name}`);
+            }
+        } catch (error) {
+            console.error(`Error loading ${channel.name}: ${error.message}`, error);
+        }
+    }
+
+    // The new method for fetching and decoding audio, similar to the working example
+    async fetchAndDecodeAudio(response, contentType) {
+        if (/audio\/(wav|mpeg|mp4)/.test(contentType) || /video\/mp4/.test(contentType)) {
+            const arrayBuffer = await response.arrayBuffer();
+            return this.audioCtx.decodeAudioData(arrayBuffer);
+        }
+
+        const textData = await response.text();
+        let audioData = null;
+
+        if (/text\/html/.test(contentType)) {
+            audioData = this.extractBase64FromHTML(textData);
+        }
+
+        if (audioData) {
+            const arrayBuffer = this.base64ToArrayBuffer(audioData.split(",")[1]);
+            return this.audioCtx.decodeAudioData(arrayBuffer);
+        }
+
+        return null;
+    }
+
+    // Helper function to extract base64-encoded audio from the HTML content
+    extractBase64FromHTML(htmlContent) {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+            const sourceElement = doc.querySelector("audio[data-audionalSampleName] source");
+
+            if (sourceElement) {
+                const src = sourceElement.getAttribute("src");
+
+                // Check if the audio data starts with any expected base64 prefix, including FLAC
+                if (/^data:audio\/(wav|mp3|mp4|flac);base64,/.test(src.toLowerCase())) {
+                    return src;
+                }
+
+                console.error("[extractBase64FromHTML] Audio data does not start with expected base64 prefix.");
+            } else {
+                console.error("[extractBase64FromHTML] Could not find the audio source element in the HTML content.");
+            }
+        } catch (error) {
+            console.error("[extractBase64FromHTML] Error parsing HTML content:", error);
+        }
+        return null;
+    }
+
+    base64ToArrayBuffer(base64) {
+        try {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        } catch (error) {
+            console.error("[base64ToArrayBuffer] Error converting base64 to ArrayBuffer:", error);
+            return null;
+        }
+    }
+
+    getBuffer(channelIndex) {
+        return this.buffers[`ch${channelIndex}`];
+    }
+}
+
+const audioManager = new AudioManager();
+
+
+
+// ------------------------------
+// Pattern and Sequence Generator
+// ------------------------------
+class PatternGenerator {
+    constructor(rng, genre = 'default') {
+        this.rng = rng;
+        this.genre = genre;
+        this.patternLibraries = this.getPatternLibraries();
+    }
+
+    getPatternLibraries() {
+    // Define pattern libraries for different genres
+    return {
+        rock: {
+            ch0: [1, 17, 33, 49],                     // New Kick on beats 1 and 3
+            ch1: [5, 21, 37, 53],                     // New Snare on beats 2 and 4
+            ch2: [],                                   // Snare Rim (unused)
+            ch3: [2, 4, 6, 8, 10, 12, 14, 16,         // Closed Hi-Hat on 8th notes
+                18, 20, 22, 24, 26, 28, 30, 32,
+                34, 36, 38, 40, 42, 44, 46, 48,
+                50, 52, 54, 56, 58, 60, 62, 64],
+            ch4: [3, 19, 35, 51],                     // Hi Tom for fills
+            ch5: [7, 23, 39, 55],                     // Med Tom for fills
+            ch6: [11, 27, 43, 59],                    // Low Tom for fills
+            ch7: [14, 30, 46, 62],                    // OB1 #5 - Crash on drops
+            ch8: [9, 25, 41, 57],                     // OB1 #9 - Hard Kick as accents
+            ch9: [],                                   // OB1 #10 - Hard Snare (unused)
+            ch10: [4, 12, 20, 28, 36, 44, 52, 60],    // OB1 #3 - Closed Hat with variation
+            ch11: [],                                   // OB1 #14 - Cowbell (unused)
+            ch12: [],                                   // OB1 #1 - 808 Kick (unused)
+            ch13: [],                                   // OB1 #2 - 808 Snare (unused)
+            ch14: [],                                   // OB1 #4 - 808 Clap (unused)
+            ch15: [32]                                  // Bass Drop at step 32
+        },
+
+       
+        hiphop: {
+            ch0: [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61], // New Kick (syncopated)
+            ch1: [5, 13, 21, 29, 37, 45, 53, 61],                              // New Snare on 2 and 4
+            ch2: [7, 23, 39, 55],                                               // Snare Rim for snaps (off-beat)
+            ch3: [3, 7, 11, 15, 19, 23, 27, 31,                                  // New hat with slight swing
+                35, 39, 43, 47, 51, 55, 59, 63],
+            ch4: [],                                                            // Hi Tom (unused)
+            ch5: [],                                                            // Med Tom (unused)
+            ch6: [],                                                            // Low Tom (unused)
+            ch7: [],                                                            // OB1 #5 - Crash (unused)
+            ch8: [],                                                            // OB1 #9 - Hard Kick (unused)
+            ch9: [],                                                            // OB1 #10 - Hard Snare (unused)
+            ch10: [4, 12, 20, 28, 36, 44, 52, 60],                             // OB1 #3 - Closed Hat with variation
+            ch11: [],                                                           // OB1 #14 - Cowbell (unused)
+            ch12: [1, 17, 33, 49],                                              // OB1 #1 - 808 Kick
+            ch13: [5, 21, 37, 53],                                              // OB1 #2 - 808 Snare
+            ch14: [9, 25, 41, 57],                                              // OB1 #4 - 808 Clap
+            ch15: [32]                                                           // Bass Drop at step 32
+        },
+        jazz: {
+            ch0: [1, 9, 17, 25, 33, 41, 49, 57],      // New Kick (light on quarter beats)
+            ch1: [5, 21, 37, 53],                     // New Snare (brush on beats 2 and 4)
+            ch2: [3, 7, 19, 23, 35, 39, 51, 55],      // Snare Rim (brushes on off-beats)
+            ch3: [1, 3, 5, 7, 9, 11, 13, 15,          // Ride Cymbal (continuous 8th notes with accents)
+                17, 19, 21, 23, 25, 27, 29, 31,
+                33, 35, 37, 39, 41, 43, 45, 47,
+                49, 51, 53, 55, 57, 59, 61, 63],
+            ch4: [5, 21, 37, 53],                     // Hi Tom accents
+            ch5: [9, 25, 41, 57],                     // Med Tom accents
+            ch6: [13, 29, 45, 61],                    // Low Tom accents
+            ch7: [],                                   // OB1 #5 - Crash (unused)
+            ch8: [],                                   // OB1 #9 - Hard Kick (unused)
+            ch9: [8, 24, 40, 56],                      // OB1 #10 - Hard Snare (brushes)
+            ch10: [4, 12, 20, 28, 36, 44, 52, 60],     // OB1 #3 - Closed Hat with slight swing
+            ch11: [],                                   // OB1 #14 - Cowbell (unused)
+            ch12: [],                                   // OB1 #1 - 808 Kick (unused)
+            ch13: [],                                   // OB1 #2 - 808 Snare (unused)
+            ch14: [],                                   // OB1 #4 - 808 Clap (unused)
+            ch15: []                                     // Bass Drop (unused)
+        }
+      
+    };
+}
+
+
+
+    generateSequences(totalSequences = 64) {
+        const sequences = {};
+        for (let i = 0; i < totalSequences; i++) {
+            const sequenceKey = `Sequence${i}`;
+            sequences[sequenceKey] = {};
+
+            instrumentChannels.forEach((channel, index) => {
+                const basePattern = this.patternLibraries[this.genre][`ch${index}`];
+                const variedPattern = this.variations(basePattern);
+                sequences[sequenceKey][`ch${index}`] = { steps: variedPattern };
+            });
+        }
+        return sequences;
+    }
+
+    variations(pattern) {
+        // Apply random variations to the base pattern
+        const newPattern = [...pattern];
+
+        // Randomly decide to add or remove steps for variation
+        if (this.rng.next() > 0.7 && newPattern.length < 20) {
+            const newStep = Math.floor(this.rng.next() * 64) + 1;
+            if (!newPattern.includes(newStep)) newPattern.push(newStep);
+        }
+
+        if (this.rng.next() > 0.7 && newPattern.length > 4) {
+            const removeIndex = Math.floor(this.rng.next() * newPattern.length);
+            newPattern.splice(removeIndex, 1);
+        }
+
+        // Shuffle and sort pattern for variety
+        for (let i = newPattern.length - 1; i > 0; i--) {
+            const j = Math.floor(this.rng.next() * (i + 1));
+            [newPattern[i], newPattern[j]] = [newPattern[j], newPattern[i]];
+        }
+
+        newPattern.sort((a, b) => a - b);
+        return newPattern;
+    }
+}
+
+
+
+        // ------------------------------
+        // Sequencer
+        // ------------------------------
+        class Sequencer {
+            constructor(audioManager, sequences, bpm = 120) {
+                this.audioManager = audioManager;
+                this.sequences = sequences;
+                this.bpm = bpm;
+                this.currentSequence = 0;
+                this.currentStep = 1;
+                this.isPlaying = false;
+                this.timerID = null;
+                this.interval = (60 / this.bpm) / 4 * 1000; // 16th notes
+                this.visualizer = new Visualizer(this.audioManager.audioCtx);
+            }
+
+            start() {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                this.scheduleNext();
+                this.visualizer.start();
+            }
+
+            pause() {
+                if (!this.isPlaying) return;
+                this.isPlaying = false;
+                clearTimeout(this.timerID);
+                this.visualizer.stop();
+            }
+
+            reset() {
+                this.pause();
+                this.currentSequence = 0;
+                this.currentStep = 1;
+                document.getElementById('current-sequence').textContent = '0';
+            }
+
+            continue() {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                this.scheduleNext();
+                this.visualizer.start();
+            }
+
+            scheduleNext() {
+                if (!this.isPlaying) return;
+
+                const now = this.audioManager.audioCtx.currentTime;
+                this.playCurrentStep(now);
+                this.updateDisplay();
+
+                this.timerID = setTimeout(() => {
+                    this.nextStep();
+                    this.scheduleNext();
+                }, this.interval);
+            }
+
+            playCurrentStep(time) {
+                const sequenceKey = `Sequence${this.currentSequence}`;
+                const sequence = this.sequences[sequenceKey];
+
+                Object.keys(sequence).forEach(channel => {
+                    const steps = sequence[channel].steps;
+                    if (steps.includes(this.currentStep)) {
+                        const channelIndex = parseInt(channel.replace('ch', ''));
+                        const buffer = this.audioManager.getBuffer(channelIndex);
+                        if (buffer) {
+                            const source = this.audioManager.audioCtx.createBufferSource();
+                            source.buffer = buffer;
+
+                            const gainNode = this.audioManager.audioCtx.createGain();
+                            gainNode.gain.value = 1; // Adjust volume as needed
+
+                            source.connect(gainNode).connect(this.audioManager.audioCtx.destination);
+                            source.start(time);
+                        }
+                    }
+                });
+            }
+
+            nextStep() {
+                this.currentStep++;
+                if (this.currentStep > 64) {
+                    this.currentStep = 1;
+                    this.currentSequence++;
+                    if (this.currentSequence >= 64) {
+                        this.currentSequence = 0; // Loop back to first sequence
+                    }
+                }
+                document.getElementById('current-sequence').textContent = this.currentSequence;
+            }
+
+            updateDisplay() {
+                document.getElementById('current-sequence').textContent = this.currentSequence;
+            }
+        }
+
+        // ------------------------------
+        // Visualization
+        // ------------------------------
+        class Visualizer {
+            constructor(audioCtx) {
+                this.audioCtx = audioCtx;
+                this.analyser = this.audioCtx.createAnalyser();
+                this.analyser.fftSize = 256;
+                this.bufferLength = this.analyser.frequencyBinCount;
+                this.dataArray = new Uint8Array(this.bufferLength);
+
+                // Create a dummy source to visualize
+                this.dummyOscillator = this.audioCtx.createOscillator();
+                this.dummyOscillator.frequency.value = 0;
+                this.dummyOscillator.connect(this.analyser);
+                this.dummyOscillator.start();
+
+                this.canvas = document.getElementById('visualizer');
+                this.canvasCtx = this.canvas.getContext('2d');
+
+                window.addEventListener('resize', () => this.resize());
+                this.resize();
+                this.animationId = null;
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth * 0.8;
+                this.canvas.height = 200;
+            }
+
+            start() {
+                const draw = () => {
+                    this.animationId = requestAnimationFrame(draw);
+                    this.analyser.getByteFrequencyData(this.dataArray);
+
+                    this.canvasCtx.fillStyle = '#111';
+                    this.canvasCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                    const barWidth = (this.canvas.width / this.bufferLength) * 2.5;
+                    let x = 0;
+
+                    for (let i = 0; i < this.bufferLength; i++) {
+                        const barHeight = this.dataArray[i];
+                        const r = barHeight + 25 * (i / this.bufferLength);
+                        const g = 250 * (i / this.bufferLength);
+                        const b = 50;
+
+                        this.canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
+                        this.canvasCtx.fillRect(x, this.canvas.height - barHeight / 2, barWidth, barHeight / 2);
+
+                        x += barWidth + 1;
+                    }
+                };
+
+                draw();
+            }
+
+            stop() {
+                cancelAnimationFrame(this.animationId);
+            }
+        }
+
+        // ------------------------------
+        // Main Application Logic
+        // ------------------------------
+        document.addEventListener('DOMContentLoaded', async () => {
+            const seedInput = document.getElementById('seed-input');
+            const genreSelect = document.getElementById('genre-select');
+            const playButton = document.getElementById('play-button');
+            const pauseButton = document.getElementById('pause-button');
+            const resetButton = document.getElementById('reset-button');
+            const continueButton = document.getElementById('continue-button');
+            const currentSeedDisplay = document.getElementById('current-seed');
+            const currentSequenceDisplay = document.getElementById('current-sequence');
+
+            // Initialize Audio Manager
+            await audioManager.loadAllSounds();
+
+            // Initialize Seed
+            let seed;
+            if (seedInput.value) {
+                seed = parseInt(seedInput.value) || Math.floor(Math.random() * 1e9);
+            } else {
+                seed = Math.floor(Math.random() * 1e9);
+            }
+            currentSeedDisplay.textContent = seed;
+            const rng = new SeededRNG(seed);
+
+            // Initialize Pattern Generator
+            const genre = genreSelect.value;
+            const patternGenerator = new PatternGenerator(rng, genre);
+            const sequences = patternGenerator.generateSequences(64);
+
+            // Initialize Sequencer
+            const sequencer = new Sequencer(audioManager, sequences, 120); // BPM set to 120
+
+            // Initialize Visualization
+            const visualizer = new Visualizer(audioManager.audioCtx);
+
+            // Play Button Event
+            playButton.addEventListener('click', () => {
+                sequencer.start();
+                playButton.disabled = true;
+                pauseButton.disabled = false;
+                continueButton.disabled = true;
+            });
+
+            // Pause Button Event
+            pauseButton.addEventListener('click', () => {
+                sequencer.pause();
+                playButton.disabled = false;
+                pauseButton.disabled = true;
+                continueButton.disabled = false;
+            });
+
+            // Reset Button Event
+            resetButton.addEventListener('click', () => {
+                sequencer.reset();
+                playButton.disabled = false;
+                pauseButton.disabled = true;
+                continueButton.disabled = true;
+            });
+
+            // Continue Button Event
+            continueButton.addEventListener('click', () => {
+                sequencer.continue();
+                playButton.disabled = true;
+                pauseButton.disabled = false;
+                continueButton.disabled = true;
+            });
+
+            // Seed Input Change Event
+            seedInput.addEventListener('change', () => {
+                const newSeed = parseInt(seedInput.value) || Math.floor(Math.random() * 1e9);
+                seed = newSeed;
+                currentSeedDisplay.textContent = seed;
+                sequencer.reset();
+
+                // Reinitialize RNG and Patterns
+                const newRNG = new SeededRNG(seed);
+                const newPatternGenerator = new PatternGenerator(newRNG, genreSelect.value);
+                const newSequences = newPatternGenerator.generateSequences(64);
+                sequencer.sequences = newSequences;
+            });
+
+            // Genre Selection Change Event
+            genreSelect.addEventListener('change', () => {
+                const selectedGenre = genreSelect.value;
+                const newPatternGenerator = new PatternGenerator(rng, selectedGenre);
+                const newSequences = newPatternGenerator.generateSequences(64);
+                sequencer.sequences = newSequences;
+            });
+
+            // Initialize Visualization Resize
+            window.addEventListener('resize', () => {
+                visualizer.resize();
+            });
+        });
+    </script>
+</body>
+</html>
