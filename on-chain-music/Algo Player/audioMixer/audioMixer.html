@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>32-Channel Audio Mixer</title>
+    <style>
+        /* Reset default browser styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2c2c2c;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .mixer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border: 2px solid #444;
+            border-radius: 10px;
+            overflow-y: auto;
+        }
+
+        .channel-group {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .channel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        .channel-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .channel-label .ch {
+            font-weight: bold;
+        }
+
+        .channel-label .number {
+            margin-top: 2px;
+        }
+
+        .fader-container {
+            position: relative;
+            height: 200px;
+            width: 30px;
+        }
+
+        .fader {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 200px;
+            height: 30px;
+            background: transparent;
+            transform: rotate(-90deg);
+            position: absolute;
+            top: 85px;
+            left: -85px;
+        }
+
+        .fader::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff5722;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .fader::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #ff5722;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .fader::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .fader::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .volume-level {
+            margin-top: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .channel {
+                width: 50px;
+            }
+
+            .fader-container {
+                height: 150px;
+                width: 25px;
+            }
+
+            .fader {
+                width: 150px;
+                left: -65px;
+                top: 60px;
+            }
+
+            .volume-level {
+                font-size: 10px;
+            }
+
+            .channel-label {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .channel-group {
+                justify-content: center;
+            }
+
+            .channel {
+                width: 40px;
+            }
+
+            .fader-container {
+                height: 120px;
+                width: 20px;
+            }
+
+            .fader {
+                width: 120px;
+                left: -50px;
+                top: 40px;
+            }
+
+            .volume-level {
+                font-size: 8px;
+            }
+
+            .channel-label {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .channel {
+                width: 35px;
+            }
+
+            .fader-container {
+                height: 100px;
+                width: 18px;
+            }
+
+            .fader {
+                width: 100px;
+                left: -40px;
+                top: 30px;
+            }
+
+            .volume-level {
+                font-size: 7px;
+            }
+
+            .channel-label {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mixer-container">
+        <div class="channel-group" id="group1">
+            <!-- Channels 1-16 -->
+            <!-- Channels will be generated by JavaScript -->
+        </div>
+        <div class="channel-group" id="group2">
+            <!-- Channels 17-32 -->
+            <!-- Channels will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const totalChannels = 32;
+        const group1 = document.getElementById('group1');
+        const group2 = document.getElementById('group2');
+
+        for (let i = 1; i <= totalChannels; i++) {
+            const channel = document.createElement('div');
+            channel.classList.add('channel');
+
+            const label = document.createElement('div');
+            label.classList.add('channel-label');
+
+            const chText = document.createElement('div');
+            chText.classList.add('ch');
+            chText.textContent = 'CH';
+
+            const numberText = document.createElement('div');
+            numberText.classList.add('number');
+            numberText.textContent = `${i}`;
+
+            label.appendChild(chText);
+            label.appendChild(numberText);
+
+            const faderContainer = document.createElement('div');
+            faderContainer.classList.add('fader-container');
+
+            const fader = document.createElement('input');
+            fader.type = 'range';
+            fader.min = 0;
+            fader.max = 100;
+            fader.value = 50;
+            fader.classList.add('fader');
+            fader.id = `fader-${i}`;
+
+            const volumeLevel = document.createElement('div');
+            volumeLevel.classList.add('volume-level');
+            volumeLevel.id = `volume-${i}`;
+            volumeLevel.textContent = `50%`;
+
+            fader.addEventListener('input', (e) => {
+                const volume = e.target.value;
+                volumeLevel.textContent = `${volume}%`;
+                // Here you can add code to control actual audio volume
+                // For example:
+                // audioChannels[i].volume = volume / 100;
+            });
+
+            faderContainer.appendChild(fader);
+            channel.appendChild(label);
+            channel.appendChild(faderContainer);
+            channel.appendChild(volumeLevel);
+
+            if (i <= 16) {
+                group1.appendChild(channel);
+            } else {
+                group2.appendChild(channel);
+            }
+        }
+
+        // Optional: Initialize audio channels if you have audio sources
+        /*
+        const audioChannels = [];
+        for (let i = 1; i <= totalChannels; i++) {
+            const audio = new Audio('path_to_audio_file.mp3');
+            audioChannels.push(audio);
+            // You can play the audio and control volume as needed
+            audio.loop = true;
+            audio.play();
+        }
+        */
+    </script>
+</body>
+</html>

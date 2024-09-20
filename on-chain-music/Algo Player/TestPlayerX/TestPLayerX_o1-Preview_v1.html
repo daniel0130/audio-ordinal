@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browser-Based DAW</title>
+  <style>
+    /* General Styles */
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #control-panel, #timeline, #tracks-container { margin-bottom: 10px; }
+    #control-panel input { width: 300px; padding: 5px; }
+    #control-panel button, #control-panel .zoom-controls { padding: 5px 10px; margin-left: 5px; }
+    #timeline { position: relative; height: 30px; background: #f0f0f0; }
+    .loop-marker { position: absolute; top: 0; bottom: 0; width: 10px; background: red; cursor: pointer; border-radius: 5px; }
+    #loop-start { left: 0; }
+    #loop-end { right: 0; }
+    #tracks-container { border: 1px solid #ccc; height: 300px; overflow: auto; position: relative; }
+    .track { position: relative; height: 60px; border-bottom: 1px solid #ddd; display: flex; }
+    .track-controls { width: 150px; background: #fafafa; border-right: 1px solid #ddd; padding: 5px; }
+    .track-controls label, .track-controls input { display: block; width: 100%; margin-bottom: 5px; }
+    .track-content { flex: 1; position: relative; overflow: auto; }
+    .waveform-canvas { position: relative; display: block; height: 100%; background: #d0d0ff; cursor: grab; }
+    .waveform-canvas:active { cursor: grabbing; }
+    /* Zoom Controls */
+    .zoom-controls {
+      display: inline-flex;
+      align-items: center;
+    }
+    .zoom-controls label {
+      margin-right: 5px;
+    }
+    .zoom-controls input {
+      width: 60px;
+    }
+    /* Region Styling */
+    .region {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: rgba(0, 255, 0, 0.3);
+      border: 2px solid green;
+      cursor: move;
+      box-sizing: border-box;
+    }
+    .region .resize-handle {
+      position: absolute;
+      top: 0;
+      width: 10px;
+      height: 100%;
+      background: rgba(0, 128, 0, 0.5);
+      cursor: ew-resize;
+    }
+    .region .resize-handle.left {
+      left: 0;
+    }
+    .region .resize-handle.right {
+      right: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="daw-container">
+    <!-- Control Panel -->
+    <div id="control-panel">
+      <input type="text" id="audio-url" placeholder="Enter Audio URL">
+      <button id="load-audio">Load Audio</button>
+      <button id="play">Play</button>
+      <button id="stop">Stop</button>
+      <button id="toggle-loop">Loop</button>
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <label for="zoom-horizontal">Zoom H:</label>
+        <input type="range" id="zoom-horizontal" min="1" max="10" value="1">
+        <label for="zoom-vertical">Zoom V:</label>
+        <input type="range" id="zoom-vertical" min="1" max="5" value="1">
+      </div>
+    </div>
+
+    <!-- Timeline and Tracks -->
+    <div id="timeline">
+      <div id="loop-start" class="loop-marker"></div>
+      <div id="loop-end" class="loop-marker"></div>
+    </div>
+    <div id="tracks-container"></div>
+  </div>
+
+  <script>
+    // Initialize Audio Context
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // DOM Elements
+    const controls = {
+      url: document.getElementById('audio-url'),
+      load: document.getElementById('load-audio'),
+      play: document.getElementById('play'),
+      stop: document.getElementById('stop'),
+      loop: document.getElementById('toggle-loop'),
+      zoomH: document.getElementById('zoom-horizontal'),
+      zoomV: document.getElementById('zoom-vertical'),
+    };
+    const timeline = document.getElementById('timeline');
+    const loopMarkers = {
+      start: document.getElementById('loop-start'),
+      end: document.getElementById('loop-end'),
+    };
+    const tracksContainer = document.getElementById('tracks-container');
+
+    // State Variables
+    const state = {
+      tracks: [],
+      isPlaying: false,
+      isLooping: false,
+      loopStart: 0,
+      loopEnd: 0,
+      zoomHorizontal: 1,
+      zoomVertical: 1,
+    };
+
+    // Event Listeners
+    controls.load.addEventListener('click', () => {
+      const url = controls.url.value.trim();
+      if (url) loadAudioTrack(url);
+    });
+
+    controls.play.addEventListener('click', () => {
+      if (!state.isPlaying) playAllTracks();
+    });
+
+
+    controls.loop.addEventListener('click', () => {
+      state.isLooping = !state.isLooping;
+      controls.loop.textContent = state.isLooping ? 'Unloop' : 'Loop';
+      state.tracks.forEach(track => {
+        if (track.source) {
+          track.source.loop = state.isLooping;
+          track.source.loopStart = state.loopStart;
+          track.source.loopEnd = state.loopEnd || track.audioBuffer.duration;
+        }
+      });
+    });
+
+    // Zoom Controls
+    controls.zoomH.addEventListener('input', () => {
+      state.zoomHorizontal = parseFloat(controls.zoomH.value);
+      state.tracks.forEach(track => {
+        track.zoomHorizontal = state.zoomHorizontal;
+        renderWaveform(track.audioBuffer, track.canvas, track.zoomHorizontal, track.zoomVertical);
+        updateRegionPosition(track.region, track);
+      });
+    });
+
+    controls.zoomV.addEventListener('input', () => {
+      state.zoomVertical = parseFloat(controls.zoomV.value);
+      state.tracks.forEach(track => {
+        track.zoomVertical = state.zoomVertical;
+        renderWaveform(track.audioBuffer, track.canvas, track.zoomHorizontal, track.zoomVertical);
+        updateRegionPosition(track.region, track);
+      });
+    });
+
+    // Load Audio Track
+    const loadAudioTrack = async (url) => {
+      try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        createTrack(audioBuffer);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+        alert('Failed to load audio. Please check the URL and try again.');
+      }
+    };
+
+    // Create Track
+    const createTrack = (audioBuffer) => {
+      const track = {
+        audioBuffer,
+        gainNode: audioCtx.createGain(),
+        panNode: audioCtx.createStereoPanner(),
+        offset: 0,
+        duration: audioBuffer.duration,
+        isDragging: false,
+        source: null,
+        zoomHorizontal: state.zoomHorizontal,
+        zoomVertical: state.zoomVertical,
+      };
+      state.tracks.push(track);
+      addTrackToDOM(track);
+    };
+
+    // Render Waveform
+    const renderWaveform = (audioBuffer, canvas, zoomH, zoomV) => {
+      const pixelsPerSecond = 100;
+      const duration = audioBuffer.duration;
+      canvas.width = duration * pixelsPerSecond * zoomH;
+      canvas.style.width = canvas.width + 'px';
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const data = audioBuffer.getChannelData(0);
+      const dataLength = data.length;
+      const step = Math.ceil(dataLength / width);
+      const amp = (height / 2) * zoomV;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, width, height);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#000';
+      ctx.beginPath();
+      for (let i = 0; i < width; i++) {
+        let min = 1.0;
+        let max = -1.0;
+        const start = i * step;
+        const end = Math.min(start + step, dataLength);
+        for (let j = start; j < end; j++) {
+          const datum = data[j];
+          if (datum < min) min = datum;
+          if (datum > max) max = datum;
+        }
+        ctx.moveTo(i, amp - (min * amp));
+        ctx.lineTo(i, amp - (max * amp));
+      }
+      ctx.stroke();
+    };
+
+    // Add Track to DOM
+    const addTrackToDOM = (track) => {
+      const trackElem = document.createElement('div');
+      trackElem.className = 'track';
+
+      // Track Controls
+      const controlsElem = document.createElement('div');
+      controlsElem.className = 'track-controls';
+      controlsElem.innerHTML = `
+        <label>Volume:
+          <input type="range" min="0" max="1" step="0.01" value="1">
+        </label>
+        <label>Pan:
+          <input type="range" min="-1" max="1" step="0.01" value="0">
+        </label>
+      `;
+      controlsElem.querySelectorAll('input').forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          if (idx === 0) track.gainNode.gain.setValueAtTime(value, audioCtx.currentTime);
+          else track.panNode.pan.setValueAtTime(value, audioCtx.currentTime);
+        });
+      });
+
+      // Track Content
+      const contentElem = document.createElement('div');
+      contentElem.className = 'track-content';
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'waveform-canvas';
+      canvas.height = 60;
+      renderWaveform(track.audioBuffer, canvas, track.zoomHorizontal, track.zoomVertical);
+      track.canvas = canvas;
+
+      // Adding a draggable and resizable region
+      const region = document.createElement('div');
+      region.className = 'region';
+      // Initialize region to loopStart and loopEnd
+      updateRegionPosition(region, track);
+
+      // Resize Handles
+      const leftHandle = document.createElement('div');
+      leftHandle.className = 'resize-handle left';
+      const rightHandle = document.createElement('div');
+      rightHandle.className = 'resize-handle right';
+      region.appendChild(leftHandle);
+      region.appendChild(rightHandle);
+
+      // Dragging the region
+      let isDraggingRegion = false;
+      let dragStartX = 0;
+      let regionStartLeft = 0;
+
+      region.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('resize-handle')) return;
+        isDraggingRegion = true;
+        dragStartX = e.clientX;
+        regionStartLeft = parseFloat(region.style.left);
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDraggingRegion) {
+          const deltaX = (e.clientX - dragStartX) / state.zoomHorizontal;
+          let newLeft = regionStartLeft + deltaX;
+          newLeft = Math.max(0, Math.min(newLeft, canvas.width - region.clientWidth));
+          region.style.left = `${newLeft}px`;
+          // Update loopStart and loopEnd based on region position
+          state.loopStart = (newLeft / canvas.width) * track.duration;
+          state.loopEnd = ((newLeft + region.clientWidth) / canvas.width) * track.duration;
+          updateLoopMarkers();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDraggingRegion = false;
+      });
+
+      // Resizing the region
+      let isResizingLeft = false;
+      let isResizingRight = false;
+      let resizeStartX = 0;
+      let regionStartWidth = 0;
+      let regionStartLeftResize = 0;
+
+      leftHandle.addEventListener('mousedown', (e) => {
+        isResizingLeft = true;
+        resizeStartX = e.clientX;
+        regionStartWidth = parseFloat(region.style.width);
+        regionStartLeftResize = parseFloat(region.style.left);
+        e.stopPropagation();
+        e.preventDefault();
+      });
+
+      rightHandle.addEventListener('mousedown', (e) => {
+        isResizingRight = true;
+        resizeStartX = e.clientX;
+        regionStartWidth = parseFloat(region.style.width);
+        e.stopPropagation();
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isResizingLeft) {
+          const deltaX = (e.clientX - resizeStartX) / state.zoomHorizontal;
+          let newWidth = regionStartWidth - deltaX;
+          let newLeft = regionStartLeftResize + deltaX;
+          if (newWidth < 20) { // Minimum width
+            newWidth = 20;
+            newLeft = regionStartLeftResize + (regionStartWidth - 20);
+          }
+          region.style.width = `${newWidth}px`;
+          region.style.left = `${newLeft}px`;
+          // Update loopStart and loopEnd based on region position
+          state.loopStart = (newLeft / canvas.width) * track.duration;
+          state.loopEnd = ((newLeft + newWidth) / canvas.width) * track.duration;
+          updateLoopMarkers();
+        }
+        if (isResizingRight) {
+          const deltaX = (e.clientX - resizeStartX) / state.zoomHorizontal;
+          let newWidth = regionStartWidth + deltaX;
+          newWidth = Math.max(20, newWidth); // Minimum width
+          region.style.width = `${newWidth}px`;
+          // Update loopEnd based on region position
+          state.loopEnd = ((parseFloat(region.style.left) + newWidth) / canvas.width) * track.duration;
+          updateLoopMarkers();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isResizingLeft = false;
+        isResizingRight = false;
+      });
+
+      contentElem.appendChild(canvas);
+      contentElem.appendChild(region);
+      track.region = region;
+      track.contentElem = contentElem;
+
+      trackElem.appendChild(controlsElem);
+      trackElem.appendChild(contentElem);
+      tracksContainer.appendChild(trackElem);
+
+      // Initially set loop markers based on first track
+      if (state.tracks.length === 1) {
+        state.loopStart = 0;
+        state.loopEnd = track.duration;
+        updateLoopMarkers();
+      }
+    };
+
+    // Update Region Position
+    const updateRegionPosition = (region, track) => {
+      const canvasWidth = track.canvas.width;
+      const left = (state.loopStart / track.duration) * canvasWidth;
+      const width = ((state.loopEnd - state.loopStart) / track.duration) * canvasWidth;
+      region.style.left = `${left}px`;
+      region.style.width = `${width}px`;
+    };
+
+    // Play All Tracks
+    const playAllTracks = () => {
+      state.isPlaying = true;
+      state.tracks.forEach(track => {
+        const source = audioCtx.createBufferSource();
+        source.buffer = track.audioBuffer;
+        source.loop = state.isLooping;
+        source.loopStart = state.loopStart;
+        source.loopEnd = state.loopEnd || track.audioBuffer.duration;
+
+        source.connect(track.gainNode).connect(track.panNode).connect(audioCtx.destination);
+        source.start(0, track.offset);
+        track.source = source;
+      });
+    };
+
+    // Stop All Tracks
+    const stopAllTracks = () => {
+      state.isPlaying = false;
+      state.tracks.forEach(track => {
+        if (track.source) {
+          track.source.stop();
+          track.source.disconnect();
+          track.source = null;
+        }
+      });
+    };
+
+    // Add event listener after initialisation
+    controls.stop.addEventListener('click', stopAllTracks);
+
+    // Loop Marker Dragging
+    let draggingMarker = null;
+
+    const handleMarkerMouseDown = (marker) => {
+      draggingMarker = marker;
+    };
+
+    const handleTimelineMouseMove = (e) => {
+      if (!draggingMarker) return;
+      const rect = timeline.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(x, rect.width));
+      const percentage = (x / rect.width) * 100;
+      draggingMarker.style.left = `${percentage}%`;
+      const time = (percentage / 100) * getTotalDuration();
+      if (draggingMarker === loopMarkers.start) {
+        state.loopStart = time;
+        updateAllRegions();
+      } else {
+        state.loopEnd = time;
+        updateAllRegions();
+      }
+    };
+
+    const handleMouseUp = () => {
+      draggingMarker = null;
+    };
+
+    loopMarkers.start.addEventListener('mousedown', () => handleMarkerMouseDown(loopMarkers.start));
+    loopMarkers.end.addEventListener('mousedown', () => handleMarkerMouseDown(loopMarkers.end));
+    document.addEventListener('mousemove', handleTimelineMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Get Total Duration
+    const getTotalDuration = () => Math.max(...state.tracks.map(t => t.duration), 0);
+
+    // Update Loop Markers based on loopStart and loopEnd
+    const updateLoopMarkers = () => {
+      const totalDuration = getTotalDuration();
+      const startPercent = (state.loopStart / totalDuration) * 100;
+      const endPercent = (state.loopEnd / totalDuration) * 100;
+      loopMarkers.start.style.left = `${startPercent}%`;
+      loopMarkers.end.style.left = `${endPercent}%`;
+    };
+
+    // Update region positions when loop markers are moved
+    const updateAllRegions = () => {
+      state.tracks.forEach(track => {
+        updateRegionPosition(track.region, track);
+      });
+    };
+  </script>
+</body>
+</html>

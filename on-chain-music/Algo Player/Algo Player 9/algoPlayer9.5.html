@@ -6,18 +6,6 @@
         <title>? ? ? ? ? ? ?</title>
 
 
-<script>
-// Placeholder function to prevent errors from missing enforceDocumentTitle definition in other files.
-// This function might be used to update the document title, but currently does nothing meaningful.
-// It is here for future reference in case document title management is needed.
-function enforceDocumentTitle() {
-    // Placeholder logic to avoid throwing an error in external files that expect this function.
-    // If title management is needed in the future, it can be implemented here.
-    // console.log("[enforceDocumentTitle] This is a placeholder function to prevent errors.");
-}
-
-</script> 
-
 <style>
 body, html {
     height: 100%;
@@ -159,11 +147,14 @@ body {
         }
 
 </style>
+
+<htmlElements>
 <!-- Continue button to resume code execution -->
 <!-- <button id="reset-button">Reset</button> -->
 <button id="continue-button">Continue</button>
 <!-- Div to Display Seed -->
 <div id="seed-display">Seed: 0</div>
+</htmlElements>
 
 <seedAndInitialise>
 
@@ -345,8 +336,6 @@ body {
             }
         </script>
 </helperFunctions>
-
-
 
 <init>
     <!-- Script 1: Seed Management -->
@@ -615,7 +604,6 @@ body {
     </script>
 </init>
 
-
 <audioContext>
     <script id="audio-context-manager">
         //#region AudioContext Section Explanation
@@ -827,8 +815,7 @@ body {
 </definitions>
 
 <fetchAndProcessAudioData>
-
-            <script>
+<script>
                 async function fetchAndProcessAudioData(urls) {
                     await Promise.all(urls.map((url, index) => processAudioUrl(url, index + 1, audioCtx)));
                     createReversedBuffersForChannelsWithReverseSteps();
@@ -1142,10 +1129,8 @@ body {
                             ])
                     );
                 }
-            </script>
-            
+</script>         
 </fetchAndProcessAudioData>
-
 
  <dataProcessingUtilities>
         <!-- <script src="/content/a802ec5558216e754e927a24b2b8b87180339a7a7cbf9d19d36bd6a6acd9846bi0"></script> -->
@@ -1155,7 +1140,7 @@ body {
     </script>
 </dataProcessingUtilities>
 
-<dataProcessingCore>
+<!-- <dataProcessingCore>
     <script>
         // Data Processing Core
         async function loadPako() {
@@ -1390,7 +1375,312 @@ body {
 
         console.log("DataProcessingCore initialized.");
     </script>
-</dataProcessingCore>
+</dataProcessingCore> -->
+
+<dataLoadingAndDeserialisation>
+<!-- Script 1: Data Loading and Deserialization -->
+<script>
+    // Data Loading and Deserialization Script
+
+    // Function to load the Pako library
+    async function loadPako() {
+        try {
+            const response = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+            const text = await response.text();
+            const scriptContent = new DOMParser()
+                .parseFromString(text, "text/html")
+                .querySelector("script")?.textContent;
+            if (!scriptContent || !scriptContent.includes("pako")) {
+                throw new Error("Pako library not found in the fetched content.");
+            }
+            const scriptElement = document.createElement("script");
+            scriptElement.textContent = scriptContent;
+            document.head.appendChild(scriptElement);
+            console.log("Pako library loaded successfully.");
+        } catch (error) {
+            console.error("Error occurred during Pako loading:", error);
+            throw error; // Re-throw to prevent further processing
+        }
+    }
+
+    // Function to fetch and deserialize compressed data
+    async function fetchAndDeserialize(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Network response was not ok for URL: ${url}`);
+            const arrayBuffer = await response.arrayBuffer();
+            const inflatedData = pako.inflate(new Uint8Array(arrayBuffer));
+            const jsonString = new TextDecoder("utf-8").decode(inflatedData);
+            return deserialize(JSON.parse(jsonString));
+        } catch (error) {
+            console.error("Error in fetchAndDeserialize:", error);
+            throw error;
+        }
+    }
+
+    // Function to fetch and process multiple data URLs
+    async function fetchAndProcessData(songDataUrls) {
+        try {
+            const deserializedData = await Promise.all(
+                songDataUrls.map(async (url) => {
+                    try {
+                        const data = await fetchAndDeserialize(url);
+                        if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+                        return data;
+                    } catch (error) {
+                        console.error("Error processing URL:", error);
+                        return null;
+                    }
+                })
+            );
+            const validData = deserializedData.filter(data => data !== null);
+            if (!validData.length) throw new Error("No valid data was processed.");
+            return validData;
+        } catch (error) {
+            console.error("Error in fetchAndProcessData:", error);
+            throw error;
+        }
+    }
+
+    // Function to select BPM based on a seed
+    function selectBPM(seed) {
+        const BPM_VALUES = [80, 100, 120, 140, 160, 180, 240];
+        return BPM_VALUES[Math.floor(seededRandom(seed) * BPM_VALUES.length)];
+    }
+
+    // Main function to process serialized data (Part 1)
+    async function processSerializedDataPart1(songDataUrls, VOLUME_CONTROLS, SPEED_CONTROLS) {
+        try {
+            await loadPako();
+            const deserializedData = await fetchAndProcessData(songDataUrls);
+            const selectedBPM = selectBPM(window.seed); // Ensure window.seed is defined
+
+            // Store the deserialized data and other necessary info globally for Script 2
+            window.processedData = {
+                deserializedData,
+                selectedBPM,
+                VOLUME_CONTROLS,
+                SPEED_CONTROLS,
+                songDataUrls  // Include songDataUrls if needed by Script 2
+            };
+            console.log("Data loading and deserialization complete.");
+
+            // Dispatch event to signal completion
+            document.dispatchEvent(new CustomEvent("dataLoadingComplete"));
+        } catch (error) {
+            console.error("Error in processSerializedDataPart1:", error);
+        }
+    }
+
+    // Expose the processSerializedDataPart1 function globally
+    window.processSerializedData = processSerializedDataPart1;
+
+    console.log("DataLoadingAndDeserializationScript initialized.");
+</script>
+</dataLoadingAndDeserialisation>
+
+<localDataProcessing>
+<!-- Script 2: Local Data Processing -->
+<script>
+    // Local Data Processing Script
+
+    // Function to shuffle an array with a seed
+    function shuffleArray(array, seed) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(seededRandom(seed++) * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Function to adjust channel data
+    function adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId) {
+        const adjustmentFactor = selectedBPM / data.projectBPM;
+
+        data.channelPlaybackSpeed = data.channelPlaybackSpeed.map((speed, channelIndex) => {
+            const speedMultiplier = SPEED_CONTROLS[dataIndex][channelIndex] || 1;
+            let newSpeed = speed * adjustmentFactor * speedMultiplier;
+
+            // Enforce minimum playback speed if needed
+            const MIN_PLAYBACK_SPEED = 0.1;
+            if (isNaN(newSpeed) || newSpeed < MIN_PLAYBACK_SPEED) {
+                console.warn(
+                    `Playback speed for channel ${channelIndex} is too low (${newSpeed.toFixed(
+                        2
+                    )}). Setting to minimum value ${MIN_PLAYBACK_SPEED}.`
+                );
+                newSpeed = MIN_PLAYBACK_SPEED;
+            }
+
+            return newSpeed;
+        });
+
+        const volumeControls = VOLUME_CONTROLS[dataIndex] || [];
+        const masterVolumeMultiplier = volumeControls[0] || 1;
+
+        data.channelVolume = data.channelVolume.map((volume, channelIndex) => {
+            const channelVolumeMultiplier = volumeControls[channelIndex + 1] || 1;
+            return volume * masterVolumeMultiplier * channelVolumeMultiplier;
+        });
+    }
+
+    // Function to assemble the processed song
+    function assembleProcessedSong(deserializedData, selectedBPM) {
+        const flattenedChannels = deserializedData.flatMap((data, dataIndex) =>
+            data.channelURLs.map((url, channelIndex) => ({
+                url,
+                volume: data.channelVolume[channelIndex],
+                speed: data.channelPlaybackSpeed[channelIndex],
+                trim: data.trimSettings[channelIndex],
+                source: `data${dataIndex + 1}`,
+                index: channelIndex
+            }))
+        );
+
+        // Shuffle all channels and select the first 28
+        const shuffledChannels = shuffleArray(flattenedChannels, window.seed).slice(0, 28);
+
+        // Log the selected channels and playback speeds
+        console.log("Selected Channels and Playback Speeds:");
+        shuffledChannels.forEach((channel, index) => {
+            channel.globalIndex = index; // Assign globalIndex from 0 to 27
+            console.log(
+                `Channel ${index + 1}: Source=${channel.source}, Index=${channel.index}, Playback Speed=${channel.speed.toFixed(2)}, URL=${channel.url}`
+            );
+        });
+
+        // Updated batch numbers for dividing the channels into batches
+        const channelBatches = [
+            shuffledChannels.slice(0, 20),    // First 20 channels for sequences 0-3
+            shuffledChannels.slice(20, 24),   // Next 4 channels to be added at sequence 4
+            shuffledChannels.slice(24, 28)    // Next 4 channels to be added at sequence 6
+        ];
+
+        const processedSong = {
+            ...deserializedData[0],
+            projectBPM: selectedBPM,
+            channelURLs: shuffledChannels.map(ch => ch.url),
+            channelVolume: shuffledChannels.map(ch => ch.volume),
+            channelPlaybackSpeed: shuffledChannels.map(ch => ch.speed),
+            trimSettings: shuffledChannels.map(ch => ch.trim),
+            projectSequences: {}
+        };
+
+        // Create a mapping from data source identifiers to their data objects
+        const dataSourceMap = deserializedData.reduce((acc, data, idx) => {
+            acc[`data${idx + 1}`] = data;
+            return acc;
+        }, {});
+
+        // Initialize variables to track active channels and logging
+        let activeChannels = [];
+        let previousActiveChannelsCount = 0;
+        const channelAdditionLog = [];
+
+        // Iterate over each sequence in the first deserialized data object
+        for (const sequenceKey in deserializedData[0].projectSequences) {
+            processedSong.projectSequences[sequenceKey] = {};
+
+            // Extract the sequence number from the sequence key
+            const sequenceNumber = parseInt(sequenceKey.replace(/\D/g, ''), 10);
+
+            // Determine which channels are active based on the sequence number
+            if (sequenceNumber >= 0 && sequenceNumber <= 1) {
+                activeChannels = channelBatches.slice(0, 1).flat();  // First 20 channels
+            } else if (sequenceNumber >= 2 && sequenceNumber <= 3) {
+                activeChannels = channelBatches.slice(0, 2).flat();  // Add 4 more channels (total 24)
+            } else if (sequenceNumber >= 4 && sequenceNumber <= 11) {
+                activeChannels = channelBatches.slice(0, 3).flat();  // Add 4 more channels (total 28)
+            }
+
+            // Check if the number of active channels has increased
+            if (activeChannels.length > previousActiveChannelsCount) {
+                const channelsAdded = activeChannels.length - previousActiveChannelsCount;
+                channelAdditionLog.push({
+                    sequenceNumber,
+                    channelsAdded,
+                    totalChannels: activeChannels.length
+                });
+                previousActiveChannelsCount = activeChannels.length;
+            }
+
+            // Build the sequence data using the active channels
+            activeChannels.forEach((channel, newIndex) => {
+                const originalSequence = dataSourceMap[channel.source]?.projectSequences[sequenceKey];
+
+                const channelKey = `ch${newIndex}`;
+                let originalChannelData = originalSequence?.[`ch${channel.index}`];
+
+                if (!originalChannelData) {
+                    originalChannelData = { steps: [] };
+                }
+
+                // Ensure steps are defined and include global index
+                processedSong.projectSequences[sequenceKey][channelKey] = {
+                    ...originalChannelData,
+                    steps: Array.isArray(originalChannelData.steps) ? originalChannelData.steps : [],
+                    globalIndex: channel.globalIndex // Include global index
+                };
+            });
+        }
+
+        // Attach the channel addition log to the processed song
+        processedSong.channelAdditionLog = channelAdditionLog;
+
+        return processedSong;
+    }
+
+    // Function to apply the schedule multiplier
+    // **Important:** Do NOT redefine this function here. It should be defined globally elsewhere.
+    // function applyScheduleMultiplier(processedSong, scheduleMultiplierOnOff) {
+    //     // Your implementation here
+    // }
+
+    // Main function to handle local data processing (Part 2)
+    async function processSerializedDataPart2() {
+        try {
+            const { deserializedData, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songDataUrls } = window.processedData;
+
+            deserializedData.forEach((data, dataIndex) => {
+                const songId = songDataUrls[dataIndex].split('/').pop();
+                adjustChannelData(data, dataIndex, selectedBPM, VOLUME_CONTROLS, SPEED_CONTROLS, songId);
+            });
+
+            const processedSong = assembleProcessedSong(deserializedData, selectedBPM);
+
+            // Apply the schedule multiplier after assembling the song
+            // **Assuming applyScheduleMultiplier is defined globally**
+            if (typeof applyScheduleMultiplier === 'function') {
+                applyScheduleMultiplier(processedSong, window.scheduleMultiplierOnOff);
+            } else {
+                console.warn("applyScheduleMultiplier function is not defined.");
+            }
+
+            // Set `window.globalJsonData` here
+            window.globalJsonData = processedSong;
+
+            window.jsonDataUrl = URL.createObjectURL(
+                new Blob([JSON.stringify(processedSong)], { type: "application/json" })
+            );
+
+            // Dispatch event to signal completion
+            document.dispatchEvent(new CustomEvent("dataProcessingComplete"));
+
+            console.log("Local data processing complete.");
+        } catch (error) {
+            console.error("Error in processSerializedDataPart2:", error);
+        }
+    }
+
+    // Listen for the dataLoadingComplete event to start local processing
+    document.addEventListener("dataLoadingComplete", () => {
+        console.log("Received dataLoadingComplete event. Starting local data processing.");
+        processSerializedDataPart2();
+    });
+
+    console.log("LocalDataProcessingScript initialized and waiting for dataLoadingComplete event.");
+</script>
+</localDataProcessing>
 
 <!-- <enhancements>
     <script>
@@ -1801,6 +2091,7 @@ body {
 </script>
 
 </playerMessagesAndEvents>
+
 <audioWebWorkers>
     <script>
         // Constants for scheduling
@@ -1995,6 +2286,7 @@ body {
          */
     </script>
 </audioWebWorkers>
+
 <loadAdditionalScripts>
 
 <script>

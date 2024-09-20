@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Online DAW with Waveform Display - Optimized Version</title>
+  <style>
+    /* CSS Styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #control-panel {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    #control-panel button, #control-panel label {
+      margin-right: 10px;
+    }
+
+    #track-area {
+      position: relative;
+      height: calc(100vh - 100px);
+      overflow: auto;
+      background-color: #f0f0f0;
+    }
+
+    .track {
+      position: relative;
+      height: 100px;
+      border-bottom: 1px solid #ccc;
+      background-color: #e0e0e0;
+    }
+
+    .track-controls {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100px;
+      background-color: #ddd;
+      border-right: 1px solid #ccc;
+      padding: 5px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .track-contents {
+      position: absolute;
+      left: 100px;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      overflow: hidden;
+    }
+
+    .audio-region {
+      position: absolute;
+      top: 10px;
+      height: 80px;
+      background-color: #9ec5fe;
+      border: 1px solid #007bff;
+      color: #fff;
+      cursor: move;
+      box-sizing: border-box;
+    }
+
+    .waveform-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    #timeline {
+      position: absolute;
+      left: 100px;
+      top: 0;
+      right: 0;
+      height: 0;
+      border-bottom: 1px solid #000;
+    }
+
+    #playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: red;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Control Panel -->
+  <div id="control-panel">
+    <button id="load-audio-btn">Load Audio</button>
+    <button id="play-btn">Play</button>
+    <button id="pause-btn">Pause</button>
+    <button id="stop-btn">Stop</button>
+    <label>
+      <input type="checkbox" id="loop-toggle"> Loop
+    </label>
+    <!-- Zoom controls -->
+    <button id="zoom-in-btn">Zoom In</button>
+    <button id="zoom-out-btn">Zoom Out</button>
+  </div>
+
+  <!-- Track Area -->
+  <div id="track-area">
+    <!-- One track is initialized here -->
+  </div>
+
+  <!-- Timeline -->
+  <div id="timeline">
+    <!-- Playhead -->
+    <div id="playhead"></div>
+  </div>
+
+  <!-- Optimized Script -->
+  <script>
+    (() => {
+      // Global Variables
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const tracks = [];
+      let isPlaying = false;
+      let startTime = 0;
+      let pausedAt = 0;
+      let loopEnabled = false;
+      let zoomLevel = 1;
+      let playheadInterval = null;
+
+      // DOM Elements
+      const loadAudioButton = document.getElementById('load-audio-btn');
+      const playButton = document.getElementById('play-btn');
+      const pauseButton = document.getElementById('pause-btn');
+      const stopButton = document.getElementById('stop-btn');
+      const loopToggle = document.getElementById('loop-toggle');
+      const zoomInButton = document.getElementById('zoom-in-btn');
+      const zoomOutButton = document.getElementById('zoom-out-btn');
+      const trackArea = document.getElementById('track-area');
+      const timeline = document.getElementById('timeline');
+      const playhead = document.getElementById('playhead');
+
+      // Utility Functions
+      const validateURL = url => {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          alert('Invalid URL format.');
+          return false;
+        }
+      };
+
+      const loadAudio = async url => {
+        if (!validateURL(url)) return null;
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+          const contentType = response.headers.get('Content-Type');
+          if (!contentType?.startsWith('audio/')) throw new Error(`Unsupported Content-Type: ${contentType}`);
+          const arrayBuffer = await response.arrayBuffer();
+          return await audioContext.decodeAudioData(arrayBuffer);
+        } catch (error) {
+          alert(`Error loading audio: ${error.message}`);
+          return null;
+        }
+      };
+
+      // Track Class
+      class Track {
+        constructor(audioBuffer = null, url = null) {
+          this.audioBuffer = audioBuffer;
+          this.url = url;
+          this.source = null;
+          this.gainNode = audioContext.createGain();
+          this.panNode = audioContext.createStereoPanner();
+          this.volume = 1;
+          this.pan = 0;
+          this.muted = false;
+          this.solo = false;
+          this.offset = 0; // in seconds
+          this.regions = [];
+          this.createUI();
+        }
+
+        createSource() {
+          this.source = audioContext.createBufferSource();
+          this.source.buffer = this.audioBuffer;
+          this.source.loop = loopEnabled;
+          this.source.connect(this.panNode).connect(this.gainNode).connect(audioContext.destination);
+        }
+
+        play(startAt) {
+          if (!this.audioBuffer) return;
+          this.createSource();
+          this.source.start(0, this.offset + startAt);
+        }
+
+        stop() {
+          this.source?.stop();
+          this.source?.disconnect();
+          this.source = null;
+        }
+
+        setVolume(value) {
+          this.volume = value;
+          this.gainNode.gain.value = this.muted ? 0 : this.volume;
+        }
+
+        setPan(value) {
+          this.pan = value;
+          this.panNode.pan.value = this.pan;
+        }
+
+        setMute(muted) {
+          this.muted = muted;
+          this.gainNode.gain.value = muted ? 0 : this.volume;
+        }
+
+        setSolo(solo) {
+          this.solo = solo;
+        }
+
+        createUI() {
+          const trackElement = document.createElement('div');
+          trackElement.className = 'track';
+
+          const trackControls = document.createElement('div');
+          trackControls.className = 'track-controls';
+
+          // Volume Control
+          const volumeLabel = document.createElement('span');
+          volumeLabel.textContent = 'Vol';
+          const volumeSlider = document.createElement('input');
+          volumeSlider.type = 'range';
+          volumeSlider.min = 0;
+          volumeSlider.max = 1;
+          volumeSlider.step = 0.01;
+          volumeSlider.value = this.volume;
+          volumeSlider.oninput = () => this.setVolume(volumeSlider.value);
+
+          // Pan Control
+          const panLabel = document.createElement('span');
+          panLabel.textContent = 'Pan';
+          const panSlider = document.createElement('input');
+          panSlider.type = 'range';
+          panSlider.min = -1;
+          panSlider.max = 1;
+          panSlider.step = 0.01;
+          panSlider.value = this.pan;
+          panSlider.oninput = () => this.setPan(panSlider.value);
+
+          // Mute Button
+          const muteButton = document.createElement('button');
+          muteButton.textContent = 'Mute';
+          muteButton.onclick = () => {
+            this.setMute(!this.muted);
+            muteButton.textContent = this.muted ? 'Unmute' : 'Mute';
+          };
+
+          // Solo Button
+          const soloButton = document.createElement('button');
+          soloButton.textContent = 'Solo';
+          soloButton.onclick = () => {
+            this.setSolo(!this.solo);
+            soloButton.textContent = this.solo ? 'Unsolo' : 'Solo';
+            updateSoloStates();
+          };
+
+          // Append Controls
+          trackControls.append(volumeLabel, volumeSlider, panLabel, panSlider, muteButton, soloButton);
+
+          // Track Contents
+          const trackContents = document.createElement('div');
+          trackContents.className = 'track-contents';
+
+          trackElement.append(trackControls, trackContents);
+          trackArea.appendChild(trackElement);
+
+          // Assign to Track Instance
+          this.element = trackElement;
+          this.trackContents = trackContents;
+        }
+
+        addRegion(audioBuffer, url) {
+          this.audioBuffer = audioBuffer;
+          this.url = url;
+
+          const regionElement = document.createElement('div');
+          regionElement.className = 'audio-region';
+          regionElement.style.left = `${this.offset * 100 * zoomLevel}px`;
+          regionElement.style.width = `${this.audioBuffer.duration * 100 * zoomLevel}px`;
+
+          const waveformCanvas = document.createElement('canvas');
+          waveformCanvas.className = 'waveform-canvas';
+          regionElement.appendChild(waveformCanvas);
+          this.drawWaveform(waveformCanvas);
+
+          this.makeDraggable(regionElement);
+          this.trackContents.innerHTML = '';
+          this.trackContents.appendChild(regionElement);
+        }
+
+        drawWaveform(canvas) {
+          const ctx = canvas.getContext('2d');
+          const { clientWidth: width, clientHeight: height } = canvas.parentElement;
+          canvas.width = width;
+          canvas.height = height;
+          const data = this.audioBuffer.getChannelData(0);
+          const step = Math.ceil(data.length / width);
+          const amp = height / 2;
+          ctx.fillStyle = '#9ec5fe';
+          ctx.clearRect(0, 0, width, height);
+          for (let i = 0; i < width; i++) {
+            let min = 1.0, max = -1.0;
+            for (let j = 0; j < step; j++) {
+              const datum = data[i * step + j];
+              if (datum < min) min = datum;
+              if (datum > max) max = datum;
+            }
+            ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
+          }
+        }
+
+        makeDraggable(region) {
+          let isDragging = false, startX = 0, startLeft = 0;
+
+          const onMouseMove = e => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - startX;
+            let newLeft = Math.max(0, startLeft + deltaX);
+            newLeft = snapToGrid(newLeft);
+            region.style.left = `${newLeft}px`;
+            this.offset = newLeft / (100 * zoomLevel);
+          };
+
+          const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          };
+
+          const snapToGrid = value => Math.round(value / (10 * zoomLevel)) * (10 * zoomLevel);
+
+          region.addEventListener('mousedown', e => {
+            isDragging = true;
+            startX = e.clientX;
+            startLeft = parseFloat(region.style.left);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+          });
+        }
+      }
+
+      // UI Manager Functions
+      const initializeTrack = () => {
+        tracks.push(new Track());
+      };
+
+      const updateSoloStates = () => {
+        const anySolo = tracks.some(track => track.solo);
+        tracks.forEach(track => track.setMute(anySolo && !track.solo));
+      };
+
+      const updateZoom = () => {
+        tracks.forEach(track => {
+          if (track.audioBuffer && track.trackContents.firstChild) {
+            const region = track.trackContents.querySelector('.audio-region');
+            region.style.left = `${track.offset * 100 * zoomLevel}px`;
+            region.style.width = `${track.audioBuffer.duration * 100 * zoomLevel}px`;
+            track.drawWaveform(region.querySelector('.waveform-canvas'));
+          }
+        });
+      };
+
+      // Playback Manager Functions
+      const startPlayback = () => {
+        audioContext.resume().then(() => {
+          startTime = audioContext.currentTime - pausedAt;
+          tracks.forEach(track => track.audioBuffer && track.play(pausedAt));
+          isPlaying = true;
+          startPlayhead();
+        });
+      };
+
+      const pausePlayback = () => {
+        tracks.forEach(track => track.stop());
+        pausedAt = audioContext.currentTime - startTime;
+        isPlaying = false;
+        stopPlayhead();
+      };
+
+      const stopPlayback = () => {
+        tracks.forEach(track => track.stop());
+        pausedAt = 0;
+        isPlaying = false;
+        resetPlayhead();
+      };
+
+      const startPlayhead = () => {
+        const playheadStartTime = audioContext.currentTime - pausedAt;
+        playheadInterval = setInterval(() => {
+          const elapsedTime = audioContext.currentTime - playheadStartTime;
+          playhead.style.left = `${elapsedTime * 100 * zoomLevel}px`;
+        }, 30);
+      };
+
+      const stopPlayhead = () => clearInterval(playheadInterval);
+
+      const resetPlayhead = () => {
+        stopPlayhead();
+        playhead.style.left = '0px';
+      };
+
+      // Event Handlers
+      loadAudioButton.addEventListener('click', async () => {
+        const url = prompt('Enter the URL of the audio file (MP3, WAV, FLAC):');
+        if (!url || !validateURL(url)) return;
+        const audioBuffer = await loadAudio(url);
+        if (audioBuffer) tracks[0]?.addRegion(audioBuffer, url);
+      });
+
+      playButton.addEventListener('click', () => { if (!isPlaying) startPlayback(); });
+      pauseButton.addEventListener('click', () => { if (isPlaying) pausePlayback(); });
+      stopButton.addEventListener('click', stopPlayback);
+
+      loopToggle.addEventListener('change', () => {
+        loopEnabled = loopToggle.checked;
+        tracks.forEach(track => {
+          if (track.source) track.source.loop = loopEnabled;
+        });
+      });
+
+      zoomInButton.addEventListener('click', () => {
+        zoomLevel *= 1.25;
+        updateZoom();
+      });
+
+      zoomOutButton.addEventListener('click', () => {
+        zoomLevel /= 1.25;
+        updateZoom();
+      });
+
+      // Initialize Application
+      initializeTrack();
+    })();
+  </script>
+</body>
+</html>
