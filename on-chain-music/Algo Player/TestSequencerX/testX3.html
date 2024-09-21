@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simplified DAW</title>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+#daw-container {
+  padding: 20px;
+}
+
+#transport-bar, #track-management, #project-management {
+  margin-bottom: 20px;
+}
+
+button {
+  margin-right: 10px;
+  padding: 10px;
+  background-color: #444;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+#tracks-container {
+  border: 1px solid #444;
+  padding: 10px;
+  min-height: 200px;
+}
+
+.track {
+  border: 1px solid #555;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #3c3c3c;
+  position: relative;
+}
+
+.track-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.track-controls input[type="range"] {
+  margin: 0 10px;
+}
+
+.track-regions {
+  border: 1px dashed #666;
+  min-height: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.region {
+  background-color: #555;
+  border: 1px solid #666;
+  position: absolute;
+  height: 50px;
+  cursor: move;
+}
+
+.region.selected {
+  border-color: #fff;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+  background-color: #2c2c2c;
+  margin: 5% auto;
+  padding: 20px;
+  width: 80%;
+  position: relative;
+}
+
+.close {
+  color: #aaa;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #fff;
+}
+
+</style>
+
+</head>
+<body>
+  <div id="daw-container">
+    <!-- Transport Bar -->
+    <div id="transport-bar">
+      <button id="play-btn">Play</button>
+      <button id="pause-btn">Pause</button>
+      <button id="stop-btn">Stop</button>
+      <span id="current-time">00:00</span>
+    </div>
+
+    <!-- Track Management -->
+    <div id="track-management">
+      <button id="add-audio-track-btn">Add Audio Track</button>
+      <button id="add-midi-track-btn">Add MIDI Track</button>
+    </div>
+
+    <!-- Tracks Container -->
+    <div id="tracks-container">
+      <!-- Tracks will be dynamically added here -->
+    </div>
+
+    <!-- Project Management -->
+    <div id="project-management">
+      <button id="save-project-btn">Save Project</button>
+      <button id="load-project-btn">Load Project</button>
+    </div>
+  </div>
+
+  <!-- MIDI Editor Modal -->
+  <div id="midi-editor-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <canvas id="piano-roll" width="800" height="400"></canvas>
+    </div>
+  </div>
+
+  <!-- File Input for Loading Projects -->
+  <input type="file" id="file-input" style="display: none;" accept=".json, audio/*, .mid">
+
+<script>
+    // script.js
+
+// Initialize variables
+let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let tracks = [];
+let isPlaying = false;
+let currentTime = 0;
+let transportInterval = null;
+
+// DOM Elements
+const playBtn = document.getElementById('play-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const stopBtn = document.getElementById('stop-btn');
+const currentTimeDisplay = document.getElementById('current-time');
+const addAudioTrackBtn = document.getElementById('add-audio-track-btn');
+const addMidiTrackBtn = document.getElementById('add-midi-track-btn');
+const tracksContainer = document.getElementById('tracks-container');
+const saveProjectBtn = document.getElementById('save-project-btn');
+const loadProjectBtn = document.getElementById('load-project-btn');
+const fileInput = document.getElementById('file-input');
+
+// Event Listeners
+playBtn.addEventListener('click', play);
+pauseBtn.addEventListener('click', pause);
+stopBtn.addEventListener('click', stop);
+addAudioTrackBtn.addEventListener('click', addAudioTrack);
+addMidiTrackBtn.addEventListener('click', addMidiTrack);
+saveProjectBtn.addEventListener('click', saveProject);
+loadProjectBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', loadProject);
+
+// Playback Functions
+function play() {
+  if (!isPlaying) {
+    isPlaying = true;
+    transportInterval = setInterval(() => {
+      currentTime += 0.1;
+      currentTimeDisplay.textContent = currentTime.toFixed(1);
+      // Update playback position
+    }, 100);
+    // Start playback of all tracks
+    tracks.forEach(track => {
+      // Implement track playback
+    });
+  }
+}
+
+function pause() {
+  if (isPlaying) {
+    isPlaying = false;
+    clearInterval(transportInterval);
+    // Pause playback of all tracks
+  }
+}
+
+function stop() {
+  isPlaying = false;
+  currentTime = 0;
+  clearInterval(transportInterval);
+  currentTimeDisplay.textContent = '00:00';
+  // Stop playback of all tracks and reset position
+}
+
+// Track Management Functions
+function addAudioTrack() {
+  const track = createTrack('audio');
+  tracks.push(track);
+  tracksContainer.appendChild(track.element);
+}
+
+function addMidiTrack() {
+  const track = createTrack('midi');
+  tracks.push(track);
+  tracksContainer.appendChild(track.element);
+}
+
+// Create Track Function
+function createTrack(type) {
+  const trackElement = document.createElement('div');
+  trackElement.className = 'track';
+  
+  // Track Controls
+  const trackControls = document.createElement('div');
+  trackControls.className = 'track-controls';
+  
+  const volumeSlider = document.createElement('input');
+  volumeSlider.type = 'range';
+  volumeSlider.min = 0;
+  volumeSlider.max = 1;
+  volumeSlider.step = 0.01;
+  volumeSlider.value = 0.8;
+  
+  const panSlider = document.createElement('input');
+  panSlider.type = 'range';
+  panSlider.min = -1;
+  panSlider.max = 1;
+  panSlider.step = 0.01;
+  panSlider.value = 0;
+  
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete Track';
+  deleteBtn.addEventListener('click', () => {
+    tracksContainer.removeChild(trackElement);
+    tracks = tracks.filter(t => t !== track);
+  });
+
+  trackControls.appendChild(document.createTextNode('Volume'));
+  trackControls.appendChild(volumeSlider);
+  trackControls.appendChild(document.createTextNode('Pan'));
+  trackControls.appendChild(panSlider);
+  trackControls.appendChild(deleteBtn);
+
+  // Regions Container
+  const regionsContainer = document.createElement('div');
+  regionsContainer.className = 'track-regions';
+  regionsContainer.addEventListener('dragover', (e) => e.preventDefault());
+  regionsContainer.addEventListener('drop', handleDrop);
+
+  // For MIDI Tracks, add MIDI Editor button
+  if (type === 'midi') {
+    const midiEditorBtn = document.createElement('button');
+    midiEditorBtn.textContent = 'Open MIDI Editor';
+    midiEditorBtn.addEventListener('click', openMidiEditor);
+    trackControls.appendChild(midiEditorBtn);
+  }
+
+  trackElement.appendChild(trackControls);
+  trackElement.appendChild(regionsContainer);
+
+  const track = {
+    type,
+    element: trackElement,
+    volumeSlider,
+    panSlider,
+    regions: [],
+  };
+
+  return track;
+}
+
+// Handle File Drop
+function handleDrop(event) {
+  event.preventDefault();
+  const files = event.dataTransfer.files;
+  if (files.length) {
+    const file = files[0];
+    if (file.type.startsWith('audio/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // Create a region with the audio data
+        const region = createRegion(reader.result);
+        event.currentTarget.appendChild(region.element);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  }
+}
+
+// Create Region Function
+function createRegion(data) {
+  const regionElement = document.createElement('div');
+  regionElement.className = 'region';
+  regionElement.style.width = '100px';
+  regionElement.style.left = '0px';
+  regionElement.draggable = true;
+
+  regionElement.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', null);
+  });
+
+  regionElement.addEventListener('dragend', (e) => {
+    // Update position based on drag
+  });
+
+  // Right-click to copy
+  regionElement.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    copiedRegion = regionElement.cloneNode(true);
+  });
+
+  // Paste functionality
+  document.addEventListener('paste', (e) => {
+    if (copiedRegion) {
+      const newRegion = copiedRegion.cloneNode(true);
+      regionElement.parentElement.appendChild(newRegion);
+    }
+  });
+
+  const region = {
+    element: regionElement,
+    data,
+  };
+
+  return region;
+}
+
+// MIDI Editor Functions
+function openMidiEditor() {
+  const modal = document.getElementById('midi-editor-modal');
+  modal.style.display = 'block';
+}
+
+const midiEditorModal = document.getElementById('midi-editor-modal');
+const closeBtn = midiEditorModal.querySelector('.close');
+
+closeBtn.addEventListener('click', () => {
+  midiEditorModal.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target == midiEditorModal) {
+    midiEditorModal.style.display = 'none';
+  }
+});
+
+// Project Management Functions
+function saveProject() {
+  const projectData = JSON.stringify(tracks.map(track => ({
+    type: track.type,
+    volume: track.volumeSlider.value,
+    pan: track.panSlider.value,
+    // Include additional track data as needed
+  })));
+
+  const blob = new Blob([projectData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'project.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function loadProject(event) {
+  const file = event.target.files[0];
+  if (file && file.type === 'application/json') {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const projectData = JSON.parse(reader.result);
+      // Clear existing tracks
+      tracks = [];
+      tracksContainer.innerHTML = '';
+      // Load tracks from project data
+      projectData.forEach(trackData => {
+        const track = createTrack(trackData.type);
+        track.volumeSlider.value = trackData.volume;
+        track.panSlider.value = trackData.pan;
+        tracks.push(track);
+        tracksContainer.appendChild(track.element);
+      });
+    };
+    reader.readAsText(file);
+  }
+}
+
+// Error Handling
+window.addEventListener('error', (e) => {
+  console.error('An error occurred:', e.message);
+});
+
+
+</script>>
+</body>
+</html>

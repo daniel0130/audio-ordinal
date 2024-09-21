@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple DAW</title>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #2e2e2e;
+        color: #fff;
+    }
+    
+    #daw-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    
+    header {
+        background-color: #1e1e1e;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    header h1 {
+        margin-right: 20px;
+    }
+    
+    #transport-controls, #project-controls {
+        display: flex;
+        align-items: center;
+    }
+    
+    #transport-controls button, #project-controls button, #track-management button {
+        margin-right: 10px;
+        padding: 5px 10px;
+        background-color: #3e3e3e;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+    }
+    
+    #transport-controls button:hover, #project-controls button:hover, #track-management button:hover {
+        background-color: #5e5e5e;
+    }
+    
+    main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+    
+    #track-management {
+        width: 300px;
+        background-color: #3e3e3e;
+        padding: 10px;
+        overflow-y: auto;
+    }
+    
+    #tracks-container {
+        margin-top: 10px;
+    }
+    
+    .track {
+        background-color: #5e5e5e;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    
+    .track-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .track-controls {
+        margin-top: 10px;
+    }
+    
+    .track-controls label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .track-controls input[type="range"] {
+        width: 100%;
+    }
+    
+    #transport-bar {
+        margin-left: 20px;
+    }
+    
+    #midi-editor {
+        flex: 1;
+        background-color: #1e1e1e;
+        padding: 10px;
+        overflow: auto;
+    }
+    
+    #midi-editor h2 {
+        margin-bottom: 10px;
+    }
+    
+    #midi-canvas {
+        background-color: #3e3e3e;
+        border: 1px solid #555;
+    }
+    
+</style>
+
+</head>
+<body>
+    <div id="daw-container">
+        <header>
+            <h1>Simple DAW</h1>
+            <div id="transport-controls">
+                <button id="play-btn">Play</button>
+                <button id="pause-btn">Pause</button>
+                <button id="stop-btn">Stop</button>
+                <div id="transport-bar">
+                    <canvas id="transport-canvas" width="600" height="20"></canvas>
+                </div>
+            </div>
+            <div id="project-controls">
+                <button id="save-project">Save Project</button>
+                <button id="load-project">Load Project</button>
+            </div>
+        </header>
+        <main>
+            <div id="track-management">
+                <button id="add-audio-track">Add Audio Track</button>
+                <button id="add-midi-track">Add MIDI Track</button>
+                <div id="tracks-container">
+                    <!-- Tracks will be dynamically added here -->
+                </div>
+            </div>
+            <div id="midi-editor">
+                <h2>MIDI Editor</h2>
+                <canvas id="midi-canvas" width="800" height="200"></canvas>
+            </div>
+        </main>
+    </div>
+    <script>
+        // script.js
+
+// Main DAW Class
+class DAW {
+    constructor() {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.tracks = [];
+        this.isPlaying = false;
+        this.startTime = 0;
+        this.pauseTime = 0;
+
+        this.transportCanvas = document.getElementById('transport-canvas');
+        this.transportCtx = this.transportCanvas.getContext('2d');
+
+        this.initControls();
+    }
+
+    initControls() {
+        document.getElementById('add-audio-track').addEventListener('click', () => this.addTrack('audio'));
+        document.getElementById('add-midi-track').addEventListener('click', () => this.addTrack('midi'));
+        document.getElementById('play-btn').addEventListener('click', () => this.play());
+        document.getElementById('pause-btn').addEventListener('click', () => this.pause());
+        document.getElementById('stop-btn').addEventListener('click', () => this.stop());
+        document.getElementById('save-project').addEventListener('click', () => this.saveProject());
+        document.getElementById('load-project').addEventListener('click', () => this.loadProject());
+
+        // Drag-and-Drop for tracks container
+        const tracksContainer = document.getElementById('tracks-container');
+        tracksContainer.addEventListener('dragover', (e) => e.preventDefault());
+        tracksContainer.addEventListener('drop', (e) => this.handleDrop(e));
+    }
+
+    addTrack(type) {
+        const track = new Track(this, type);
+        this.tracks.push(track);
+        document.getElementById('tracks-container').appendChild(track.element);
+    }
+
+    removeTrack(track) {
+        this.tracks = this.tracks.filter(t => t !== track);
+        document.getElementById('tracks-container').removeChild(track.element);
+    }
+
+    play() {
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.startTime = this.audioContext.currentTime - this.pauseTime;
+        this.tracks.forEach(track => track.play(this.audioContext, this.startTime));
+        this.animateTransport();
+    }
+
+    pause() {
+        if (!this.isPlaying) return;
+        this.isPlaying = false;
+        this.pauseTime = this.audioContext.currentTime - this.startTime;
+        this.tracks.forEach(track => track.pause());
+    }
+
+    stop() {
+        this.isPlaying = false;
+        this.pauseTime = 0;
+        this.tracks.forEach(track => track.stop());
+        this.clearTransport();
+    }
+
+    animateTransport() {
+        if (!this.isPlaying) return;
+        const currentTime = this.audioContext.currentTime - this.startTime;
+        this.drawTransport(currentTime);
+        requestAnimationFrame(() => this.animateTransport());
+    }
+
+    drawTransport(currentTime) {
+        const ctx = this.transportCtx;
+        const width = this.transportCanvas.width;
+        const height = this.transportCanvas.height;
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#ff0000';
+        const x = (currentTime % 10) / 10 * width; // Simple loop every 10 seconds
+        ctx.fillRect(x, 0, 2, height);
+    }
+
+    clearTransport() {
+        const ctx = this.transportCtx;
+        ctx.clearRect(0, 0, this.transportCanvas.width, this.transportCanvas.height);
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        for (let file of files) {
+            if (file.type.startsWith('audio/')) {
+                this.tracks.forEach(track => {
+                    if (track.type === 'audio') {
+                        track.loadAudioFile(file);
+                    }
+                });
+            } else if (file.type === 'application/json') {
+                // Handle project file
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.loadProjectFromJSON(event.target.result);
+                };
+                reader.readAsText(file);
+            }
+            // Add more file type handlers as needed
+        }
+    }
+
+    saveProject() {
+        const project = {
+            tracks: this.tracks.map(track => track.serialize())
+        };
+        const projectJSON = JSON.stringify(project);
+        const blob = new Blob([projectJSON], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'project.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    loadProject() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                this.loadProjectFromJSON(event.target.result);
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    loadProjectFromJSON(json) {
+        try {
+            const project = JSON.parse(json);
+            // Clear existing tracks
+            while (this.tracks.length > 0) {
+                const track = this.tracks[0];
+                this.removeTrack(track);
+            }
+            // Load tracks
+            project.tracks.forEach(trackData => {
+                const track = new Track(this, trackData.type);
+                track.deserialize(trackData);
+                this.tracks.push(track);
+                document.getElementById('tracks-container').appendChild(track.element);
+            });
+        } catch (error) {
+            console.error('Error loading project:', error);
+        }
+    }
+}
+
+// Track Class
+class Track {
+    constructor(daw, type) {
+        this.daw = daw;
+        this.type = type; // 'audio' or 'midi'
+        this.elements = {};
+        this.initElements();
+        this.audioBuffer = null;
+        this.source = null;
+        this.gainNode = this.daw.audioContext.createGain();
+        this.pannerNode = this.daw.audioContext.createStereoPanner();
+        this.gainNode.connect(this.pannerNode).connect(this.daw.audioContext.destination);
+    }
+
+    initElements() {
+        // Create DOM elements for the track
+        const trackElement = document.createElement('div');
+        trackElement.classList.add('track');
+
+        const header = document.createElement('div');
+        header.classList.add('track-header');
+
+        const title = document.createElement('span');
+        title.textContent = this.type === 'audio' ? 'Audio Track' : 'MIDI Track';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => this.daw.removeTrack(this));
+
+        header.appendChild(title);
+        header.appendChild(removeBtn);
+
+        const controls = document.createElement('div');
+        controls.classList.add('track-controls');
+
+        // Volume Control
+        const volumeLabel = document.createElement('label');
+        volumeLabel.textContent = 'Volume';
+        const volumeSlider = document.createElement('input');
+        volumeSlider.type = 'range';
+        volumeSlider.min = 0;
+        volumeSlider.max = 1;
+        volumeSlider.step = 0.01;
+        volumeSlider.value = 0.8;
+        volumeSlider.addEventListener('input', (e) => {
+            this.gainNode.gain.value = e.target.value;
+        });
+
+        // Panning Control
+        const panningLabel = document.createElement('label');
+        panningLabel.textContent = 'Panning';
+        const panningSlider = document.createElement('input');
+        panningSlider.type = 'range';
+        panningSlider.min = -1;
+        panningSlider.max = 1;
+        panningSlider.step = 0.01;
+        panningSlider.value = 0;
+        panningSlider.addEventListener('input', (e) => {
+            this.pannerNode.pan.value = e.target.value;
+        });
+
+        controls.appendChild(volumeLabel);
+        controls.appendChild(volumeSlider);
+        controls.appendChild(panningLabel);
+        controls.appendChild(panningSlider);
+
+        trackElement.appendChild(header);
+        trackElement.appendChild(controls);
+
+        // MIDI Editor (if MIDI track)
+        if (this.type === 'midi') {
+            const midiCanvas = document.getElementById('midi-canvas');
+            // Initialize MIDI Editor (Basic Implementation)
+            // Further development needed for full functionality
+        }
+
+        this.element = trackElement;
+    }
+
+    async loadAudioFile(file) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            this.audioBuffer = await this.daw.audioContext.decodeAudioData(arrayBuffer);
+            console.log('Audio file loaded:', file.name);
+            // Optionally visualize waveform here
+        } catch (error) {
+            console.error('Error loading audio file:', error);
+        }
+    }
+
+    play(audioContext, startTime) {
+        if (this.type !== 'audio' || !this.audioBuffer) return;
+        this.source = audioContext.createBufferSource();
+        this.source.buffer = this.audioBuffer;
+        this.source.connect(this.gainNode);
+        this.source.start(startTime);
+    }
+
+    pause() {
+        if (this.source) {
+            this.source.stop();
+            this.source = null;
+        }
+    }
+
+    stop() {
+        this.pause();
+    }
+
+    serialize() {
+        // Serialize track data for project saving
+        return {
+            type: this.type,
+            // Add more properties as needed (e.g., audio buffer data, MIDI data)
+        };
+    }
+
+    deserialize(data) {
+        // Deserialize track data from project
+        // Implement loading of audio/MIDI data
+    }
+}
+
+// Initialize DAW
+window.addEventListener('DOMContentLoaded', () => {
+    const daw = new DAW();
+});
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simplified DAW</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+  #track-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .track {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
+    position: relative;
+  }
+  .track-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .track-controls {
+    display: flex;
+    gap: 5px;
+  }
+  .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .waveform {
+    width: 100%;
+    height: 100px;
+    background-color: #eaeaea;
+    margin-top: 10px;
+  }
+  #piano-roll {
+    border: 1px solid #ccc;
+    margin-top: 20px;
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background-color: #fff;
+  }
+  #controls, #project-management {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  .draggable {
+    cursor: move;
+  }
+  .remove-track {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: red;
+  }
+</style>
+</head>
+<body>
+
+<h1>Simplified DAW</h1>
+
+<div id="controls">
+  <button id="add-audio-track">Add Audio Track</button>
+  <button id="add-midi-track">Add MIDI Track</button>
+</div>
+
+<div id="track-container"></div>
+
+<div id="project-management">
+  <button id="save-project">Save Project</button>
+  <button id="load-project">Load Project</button>
+  <input type="file" id="import-file" accept=".json,.wav,.mid" style="display: none;">
+  <button id="import-project">Import Project/Audio/MIDI</button>
+  <button id="export-project">Export Project</button>
+</div>
+
+<script>
+  let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  let tracks = [];
+  let trackIdCounter = 0;
+
+  class Track {
+    constructor(type) {
+      this.id = trackIdCounter++;
+      this.type = type;
+      this.volume = 1.0;
+      this.pan = 0;
+      this.isPlaying = false;
+      this.initUI();
+    }
+
+    initUI() {
+      this.trackElement = this.createTrackElement();
+      document.getElementById('track-container').appendChild(this.trackElement);
+      this.addDragAndDrop();
+    }
+
+    createTrackElement() {
+      const trackElement = document.createElement('div');
+      trackElement.className = 'track draggable';
+      trackElement.setAttribute('draggable', true);
+      trackElement.dataset.id = this.id;
+
+      const header = this.createHeader();
+      const volumeContainer = this.createSlider('Volume', (value) => this.volume = value);
+      const panContainer = this.createSlider('Pan', (value) => this.pan = value);
+      const removeButton = this.createRemoveButton();
+
+      if (this.type === 'audio') {
+        this.waveform = this.createWaveform();
+        trackElement.appendChild(this.waveform);
+      } else if (this.type === 'midi') {
+        this.pianoRoll = this.createPianoRoll();
+        trackElement.appendChild(this.pianoRoll);
+      }
+
+      [header, volumeContainer, panContainer, removeButton].forEach(el => trackElement.appendChild(el));
+      return trackElement;
+    }
+
+    createHeader() {
+      const header = document.createElement('div');
+      header.className = 'track-header';
+
+      const title = document.createElement('span');
+      title.textContent = `${this.type.toUpperCase()} Track ${this.id}`;
+
+      const controls = this.createControls();
+
+      header.appendChild(title);
+      header.appendChild(controls);
+      return header;
+    }
+
+    createControls() {
+      const controls = document.createElement('div');
+      controls.className = 'track-controls';
+
+      const buttons = ['Play', 'Pause', 'Stop'].map(label => {
+        const button = document.createElement('button');
+        button.textContent = label;
+        button.onclick = () => this[label.toLowerCase()]();
+        return button;
+      });
+
+      buttons.forEach(button => controls.appendChild(button));
+      return controls;
+    }
+
+    createSlider(label, onChange) {
+      const container = document.createElement('div');
+      container.className = 'slider-container';
+
+      const sliderLabel = document.createElement('label');
+      sliderLabel.textContent = label;
+
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = label === 'Volume' ? 0 : -1;
+      slider.max = label === 'Volume' ? 1 : 1;
+      slider.step = 0.01;
+      slider.value = label === 'Volume' ? this.volume : this.pan;
+      slider.oninput = (e) => onChange(e.target.value);
+
+      container.appendChild(sliderLabel);
+      container.appendChild(slider);
+      return container;
+    }
+
+    createRemoveButton() {
+      const button = document.createElement('span');
+      button.className = 'remove-track';
+      button.textContent = '×';
+      button.onclick = () => this.remove();
+      return button;
+    }
+
+    createWaveform() {
+      const canvas = document.createElement('canvas');
+      canvas.className = 'waveform';
+      canvas.onclick = () => this.loadFile();
+      return canvas;
+    }
+
+    createPianoRoll() {
+      const pianoRoll = document.createElement('div');
+      pianoRoll.id = 'piano-roll';
+      pianoRoll.textContent = 'MIDI Editor (Click to add notes)';
+      // Simplified piano roll (not fully functional)
+      pianoRoll.onclick = () => alert('MIDI editing is not fully implemented.');
+      return pianoRoll;
+    }
+
+    addDragAndDrop() {
+      this.trackElement.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', this.id);
+      });
+
+      this.trackElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        this.trackElement.style.border = '2px dashed #000';
+      });
+
+      this.trackElement.addEventListener('dragleave', () => {
+        this.trackElement.style.border = '1px solid #ccc';
+      });
+
+      this.trackElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedTrackId = e.dataTransfer.getData('text/plain');
+        if (draggedTrackId !== this.id) {
+          const draggedTrack = tracks.find(t => t.id == draggedTrackId);
+          document.getElementById('track-container').insertBefore(draggedTrack.trackElement, this.trackElement);
+        }
+        this.trackElement.style.border = '1px solid #ccc';
+      });
+    }
+
+    loadFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = this.type === 'audio' ? 'audio/*' : '.mid';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        this.type === 'audio' ? this.loadAudioFile(file) : alert('MIDI file loading is not fully implemented.');
+      };
+      input.click();
+    }
+
+    loadAudioFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        audioContext.decodeAudioData(e.target.result)
+          .then((buffer) => {
+            this.audioBuffer = buffer;
+            this.drawWaveform();
+          })
+          .catch((error) => alert('Failed to decode audio file.'));
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    drawWaveform() {
+      const canvas = this.waveform;
+      const canvasCtx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const buffer = this.audioBuffer.getChannelData(0);
+      const step = Math.ceil(buffer.length / width);
+      const amp = height / 2;
+
+      canvasCtx.fillStyle = '#eaeaea';
+      canvasCtx.fillRect(0, 0, width, height);
+      canvasCtx.strokeStyle = '#000';
+      canvasCtx.beginPath();
+      for (let i = 0; i < width; i++) {
+        const min = buffer[i * step] * amp;
+        canvasCtx.moveTo(i, amp - min);
+        canvasCtx.lineTo(i, amp + min);
+      }
+      canvasCtx.stroke();
+    }
+
+    play() {
+      if (this.isPlaying || this.type === 'midi') return alert('MIDI playback is not fully implemented.');
+
+      if (this.audioBuffer) {
+        this.source = audioContext.createBufferSource();
+        this.source.buffer = this.audioBuffer;
+
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = this.volume;
+        const panNode = audioContext.createStereoPanner();
+        panNode.pan.value = this.pan;
+
+        this.source.connect(gainNode).connect(panNode).connect(audioContext.destination);
+        this.source.start();
+        this.isPlaying = true;
+
+        this.source.onended = () => { this.isPlaying = false; };
+      } else {
+        alert('No audio loaded.');
+      }
+    }
+
+    pause() {
+      if (this.isPlaying && this.source) {
+        this.source.stop();
+        this.isPlaying = false;
+      }
+    }
+
+    stop() {
+      this.pause();
+    }
+
+    remove() {
+      this.trackElement.remove();
+      tracks = tracks.filter(t => t.id !== this.id);
+    }
+  }
+
+  const addTrack = (type) => {
+    const track = new Track(type);
+    tracks.push(track);
+  };
+
+  document.getElementById('add-audio-track').onclick = () => addTrack('audio');
+  document.getElementById('add-midi-track').onclick = () => addTrack('midi');
+
+  const saveProject = () => {
+    const projectData = tracks.map(({ id, type, volume, pan }) => ({ id, type, volume, pan }));
+    localStorage.setItem('savedProject', JSON.stringify(projectData));
+    alert('Project saved.');
+  };
+
+  const loadProject = () => {
+    const projectData = JSON.parse(localStorage.getItem('savedProject'));
+    if (projectData) {
+      document.getElementById('track-container').innerHTML = '';
+      tracks = [];
+      projectData.forEach(({ id, type, volume, pan }) => {
+        const track = new Track(type);
+        track.id = id;
+        track.volume = volume;
+        track.pan = pan;
+        tracks.push(track);
+      });
+      alert('Project loaded.');
+    } else {
+      alert('No saved project found.');
+    }
+  };
+
+  document.getElementById('save-project').onclick = saveProject;
+  document.getElementById('load-project').onclick = loadProject;
+
+  document.getElementById('import-project').onclick = () => {
+    document.getElementById('import-file').click();
+  };
+
+  document.getElementById('import-file').onchange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    if (file.name.endsWith('.json')) {
+      reader.onload = (event) => {
+        const projectData = JSON.parse(event.target.result);
+        document.getElementById('track-container').innerHTML = '';
+        tracks = [];
+        projectData.forEach(({ id, type, volume, pan }) => {
+          const track = new Track(type);
+          track.id = id;
+          track.volume = volume;
+          track.pan = pan;
+          tracks.push(track);
+        });
+        alert('Project imported.');
+      };
+      reader.readAsText(file);
+    } else if (file.name.endsWith('.wav')) {
+      const track = new Track('audio');
+      track.loadAudioFile(file);
+      tracks.push(track);
+    } else if (file.name.endsWith('.mid')) {
+      const track = new Track('midi');
+      alert('MIDI file importing is not fully implemented.');
+      tracks.push(track);
+    }
+  };
+
+  document.getElementById('export-project').onclick = () => {
+    const projectData = tracks.map(({ id, type, volume, pan }) => ({ id, type, volume, pan }));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "project.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+</script>
+</body>
+</html>
