@@ -5,350 +5,561 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>? ? ? ? ? ? ?</title>
 
+<style>
+  body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #000000;
+      position: relative;
+      transform: scale(0.7);
+  }
+  
+  body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  
+  #canvas-container {
+      width: 50vmin;
+      height: 50vmin;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      position: relative;
+      z-index: 10; /* Ensure the canvas has a higher z-index than the mixer */
+  }
+  
+  canvas#cv {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999; /* Keep it above other content but below text elements */
+      pointer-events: none;
+  }
+  
+  .text-element, .play-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10001;
+      opacity: 1;
+      transition: opacity 5s ease-in-out;
+  }
+  
+  .play-text {
+      font-size: 125px;
+      font-style: bold;
+      font-weight: 700;
+      color: #ff00bf;
+      z-index: 10001;
+      opacity: 1;
+      transition: opacity 30s ease-in-out;
+  }
+  
+  .sqyzy {
+      font-family: Arial, bold, sans-serif;
+      font-size: 96px;
+      font-weight: 500;
+      color: #000000;
+  }
+  
+  .freedom {
+      font-size: 125px;
+      font-weight: 700;
+      font-style: bold;
+  }
+  
+  .melophonic {
+      font-family: "Trebuchet MS", bold, sans-serif;
+      font-size: 65px;
+      color: #000;
+  }
+  
+  .fade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 10000;
+      opacity: 1;
+      transition: opacity 10s ease-in-out;
+  }
+  
+  #continue-button, #reset-button {
+      position: fixed;
+      right: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 10002;
+      transition: background-color 0.3s;
+  }
+  
+  #continue-button {
+      top: 60px;
+      background-color: #ff00bf;
+  }
+  
+  #reset-button {
+      top: 10px;
+      background-color: #2200ff;
+  }
+  
+  #continue-button:hover {
+      background-color: #ff33c9;
+  }
+  
+  #seed-display {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 20px;
+      color: #000;
+      opacity: 0; /* Initially hidden */
+      transition: opacity 2s ease-in-out;
+      z-index: 10002;
+  }
+  /* Mixer Overlay Styles */
+  #mixer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 35vw;  /* Limit mixer to 35% of the viewport width */
+      height: 70vh; /* Limit mixer to 70% of the viewport height */
+      background: rgba(0, 0, 0, 0.8);
+      display: none; /* Initially hidden */
+      z-index: 12999; /* Higher than canvas, lower than buttons */
+  }
+  
+  /* Mixer Container Styles */
+  .mixer-container {
+      position: relative; /* Keep it relative to the mixer overlay */
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      background-color: #1e1e1e;
+      border: 2px solid #444;
+      border-radius: 10px;
+      overflow-y: auto;
+  }
+  
+  .channel-group {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 10px;
+  }
+  
+  .channel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 60px;
+      padding: 10px;
+      background-color: #333;
+      border: 1px solid #555;
+      border-radius: 5px;
+  }
+  
+  .channel-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1.2;
+  }
+  
+  .channel-label .ch {
+      font-weight: bold;
+  }
+  
+  .channel-label .number {
+      margin-top: 2px;
+  }
+  
+  .fader-container {
+      position: relative;
+      height: 200px;
+      width: 30px;
+  }
+  
+  .fader {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 200px;
+      height: 30px;
+      background: transparent;
+      transform: rotate(-90deg);
+      position: absolute;
+      top: 85px;
+      left: -85px;
+  }
+  
+  .fader::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #ff5722;
+      cursor: pointer;
+      border-radius: 50%;
+      border: 2px solid #fff;
+  }
+  
+  .fader::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #ff5722;
+      cursor: pointer;
+      border-radius: 50%;
+      border: 2px solid #fff;
+  }
+  
+  .fader::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: #555;
+      border-radius: 3px;
+  }
+  
+  .fader::-moz-range-track {
+      width: 100%;
+      height: 6px;
+      background: #555;
+      border-radius: 3px;
+  }
+  
+  .volume-level {
+      margin-top: 10px;
+      font-size: 12px;
+      text-align: center;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+      .channel {
+          width: 50px;
+      }
+  
+      .fader-container {
+          height: 150px;
+          width: 25px;
+      }
+  
+      .fader {
+          width: 150px;
+          left: -65px;
+          top: 60px;
+      }
+  
+      .volume-level {
+          font-size: 10px;
+      }
+  
+      .channel-label {
+          font-size: 12px;
+      }
+  }
+  
+  @media (max-width: 768px) {
+      .channel-group {
+          justify-content: center;
+      }
+  
+      .channel {
+          width: 40px;
+      }
+  
+      .fader-container {
+          height: 120px;
+          width: 20px;
+      }
+  
+      .fader {
+          width: 120px;
+          left: -50px;
+          top: 40px;
+      }
+  
+      .volume-level {
+          font-size: 8px;
+      }
+  
+      .channel-label {
+          font-size: 10px;
+      }
+  }
+  
+  @media (max-width: 480px) {
+      .channel {
+          width: 35px;
+      }
+  
+      .fader-container {
+          height: 100px;
+          width: 18px;
+      }
+  
+      .fader {
+          width: 100px;
+          left: -40px;
+          top: 30px;
+      }
+  
+      .volume-level {
+          font-size: 7px;
+      }
+  
+      .channel-label {
+          font-size: 9px;
+      }
+  }
+  
+  </style>
+
 
 <window.seed>
-<script>
-window.seed = 0;  // Default seed
-</script>
+  <script>
+    /**
+     * Seed Initialization and BPM Selection with Logging
+     */
+
+    // Default seed initialization
+    window.seed = '63';
+    let selectedGroup = 'random'; // To keep track of the selected BPM group
+
+    // Logs the user's BPM group selection
+    console.log(`Initial Seed: ${window.seed}`);
+
+    /**
+     * Generates a random 20-digit seed composed of digits 0-9.
+     * @returns {string} A 20-digit random seed.
+     */
+    function generateSeed() {
+      return Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('');
+    }
+
+    /**
+     * Increments a 20-digit seed string by 1, with overflow handling.
+     * @param {string} seed - The current 20-digit seed.
+     * @returns {string} The incremented 20-digit seed.
+     */
+    function incrementSeed(seed) {
+      let carry = 1;
+      const newSeed = seed.split('').reverse().map(digit => {
+        let newDigit = parseInt(digit, 10) + carry;
+        carry = newDigit >= 10 ? 1 : 0;
+        return newDigit % 10;
+      }).reverse();
+      return carry ? '0'.repeat(20) : newSeed.join('');
+    }
+
+    /**
+     * Sets the BPM group and initializes the seed search if required.
+     * Logs the selection process and updates the seed accordingly.
+     * @param {string} value - The selected BPM group value.
+     */
+    function setBpmGroup(value) {
+      selectedGroup = value;
+      console.log(`User selected BPM group: ${value}`);
+
+      if (value === 'random') {
+        window.seed = '00000000000000000000'; // Reset to default seed
+        document.getElementById('seed-display').innerText = 'Seed: 0';
+        console.log('Seed reset to default.');
+      } else {
+        window.seed = generateSeed(); // Generate a new 20-digit seed
+        document.getElementById('seed-display').innerText = `Seed: ${window.seed}`;
+        console.log(`Generated new seed: ${window.seed}`);
+        
+        // Start searching for a suitable seed
+        searchForSuitableSeed(selectedGroup, window.seed).then(foundSeed => {
+          if (foundSeed) {
+            window.seed = foundSeed;
+            document.getElementById('seed-display').innerText = `Seed: ${window.seed}`;
+            console.log(`Suitable seed found: ${window.seed}`);
+          } else {
+            console.warn('No suitable seed found within the search limit.');
+          }
+        });
+      }
+    }
+
+    /**
+     * Maps a seed to a BPM using a pseudo-random method based on the seed's digits.
+     * @param {string} seed - A 20-digit seed string.
+     * @returns {number} The selected BPM.
+     */
+     function mapSeedToBpm(seed, group) {
+        const bpmOptions = {
+          slow: [60, 70, 80],
+          medium: [100, 110, 120],
+          fast: [140, 150, 160],
+          veryFast: [180, 200, 240]
+        };
+        const allBpmOptions = [80, 100, 120, 140, 160, 180, 240];
+
+        const hash = seed.split('').reduce((acc, digit) => (acc * 10 + parseInt(digit, 10)) % 1000000007, 0);
+        let selectedBpm = allBpmOptions[hash % allBpmOptions.length];
+
+        // Ensure the selected BPM is in the correct group
+        while (!bpmOptions[group].includes(selectedBpm)) {
+          seed = incrementSeed(seed); // Regenerate seed until the BPM is within the group
+          selectedBpm = allBpmOptions[hash % allBpmOptions.length];
+        }
+
+        console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
+        return selectedBpm;
+      }
+
+    /**
+     * Checks if the BPM belongs to the selected group.
+     * @param {number} bpm - The BPM to check.
+     * @param {string} group - The selected BPM group.
+     * @returns {boolean} Whether the BPM belongs to the selected group.
+     */
+    function isBpmInGroup(bpm, group) {
+      const bpmGroups = {
+        slow: [60, 70, 80],
+        medium: [100, 110, 120],
+        fast: [140, 150, 160],
+        veryFast: [180, 200, 240]
+      };
+      return group === 'random' || bpmGroups[group]?.includes(bpm);
+    }
+
+    /**
+     * Searches for a suitable seed that maps to a BPM within the desired group.
+     * Logs the process and outcome of the search.
+     * @param {string} group - The desired BPM group.
+     * @param {string} startSeed - The starting seed for the search.
+     * @returns {Promise<string|null>} A matching seed or null if not found.
+     */
+    async function searchForSuitableSeed(group, startSeed) {
+      const maxAttempts = 1000000; // Prevent infinite loops
+      let currentSeed = startSeed;
+      console.log(`Starting seed search for group ${group}...`);
+      document.getElementById('loading-spinner').style.display = 'block';
+
+      for (let i = 0; i < maxAttempts; i++) {
+        const bpm = selectBPM(currentSeed);
+        if (isBpmInGroup(bpm, group)) {
+          console.log(`Match found! Seed: ${currentSeed}, BPM: ${bpm}`);
+          persistSeed(currentSeed);
+          document.getElementById('loading-spinner').style.display = 'none';
+          return currentSeed;
+        }
+        currentSeed = incrementSeed(currentSeed);
+      }
+
+      console.warn('No suitable seed found within the maximum attempts.');
+      document.getElementById('loading-spinner').style.display = 'none';
+      return null;
+    }
+
+    // In-memory storage for seeds during the current execution
+    const seedStorage = {};
+
+    /**
+     * Persist the seed in memory for the current execution.
+     * @param {string} seed - The seed to store in memory.
+     */
+    function persistSeed(seed) {
+      seedStorage.currentSeed = seed;  // Store the current seed in memory
+      console.log(`Persisted seed in memory: ${seed}`);
+    }
+
+    /**
+     * Retrieve the persisted seed from memory.
+     * @returns {string|null} The persisted seed or null if not found.
+     */
+    function retrievePersistedSeed() {
+      return seedStorage.currentSeed || null;  // Retrieve the seed if it exists
+    }
+
+
+
+    /**
+     * Selects a BPM based on the current seed or a random selection if default.
+     * @returns {number} The selected BPM.
+     */
+    function selectBpmFromSeed() {
+      const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
+      return window.seed === '00000000000000000000'
+        ? bpmOptions[Math.floor(Math.random() * bpmOptions.length)]
+        : mapSeedToBpm(window.seed);
+    }
+
+    /**
+     * Ensures the selected BPM is valid within predefined ranges.
+     * @param {number} bpm - The BPM to validate.
+     * @returns {number} The validated BPM.
+     */
+    function validateBpm(bpm) {
+      const validBpmGroups = {
+        slow: [60, 70, 80],
+        medium: [100, 110, 120],
+        fast: [140, 150, 160],
+        veryFast: [180, 200, 240]
+      };
+      
+      for (const groupBpm of Object.values(validBpmGroups).flat()) {
+        if (groupBpm === bpm) return bpm;
+      }
+
+      console.warn(`Invalid BPM ${bpm}. Defaulting to 80 BPM.`);
+      return 80;
+    }
+
+    /**
+     * Handles the 'Continue' button click by selecting and validating the BPM.
+     * Logs the selected BPM and continues the process.
+     */
+    function handleContinue() {
+      const bpm = selectBpmFromSeed();
+      const validatedBpm = validateBpm(bpm);
+      console.log('Selected BPM:', validatedBpm);
+      // Continue with application logic using the selected BPM
+    }
+  </script>
 </window.seed>
 
-<style>
-body, html {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #000000;
-    position: relative;
-    transform: scale(0.7);
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#canvas-container {
-    width: 50vmin;
-    height: 50vmin;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-    position: relative;
-    z-index: 10; /* Ensure the canvas has a higher z-index than the mixer */
-}
-
-canvas#cv {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999; /* Keep it above other content but below text elements */
-    pointer-events: none;
-}
-
-.text-element, .play-text {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 10001;
-    opacity: 1;
-    transition: opacity 5s ease-in-out;
-}
-
-.play-text {
-    font-size: 125px;
-    font-style: bold;
-    font-weight: 700;
-    color: #ff00bf;
-    z-index: 10001;
-    opacity: 1;
-    transition: opacity 30s ease-in-out;
-}
-
-.sqyzy {
-    font-family: Arial, bold, sans-serif;
-    font-size: 96px;
-    font-weight: 500;
-    color: #000000;
-}
-
-.freedom {
-    font-size: 125px;
-    font-weight: 700;
-    font-style: bold;
-}
-
-.melophonic {
-    font-family: "Trebuchet MS", bold, sans-serif;
-    font-size: 65px;
-    color: #000;
-}
-
-.fade-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    z-index: 10000;
-    opacity: 1;
-    transition: opacity 10s ease-in-out;
-}
-
-#continue-button, #reset-button {
-    position: fixed;
-    right: 10px;
-    padding: 10px 20px;
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-    border: none;
-    cursor: pointer;
-    z-index: 10002;
-    transition: background-color 0.3s;
-}
-
-#continue-button {
-    top: 60px;
-    background-color: #ff00bf;
-}
-
-#reset-button {
-    top: 10px;
-    background-color: #2200ff;
-}
-
-#continue-button:hover {
-    background-color: #ff33c9;
-}
-
-#seed-display {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 20px;
-    color: #000;
-    opacity: 0; /* Initially hidden */
-    transition: opacity 2s ease-in-out;
-    z-index: 10002;
-}
-/* Mixer Overlay Styles */
-#mixer-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 35vw;  /* Limit mixer to 35% of the viewport width */
-    height: 70vh; /* Limit mixer to 70% of the viewport height */
-    background: rgba(0, 0, 0, 0.8);
-    display: none; /* Initially hidden */
-    z-index: 12999; /* Higher than canvas, lower than buttons */
-}
-
-/* Mixer Container Styles */
-.mixer-container {
-    position: relative; /* Keep it relative to the mixer overlay */
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border: 2px solid #444;
-    border-radius: 10px;
-    overflow-y: auto;
-}
-
-.channel-group {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.channel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 60px;
-    padding: 10px;
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 5px;
-}
-
-.channel-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.2;
-}
-
-.channel-label .ch {
-    font-weight: bold;
-}
-
-.channel-label .number {
-    margin-top: 2px;
-}
-
-.fader-container {
-    position: relative;
-    height: 200px;
-    width: 30px;
-}
-
-.fader {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 200px;
-    height: 30px;
-    background: transparent;
-    transform: rotate(-90deg);
-    position: absolute;
-    top: 85px;
-    left: -85px;
-}
-
-.fader::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #ff5722;
-    cursor: pointer;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-
-.fader::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #ff5722;
-    cursor: pointer;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-
-.fader::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 6px;
-    background: #555;
-    border-radius: 3px;
-}
-
-.fader::-moz-range-track {
-    width: 100%;
-    height: 6px;
-    background: #555;
-    border-radius: 3px;
-}
-
-.volume-level {
-    margin-top: 10px;
-    font-size: 12px;
-    text-align: center;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .channel {
-        width: 50px;
-    }
-
-    .fader-container {
-        height: 150px;
-        width: 25px;
-    }
-
-    .fader {
-        width: 150px;
-        left: -65px;
-        top: 60px;
-    }
-
-    .volume-level {
-        font-size: 10px;
-    }
-
-    .channel-label {
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 768px) {
-    .channel-group {
-        justify-content: center;
-    }
-
-    .channel {
-        width: 40px;
-    }
-
-    .fader-container {
-        height: 120px;
-        width: 20px;
-    }
-
-    .fader {
-        width: 120px;
-        left: -50px;
-        top: 40px;
-    }
-
-    .volume-level {
-        font-size: 8px;
-    }
-
-    .channel-label {
-        font-size: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .channel {
-        width: 35px;
-    }
-
-    .fader-container {
-        height: 100px;
-        width: 18px;
-    }
-
-    .fader {
-        width: 100px;
-        left: -40px;
-        top: 30px;
-    }
-
-    .volume-level {
-        font-size: 7px;
-    }
-
-    .channel-label {
-        font-size: 9px;
-    }
-}
-
-</style>
-
 <htmlElements>
+  <!-- BPM Group Selector -->
+  <select id="bpmGroupSelector" onchange="setBpmGroup(this.value)">
+    <option value="random">Random BPM</option>
+    <option value="slow">Slow BPM (60-80)</option>
+    <option value="medium">Medium BPM (100-120)</option>
+    <option value="fast">Fast BPM (140-160)</option>
+    <option value="veryFast">Very Fast BPM (180-240)</option>
+  </select>
+
+  <div id="loading-spinner" style="display: none;">Loading...</div>
+
 <!-- Continue button to resume code execution -->
 <!-- <button id="reset-button">Reset</button> -->
 <button id="continue-button">Continue</button>
@@ -370,9 +581,8 @@ canvas#cv {
 </htmlElements>
 
 <script id="song-and-sound-inputs">
-    // Init function, which contains the main application logic
-    const init = () => {
-        log('Init function called. Preparing to process song data URLs...');
+  const init = () => {
+      log('Init function called. Preparing to process song data URLs...');
 
         const songDataUrls = [
             "/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
@@ -390,8 +600,8 @@ canvas#cv {
 
         log(`Found ${songDataUrls.length} song data URLs to process.`);
 
-        // Modify the first URL using seeded random
-        const seed = window.seed; // Assuming the seed has been generated earlier in the process
+        // Modify the first URL using seeded random and the selected BPM seed
+        const seed = window.seed; // The seed is set based on the BPM group
         songDataUrls[0] += `?v=${Math.floor(seededRandom(seed) * 1000)}`;
 
         log(`First song URL has been modified using seeded random. New URL: ${songDataUrls[0]}`);
@@ -409,6 +619,10 @@ canvas#cv {
 
 <constants-and-variables>
 <script id="constants-and-variables">
+  // All Song Files contain 16 channels. Volume controls below represent a master volume for the song 
+  // and then a volume multiplier for every channel. These must be mapped into the new songs that are generated
+  // Then the chosen 24 channels for the generative mix can be correctly mapped to the audio mixer faders.
+
 const VOLUME_CONTROLS = [
     [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // TRUTH
     [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // On-Chain in the Membrane
@@ -635,63 +849,262 @@ console.log("LocalDataProcessingScript initialized and awaiting data.");
 </script>
 </localDataProcessing>
 
+<AudioMixer>
+        <!-- Integrated Mixer Script -->
+        <script>
+            // === Global Configuration ===
+            const TOTAL_CHANNELS = 32;       // Total number of mixer faders
+            const REQUIRED_CHANNELS = 24;    // Number of channels to be patched to faders
+            const GROUP1_LIMIT = 16;         // First 16 faders in group1, next 16 in group2
+            const DEFAULT_VOLUME = 1.0;      // Default volume value (range 0.0 to 1.0)
 
+            // === Global Variables ===
+            let audioChannels = [];            // Array to hold gain nodes for each channel
+            const Channel_Volume_Controls = initializeVolumeControls(); // Initialize Channel_Volume_Controls based on tracks
 
-<audioMixer>
-  <script>
-       
-        // Listen for messages from the mixer
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'requestInitialVolumes') {
-                sendInitialVolumes();
-            } else if (event.data.type === 'volumeChange') {
-                const { channel, volume } = event.data;
-                handleMixerVolumeChange(channel, volume);
+            // === Initialization Functions ===
+
+            /**
+             * Initializes the Channel_Volume_Controls array based on the number of tracks.
+             * Each track can have multiple channels.
+             */
+            function initializeVolumeControls() {
+                // Example: Initialize Channel_Volume_Controls for 12 tracks, 2 channels each
+                const numberOfTracks = 12;
+                const channelsPerTrack = Math.ceil(REQUIRED_CHANNELS / numberOfTracks); // e.g., 2 channels per track
+                const volumeControls = [];
+
+                for (let track = 0; track < numberOfTracks; track++) {
+                    volumeControls[track] = [];
+                    for (let channel = 0; channel < channelsPerTrack; channel++) {
+                        volumeControls[track][channel] = DEFAULT_VOLUME; // Initialize with default volume
+                    }
+                }
+
+                return volumeControls;
             }
-        });
 
-        // Function to toggle the mixer visibility
-        function toggleMixer() {
-            const mixerIframe = document.getElementById('mixer-iframe');
-            const mixerOverlay = document.getElementById('mixer-overlay');
-            const isVisible = mixerIframe.style.display === 'block';
+            /**
+             * Initializes the audioChannels array with gain nodes for each track and channel.
+             */
+            async function initializeAudioChannels() {
+                try {
+                    // Access the singleton AudioContext via AudioContextManager
+                    const audioContext = AudioContextManager.getAudioContext();
 
-            if (isVisible) {
-                mixerIframe.style.display = 'none';
-                mixerOverlay.style.display = 'none';
-            } else {
-                mixerIframe.style.display = 'block';
-                mixerOverlay.style.display = 'block';
+                    const numberOfTracks = Channel_Volume_Controls.length;
+                    const channelsPerTrack = Math.ceil(REQUIRED_CHANNELS / numberOfTracks);
+
+                    for (let track = 0; track < numberOfTracks; track++) {
+                        audioChannels[track] = [];
+                        for (let channel = 0; channel < channelsPerTrack; channel++) {
+                            const gainNode = audioContext.createGain();
+                            gainNode.gain.value = Channel_Volume_Controls[track][channel];
+                            audioChannels[track][channel] = { gainNode };
+
+                            // Connect gain node to the destination (speakers)
+                            gainNode.connect(audioContext.destination);
+
+                            // Debugging Log
+                            console.log(`[AudioMixer]: Initialized Gain node for Track ${track + 1}, Channel ${channel + 1}`);
+                        }
+                    }
+
+                    // Handle additional channels if REQUIRED_CHANNELS > tracks * channelsPerTrack
+                    const totalInitializedChannels = numberOfTracks * channelsPerTrack;
+                    if (REQUIRED_CHANNELS > totalInitializedChannels) {
+                        const extraChannels = REQUIRED_CHANNELS - totalInitializedChannels;
+                        const extraTrack = numberOfTracks; // Zero-based index
+                        audioChannels[extraTrack] = [];
+                        for (let i = 0; i < extraChannels; i++) {
+                            const gainNode = audioContext.createGain();
+                            gainNode.gain.value = DEFAULT_VOLUME;
+                            audioChannels[extraTrack][i] = { gainNode };
+                            gainNode.connect(audioContext.destination);
+                            console.log(`[AudioMixer]: Initialized Gain node for Extra Track ${extraTrack + 1}, Channel ${i + 1}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`[AudioMixer Error]: Failed to initialize audio channels - ${error}`);
+                }
             }
-        }
 
-        // Listen for 'M' key press to toggle mixer
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'm' || e.key === 'M') {
-                toggleMixer();
+            /**
+             * Initializes the Mixer UI with faders and links them to audio channels.
+             */
+            async function initializeMixer() {
+                const group1 = document.getElementById('group1');
+                const group2 = document.getElementById('group2');
+
+                if (!group1 || !group2) {
+                    console.error('[AudioMixer]: Mixer groups (group1 or group2) not found in the DOM.');
+                    return;
+                }
+
+                const channelsPerTrack = Math.ceil(REQUIRED_CHANNELS / Channel_Volume_Controls.length);
+
+                for (let i = 1; i <= TOTAL_CHANNELS; i++) {
+                    const channel = document.createElement('div');
+                    channel.classList.add('channel');
+
+                    // === Channel Label ===
+                    const label = document.createElement('div');
+                    label.classList.add('channel-label');
+
+                    const chText = document.createElement('div');
+                    chText.classList.add('ch');
+                    chText.textContent = 'CH';
+
+                    const numberText = document.createElement('div');
+                    numberText.classList.add('number');
+                    numberText.textContent = `${i}`;
+
+                    label.appendChild(chText);
+                    label.appendChild(numberText);
+
+                    // === Fader ===
+                    const faderContainer = document.createElement('div');
+                    faderContainer.classList.add('fader-container');
+
+                    const fader = document.createElement('input');
+                    fader.type = 'range';
+                    fader.min = 0;
+                    fader.max = 100;
+                    fader.step = 0.1; // Allows finer volume adjustments
+
+                    // Calculate track and channel indices
+                    const trackIndex = Math.floor((i - 1) / channelsPerTrack);
+                    const channelIndex = (i - 1) % channelsPerTrack;
+
+                    // Retrieve initial volume from Channel_Volume_Controls
+                    const initialVolume = (Channel_Volume_Controls[trackIndex] && Channel_Volume_Controls[trackIndex][channelIndex] !== undefined)
+                        ? Channel_Volume_Controls[trackIndex][channelIndex] * 100
+                        : 50; // Default to 50% if undefined
+
+                    fader.value = initialVolume;
+                    fader.classList.add('fader');
+                    fader.id = `fader-${i}`;
+
+                    // === Volume Level Display ===
+                    const volumeLevel = document.createElement('div');
+                    volumeLevel.classList.add('volume-level');
+                    volumeLevel.id = `volume-${i}`;
+                    volumeLevel.textContent = `${initialVolume}%`;
+
+                    // === Event Listener for Fader ===
+                    fader.addEventListener('input', (e) => {
+                        const volume = parseFloat(e.target.value);
+                        volumeLevel.textContent = `${volume.toFixed(1)}%`;
+                        updateVolume(i, volume / 100);
+                    });
+
+                    faderContainer.appendChild(fader);
+                    channel.appendChild(label);
+                    channel.appendChild(faderContainer);
+                    channel.appendChild(volumeLevel);
+
+                    // Append channel to the appropriate group
+                    if (i <= GROUP1_LIMIT) {
+                        group1.appendChild(channel);  // First group of faders (1-16)
+                    } else {
+                        group2.appendChild(channel);  // Second group of faders (17-32)
+                    }
+                }
             }
-        });
+
+            // === Volume Update Functions ===
+
+            /**
+             * Updates the volume in Channel_Volume_Controls and adjusts the corresponding gain node.
+             * @param {number} channelNumber - The channel number (1-based index).
+             * @param {number} volume - The new volume level (0.0 to 1.0).
+             */
+            function updateVolume(channelNumber, volume) {
+                const channelsPerTrack = Math.ceil(REQUIRED_CHANNELS / Channel_Volume_Controls.length);
+                const trackIndex = Math.floor((channelNumber - 1) / channelsPerTrack);
+                const channelIndex = (channelNumber - 1) % channelsPerTrack;
+
+                if (Channel_Volume_Controls[trackIndex] && Channel_Volume_Controls[trackIndex][channelIndex] !== undefined) {
+                    Channel_Volume_Controls[trackIndex][channelIndex] = volume;
+                    updateGainNode(trackIndex, channelIndex, volume);
+                } else {
+                    console.warn(`[AudioMixer Warning]: Channel ${channelNumber} does not exist in Channel_Volume_Controls.`);
+                }
+            }
+
+            /**
+             * Updates the gain node for a specific track and channel.
+             * @param {number} trackIndex - Zero-based track index.
+             * @param {number} channelIndex - Zero-based channel index within the track.
+             * @param {number} volume - The new volume level (0.0 to 1.0).
+             */
+            function updateGainNode(trackIndex, channelIndex, volume) {
+                console.log(`[AudioMixer]: Updating Track ${trackIndex + 1}, Channel ${channelIndex + 1} to volume ${volume}`);
+                if (audioChannels[trackIndex] && audioChannels[trackIndex][channelIndex] && audioChannels[trackIndex][channelIndex].gainNode) {
+                    audioChannels[trackIndex][channelIndex].gainNode.gain.value = volume;
+                } else {
+                    console.warn(`[AudioMixer Warning]: Gain node not found for Track ${trackIndex + 1}, Channel ${channelIndex + 1}`);
+                }
+            }
+
+            // === Mixer Visibility Toggle ===
+
+            /**
+             * Toggles the visibility of the mixer overlay.
+             */
+            function toggleMixer() {
+                const mixerOverlay = document.getElementById('mixer-overlay');
+                if (!mixerOverlay) {
+                    console.error('[AudioMixer]: Mixer overlay element not found.');
+                    return;
+                }
+
+                const isVisible = mixerOverlay.style.display === 'block';
+                mixerOverlay.style.display = isVisible ? 'none' : 'block';
+            }
+
+            // === Event Listeners ===
+
+            /**
+             * Initializes the audio channels and mixer UI once the DOM is fully loaded.
+             */
+            window.addEventListener('DOMContentLoaded', async () => {
+                console.log('[AudioMixer]: DOM fully loaded. Initializing Audio Channels and Mixer UI...');
+                await initializeAudioChannels();
+                await initializeMixer();
+                console.log('[AudioMixer]: Audio Mixer Initialized Successfully.');
+            });
+
+            /**
+             * Listens for the 'M' key press to toggle the mixer visibility.
+             */
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'm') {
+                    toggleMixer();
+                }
+            });
+
+            // === Utility Functions ===
+
+            /**
+             * Logs messages to the console with a consistent prefix.
+             * @param {string} message - The message to log.
+             */
+            function log(message) {
+                console.log(`[AudioMixer]: ${message}`);
+            }
+
+            /**
+             * Displays warnings in the console with a consistent prefix.
+             * @param {string} message - The warning message.
+             */
+            function warn(message) {
+                console.warn(`[AudioMixer Warning]: ${message}`);
+            }
+        </script>
+</AudioMixer>
 
 
-        // Initialize: If you want to send initial volumes on load
-        // Uncomment the line below if necessary
-        // sendInitialVolumes();
-
-        // Example: Update volume when VOLUME_CONTROLS changes elsewhere in your sequencer
-        // Ensure that any function that modifies VOLUME_CONTROLS also sends updates to the mixer
-        function updateMixerVolume(channel, volume) {
-            const mixerIframe = document.getElementById('mixer-iframe');
-            mixerIframe.contentWindow.postMessage({
-                type: 'updateVolume',
-                channel: channel,
-                volume: volume
-            }, '*');
-        }
-
-        // Example: Modify the 'handleMixerVolumeChange' to call 'updateMixerVolume' if necessary
-        // This depends on how your sequencer manages audio nodes
-    </script>
-  </audioMixer>
 
 <playback>
 <script>
@@ -830,139 +1243,6 @@ const LOOKAHEAD=.1,SCHEDULE_INTERVAL=25;let workerUrl,audioWorker,lastBPM;const 
 </audioWebWorkers>
 
 
-<AudioMixer>
-    <!-- Integrated Mixer Script -->
-    <script>
-        // Define total channels in the mixer
-        const TOTAL_CHANNELS = 32;
-
-        // Reference to the channel groups (e.g., UI elements for fader groups)
-        const group1 = document.getElementById('group1');
-        const group2 = document.getElementById('group2');
-
-        // Assuming VOLUME_CONTROLS and audioChannels are globally available
-        const REQUIRED_CHANNELS = 24; // We will only patch 24 channels to the first 24 faders
-        const tracks = VOLUME_CONTROLS.length; // Number of tracks, derived from your sequencer
-        const channelsPerTrack = Math.ceil(REQUIRED_CHANNELS / tracks);
-
-        // Extend each track's channel list to REQUIRED_CHANNELS if necessary
-        VOLUME_CONTROLS.forEach(track => {
-            while (track.length < channelsPerTrack) {
-                track.push(1); // Default volume
-            }
-        });
-
-        // Function to initialize mixer faders and assign them to channels
-        function initializeMixer() {
-            for (let i = 1; i <= TOTAL_CHANNELS; i++) {
-                const channel = document.createElement('div');
-                channel.classList.add('channel');
-
-                const label = document.createElement('div');
-                label.classList.add('channel-label');
-
-                const chText = document.createElement('div');
-                chText.classList.add('ch');
-                chText.textContent = 'CH';
-
-                const numberText = document.createElement('div');
-                numberText.classList.add('number');
-                numberText.textContent = `${i}`;
-
-                label.appendChild(chText);
-                label.appendChild(numberText);
-
-                const faderContainer = document.createElement('div');
-                faderContainer.classList.add('fader-container');
-
-                const fader = document.createElement('input');
-                fader.type = 'range';
-                fader.min = 0;
-                fader.max = 100;
-
-                // Initialize fader value based on VOLUME_CONTROLS
-                const trackIndex = Math.floor((i - 1) / channelsPerTrack);
-                const channelIndex = (i - 1) % channelsPerTrack;
-                const initialVolume = VOLUME_CONTROLS[trackIndex][channelIndex] !== undefined 
-                    ? VOLUME_CONTROLS[trackIndex][channelIndex] * 100 
-                    : 50;
-                fader.value = initialVolume;
-                fader.classList.add('fader');
-                fader.id = `fader-${i}`;
-
-                const volumeLevel = document.createElement('div');
-                volumeLevel.classList.add('volume-level');
-                volumeLevel.id = `volume-${i}`;
-                volumeLevel.textContent = `${initialVolume}%`;
-
-                fader.addEventListener('input', (e) => {
-                    const volume = e.target.value;
-                    volumeLevel.textContent = `${volume}%`;
-                    updateVolume(i, volume / 100);
-                });
-
-                faderContainer.appendChild(fader);
-                channel.appendChild(label);
-                channel.appendChild(faderContainer);
-                channel.appendChild(volumeLevel);
-
-                if (i <= 16) {
-                    group1.appendChild(channel);  // First group of faders (1-16)
-                } else {
-                    group2.appendChild(channel);  // Second group of faders (17-32)
-                }
-            }
-        }
-
-        // Function to update VOLUME_CONTROLS and corresponding gain nodes
-        function updateVolume(channelNumber, volume) {
-            const trackIndex = Math.floor((channelNumber - 1) / channelsPerTrack);
-            const channelIndex = (channelNumber - 1) % channelsPerTrack;
-
-            if (VOLUME_CONTROLS[trackIndex] && VOLUME_CONTROLS[trackIndex][channelIndex] !== undefined) {
-                VOLUME_CONTROLS[trackIndex][channelIndex] = volume;
-                updateGainNode(trackIndex, channelIndex, volume);
-            } else {
-                console.warn(`Channel ${channelNumber} does not exist in VOLUME_CONTROLS.`);
-            }
-        }
-
-        // Function to update the gain node for the specific channel
-        function updateGainNode(trackIndex, channelIndex, volume) {
-            // Assuming audioChannels are globally available and hold the gain nodes for each track
-            console.log(`Updating Track ${trackIndex + 1}, Channel ${channelIndex + 1} to volume ${volume}`);
-            if (audioChannels[trackIndex] && audioChannels[trackIndex][channelIndex]) {
-                audioChannels[trackIndex][channelIndex].gainNode.gain.value = volume;
-            } else {
-                console.warn(`Gain node not found for Track ${trackIndex + 1}, Channel ${channelIndex + 1}`);
-            }
-        }
-
-        // Initialize the Mixer UI on Page Load
-        window.addEventListener('DOMContentLoaded', () => {
-            initializeMixer();
-        });
-
-        // Function to toggle the mixer visibility (for UI purposes)
-        function toggleMixer() {
-            const mixerOverlay = document.getElementById('mixer-overlay');
-            const isVisible = mixerOverlay.style.display === 'block';
-
-            if (isVisible) {
-                mixerOverlay.style.display = 'none';
-            } else {
-                mixerOverlay.style.display = 'block';
-            }
-        }
-
-        // Listen for 'M' key press to toggle mixer visibility
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'm' || e.key === 'M') {
-                toggleMixer();
-            }
-        });
-    </script>
-</AudioMixer>
 
 
 <loadVisualiserScripts>
