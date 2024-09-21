@@ -356,152 +356,75 @@
     console.log(`Initial Seed: ${window.seed}`);
 
     /**
-     * Generates a random 20-digit seed composed of digits 0-9.
-     * @returns {string} A 20-digit random seed.
+     * Generates a seed that maps to the desired BPM.
+     * @param {number} desiredBpm - The desired BPM value.
+     * @returns {string} A 20-digit seed that maps to the desired BPM.
      */
-    function generateSeed() {
-      return Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('');
+    function generateSeedForBpm(desiredBpm) {
+      const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
+      const index = bpmOptions.indexOf(desiredBpm);
+      if (index === -1) {
+        throw new Error('Invalid BPM');
+      }
+
+      // Generate a random seed and adjust it to map to the desired BPM
+      const maxSeedValue = BigInt('9'.repeat(20)); // Maximum 20-digit number as BigInt
+      let seedNumber;
+
+      while (true) {
+        // Generate a random 20-digit seed as a BigInt
+        const randomDigits = Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('');
+        seedNumber = BigInt(randomDigits);
+
+        // Calculate the hash as in mapSeedToBpm
+        const hash = seedNumber.toString().split('').reduce((acc, digit) => {
+          return (acc * 10 + parseInt(digit, 10)) % 1000000007;
+        }, 0);
+
+        // Check if the hash modulo bpmOptions.length equals the desired index
+        if (hash % bpmOptions.length === index) {
+          break;
+        }
+      }
+
+      // Convert the seed number back to a 20-digit string
+      const seed = seedNumber.toString().padStart(20, '0');
+      return seed;
     }
 
     /**
-     * Increments a 20-digit seed string by 1, with overflow handling.
-     * @param {string} seed - The current 20-digit seed.
-     * @returns {string} The incremented 20-digit seed.
-     */
-    function incrementSeed(seed) {
-      let carry = 1;
-      const newSeed = seed.split('').reverse().map(digit => {
-        let newDigit = parseInt(digit, 10) + carry;
-        carry = newDigit >= 10 ? 1 : 0;
-        return newDigit % 10;
-      }).reverse();
-      return carry ? '0'.repeat(20) : newSeed.join('');
-    }
-
-    /**
-     * Sets the BPM group and initializes the seed search if required.
+     * Sets the BPM value and generates a seed that maps to the desired BPM.
      * Logs the selection process and updates the seed accordingly.
-     * @param {string} value - The selected BPM group value.
+     * @param {string} value - The selected BPM value.
      */
-    function setBpmGroup(value) {
-      selectedGroup = value;
-      console.log(`User selected BPM group: ${value}`);
+    function setBpm(value) {
+      const selectedBpm = parseInt(value);
+      console.log(`User selected BPM: ${selectedBpm}`);
 
-      if (value === 'random') {
-        window.seed = '00000000000000000000'; // Reset to default seed
-        document.getElementById('seed-display').innerText = 'Seed: 0';
-        console.log('Seed reset to default.');
-      } else {
-        window.seed = generateSeed(); // Generate a new 20-digit seed
+      try {
+        window.seed = generateSeedForBpm(selectedBpm); // Generate a seed that maps to the desired BPM
         document.getElementById('seed-display').innerText = `Seed: ${window.seed}`;
-        console.log(`Generated new seed: ${window.seed}`);
-        
-        // Start searching for a suitable seed
-        searchForSuitableSeed(selectedGroup, window.seed).then(foundSeed => {
-          if (foundSeed) {
-            window.seed = foundSeed;
-            document.getElementById('seed-display').innerText = `Seed: ${window.seed}`;
-            console.log(`Suitable seed found: ${window.seed}`);
-          } else {
-            console.warn('No suitable seed found within the search limit.');
-          }
-        });
+        console.log(`Generated seed for BPM ${selectedBpm}: ${window.seed}`);
+      } catch (error) {
+        console.error(error.message);
       }
     }
 
     /**
-     * Maps a seed to a BPM using a pseudo-random method based on the seed's digits.
+     * Maps a seed to a specific BPM based on a pseudo-random method using the seed.
      * @param {string} seed - A 20-digit seed string.
      * @returns {number} The selected BPM.
      */
-     function mapSeedToBpm(seed, group) {
-        const bpmOptions = {
-          verySlow: [80],
-          medium: [100, 120],
-          fast: [140, 160, 180],
-          veryFast: [240]
-        };
-        const allBpmOptions = [80, 100, 120, 140, 160, 180, 240];
+    function mapSeedToBpm(seed) {
+      const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
+      const hash = seed.split('').reduce((acc, digit) => {
+        return (acc * 10 + parseInt(digit, 10)) % 1000000007;
+      }, 0);
+      const selectedBpm = bpmOptions[hash % bpmOptions.length];
 
-        const hash = seed.split('').reduce((acc, digit) => (acc * 10 + parseInt(digit, 10)) % 1000000007, 0);
-        let selectedBpm = allBpmOptions[hash % allBpmOptions.length];
-
-        // Ensure the selected BPM is in the correct group
-        while (!bpmOptions[group].includes(selectedBpm)) {
-          seed = incrementSeed(seed); // Regenerate seed until the BPM is within the group
-          selectedBpm = allBpmOptions[hash % allBpmOptions.length];
-        }
-
-        console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
-        return selectedBpm;
-      }
-
-    /**
-     * Checks if the BPM belongs to the selected group.
-     * @param {number} bpm - The BPM to check.
-     * @param {string} group - The selected BPM group.
-     * @returns {boolean} Whether the BPM belongs to the selected group.
-     */
-    function isBpmInGroup(bpm, group) {
-      const bpmGroups = {
-        verySlow: [80],
-        medium: [100, 120],
-        fast: [140, 160, 180],
-        veryFast: [240]
-      };
-      return group === 'random' || bpmGroups[group]?.includes(bpm);
+      console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
+      return selectedBpm;
     }
-
-    /**
-     * Searches for a suitable seed that maps to a BPM within the desired group.
-     * Logs the process and outcome of the search.
-     * @param {string} group - The desired BPM group.
-     * @param {string} startSeed - The starting seed for the search.
-     * @returns {Promise<string|null>} A matching seed or null if not found.
-     */
-    async function searchForSuitableSeed(group, startSeed) {
-      const maxAttempts = 1000000; // Prevent infinite loops
-      let currentSeed = startSeed;
-      console.log(`Starting seed search for group ${group}...`);
-      document.getElementById('loading-spinner').style.display = 'block';
-
-      for (let i = 0; i < maxAttempts; i++) {
-        const bpm = selectBPM(currentSeed);
-        if (isBpmInGroup(bpm, group)) {
-          console.log(`Match found! Seed: ${currentSeed}, BPM: ${bpm}`);
-          persistSeed(currentSeed);
-          document.getElementById('loading-spinner').style.display = 'none';
-          return currentSeed;
-        }
-        currentSeed = incrementSeed(currentSeed);
-      }
-
-      console.warn('No suitable seed found within the maximum attempts.');
-      document.getElementById('loading-spinner').style.display = 'none';
-      return null;
-    }
-
-    // In-memory storage for seeds during the current execution
-    const seedStorage = {};
-
-    /**
-     * Persist the seed in memory for the current execution.
-     * @param {string} seed - The seed to store in memory.
-     */
-    function persistSeed(seed) {
-      seedStorage.currentSeed = seed;  // Store the current seed in memory
-      console.log(`Persisted seed in memory: ${seed}`);
-    }
-
-    /**
-     * Retrieve the persisted seed from memory.
-     * @returns {string|null} The persisted seed or null if not found.
-     */
-    function retrievePersistedSeed() {
-      return seedStorage.currentSeed || null;  // Retrieve the seed if it exists
-    }
-
-
 
     /**
      * Selects a BPM based on the current seed or a random selection if default.
@@ -515,48 +438,32 @@
     }
 
     /**
-     * Ensures the selected BPM is valid within predefined ranges.
-     * @param {number} bpm - The BPM to validate.
-     * @returns {number} The validated BPM.
-     */
-    function validateBpm(bpm) {
-      const validBpmGroups = {
-        verySlow: [80],
-        medium: [100, 120],
-        fast: [140, 160, 180],
-        veryFast: [240]
-      };
-      
-      for (const groupBpm of Object.values(validBpmGroups).flat()) {
-        if (groupBpm === bpm) return bpm;
-      }
-
-      console.warn(`Invalid BPM ${bpm}. Defaulting to 80 BPM.`);
-      return 80;
-    }
-
-    /**
      * Handles the 'Continue' button click by selecting and validating the BPM.
      * Logs the selected BPM and continues the process.
      */
     function handleContinue() {
       const bpm = selectBpmFromSeed();
-      const validatedBpm = validateBpm(bpm);
-      console.log('Selected BPM:', validatedBpm);
+      console.log('Selected BPM:', bpm);
       // Continue with application logic using the selected BPM
     }
   </script>
 </window.seed>
 
+
+
 <htmlElements>
-  <!-- BPM Group Selector -->
-  <select id="bpmGroupSelector" onchange="setBpmGroup(this.value)">
-    <option value="random">Random BPM</option>
-    <option value="verySlow">Very Slow BPM (80)</option>
-    <option value="medium">Medium BPM (100-120)</option>
-    <option value="fast">Fast BPM (140-160-180)</option>
-    <option value="veryFast">Very Fast BPM (240)</option>
+  <!-- BPM Selector -->
+  <select id="bpmSelector" onchange="setBpm(this.value)">
+    <option value="80">BPM: 80</option>
+    <option value="100">BPM: 100</option>
+    <option value="120">BPM: 120</option>
+    <option value="140">BPM: 140</option>
+    <option value="160">BPM: 160</option>
+    <option value="180">BPM: 180</option>
+    <option value="240">BPM: 240</option>
   </select>
+
+
 
   <div id="loading-spinner" style="display: none;">Loading...</div>
 
@@ -723,7 +630,94 @@ const hashString=e=>{const r=parseInt(e.split("i")[1],10);return(e.slice(r)+e.sl
 
 <dataLoadingAndDeserialisation>
 <script>
-const loadPako=async()=>{try{const e=await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0"),r=await e.text(),t=(new DOMParser).parseFromString(r,"text/html").querySelector("script")?.textContent;if(!t?.includes("pako"))throw new Error("Pako library not found in the fetched content.");const a=document.createElement("script");a.textContent=t,document.head.appendChild(a),console.log("Pako library loaded successfully.")}catch(e){throw console.error("Error occurred during Pako loading:",e),e}},fetchAndDeserialize=async e=>{try{const r=await fetch(e);if(!r.ok)throw new Error(`Network response was not ok for URL: ${e}`);const t=await r.arrayBuffer(),a=pako.inflate(new Uint8Array(t)),o=new TextDecoder("utf-8").decode(a);return deserialize(JSON.parse(o))}catch(e){throw console.error("Error in fetchAndDeserialize:",e),e}},fetchAndProcessData=async e=>{try{const r=(await Promise.all(e.map((async e=>{try{const r=await fetchAndDeserialize(e);if(!r?.projectSequences)throw new Error(`Invalid data at URL ${e}`);return r}catch{return console.error(`Error processing URL: ${e}`),null}})))).filter(Boolean);if(!r.length)throw new Error("No valid data was processed.");return r}catch(e){throw console.error("Error in fetchAndProcessData:",e),e}},selectBPM=e=>{const r=[80,100,120,140,160,180,240];return r[Math.floor(seededRandom(e)*r.length)]},processSerializedDataPart1=async(e,r,t)=>{try{await loadPako();const a=await fetchAndProcessData(e),o=selectBPM(window.seed);window.processedData={deserializedData:a,selectedBPM:o,VOLUME_CONTROLS:r,SPEED_CONTROLS:t,songDataUrls:e},console.log("Data loading and deserialization complete."),document.dispatchEvent(new CustomEvent("dataLoadingComplete"))}catch(e){console.error("Error in processSerializedDataPart1:",e)}};window.processSerializedData=processSerializedDataPart1,console.log("DataLoadingAndDeserializationScript initialized.");
+const loadPako = async () => {
+  try {
+    const response = await fetch("/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+    const text = await response.text();
+    const scriptContent = (new DOMParser).parseFromString(text, "text/html").querySelector("script")?.textContent;
+    if (!scriptContent?.includes("pako")) throw new Error("Pako library not found in the fetched content.");
+    const scriptElement = document.createElement("script");
+    scriptElement.textContent = scriptContent;
+    document.head.appendChild(scriptElement);
+    console.log("Pako library loaded successfully.");
+  } catch (error) {
+    console.error("Error occurred during Pako loading:", error);
+    throw error;
+  }
+};
+
+const fetchAndDeserialize = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Network response was not ok for URL: ${url}`);
+    const arrayBuffer = await response.arrayBuffer();
+    const inflated = pako.inflate(new Uint8Array(arrayBuffer));
+    const decoded = new TextDecoder("utf-8").decode(inflated);
+    return deserialize(JSON.parse(decoded));
+  } catch (error) {
+    console.error("Error in fetchAndDeserialize:", error);
+    throw error;
+  }
+};
+
+const fetchAndProcessData = async (urls) => {
+  try {
+    const dataArray = (await Promise.all(urls.map(async (url) => {
+      try {
+        const data = await fetchAndDeserialize(url);
+        if (!data?.projectSequences) throw new Error(`Invalid data at URL ${url}`);
+        return data;
+      } catch {
+        console.error(`Error processing URL: ${url}`);
+        return null;
+      }
+    }))).filter(Boolean);
+
+    if (!dataArray.length) throw new Error("No valid data was processed.");
+    return dataArray;
+  } catch (error) {
+    console.error("Error in fetchAndProcessData:", error);
+    throw error;
+  }
+};
+
+/**
+ * Maps a seed to a specific BPM based on a pseudo-random method using the seed.
+ * @param {string} seed - The seed value.
+ * @returns {number} The selected BPM.
+ */
+function mapSeedToBpm(seed) {
+  const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
+  const hash = seed.split('').reduce((acc, digit) => {
+    return (acc * 10 + parseInt(digit, 10)) % 1000000007;
+  }, 0);
+  const selectedBpm = bpmOptions[hash % bpmOptions.length];
+
+  console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
+  return selectedBpm;
+}
+
+const processSerializedDataPart1 = async (songDataUrls, volumeControls, speedControls) => {
+  try {
+    await loadPako();
+    const deserializedData = await fetchAndProcessData(songDataUrls);
+    const selectedBPM = mapSeedToBpm(window.seed);
+    window.processedData = {
+      deserializedData,
+      selectedBPM,
+      VOLUME_CONTROLS: volumeControls,
+      SPEED_CONTROLS: speedControls,
+      songDataUrls,
+    };
+    console.log("Data loading and deserialization complete.");
+    document.dispatchEvent(new CustomEvent("dataLoadingComplete"));
+  } catch (error) {
+    console.error("Error in processSerializedDataPart1:", error);
+  }
+};
+
+window.processSerializedData = processSerializedDataPart1;
+console.log("DataLoadingAndDeserializationScript initialized.");
 </script>
 </dataLoadingAndDeserialisation>
 
