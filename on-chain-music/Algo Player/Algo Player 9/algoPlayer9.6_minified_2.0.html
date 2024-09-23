@@ -387,7 +387,7 @@
       }
   }
   
-  </style>
+</style>
 
 
 <window.seed>
@@ -397,7 +397,7 @@
      */
 
     // Default seed initialization
-    window.seed = '63';
+    window.seed = '0';
     let selectedGroup = 'random'; // To keep track of the selected BPM group
 
     // Logs the user's BPM group selection
@@ -463,16 +463,18 @@
      * @param {string} seed - A 20-digit seed string.
      * @returns {number} The selected BPM.
      */
-    function mapSeedToBpm(seed) {
-      const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
-      const hash = seed.split('').reduce((acc, digit) => {
-        return (acc * 10 + parseInt(digit, 10)) % 1000000007;
-      }, 0);
-      const selectedBpm = bpmOptions[hash % bpmOptions.length];
+     function mapSeedToBpm(seed) {
+        seed = seed.toString(); // Ensure seed is a string
+        const bpmOptions = [80, 100, 120, 140, 160, 180, 240];
+        const hash = seed.split('').reduce((acc, digit) => {
+            return (acc * 10 + parseInt(digit, 10)) % 1000000007;
+        }, 0);
+        const selectedBpm = bpmOptions[hash % bpmOptions.length];
 
-      console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
-      return selectedBpm;
+        console.log(`Seed: ${seed}, Hash: ${hash}, Selected BPM: ${selectedBpm}`);
+        return selectedBpm;
     }
+
 
     /**
      * Selects a BPM based on the current seed or a random selection if default.
@@ -496,8 +498,6 @@
     }
   </script>
 </window.seed>
-
-
 
 <htmlElements>
   <!-- BPM Selector -->
@@ -543,7 +543,7 @@
 
 </htmlElements>
 
-<script id="song-and-sound-inputs">
+<script id="16-channel-song-inputs">
   const init = () => {
       log('Init function called. Preparing to process song data URLs...');
 
@@ -605,7 +605,7 @@ const VOLUME_CONTROLS = [
 
 
 
-SPEED_CONTROLS=[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,.5,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],scheduleMultiplierOnOff=[1,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0];let seedSet=!1,arraysInitialized=!1,audioElements=[];function applyScheduleMultiplier(e,l){try{e.channelPlaybackSpeed=e.channelPlaybackSpeed.map(((e,c)=>c<l.length&&l[c]?1.1*e:e)),console.log("Schedule multiplier applied successfully.")}catch(e){console.error("Error in applyScheduleMultiplier:",e)}}
+SPEED_CONTROLS=[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,.5,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],scheduleMultiplierOnOff=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];let seedSet=!1,arraysInitialized=!1,audioElements=[];function applyScheduleMultiplier(e,l){try{e.channelPlaybackSpeed=e.channelPlaybackSpeed.map(((e,c)=>c<l.length&&l[c]?1.1*e:e)),console.log("Schedule multiplier applied successfully.")}catch(e){console.error("Error in applyScheduleMultiplier:",e)}}
 </script>
 </constants-and-variables>
 
@@ -618,9 +618,10 @@ const applyScheduleMultiplier=(e,t,n)=>{for(const[o,r]of Object.entries(e.projec
 
 <!-- Seed Management -->
 <script id="seed-management">
-  window.generateRandomSeed = function() {
-      return Math.floor(1e16 * Math.random());
-  };
+window.generateRandomSeed = function() {
+    return Math.floor(1e16 * Math.random()).toString();
+};
+
 
   function log(e) {
       console.log(`[${(new Date).toISOString()}] ${e}`);
@@ -693,7 +694,12 @@ const applyScheduleMultiplier=(e,t,n)=>{for(const[o,r]of Object.entries(e.projec
                 await pauseBeforeContinue();
                 init(); // Call the main app logic here after the Continue button is pressed
             }
-        };
+            // **Load Visualizer Scripts**
+            if (typeof loadAllScripts === 'function') {
+                    await loadAllScripts();
+                    log("Visualizer scripts reloaded.");
+                }
+            };
 
         // Execute the initialization function
         initApp(false); // Pass 'false' to prevent auto-start
@@ -739,27 +745,127 @@ async function stopPlayback() {
 </init>
 
 <audioContext>
-<script id="audio-context-manager">
-!function(){if(!window.AudioContextManager){class t{constructor(){return t.instance||(window.audioCtx=null,log("AudioContextManager initialized with no AudioContext."),t.instance=this),t.instance}initCtx(){window.audioCtx&&"closed"!==window.audioCtx.state||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext),window.audioCtx.onstatechange=()=>log(`AudioContext state change. New state: ${window.audioCtx.state}`),log(`AudioContext created. State: ${window.audioCtx.state}`))}getAudioContext(){return window.audioCtx||this.initCtx(),window.audioCtx}async resume(){this.initCtx();const t=window.audioCtx.state;"suspended"===t?(log("Resuming AudioContext..."),await window.audioCtx.resume(),log(`AudioContext resumed. State: ${window.audioCtx.state}`)):"running"===t?log("AudioContext already running."):"closed"===t&&(log("Resetting closed AudioContext..."),await this.resetCtx())}async suspend(){const t=window.audioCtx?.state;log(`Attempting to suspend AudioContext. Current state: ${t}`),"running"===t?(await window.audioCtx.suspend(),log(`AudioContext suspended. State: ${window.audioCtx.state}`)):"suspended"===t?log("AudioContext already suspended."):console.warn("Cannot suspend AudioContext.")}async resetCtx(){log(`Current AudioContext state: ${window.audioCtx?.state}`),window.audioCtx&&"closed"!==window.audioCtx.state&&(await window.audioCtx.close(),log("AudioContext closed.")),this.initCtx(),log(`AudioContext reset. State: ${window.audioCtx.state}`),"suspended"===window.audioCtx.state&&(log("Resuming new AudioContext..."),await window.audioCtx.resume(),log(`AudioContext resumed. State: ${window.audioCtx.state}`))}
-async resetApp() {
-                log("Resetting application.");
-                // Remove or comment out the next line
-                // window.seed +=1; // We will handle seed generation separately
-                log(`New seed: ${window.seed}`);
-                await this.resetCtx();
-                window.audioElements = [];
-                window.activeSources = [];
-                window.arraysInitialized = !1;
-                window.isReadyToPlay = !1;
-                log("Application reset complete.");
-                await initApp();
+  <div id="audio-context">
+    <script id="audio-context-manager">
+      !function(){
+        if (!window.AudioContextManager) {
+          class AudioContextManager {
+            constructor() {
+              if (!AudioContextManager.instance) {
+                window.audioCtx = null;
+                log("AudioContextManager initialized with no AudioContext.");
+                AudioContextManager.instance = this;
+              }
+              return AudioContextManager.instance;
             }
-          }
-        window.AudioContextManager = new t();
-    }
-}();</script>
 
+            initCtx() {
+              if (!window.audioCtx || window.audioCtx.state === "closed") {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                window.audioCtx.onstatechange = () => log(`AudioContext state change. New state: ${window.audioCtx.state}`);
+                log(`AudioContext created. State: ${window.audioCtx.state}`);
+              }
+            }
+
+            getAudioContext() {
+              if (!window.audioCtx) {
+                this.initCtx();
+              }
+              return window.audioCtx;
+            }
+
+            async resume() {
+              this.initCtx();
+              const state = window.audioCtx.state;
+              if (state === "suspended") {
+                log("Resuming AudioContext...");
+                await window.audioCtx.resume();
+                log(`AudioContext resumed. State: ${window.audioCtx.state}`);
+              } else if (state === "running") {
+                log("AudioContext already running.");
+              } else if (state === "closed") {
+                log("AudioContext was closed. Re-initializing...");
+                this.initCtx();
+                if (window.audioCtx.state === 'suspended') {
+                  await window.audioCtx.resume();
+                }
+                log(`AudioContext state after re-initialization: ${window.audioCtx.state}`);
+              }
+            }
+
+            async suspend() {
+              const state = window.audioCtx?.state;
+              log(`Attempting to suspend AudioContext. Current state: ${state}`);
+              if (state === "running") {
+                await window.audioCtx.suspend();
+                log(`AudioContext suspended. State: ${window.audioCtx.state}`);
+              } else if (state === "suspended") {
+                log("AudioContext already suspended.");
+              } else {
+                console.warn("Cannot suspend AudioContext.");
+              }
+            }
+
+            async resetApp() {
+              log("Resetting application.");
+
+              // New seed is already set when 'Next' button is pressed
+              log(`New seed: ${window.seed}`);
+
+              // Stop any ongoing playback
+              if (typeof stopPlayback === 'function') {
+                await stopPlayback();
+              }
+
+              // Reset global variables
+              window.audioElements = [];
+              window.activeSources = [];
+              window.arraysInitialized = false;
+              window.isReadyToPlay = false;
+              globalJsonData = null;
+              globalAudioBuffers = [];
+              preprocessedSequences = {};
+              currentStep = 0;
+              beatCount = 0;
+              barCount = 0;
+              currentSequence = 0;
+              playbackTimeoutId = null;
+              nextNoteTime = 0;
+              totalSequences = 0;
+              isPlaying = false;
+              isFirstLoopCompleted = false; // If used
+              globalTrimTimes = {};
+              globalVolumeLevels = {};
+              globalPlaybackSpeeds = {};
+              activeSources = [];
+              globalReversedAudioBuffers = {};
+              isReversePlay = false;
+
+              // Clean up web workers if any
+              if (typeof cleanUpWorker === 'function') {
+                await cleanUpWorker();
+              }
+
+              // Reset Visualizer State
+              if (typeof resetVisualizerState === 'function') {
+                resetVisualizerState();
+              }
+
+              // Reinitialize the application
+              log("Application reset complete.");
+              await initApp();
+            }
+
+          }
+
+          // Initialize AudioContextManager globally
+          window.AudioContextManager = new AudioContextManager();
+        }
+      }();
+    </script>
+  </div>
 </audioContext>
+
 
 </seedAndInitialise>
 
@@ -1963,12 +2069,21 @@ console.log("LocalDataProcessingScript initialized and awaiting data.");
     // Event listener for the "Next" button
     document.getElementById('next-seed-button').addEventListener('click', async () => {
         log("Next button clicked. Generating new seed and resetting application.");
+
+        // Stop current playback if it's running
+        if (isPlaying) {
+            await stopPlayback(); // Ensure this function properly stops all audio
+        }
+
         // Generate a new random seed
-        window.seed = window.generateRandomSeed();
+        window.seed = window.generateRandomSeed().toString(); // Ensure seed is a string
         log(`New seed generated: ${window.seed}`);
-        // Reset the application
-        await window.AudioContextManager.resetApp();
+
+        // Reset the application state without resetting the AudioContext
+        resetApp();
     });
+
+
     </script>
     </eventListeners>
 
@@ -2174,6 +2289,36 @@ async function loadAllScripts() {
 </script>
 </visualizerScripts>
 
+<unloadVisualiser>
+  <script>
+    async function unloadVisualizerScripts() {
+    const visualizerScriptUrls = window.visualizerScripts || [];
+    visualizerScriptUrls.forEach(url => {
+        const scripts = document.querySelectorAll(`script[src="${url}"]`);
+        scripts.forEach(script => {
+            script.parentNode.removeChild(script);
+        });
+    });
+    log("Visualizer scripts unloaded.");
+}
+
+function resetVisualizerState() {
+    // Reset visualizer-specific global variables
+    window.cci2 = 0;
+    window.initialCCI2 = 0;
+    // ... reset other visualizer variables as needed ...
+
+    // Remove visualizer canvas or elements if necessary
+    const canvas = document.getElementById('cv');
+    if (canvas) {
+        canvas.parentNode.removeChild(canvas);
+    }
+    log("Visualizer state reset.");
+}
+
+  </script>
+  </unloadVisualiser>
+
 <visualizerLoader>
 <script>
 // visualizerLoader.js
@@ -2191,24 +2336,6 @@ async function loadAllScripts() {
 // Function to check if the visualizerScripts array exists and is non-empty
 function shouldLoadVisualizer() {
   return Array.isArray(window.visualizerScripts) && window.visualizerScripts.length > 0;
-}
-
-// Function to dynamically load a script
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true; // Optional: Load scripts asynchronously
-    script.onload = () => {
-      console.log(`Loader Checker: Loaded script ${src}`);
-      resolve();
-    };
-    script.onerror = () => {
-      console.error(`Loader Checker: Failed to load script ${src}`);
-      reject(new Error(`Failed to load script: ${src}`));
-    };
-    document.body.appendChild(script);
-  });
 }
 
 // Function to initialize the visualizer if needed

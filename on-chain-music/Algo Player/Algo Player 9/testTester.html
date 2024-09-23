@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>DEGENERATE</title>
+    <link rel="stylesheet" href="https://ordinals.com/content/e82abe97f4ddb8632f5337a4c8129bb95e8f7ab320992f43afe4947a6f227aa2i0">
+    <script type="module" src="https://ordinals.com/content/5e1e2a1c972a150dcf3b14ad00dcbd4dd86444f762e913a97bf7ca4be0e4ff3ai0"></script>
+  </head>
+  <body>
+    <h1>DEGENERATE</h1>
+    
+    <!-- Play Button -->
+    <button id="playButton">Play Music</button>
+
+    <script>
+      console.log('File Has Executed OK');
+
+      // Add click listener directly to the button in the global scope
+      const playButton = document.getElementById('playButton');
+      console.log('Play button found:', playButton);
+
+      playButton.onclick = function() {
+        console.log('Play button clicked at', new Date().toLocaleTimeString());
+        
+        // Create audio element
+        const audio = new Audio('https://ordinals.com/content/4ad0e47df8824477df72e454c162048d79e9c2234bf4e95bfa65d6ff36cbff6fi0');
+        
+        // Play audio
+        audio.play().then(() => {
+          console.log('Audio playback started.');
+        }).catch(error => {
+          console.error('Error playing audio:', error);
+        });
+      };
+    </script>
+  </body>
+</html>
