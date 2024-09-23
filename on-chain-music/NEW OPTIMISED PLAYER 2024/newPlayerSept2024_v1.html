@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Optimized Audio Player</title>
-    <!-- Include Pako for GZIP decompression with defer to prevent blocking -->
+    <!-- Include Pako for GZIP decompression -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js" defer></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         button { margin: 5px; padding: 10px 20px; }
-        h1, h2 { color: #333; }
+        h1 { color: #333; }
         #loadingIndicator { display: none; margin-top: 10px; }
         #errorMessage { color: red; margin-top: 10px; }
     </style>
@@ -24,488 +23,479 @@
 <div id="errorMessage"></div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Key map to translate between keys and indices
-        const keyMap = {
-            "0": "projectName",
-            "1": "artistName",
-            "2": "projectBPM",
-            "3": "currentSequence",
-            "4": "channelURLs",
-            "5": "channelVolume",
-            "6": "channelPlaybackSpeed",
-            "7": "trimSettings",
-            "8": "projectChannelNames",
-            "9": "startSliderValue",
-            "10": "endSliderValue",
-            "11": "totalSampleDuration",
-            "12": "start",
-            "13": "end",
-            "14": "projectSequences",
-            "15": "steps"
-        };
+document.addEventListener('DOMContentLoaded', () => {
+    // Key map to translate between keys and indices
+    const keyMap = {
+        "0": "projectName",
+        "1": "artistName",
+        "2": "projectBPM",
+        "3": "currentSequence",
+        "4": "channelURLs",
+        "5": "channelVolume",
+        "6": "channelPlaybackSpeed",
+        "7": "trimSettings",
+        "8": "projectChannelNames",
+        "9": "startSliderValue",
+        "10": "endSliderValue",
+        "11": "totalSampleDuration",
+        "12": "start",
+        "13": "end",
+        "14": "projectSequences",
+        "15": "steps"
+    };
 
-        // Reverse key map to translate from field names to their corresponding index
-        const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, +k]));
+    // Reverse key map to translate from field names to their corresponding index
+    const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, +k]));
 
-        // Function to decompress step data
-        const decompressSteps = (stepData) => stepData.reduce((result, step) => {
-            if (typeof step === "number") {
-                result.push({ index: step, reverse: false });
-            } else if (step?.r) {
-                const [stepNumber, reverseFlag] = step.r;
-                result.push({ index: stepNumber, reverse: reverseFlag });
-            } else if (typeof step === "string" && step.endsWith("r")) {
-                const stepNumber = parseInt(step.slice(0, -1), 10);
-                result.push({ index: stepNumber, reverse: true });
-            } else {
-                console.warn("Unknown step format:", step);
-            }
-            return result;
-        }, []);
+    // Function to decompress step data
+    const decompressSteps = (stepData) => stepData.reduce((result, step) => {
+        if (typeof step === "number") {
+            result.push({ index: step, reverse: false });
+        } else if (typeof step === "string" && step.endsWith("r")) {
+            const stepNumber = parseInt(step.slice(0, -1), 10);
+            result.push({ index: stepNumber, reverse: true });
+        } else if (typeof step === "object" && step.r && Array.isArray(step.r)) {
+            // Handle the case where the step is an object with "r" array
+            const [stepNumber, reverseFlag] = step.r;
+            result.push({ index: stepNumber, reverse: Boolean(reverseFlag) });
+        } else {
+            console.warn("Unknown step format:", step);
+        }
+        return result;
+    }, []);
 
-        // Helper function to convert a single letter to a number (a=0, b=1, ..., p=15)
-        const letterToNumber = (letter) => {
-            const index = letter.toLowerCase().charCodeAt(0) - 97;
-            if (index < 0 || index > 15) {
-                console.error(`Invalid channel letter: ${letter}. Must be between 'a' and 'p'.`);
-                return null;
-            }
-            return index;
-        };
 
-        // Deserialize function
-        const deserialize = (data) => {
-            const mappedData = {};
-            for (const [key, value] of Object.entries(data)) {
-                const mappedKey = keyMap[key] || key;
-                if (mappedKey === "projectSequences") {
-                    mappedData[mappedKey] = Object.entries(value).reduce((seqAcc, [seqKey, seqValue]) => {
-                        const sequenceId = `Sequence${seqKey.replace(/^s/, "")}`;
-                        seqAcc[sequenceId] = Object.entries(seqValue).reduce((chanAcc, [chanKey, chanData]) => {
-                            let channelNumber = parseInt(chanKey.replace(/^ch/, ""), 10);
-                            if (isNaN(channelNumber)) {
-                                channelNumber = letterToNumber(chanKey);
-                                if (channelNumber === null) return chanAcc;
-                            }
-                            const channelName = `Channel ${channelNumber}`;
-                            chanAcc[channelName] = { steps: decompressSteps(chanData[reverseKeyMap.steps] || []) };
-                            return chanAcc;
-                        }, {});
-                        return seqAcc;
+    // Helper function to convert a single letter to a number (a=0, b=1, ..., p=15)
+    const letterToNumber = (letter) => {
+        const index = letter.toLowerCase().charCodeAt(0) - 97;
+        if (index < 0 || index > 15) {
+            console.error(`Invalid channel letter: ${letter}. Must be between 'a' and 'p'.`);
+            return null;
+        }
+        return index;
+    };
+
+    // Deserialize function
+    const deserialize = (data) => {
+        const mappedData = {};
+        for (const [key, value] of Object.entries(data)) {
+            const mappedKey = keyMap[key] || key;
+            if (mappedKey === "projectSequences") {
+                mappedData[mappedKey] = Object.entries(value).reduce((seqAcc, [seqKey, seqValue]) => {
+                    const sequenceId = `Sequence${seqKey.replace(/^s/, "")}`;
+                    seqAcc[sequenceId] = Object.entries(seqValue).reduce((chanAcc, [chanKey, chanData]) => {
+                        let channelNumber = parseInt(chanKey.replace(/^ch/, ""), 10);
+                        if (isNaN(channelNumber)) {
+                            channelNumber = letterToNumber(chanKey);
+                            if (channelNumber === null) return chanAcc;
+                        }
+                        const channelName = `Channel ${channelNumber}`;
+                        chanAcc[channelName] = { steps: decompressSteps(chanData[reverseKeyMap.steps] || []) };
+                        return chanAcc;
                     }, {});
-                } else if (reverseKeyMap[mappedKey] !== undefined || ["channelURLs", "channelVolume", "channelPlaybackSpeed", "trimSettings", "projectName", "artistName", "projectBPM", "currentSequence", "projectChannelNames", "startSliderValue", "endSliderValue", "totalSampleDuration", "start", "end"].includes(mappedKey)) {
-                    mappedData[mappedKey] = value;
-                } else {
-                    mappedData[mappedKey] = value;
-                }
-            }
-            return mappedData;
-        };
-
-        class AudioPlayer {
-            constructor() {
-                this.audioBuffers = []; // Array of { buffer, gainNode, channel, playbackSpeed, trimValue }
-                this.reversedAudioBuffers = {}; // { channelName: buffer }
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                this.isPlaying = false;
-                this.currentSourceNodes = [];
-                this.processedData = {};
-                this.currentSequence = 0;
-                this.timeouts = []; // Array to keep track of active timeout IDs
-
-                // Bind UI elements
-                this.loadButton = document.getElementById('loadButton');
-                this.playButton = document.getElementById('playButton');
-                this.stopButton = document.getElementById('stopButton');
-                this.loadingIndicator = document.getElementById('loadingIndicator');
-                this.errorMessage = document.getElementById('errorMessage');
-
-                // Initialize event listeners
-                this.initEventListeners();
-            }
-
-            initEventListeners() {
-                this.loadButton.addEventListener('click', () => this.loadButtonHandler());
-                this.playButton.addEventListener('click', () => this.play());
-                this.stopButton.addEventListener('click', () => this.stop());
-            }
-
-            async loadButtonHandler() {
-                const url = prompt("Enter the URL for the GZIP file:");
-                if (url) {
-                    try {
-                        this.showLoading(true);
-                        await this.loadGzipFile(url);
-                        this.playButton.disabled = false;
-                        this.stopButton.disabled = false;
-                        alert("File loaded successfully!");
-                    } catch (error) {
-                        console.error("Error loading file:", error);
-                        this.displayError("Failed to load file. Check the console for details.");
-                    } finally {
-                        this.showLoading(false);
-                    }
-                }
-            }
-
-            showLoading(isLoading) {
-                this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
-            }
-
-            displayError(message) {
-                this.errorMessage.textContent = message;
-            }
-
-            async loadGzipFile(url) {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-
-                const arrayBuffer = await response.arrayBuffer();
-                const inflated = pako.inflate(new Uint8Array(arrayBuffer));
-                const decoded = new TextDecoder("utf-8").decode(inflated);
-                const data = JSON.parse(decoded);
-
-                // Deserialize and map data
-                const deserializedData = deserialize(data);
-                const mappedData = {
-                    projectName: deserializedData.projectName,
-                    artistName: deserializedData.artistName,
-                    projectBPM: deserializedData.projectBPM,
-                    currentSequence: deserializedData.currentSequence,
-                    channelURLs: this.arrayToObject(deserializedData.channelURLs, 0, false),
-                    channelVolume: this.arrayToObject(deserializedData.channelVolume, 0, true),
-                    channelPlaybackSpeed: this.arrayToObject(deserializedData.channelPlaybackSpeed, 0, true),
-                    trimSettings: this.mapTrimSettings(deserializedData.trimSettings),
-                    projectChannelNames: deserializedData.projectChannelNames,
-                    projectSequences: deserializedData.projectSequences,
-                    globalPlaybackSpeed: deserializedData.globalPlaybackSpeed || 1
-                };
-
-                // Store deserialized data
-                this.processedData = {
-                    ...mappedData,
-                    VOLUME_CONTROLS: mappedData.channelVolume,
-                    SPEED_CONTROLS: mappedData.channelPlaybackSpeed,
-                    songDataUrls: Object.values(mappedData.channelURLs)
-                };
-
-                // Log the number of sequences loaded
-                console.log(`Number of sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
-
-
-                // Validate and process channel URLs
-                if (this.processedData.songDataUrls.length === 16) {
-                    const channelURLs = this.processedData.songDataUrls.map(url => `https://ordinals.com${url}`);
-                    await this.fetchAndProcessAudioData(channelURLs);
-                } else {
-                    throw new Error("No valid channel URLs found in loaded data or incorrect number of channels.");
-                }
-            }
-
-            arrayToObject(array, startIndex = 0, parseAsNumber = false) {
-                return array.reduce((obj, item, index) => {
-                    const channelNumber = startIndex + index;
-                    obj[channelNumber] = parseAsNumber ? parseFloat(item) || 1 : item;
-                    return obj;
+                    return seqAcc;
                 }, {});
+            } else {
+                mappedData[mappedKey] = value;
             }
+        }
+        return mappedData;
+    };
 
-            mapTrimSettings(trimArray) {
-                return trimArray.reduce((trimObj, item, index) => {
-                    if (typeof item === 'object' && item !== null) {
-                        trimObj[index] = {
-                            start: typeof item[9] === 'number' ? item[9] : 0,
-                            end: typeof item[10] === 'number' ? item[10] : 100
-                        };
-                    } else if (typeof item === 'number') {
-                        trimObj[index] = { start: 0, end: item };
-                    } else {
-                        trimObj[index] = { start: 0, end: 100 };
-                        console.warn(`Invalid trim settings for Channel ${index}. Using default values.`);
-                    }
-                    return trimObj;
-                }, {});
-            }
-
-            async fetchAndProcessAudioData(urls) {
-                const results = await Promise.allSettled(urls.map((url, index) => this.processAudioUrl(url, index)));
-                results.forEach((result, index) => {
-                    if (result.status === 'rejected') {
-                        console.error(`Failed to process Channel ${index} (${urls[index]}):`, result.reason);
-                    }
-                });
-                this.createReversedBuffers();
-            }
-
-            async processAudioUrl(url, channelIndex) {
-                const channelName = `Channel ${channelIndex}`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Fetch failed: ${url}, Status: ${response.status}`);
-
-                const contentType = response.headers.get("Content-Type");
-                let audioBuffer;
-
-                if (/audio\//.test(contentType)) {
-                    audioBuffer = await this.fetchAndDecodeAudio(response);
-                } else if (/application\/json/.test(contentType)) {
-                    audioBuffer = await this.handleJsonResponse(response);
-                } else if (/text\/html/.test(contentType)) {
-                    audioBuffer = await this.handleHtmlResponse(response);
-                } else {
-                    throw new Error(`Unsupported content type for ${channelName}: ${contentType}`);
-                }
-
-                if (audioBuffer) {
-                    const volume = this.parseVolumeLevel(this.processedData.VOLUME_CONTROLS[channelIndex]);
-                    const playbackSpeed = this.processedData.SPEED_CONTROLS[channelIndex] || 1;
-                    const trim = this.processedData.trimSettings[channelIndex] || { start: 0, end: 100 };
-
-                    const trimmedBuffer = this.applyTrim(audioBuffer, trim.start, trim.end);
-
-                    const gainNode = this.audioCtx.createGain();
-                    gainNode.gain.value = volume;
-                    gainNode.connect(this.audioCtx.destination);
-
-                    this.audioBuffers.push({
-                        buffer: trimmedBuffer,
-                        gainNode,
-                        channel: channelName,
-                        playbackSpeed,
-                        trimValue: trim
-                    });
-                }
-            }
-
-            async fetchAndDecodeAudio(response) {
-                const arrayBuffer = await response.arrayBuffer();
-                return this.audioCtx.decodeAudioData(arrayBuffer);
-            }
-
-            async handleJsonResponse(response) {
-                const jsonData = await response.json();
-                if (jsonData.audioData) {
-                    const arrayBuffer = this.base64ToArrayBuffer(jsonData.audioData.split(",")[1]);
-                    return this.audioCtx.decodeAudioData(arrayBuffer);
-                }
-                throw new Error("Invalid JSON structure for audio data.");
-            }
-
-            async handleHtmlResponse(response) {
-                const text = await response.text();
-                const base64Audio = this.extractBase64FromHTML(text);
-                if (base64Audio) {
-                    const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
-                    return this.audioCtx.decodeAudioData(arrayBuffer);
-                }
-                throw new Error("No valid audio data found in HTML.");
-            }
-
-            base64ToArrayBuffer(base64) {
-                try {
-                    const binaryString = atob(base64);
-                    const len = binaryString.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    return bytes.buffer;
-                } catch {
-                    throw new Error("Failed to convert Base64 to ArrayBuffer.");
-                }
-            }
-
-            extractBase64FromHTML(html) {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                const audioElement = doc.querySelector("audio[data-audionalSampleName] source");
-                return audioElement?.getAttribute("src")?.startsWith("data:audio/") ? audioElement.getAttribute("src") : null;
-            }
-
-            parseVolumeLevel(volume) {
-                const parsed = parseFloat(volume);
-                return isNaN(parsed) || parsed < 0 ? 1 : Math.min(parsed, 1);
-            }
-
-            applyTrim(buffer, startPercent, endPercent) {
-                const totalSamples = buffer.length;
-                const startSample = Math.floor(totalSamples * (startPercent / 100));
-                const endSample = Math.floor(totalSamples * (endPercent / 100));
-
-                if (startSample >= endSample || startSample < 0 || endSample > totalSamples) {
-                    console.warn(`Invalid trim settings: Start = ${startPercent}%, End = ${endPercent}%. Using full buffer.`);
-                    return buffer;
-                }
-
-                const trimmedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, endSample - startSample, buffer.sampleRate);
-                for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-                    const channelData = buffer.getChannelData(channel).subarray(startSample, endSample);
-                    trimmedBuffer.copyToChannel(channelData, channel, 0);
-                }
-                return trimmedBuffer;
-            }
-
-            createReversedBuffers() {
-                const channelsWithReverse = new Set();
-                const { projectSequences } = this.processedData;
-
-                Object.values(projectSequences).forEach((sequence, seqIndex) => {
-                    Object.entries(sequence).forEach(([channelName, channelData]) => {
-                        channelData.steps.forEach((step, stepIndex) => {
-                            if (step.reverse) {
-                                channelsWithReverse.add(channelName);
-                                console.debug(`Channel '${channelName}' requires a reversed buffer.`);
-                            }
-                        });
-                    });
-                });
-
-                console.debug("Channels requiring reversal:", Array.from(channelsWithReverse));
-
-                this.audioBuffers.forEach(({ buffer, channel }) => {
-                    if (channelsWithReverse.has(channel) && !this.reversedAudioBuffers[channel]) {
-                        console.log(`Creating reversed buffer for ${channel}`);
-                        this.reversedAudioBuffers[channel] = this.reverseBuffer(buffer);
-                    }
-                });
-            }
-
-            reverseBuffer(buffer) {
-                console.debug(`Reversing buffer of length ${buffer.length} for sample rate ${buffer.sampleRate}`);
-                const reversedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
-
-                for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-                    const channelData = buffer.getChannelData(channel);
-                    const reversedData = reversedBuffer.getChannelData(channel);
-                    for (let i = 0, len = buffer.length; i < len; i++) {
-                        reversedData[i] = channelData[len - i - 1];
-                    }
-                }
-                console.debug("Buffer reversal complete.");
-                return reversedBuffer;
-            }
-
-
-
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // PLAYBACK 
-    playSequence(sequenceId) {
-        const sequence = this.processedData.projectSequences[sequenceId];
-        if (!sequence) {
-            console.error(`No data found for ${sequenceId}.`);
+    class AudioPlayer {
+        constructor() {
+            this.audioBuffers = []; // Array of { buffer, gainNode, channel, playbackSpeed }
+            this.reversedAudioBuffers = {}; // { channelName: buffer }
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             this.isPlaying = false;
-            return;
+            this.currentSourceNodes = [];
+            this.processedData = {};
+            this.currentSequence = 0;
+            this.startTime = 0;
+
+            // Bind UI elements
+            this.loadButton = document.getElementById('loadButton');
+            this.playButton = document.getElementById('playButton');
+            this.stopButton = document.getElementById('stopButton');
+            this.loadingIndicator = document.getElementById('loadingIndicator');
+            this.errorMessage = document.getElementById('errorMessage');
+
+            // Initialize event listeners
+            this.initEventListeners();
         }
 
-        const startTime = this.audioCtx.currentTime;
-        const beatDuration = 60 / this.processedData.projectBPM; // Duration of one beat (quarter note) in seconds
-        const stepsPerBeat = 4; // Adjust this value if your song data specifies a different steps per beat
-        const stepDuration = beatDuration / stepsPerBeat;        
-        const globalSpeed = this.processedData.globalPlaybackSpeed;
+        initEventListeners() {
+            this.loadButton.addEventListener('click', () => this.loadButtonHandler());
+            this.playButton.addEventListener('click', () => this.play());
+            this.stopButton.addEventListener('click', () => this.stop());
+        }
 
-        // Log the start of the sequence playback
-        console.log(`Starting playback of ${sequenceId}`);
+        async loadButtonHandler() {
+            const ordinalId = prompt("Enter the Ordinal ID for the GZIP file:");
+            if (ordinalId) {
+                const url = `https://ordinals.com/content/${ordinalId}`;
+                try {
+                    this.showLoading(true);
+                    await this.loadGzipFile(url);
+                    this.playButton.disabled = false;
+                    this.stopButton.disabled = false;
+                    alert("File loaded successfully!");
+                } catch (error) {
+                    console.error("Error loading file:", error);
+                    this.displayError("Failed to load file. Check the console for details.");
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+        }
 
-        let maxSequenceDuration = 0;
+        showLoading(isLoading) {
+            this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
+        }
 
-        Object.entries(sequence).forEach(([channelName, channelData], channelIndex) => {
-            const bufferInfo = this.audioBuffers.find(buf => buf.channel === channelName);
-            if (!bufferInfo) {
-                console.warn(`No audio buffer found for ${channelName}. Skipping...`);
-                return;
+        displayError(message) {
+            this.errorMessage.textContent = message;
+        }
+
+        async loadGzipFile(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+
+            const arrayBuffer = await response.arrayBuffer();
+            const inflated = pako.inflate(new Uint8Array(arrayBuffer));
+            const decoded = new TextDecoder("utf-8").decode(inflated);
+            const data = JSON.parse(decoded);
+
+            // Deserialize and map data
+            const deserializedData = deserialize(data);
+            const mappedData = {
+                projectName: deserializedData.projectName,
+                artistName: deserializedData.artistName,
+                projectBPM: deserializedData.projectBPM,
+                currentSequence: deserializedData.currentSequence,
+                channelURLs: this.arrayToObject(deserializedData.channelURLs, 0, false),
+                channelVolume: this.arrayToObject(deserializedData.channelVolume, 0, true),
+                channelPlaybackSpeed: this.arrayToObject(deserializedData.channelPlaybackSpeed, 0, true),
+                trimSettings: this.mapTrimSettings(deserializedData.trimSettings),
+                projectChannelNames: deserializedData.projectChannelNames,
+                projectSequences: deserializedData.projectSequences,
+                globalPlaybackSpeed: deserializedData.globalPlaybackSpeed || 1
+            };
+
+            // Store deserialized data
+            this.processedData = {
+                ...mappedData,
+                VOLUME_CONTROLS: mappedData.channelVolume,
+                SPEED_CONTROLS: mappedData.channelPlaybackSpeed,
+                songDataUrls: Object.values(mappedData.channelURLs)
+            };
+
+            // Log the number of sequences loaded
+            console.log(`Number of sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
+
+            // Validate and process channel URLs
+            if (this.processedData.songDataUrls.length === 16) {
+                const channelURLs = this.processedData.songDataUrls.map(url => `https://ordinals.com${url}`);
+                await this.fetchAndProcessAudioData(channelURLs);
+            } else {
+                throw new Error("No valid channel URLs found in loaded data or incorrect number of channels.");
+            }
+        }
+
+
+        arrayToObject(array, startIndex = 0, parseAsNumber = false) {
+            return array.reduce((obj, item, index) => {
+                const channelNumber = startIndex + index;
+                obj[`Channel ${channelNumber}`] = parseAsNumber ? parseFloat(item) || 1 : item;
+                return obj;
+            }, {});
+        }
+
+        mapTrimSettings(trimArray) {
+            return trimArray.reduce((trimObj, item, index) => {
+                if (typeof item === 'object' && item !== null) {
+                    trimObj[`Channel ${index}`] = {
+                        start: typeof item[9] === 'number' ? item[9] : 0,
+                        end: typeof item[10] === 'number' ? item[10] : 100
+                    };
+                } else if (typeof item === 'number') {
+                    trimObj[`Channel ${index}`] = { start: 0, end: item };
+                } else {
+                    trimObj[`Channel ${index}`] = { start: 0, end: 100 };
+                    console.warn(`Invalid trim settings for Channel ${index}. Using default values.`);
+                }
+                return trimObj;
+            }, {});
+        }
+
+        async fetchAndProcessAudioData(urls) {
+            const results = await Promise.allSettled(urls.map((url, index) => this.processAudioUrl(url, index)));
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to process Channel ${index} (${urls[index]}):`, result.reason);
+                }
+            });
+            this.createReversedBuffers();
+        }
+
+        async processAudioUrl(url, channelIndex) {
+            const channelName = `Channel ${channelIndex}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Fetch failed: ${url}, Status: ${response.status}`);
+
+            const contentType = response.headers.get("Content-Type");
+            let audioBuffer;
+
+            if (/audio\//.test(contentType)) {
+                audioBuffer = await this.fetchAndDecodeAudio(response);
+            } else if (/application\/json/.test(contentType)) {
+                audioBuffer = await this.handleJsonResponse(response);
+            } else if (/text\/html/.test(contentType)) {
+                audioBuffer = await this.handleHtmlResponse(response);
+            } else {
+                throw new Error(`Unsupported content type for ${channelName}: ${contentType}`);
             }
 
-            let channelMaxDuration = 0;
+            if (audioBuffer) {
+                const volume = this.parseVolumeLevel(this.processedData.VOLUME_CONTROLS[channelName]);
+                const playbackSpeed = this.processedData.SPEED_CONTROLS[channelName] || 1;
+                const trim = this.processedData.trimSettings[channelName] || { start: 0, end: 100 };
 
-            channelData.steps.forEach((step, stepIndex) => {
-                const when = startTime + ((step.index - 1) * stepDuration) / globalSpeed;
-                const source = this.audioCtx.createBufferSource();
+                const trimmedBuffer = this.applyTrim(audioBuffer, trim.start, trim.end);
 
-                // Select the correct buffer
-                if (step.reverse) {
-                    if (this.reversedAudioBuffers[channelName]) {
-                        source.buffer = this.reversedAudioBuffers[channelName];
-                        console.log(`Using reversed buffer for ${channelName} at step position ${step.index}`);
-                    } else {
-                        console.warn(`Reversed buffer not found for ${channelName}. Using forward buffer instead.`);
-                        source.buffer = bufferInfo.buffer;
-                    }
+                const gainNode = this.audioCtx.createGain();
+                gainNode.gain.value = volume;
+                gainNode.connect(this.audioCtx.destination);
+
+                this.audioBuffers.push({
+                    buffer: trimmedBuffer,
+                    gainNode,
+                    channel: channelName,
+                    playbackSpeed
+                });
+            }
+        }
+
+        async fetchAndDecodeAudio(response) {
+            const arrayBuffer = await response.arrayBuffer();
+            return this.audioCtx.decodeAudioData(arrayBuffer);
+        }
+
+        async handleJsonResponse(response) {
+            const jsonData = await response.json();
+            if (jsonData.audioData) {
+                const arrayBuffer = this.base64ToArrayBuffer(jsonData.audioData.split(",")[1]);
+                return this.audioCtx.decodeAudioData(arrayBuffer);
+            }
+            throw new Error("Invalid JSON structure for audio data.");
+        }
+
+        async handleHtmlResponse(response) {
+            const text = await response.text();
+            const base64Audio = this.extractBase64FromHTML(text);
+            if (base64Audio) {
+                const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
+                return this.audioCtx.decodeAudioData(arrayBuffer);
+            }
+            throw new Error("No valid audio data found in HTML.");
+        }
+
+        base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        extractBase64FromHTML(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const audioElement = doc.querySelector("audio[data-audionalSampleName] source");
+            return audioElement?.getAttribute("src")?.startsWith("data:audio/") ? audioElement.getAttribute("src") : null;
+        }
+
+        parseVolumeLevel(volume) {
+            const parsed = parseFloat(volume);
+            return isNaN(parsed) || parsed < 0 ? 1 : Math.min(parsed, 1);
+        }
+
+        applyTrim(buffer, startPercent, endPercent) {
+            const totalSamples = buffer.length;
+            const startSample = Math.floor(totalSamples * (startPercent / 100));
+            const endSample = Math.floor(totalSamples * (endPercent / 100));
+
+            if (startSample >= endSample || startSample < 0 || endSample > totalSamples) {
+                console.warn(`Invalid trim settings: Start = ${startPercent}%, End = ${endPercent}%. Using full buffer.`);
+                return buffer;
+            }
+
+            const trimmedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, endSample - startSample, buffer.sampleRate);
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const channelData = buffer.getChannelData(channel).subarray(startSample, endSample);
+                trimmedBuffer.copyToChannel(channelData, channel, 0);
+            }
+            return trimmedBuffer;
+        }
+
+        createReversedBuffers() {
+            const channelsWithReverse = new Set();
+            const { projectSequences } = this.processedData;
+
+            console.debug("Starting createReversedBuffers");
+            
+            Object.values(projectSequences).forEach((sequence, seqIndex) => {
+                console.debug(`Processing sequence ${seqIndex + 1}/${Object.values(projectSequences).length}`);
+                
+                Object.entries(sequence).forEach(([channelName, channelData]) => {
+                    channelData.steps.forEach((step, stepIndex) => {
+                        if (step.reverse) {
+                            channelsWithReverse.add(channelName);
+                            console.debug(`  Step ${stepIndex + 1}: Reverse flag set for channel '${channelName}'`);
+                        }
+                    });
+                });
+            });
+
+            console.debug("Channels requiring reversal:", Array.from(channelsWithReverse));
+
+            this.audioBuffers.forEach(({ buffer, channel }) => {
+                if (channelsWithReverse.has(channel) && !this.reversedAudioBuffers[channel]) {
+                    console.debug(`Reversing buffer for channel: ${channel}`);
+                    this.reversedAudioBuffers[channel] = this.reverseBuffer(buffer);
                 } else {
-                    source.buffer = bufferInfo.buffer;
-                }
-
-                source.playbackRate.value = bufferInfo.playbackSpeed * globalSpeed;
-                source.connect(bufferInfo.gainNode);
-                source.start(when);
-                this.currentSourceNodes.push(source);
-
-                // Log the scheduling of the step
-                console.log(`Scheduled ${channelName} step at position ${step.index} at ${(when - startTime).toFixed(3)} seconds`);
-
-
-                // Calculate the end time of the step
-                const stepEndTime = (when - startTime) + (bufferInfo.buffer.duration / source.playbackRate.value);
-                if (stepEndTime > channelMaxDuration) {
-                    channelMaxDuration = stepEndTime;
-                }
-
-                // Schedule a log for when the step starts playing
-                const stepDelay = (when - this.audioCtx.currentTime) * 1000; // Convert to milliseconds
-
-                // Ensure the delay is not negative
-                if (stepDelay >= 0) {
-                    const timeoutId = setTimeout(() => {
-                        console.log(`Playing ${channelName} step ${stepIndex + 1} of ${sequenceId}`);
-                    }, stepDelay);
-                    this.timeouts.push(timeoutId);
+                    if (channelsWithReverse.has(channel)) {
+                        console.debug(`Buffer for channel ${channel} already reversed.`);
+                    }
                 }
             });
 
-            // Update the maximum sequence duration after each channel
-            if (channelMaxDuration > maxSequenceDuration) {
-                maxSequenceDuration = channelMaxDuration;
+            console.debug("Completed createReversedBuffers");
+        }
+
+        reverseBuffer(buffer) {
+            console.debug("Starting reverseBuffer");
+            const reversedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const channelData = buffer.getChannelData(channel);
+                const reversedData = reversedBuffer.getChannelData(channel);
+                console.debug(`  Reversing data for channel ${channel + 1}/${buffer.numberOfChannels}`);
+                
+                for (let i = 0, len = buffer.length; i < len; i++) {
+                    reversedData[i] = channelData[len - i - 1];
+                }
             }
-        });
 
-        // After the sequence ends, play the next sequence or loop back
-        const sequenceEndDelay = maxSequenceDuration * 1000; // Convert to milliseconds
-        const endTimeoutId = setTimeout(() => {
-            this.currentSequence = (this.currentSequence + 1) % Object.keys(this.processedData.projectSequences).length;
-            if (this.isPlaying) {
-                this.playSequence(`Sequence${this.currentSequence}`);
+            console.debug("Completed reverseBuffer");
+            return reversedBuffer;
+        }
+
+        // Playback methods
+        play() {
+            if (this.isPlaying) return;
+            this.isPlaying = true;
+            this.startTime = this.audioCtx.currentTime;
+            console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`);
+            this.scheduleSequences();
+        }
+
+        scheduleSequences() {
+            const sequences = Object.keys(this.processedData.projectSequences);
+            const scheduleLog = []; // Array to store the log of sequences and their times
+
+            console.debug("Scheduling sequences...");
+            sequences.forEach((sequenceId, index) => {
+                const sequenceStartTime = this.calculateSequenceStartTime(index);
+                this.scheduleSequence(sequenceId, sequenceStartTime, scheduleLog);
+            });
+
+            // Log all sequences and their scheduled times after processing all
+            console.log('Scheduled Sequences:', scheduleLog);
+        }
+
+        calculateSequenceStartTime(sequenceIndex) {
+            const beatDuration = 60 / this.processedData.projectBPM;
+            const stepsPerBeat = 4;
+            const stepDuration = beatDuration / stepsPerBeat;
+            const globalSpeed = this.processedData.globalPlaybackSpeed;
+
+            const totalStepsBefore = sequenceIndex * this.getStepsPerSequence();
+            const startTime = this.startTime + (totalStepsBefore * stepDuration) / globalSpeed;
+
+            console.debug(`Calculated start time for sequence ${sequenceIndex + 1}: ${startTime.toFixed(3)} seconds`);
+            return startTime;
+        }
+
+        scheduleSequence(sequenceId, sequenceStartTime, scheduleLog) {
+            const sequence = this.processedData.projectSequences[sequenceId];
+            if (!sequence) {
+                console.error(`No data found for ${sequenceId}.`);
+                return 0;
             }
-        }, sequenceEndDelay);
-        this.timeouts.push(endTimeoutId);
+
+            const beatDuration = 60 / this.processedData.projectBPM;
+            const stepsPerBeat = 4;
+            const stepDuration = beatDuration / stepsPerBeat;
+            const globalSpeed = this.processedData.globalPlaybackSpeed;
+
+            // Log the sequence ID and its start time to the scheduleLog
+            scheduleLog.push({ sequenceId, startTime: sequenceStartTime.toFixed(3) });
+            console.debug(`Scheduled sequence ${sequenceId} to start at ${sequenceStartTime.toFixed(3)} seconds`);
+
+            Object.entries(sequence).forEach(([channelName, channelData]) => {
+                const bufferInfo = this.audioBuffers.find(buf => buf.channel === channelName);
+                if (!bufferInfo) {
+                    console.warn(`No audio buffer found for ${channelName}. Skipping...`);
+                    return;
+                }
+
+                channelData.steps.forEach((step) => {
+                    const when = sequenceStartTime + ((step.index - 1) * stepDuration) / globalSpeed;
+
+                    const source = this.audioCtx.createBufferSource();
+
+                    if (step.reverse && this.reversedAudioBuffers[channelName]) {
+                        source.buffer = this.reversedAudioBuffers[channelName];
+                        console.debug(`Using reversed buffer for channel: ${channelName}`);
+                    } else {
+                        source.buffer = bufferInfo.buffer;
+                        console.debug(`Using original buffer for channel: ${channelName}`);
+                    }
+
+                    source.playbackRate.value = bufferInfo.playbackSpeed * globalSpeed;
+                    source.connect(bufferInfo.gainNode);
+                    source.start(when);
+                    this.currentSourceNodes.push(source);
+                });
+            });
+
+            // Log when each sequence starts playing
+            const sequenceDelay = (sequenceStartTime - this.audioCtx.currentTime) * 1000; // Convert to milliseconds
+            setTimeout(() => {
+                console.log(`Now playing ${sequenceId}`);
+            }, sequenceDelay);
+        }
+
+        getStepsPerSequence() {
+            return 64; // or adjust based on your actual steps
+        }
+
+        stop() {
+            if (!this.isPlaying) return;
+            this.currentSourceNodes.forEach(source => source.stop());
+            this.currentSourceNodes = [];
+            this.isPlaying = false;
+            console.log('Playback stopped.');
+        }
+
     }
 
-    play() {
-        if (this.isPlaying) return;
-        this.isPlaying = true;
-        this.playSequence(`Sequence${this.currentSequence}`);
-    }
-
-    stop() {
-        if (!this.isPlaying) return;
-        this.currentSourceNodes.forEach(source => source.stop());
-        this.currentSourceNodes = [];
-        this.isPlaying = false;
-
-        // Clear all pending timeouts to stop logging
-        this.timeouts.forEach(timeoutId => clearTimeout(timeoutId));
-        this.timeouts = [];
-
-        console.log('Playback stopped.');
-    }
-
-}
-
-        // Initialize the AudioPlayer instance
-        new AudioPlayer();
-    });
+    // Initialize the AudioPlayer instance
+    new AudioPlayer();
+});
 </script>
 
 </body>
