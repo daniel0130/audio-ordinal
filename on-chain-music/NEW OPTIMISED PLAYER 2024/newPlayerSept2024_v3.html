@@ -19,6 +19,7 @@
 <button id="loadButton">Load</button>
 <button id="playButton" disabled>Play</button>
 <button id="stopButton" disabled>Stop</button>
+<button id="skipBackButton" disabled>Skip <</button>
 <button id="skipForwardButton" disabled>Skip ></button>
 <div id="loadingIndicator">Loading...</div>
 <div id="errorMessage"></div>
@@ -142,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.playButton = document.getElementById('playButton');
         this.stopButton = document.getElementById('stopButton');
         this.skipForwardButton = document.getElementById('skipForwardButton');
+        this.skipBackButton = document.getElementById('skipBackButton');
         this.loadingIndicator = document.getElementById('loadingIndicator');
         this.errorMessage = document.getElementById('errorMessage');
 
@@ -153,18 +155,22 @@ document.addEventListener('DOMContentLoaded', () => {
         this.loadButton.addEventListener('click', () => this.loadButtonHandler());
         this.playButton.addEventListener('click', () => this.play());
         this.stopButton.addEventListener('click', () => this.stop());
-        this.skipForwardButton.addEventListener('click', () => this.skipForwardHandler());  // Update here
+        // Add event listeners for both forward and back buttons
+        this.skipForwardButton.addEventListener('click', () => this.skipSong('forward'));
+        this.skipBackButton.addEventListener('click', () => this.skipSong('back'));
+
     }
 
 
-    async loadButtonHandler() {
-        this.reset();
-        const url = SONG_IDS[currentSongIndex];  // Load the current song based on index
+    // loadSong remains unchanged
+    async loadSong(url, autoPlay = false) {
+        this.reset();  // Reset player state before loading
         try {
             this.showLoading(true);
-            await this.loadGzipSongFile(url);
-            this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = false;
-            alert("File loaded successfully!");
+            await this.loadGzipSongFile(url);  // Load the song from the URL
+            this.toggleButtons(false);  // Enable relevant buttons
+            if (autoPlay) this.play();  // Automatically play the song if required
+            console.log("Song loaded successfully!");
         } catch (e) {
             console.error("Error loading file:", e);
             this.displayError("Failed to load file. Check the console for details.");
@@ -173,27 +179,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async skipForwardHandler() {
-        this.reset();  // Reset player state before loading the next song
-        currentSongIndex = (currentSongIndex + 1) % SONG_IDS.length;  // Increment song index with wrap-around
-        const url = getSongUrl(SONG_IDS[currentSongIndex]);  // Get the next song's URL
-        try {
-            this.showLoading(true);
-            await this.loadGzipSongFile(url);  // Load the next song
-            this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = false;  // Enable buttons
-            this.play();  // Automatically start playing the song after loading
-            console.log("Skipped to the next song!");
-        } catch (e) {
-            console.error("Error skipping to the next file:", e);
-            this.displayError("Failed to skip to the next file. Check the console for details.");
-        } finally {
-            this.showLoading(false);
-        }
+    toggleButtons(disabled) {
+        this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = this.skipBackButton.disabled = disabled;
     }
 
+    async loadButtonHandler() {
+        const url = SONG_IDS[currentSongIndex];  // Load the current song based on index
+        await this.loadSong(url);  // No autoplay for the load button
+        alert("File loaded successfully!");
+    }
 
+    // New skipSong function to handle both forward and backward skipping
+    async skipSong(direction) {
+        if (direction === 'forward') {
+            currentSongIndex = (currentSongIndex + 1) % SONG_IDS.length;  // Increment song index with wrap-around
+        } else if (direction === 'back') {
+            currentSongIndex = (currentSongIndex - 1 + SONG_IDS.length) % SONG_IDS.length;  // Decrement song index with wrap-around
+        }
+        
+        const url = getSongUrl(SONG_IDS[currentSongIndex]);  // Get the song URL based on updated index
+        await this.loadSong(url, true);  // Auto-play after loading
+        console.log(`Skipped ${direction} to song index ${currentSongIndex}`);
+    }
 
-    reset(){
+    // No changes to reset, showLoading, and displayError methods
+    reset() {
         this.stop();
         this.audioBuffers = [];
         this.reversedAudioBuffers = {};
@@ -203,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.pendingTimeouts = [];
         this.processedData = {};
         this.currentSequence = this.startTime = 0;
-        this.playButton.disabled = this.stopButton.disabled = true;
+        this.toggleButtons(true);  // Disable relevant buttons during reset
         console.log('AudioPlayer reset.');
     }
 
@@ -274,113 +284,110 @@ mapTrimSettings(a){
     },{})
 }
 
-async fetchAndProcessAudioData(u){
-    const r = await Promise.allSettled(u.map((url,i)=>this.processAudioUrl(url,i)));
-    r.forEach((res,i)=>{ if(res.status==='rejected') console.error(`Failed Channel ${i} (${u[i]}):`, res.reason) });
+async fetchAndProcessAudioData(u) {
+    const results = await Promise.allSettled(u.map((url, i) => this.processAudioUrl(url, i)));
+    results.forEach((res, i) => { 
+        if (res.status === 'rejected') 
+            console.error(`Failed Channel ${i} (${u[i]}):`, res.reason); 
+    });
     this.createReversedBuffers();
 }
 
-async processAudioUrl(u,i){
-    const cn=`Channel ${i}`;
-    try{
+async processAudioUrl(u, i) {
+    const channelName = `Channel ${i}`;
+    try {
         const res = await fetch(u);
-        if(!res.ok) throw new Error(`Fetch failed: ${u}, Status: ${res.status}`);
-        const ct = res.headers.get("Content-Type");
-        let ab;
-        if(/audio\/(wav|mpeg|mp4)|video\/mp4/.test(ct)){
-            ab = await this.fetchAndDecodeAudio(res, cn);
+        if (!res.ok) throw new Error(`Fetch failed: ${u}, Status: ${res.status}`);
+
+        const contentType = res.headers.get("Content-Type");
+        const audioBuffer = await this.handleResponseByType(res, contentType, channelName);
+        
+        if (audioBuffer) {
+            this.logAudioBufferDetails(audioBuffer, channelName);
+            this.storeAudioBuffer(audioBuffer, channelName);
         }
-        else if(/application\/json/.test(ct)){
-            ab = await this.handleJsonResponse(res, cn);
-        }
-        else if(/text\/html/.test(ct)){
-            ab = await this.handleHtmlResponse(res, cn);
-        }
-        else{
-            throw new Error(`Unsupported type for ${cn}: ${ct}`);
-        }
-        if(ab){
-            console.log(`AudioBuffer for ${cn}:`, {
-                channels: ab.numberOfChannels,
-                length: ab.length,
-                sampleRate: ab.sampleRate,
-                duration: ab.duration
-            });
-            for(let c=0; c < ab.numberOfChannels; c++) {
-                console.log(`Channel ${c} data:`, ab.getChannelData(c).slice(0,10));
-            }
-            const vol = this.parseVolumeLevel(this.processedData.VOLUME_CONTROLS[cn]);
-            const speed = this.processedData.SPEED_CONTROLS[cn] || 1;
-            const trim = this.processedData.trimSettings[cn] || {start:0, end:100};
-            const tb = this.applyTrim(ab, trim.start, trim.end);
-            const gn = this.audioCtx.createGain();
-            gn.gain.value = vol;
-            gn.connect(this.audioCtx.destination);
-            this.audioBuffers.push({buffer: tb, gainNode: gn, channel: cn, playbackSpeed: speed});
-        }
-    }
-    catch(e){
-        console.error(`Error processing ${cn}:`, e);
+    } catch (e) {
+        console.error(`Error processing ${channelName}:`, e);
     }
 }
 
-async fetchAndDecodeAudio(res, cn){
-    try{
-        const ab = await this.audioCtx.decodeAudioData(await res.arrayBuffer());
-        console.log(`Decoded ${cn}.`);
-        return ab;
-    }
-    catch(e){
-        console.error(`decodeAudioData failed for ${cn}:`, e);
-        throw new Error(`Failed to decode audio for ${cn}.`);
+async handleResponseByType(response, contentType, channelName) {
+    if (/audio\/(wav|mpeg|mp4)|video\/mp4/.test(contentType)) {
+        return await this.fetchAndDecodeAudio(response, channelName);
+    } else if (/application\/json/.test(contentType)) {
+        return await this.handleJsonResponse(response, channelName);
+    } else if (/text\/html/.test(contentType)) {
+        return await this.handleHtmlResponse(response, channelName);
+    } else {
+        throw new Error(`Unsupported content type for ${channelName}: ${contentType}`);
     }
 }
 
-
-
-
-
-    async handleJsonResponse(response, channelName) {
-        try {
-            const jsonData = await response.json();
-            if (jsonData.audioData) {
-                const arrayBuffer = this.base64ToArrayBuffer(jsonData.audioData.split(",")[1]);
-                try {
-                    const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
-                    return audioBuffer;
-                } catch (error) {
-                    console.error(`decodeAudioData failed for JSON audio data in ${channelName}:`, error);
-                    throw new Error(`Failed to decode JSON audio data for ${channelName}.`);
-                }
-            }
-            throw new Error(`Invalid JSON structure for audio data in ${channelName}.`);
-        } catch (error) {
-            console.error(`Error handling JSON response for ${channelName}:`, error);
-            throw error;
-        }
+logAudioBufferDetails(audioBuffer, channelName) {
+    console.log(`AudioBuffer for ${channelName}:`, {
+        channels: audioBuffer.numberOfChannels,
+        length: audioBuffer.length,
+        sampleRate: audioBuffer.sampleRate,
+        duration: audioBuffer.duration
+    });
+    for (let c = 0; c < audioBuffer.numberOfChannels; c++) {
+        console.log(`Channel ${c} data:`, audioBuffer.getChannelData(c).slice(0, 10));
     }
+}
 
+storeAudioBuffer(audioBuffer, channelName) {
+    const volume = this.parseVolumeLevel(this.processedData.VOLUME_CONTROLS[channelName]);
+    const speed = this.processedData.SPEED_CONTROLS[channelName] || 1;
+    const trim = this.processedData.trimSettings[channelName] || { start: 0, end: 100 };
+    const trimmedBuffer = this.applyTrim(audioBuffer, trim.start, trim.end);
+    const gainNode = this.audioCtx.createGain();
+    gainNode.gain.value = volume;
+    gainNode.connect(this.audioCtx.destination);
+    this.audioBuffers.push({ buffer: trimmedBuffer, gainNode, channel: channelName, playbackSpeed: speed });
+}
 
-    async handleHtmlResponse(response, channelName) {
-        try {
-            const text = await response.text();
-            const base64Audio = this.extractBase64FromHTML(text);
-            if (base64Audio) {
-                const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
-                try {
-                    const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
-                    return audioBuffer;
-                } catch (error) {
-                    console.error(`decodeAudioData failed for HTML audio data in ${channelName}:`, error);
-                    throw new Error(`Failed to decode HTML audio data for ${channelName}.`);
-                }
-            }
-            throw new Error(`No valid audio data found in HTML for ${channelName}.`);
-        } catch (error) {
-            console.error(`Error handling HTML response for ${channelName}:`, error);
-            throw error;
-        }
+async fetchAndDecodeAudio(res, channelName) {
+    try {
+        const arrayBuffer = await res.arrayBuffer();
+        const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
+        console.log(`Decoded ${channelName}.`);
+        return audioBuffer;
+    } catch (e) {
+        console.error(`decodeAudioData failed for ${channelName}:`, e);
+        throw new Error(`Failed to decode audio for ${channelName}.`);
     }
+}
+
+async handleJsonResponse(response, channelName) {
+    return this.handleAudioDataFromResponse(response, channelName, 'JSON');
+}
+
+async handleHtmlResponse(response, channelName) {
+    return this.handleAudioDataFromResponse(response, channelName, 'HTML');
+}
+
+async handleAudioDataFromResponse(response, channelName, type) {
+    try {
+        const data = type === 'JSON' ? await response.json() : await response.text();
+        const base64Audio = type === 'JSON' ? data.audioData : this.extractBase64FromHTML(data);
+        
+        if (base64Audio) {
+            const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
+            try {
+                const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
+                return audioBuffer;
+            } catch (error) {
+                console.error(`decodeAudioData failed for ${type} audio data in ${channelName}:`, error);
+                throw new Error(`Failed to decode ${type} audio data for ${channelName}.`);
+            }
+        }
+        throw new Error(`Invalid ${type} structure for audio data in ${channelName}.`);
+    } catch (error) {
+        console.error(`Error handling ${type} response for ${channelName}:`, error);
+        throw error;
+    }
+}
+
 
     base64ToArrayBuffer(base64) {
         try {
