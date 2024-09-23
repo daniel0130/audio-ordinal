@@ -23,6 +23,10 @@
 <div id="errorMessage"></div>
 
 <script>
+const SONGFILE = "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0";
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const keyMap = {
         "0": "projectName",
@@ -126,25 +130,21 @@ document.addEventListener('DOMContentLoaded', () => {
         this.stopButton.addEventListener('click', () => this.stop());
     }
 
-    async loadButtonHandler(){
-    this.reset();
-    const id = prompt("Enter the Ordinal ID for the GZIP file:");
-    if(!id) return;
-    const url = `https://ordinals.com/content/${id}`;
-    try{
-        this.showLoading(true);
-        await this.loadGzipFile(url);
-        this.playButton.disabled = this.stopButton.disabled = false;
-        alert("File loaded successfully!");
+    async loadButtonHandler() {
+        this.reset();
+        const url = SONGFILE;  // Use the SONGFILE reference directly
+        try {
+            this.showLoading(true);
+            await this.loadGzipSongFile(url);
+            this.playButton.disabled = this.stopButton.disabled = false;
+            alert("File loaded successfully!");
+        } catch (e) {
+            console.error("Error loading file:", e);
+            this.displayError("Failed to load file. Check the console for details.");
+        } finally {
+            this.showLoading(false);
+        }
     }
-    catch(e){
-        console.error("Error loading file:", e);
-        this.displayError("Failed to load file. Check the console for details.");
-    }
-    finally{
-        this.showLoading(false);
-    }
-}
 
 reset(){
     this.stop();
@@ -164,36 +164,45 @@ showLoading(l){ this.loadingIndicator.style.display = l ? 'block' : 'none'; }
 
 displayError(m){ this.errorMessage.textContent = m; }
 
-async loadGzipFile(url){
+async loadGzipSongFile(url) {
     const res = await fetch(url);
-    if(!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
+    if (!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
+    
     const buf = pako.inflate(new Uint8Array(await res.arrayBuffer()));
     const data = deserialize(JSON.parse(new TextDecoder().decode(buf)));
+
     const md = {
         projectName: data.projectName,
         artistName: data.artistName,
         projectBPM: data.projectBPM,
         currentSequence: data.currentSequence,
-        channelURLs: this.arrayToObject(data.channelURLs,0,false),
-        channelVolume: this.arrayToObject(data.channelVolume,0,true),
-        channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed,0,true),
+        channelURLs: this.arrayToObject(data.channelURLs, 0, false),
+        channelVolume: this.arrayToObject(data.channelVolume, 0, true),
+        channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed, 0, true),
         trimSettings: this.mapTrimSettings(data.trimSettings),
         projectChannelNames: data.projectChannelNames,
         projectSequences: data.projectSequences,
-        globalPlaybackSpeed: data.globalPlaybackSpeed || 1
+        globalPlaybackSpeed: data.globalPlaybackSpeed || 1,
     };
+
     this.processedData = {
         ...md,
         VOLUME_CONTROLS: md.channelVolume,
         SPEED_CONTROLS: md.channelPlaybackSpeed,
-        songDataUrls: Object.values(md.channelURLs)
+        songDataUrls: Object.values(md.channelURLs),
     };
+
     console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
-    if(this.processedData.songDataUrls.length ===16){
-        await this.fetchAndProcessAudioData(this.processedData.songDataUrls.map(u=>`https://ordinals.com${u}`));
+
+    if (this.processedData.songDataUrls.length === 16) {
+        await this.fetchAndProcessAudioData(
+            this.processedData.songDataUrls.map(u => `https://ordinals.com${u}`)
+        );
+    } else {
+        throw new Error("Invalid channel URLs or channel count.");
     }
-    else throw new Error("Invalid channel URLs or channel count.");
 }
+
 
 arrayToObject(a, s=0, p=false){
     return a.reduce((o,i,k)=>{o[`Channel ${s+k}`]=p?parseFloat(i)||1:i; return o},{})
