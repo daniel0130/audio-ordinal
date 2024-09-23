@@ -349,23 +349,31 @@
                 const channelsWithReverse = new Set();
                 const { projectSequences } = this.processedData;
 
-                Object.values(projectSequences).forEach(sequence => {
-                    Object.values(sequence).forEach(channelData => {
-                        channelData.steps.forEach(step => {
-                            if (step.reverse) channelsWithReverse.add(channelData.channel);
+                Object.values(projectSequences).forEach((sequence, seqIndex) => {
+                    Object.entries(sequence).forEach(([channelName, channelData]) => {
+                        channelData.steps.forEach((step, stepIndex) => {
+                            if (step.reverse) {
+                                channelsWithReverse.add(channelName);
+                                console.debug(`Channel '${channelName}' requires a reversed buffer.`);
+                            }
                         });
                     });
                 });
 
+                console.debug("Channels requiring reversal:", Array.from(channelsWithReverse));
+
                 this.audioBuffers.forEach(({ buffer, channel }) => {
                     if (channelsWithReverse.has(channel) && !this.reversedAudioBuffers[channel]) {
+                        console.log(`Creating reversed buffer for ${channel}`);
                         this.reversedAudioBuffers[channel] = this.reverseBuffer(buffer);
                     }
                 });
             }
 
             reverseBuffer(buffer) {
+                console.debug(`Reversing buffer of length ${buffer.length} for sample rate ${buffer.sampleRate}`);
                 const reversedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+
                 for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
                     const channelData = buffer.getChannelData(channel);
                     const reversedData = reversedBuffer.getChannelData(channel);
@@ -373,8 +381,10 @@
                         reversedData[i] = channelData[len - i - 1];
                     }
                 }
+                console.debug("Buffer reversal complete.");
                 return reversedBuffer;
             }
+
 
 
 
@@ -412,19 +422,30 @@
             let channelMaxDuration = 0;
 
             channelData.steps.forEach((step, stepIndex) => {
-                // Calculate the exact time when the step should be played
                 const when = startTime + ((step.index - 1) * stepDuration) / globalSpeed;
-
-                // Create and configure the buffer source
                 const source = this.audioCtx.createBufferSource();
-                source.buffer = step.reverse ? this.reversedAudioBuffers[channelName] || bufferInfo.buffer : bufferInfo.buffer;
+
+                // Select the correct buffer
+                if (step.reverse) {
+                    if (this.reversedAudioBuffers[channelName]) {
+                        source.buffer = this.reversedAudioBuffers[channelName];
+                        console.log(`Using reversed buffer for ${channelName} at step position ${step.index}`);
+                    } else {
+                        console.warn(`Reversed buffer not found for ${channelName}. Using forward buffer instead.`);
+                        source.buffer = bufferInfo.buffer;
+                    }
+                } else {
+                    source.buffer = bufferInfo.buffer;
+                }
+
                 source.playbackRate.value = bufferInfo.playbackSpeed * globalSpeed;
                 source.connect(bufferInfo.gainNode);
                 source.start(when);
                 this.currentSourceNodes.push(source);
 
                 // Log the scheduling of the step
-                console.log(`Scheduled ${channelName} step ${stepIndex + 1} at ${when - startTime} seconds`);
+                console.log(`Scheduled ${channelName} step at position ${step.index} at ${(when - startTime).toFixed(3)} seconds`);
+
 
                 // Calculate the end time of the step
                 const stepEndTime = (when - startTime) + (bufferInfo.buffer.duration / source.playbackRate.value);
