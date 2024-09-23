@@ -24,7 +24,13 @@
 <div id="errorMessage"></div>
 
 <script>
-const SONGS = [
+
+let currentSongIndex = 0;  // Start at the first song in the array
+
+const BASE_URL = "https://ordinals.com/content/";
+
+
+const SONG_IDS = [
     "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", 
     "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",
     "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
@@ -34,7 +40,15 @@ const SONGS = [
     "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",
     "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0"
 ];
-let currentSongIndex = 0;  // Start at the first song in the array
+
+// Function to dynamically generate full URLs from IDs
+function getSongUrl(songId) {
+    // Check if the songId already contains the full URL or just the ID
+    if (songId.startsWith(BASE_URL)) {
+        return songId;  // If it's a full URL, return it as is
+    }
+    return `${BASE_URL}${songId}`;  // If it's just an ID, prepend the base URL
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -145,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async loadButtonHandler() {
         this.reset();
-        const url = SONGS[currentSongIndex];  // Load the current song based on index
+        const url = SONG_IDS[currentSongIndex];  // Load the current song based on index
         try {
             this.showLoading(true);
             await this.loadGzipSongFile(url);
@@ -161,13 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async skipForwardHandler() {
         this.reset();  // Reset player state before loading the next song
-        currentSongIndex = (currentSongIndex + 1) % SONGS.length;  // Increment song index with wrap-around
-        const url = SONGS[currentSongIndex];
+        currentSongIndex = (currentSongIndex + 1) % SONG_IDS.length;  // Increment song index with wrap-around
+        const url = getSongUrl(SONG_IDS[currentSongIndex]);  // Get the next song's URL
         try {
             this.showLoading(true);
-            await this.loadGzipSongFile(url);
-            this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = false;
-            alert("Skipped to the next song!");
+            await this.loadGzipSongFile(url);  // Load the next song
+            this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = false;  // Enable buttons
+            this.play();  // Automatically start playing the song after loading
+            console.log("Skipped to the next song!");
         } catch (e) {
             console.error("Error skipping to the next file:", e);
             this.displayError("Failed to skip to the next file. Check the console for details.");
@@ -177,19 +192,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-reset(){
-    this.stop();
-    this.audioBuffers = [];
-    this.reversedAudioBuffers = {};
-    this.currentSourceNodes.forEach(s => s.stop());
-    this.currentSourceNodes = [];
-    this.pendingTimeouts.forEach(t => clearTimeout(t));
-    this.pendingTimeouts = [];
-    this.processedData = {};
-    this.currentSequence = this.startTime = 0;
-    this.playButton.disabled = this.stopButton.disabled = true;
-    console.log('AudioPlayer reset.');
-}
+
+    reset(){
+        this.stop();
+        this.audioBuffers = [];
+        this.reversedAudioBuffers = {};
+        this.currentSourceNodes.forEach(s => s.stop());
+        this.currentSourceNodes = [];
+        this.pendingTimeouts.forEach(t => clearTimeout(t));
+        this.pendingTimeouts = [];
+        this.processedData = {};
+        this.currentSequence = this.startTime = 0;
+        this.playButton.disabled = this.stopButton.disabled = true;
+        console.log('AudioPlayer reset.');
+    }
 
 showLoading(l){ this.loadingIndicator.style.display = l ? 'block' : 'none'; }
 
