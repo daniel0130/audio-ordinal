@@ -1,92 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Audionals Ordinal Player</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js" defer></script>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: #000000;
-    justify-content: flex-start;
-    align-items: center;
-}
+    <meta charset="UTF-8">
+    <title>Audionals Ordinal Player</title>
 
-h1 {
-    color: #333;
-    margin: 10px 0;
-    font-size: 1.2rem; /* Smaller font size */
-}
+    <!-- Function to load the Pako library dynamically from the blockchain -->
+    <script>
+        let currentSongIndex=0;
+        // Function to load the Pako library
+        async function loadPako() {
+            try {
+                const response = await fetch("https://ordinals.com/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0");
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
 
-#buttonContainer {
-    display: flex;
-    gap: 5px; /* Smaller gap */
-    margin-bottom: 10px;
-    margin-top: 10px;
-}
+                const text = await response.text();
+                const scriptContent = new DOMParser()
+                    .parseFromString(text, "text/html")
+                    .querySelector("script")?.textContent;
 
-button {
-    padding: 5px 10px; /* Smaller padding */
-    cursor: pointer;
-    font-size: 0.8rem; /* Smaller font size */
-}
+                if (!scriptContent || !scriptContent.includes("pako")) {
+                    throw new Error("Pako library not found in the fetched content.");
+                }
 
-#loadingIndicator, #errorMessage, #songTitle {
-    margin-top: 5px;
-    font-size: 0.9rem; /* Smaller font size */
-    color: #ffffff; /* White text for better visibility */
-}
+                // Create a script element and append the fetched Pako script
+                const scriptElement = document.createElement("script");
+                scriptElement.textContent = scriptContent;
+                document.head.appendChild(scriptElement);
+                console.log("Pako library loaded successfully.");
 
-#artworkCanvas {
-    width: 66vh; /* Set the width to be the same as 66% of the viewport height */
-    height: 66vh; /* Set the height to 66% of the viewport height */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #333;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9;
-    margin-top: auto;
-    margin-bottom: auto;
-    aspect-ratio: 1 / 1; /* Ensure the canvas is always square */
-}
+                // Wait until pako is defined
+                await waitForPako();
 
-img, video, iframe {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
+            } catch (error) {
+                console.error("Error occurred during Pako loading:", error);
+                displayError("Failed to load necessary libraries. Please try again later.");
+                throw error; // Re-throw to prevent further processing
+            }
+        }
 
-.unsupported {
-    color: red;
-    font-size: 14px;
-}
+        // Helper function to wait until pako is defined
+        function waitForPako(timeout = 2000) {
+            return new Promise((resolve, reject) => {
+                const interval = 50; // Check every 50ms
+                let elapsed = 0;
 
+                const checkPako = () => {
+                    if (typeof pako !== 'undefined') {
+                        resolve();
+                    } else {
+                        elapsed += interval;
+                        if (elapsed >= timeout) {
+                            reject(new Error("pako was not defined after loading script."));
+                        } else {
+                            setTimeout(checkPako, interval);
+                        }
+                    }
+                };
 
-</style>
+                checkPako();
+            });
+        }
+
+        // Function to display error messages to the user
+        function displayError(message) {
+            const errorMessageElement = document.getElementById("errorMessage");
+            if (errorMessageElement) {
+                errorMessageElement.textContent = message;
+                errorMessageElement.style.display = "block";
+            }
+        }
+
+        // Function to initialize the application after Pako is loaded
+        async function initializeApp() {
+            try {
+                await loadPako();
+                // Initialize your application here
+                setupEventListeners();
+                console.log("Application initialized successfully.");
+                preloadAllSongs(); // Ensure this is called after pako is loaded
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                // Further error handling if necessary
+            }
+        }
+
+        // Function to set up event listeners and other initialization tasks
+        function setupEventListeners() {
+            const loadButton = document.getElementById("loadButton");
+            const playButton = document.getElementById("playButton");
+            const stopButton = document.getElementById("stopButton");
+            const skipBackButton = document.getElementById("skipBackButton");
+            const skipForwardButton = document.getElementById("skipForwardButton");
+
+            loadButton.addEventListener("click", handleLoad);
+            playButton.addEventListener("click", handlePlay);
+            stopButton.addEventListener("click", handleStop);
+            skipBackButton.addEventListener("click", () => handleSkip(-10)); // Example: Skip back 10 seconds
+            skipForwardButton.addEventListener("click", () => handleSkip(10)); // Example: Skip forward 10 seconds
+
+            // Additional setup as needed
+        }
+
+        // Placeholder functions for button handlers
+        function handleLoad() {
+            // Implement loading functionality
+            console.log("Load button clicked.");
+            // Example usage of Pako:
+            const compressed = pako.deflate('Hello World');
+            console.log('Compressed data:', compressed);
+            // Enable other buttons as needed
+            document.getElementById("playButton").disabled = false;
+            document.getElementById("stopButton").disabled = false;
+            document.getElementById("skipBackButton").disabled = false;
+            document.getElementById("skipForwardButton").disabled = false;
+            document.getElementById("loadingIndicator").style.display = "none";
+        }
+
+        function handlePlay() {
+            // Implement play functionality
+            console.log("Play button clicked.");
+        }
+
+        function handleStop() {
+            // Implement stop functionality
+            console.log("Stop button clicked.");
+        }
+
+        function handleSkip(seconds) {
+            // Implement skip functionality
+            console.log(`Skip ${seconds > 0 ? 'forward' : 'back'} by ${Math.abs(seconds)} seconds.`);
+        }
+
+        // // Function to preload all songs (ensure this runs after pako is loaded)
+        // async function preloadAllSongs() {
+        //     try {
+        //         await Promise.all(SONGS.map(async (song, index) => {
+        //             // Preload song logic that may use pako
+        //             const response = await fetch(song.songUrl);
+        //             const arrayBuffer = await response.arrayBuffer();
+        //             const compressedData = pako.deflate(new Uint8Array(arrayBuffer));
+        //             // Store compressedData as needed
+        //             console.log(`Song ${index} compressed.`);
+        //         }));
+        //     } catch (error) {
+        //         console.error(`Error loading song ${currentSongIndex}:`, error);
+        //     }
+        // }
+
+        // Start the initialization process as soon as the script is loaded
+        document.addEventListener("DOMContentLoaded", initializeApp);
+    </script>
+
+    <!-- Styles for the application -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #000000;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            margin: 10px 0;
+            font-size: 1.2rem; /* Smaller font size */
+        }
+
+        #buttonContainer {
+            display: flex;
+            gap: 5px; /* Smaller gap */
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 5px 10px; /* Smaller padding */
+            cursor: pointer;
+            font-size: 0.8rem; /* Smaller font size */
+        }
+
+        #loadingIndicator, #errorMessage, #songTitle {
+            margin-top: 5px;
+            font-size: 0.9rem; /* Smaller font size */
+            color: #ffffff; /* White text for better visibility */
+        }
+
+        #loadingIndicator {
+            display: block; /* Initially visible */
+        }
+
+        #errorMessage {
+            display: none; /* Hidden by default */
+            color: red;
+        }
+
+        #artworkCanvas {
+            width: 66vh; /* Set the width to be the same as 66% of the viewport height */
+            height: 66vh; /* Set the height to 66% of the viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+            margin-top: auto;
+            margin-bottom: auto;
+            aspect-ratio: 1 / 1; /* Ensure the canvas is always square */
+        }
+
+        img, video, iframe {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .unsupported {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-<h1>Audional Player</h1>
-<div id="buttonContainer">
-<button id="loadButton">Load</button>
-<button id="playButton" disabled>Play</button>
-<button id="stopButton" disabled>Stop</button>
-<button id="skipBackButton" disabled>Skip <</button>
-<button id="skipForwardButton" disabled>Skip ></button>
-</div>
-<div id="loadingIndicator">Loading...</div>
-<div id="errorMessage"></div>
-<div id="songTitle"></div>
-<div id="artworkCanvas">
-<img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
-</div>
+    <h1>Audional Player</h1>
+    <div id="buttonContainer">
+        <button id="loadButton">Load</button>
+        <button id="playButton" disabled>Play</button>
+        <button id="stopButton" disabled>Stop</button>
+        <button id="skipBackButton" disabled>Skip &lt;</button>
+        <button id="skipForwardButton" disabled>Skip &gt;</button>
+    </div>
+    <div id="loadingIndicator">Loading...</div>
+    <div id="errorMessage"></div>
+    <div id="songTitle"></div>
+    <div id="artworkCanvas">
+        <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
+    </div>
+
 <script>
-let currentSongIndex=0;const SONGS=[{songUrl:"https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",artworkUrl:"https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",name:"Kora algo"},{songUrl:"https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",artworkUrl:"https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",name:"ON DAY ONE"},{songUrl:"https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",artworkUrl:"https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",name:"TRUTH"},{songUrl:"https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",artworkUrl:"https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",name:"CHOPPIN"},{songUrl:"https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",artworkUrl:"https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",name:"MLK"},{songUrl:"https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",artworkUrl:"https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",name:"MODERN PROGRESS"},{songUrl:"https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",artworkUrl:"https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",name:"HUMANITY"},{songUrl:"https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",artworkUrl:"https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",name:"I LOVE CHEESE"},{songUrl:"https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",artworkUrl:"https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",name:"FRESH VIBES"},{songUrl:"https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",artworkUrl:"https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",name:"ON-CHAIN IN THE MEMBRANE"},{songUrl:"https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",artworkUrl:"https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",name:"Based New"},{songUrl:"https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",artworkUrl:"https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",name:"Freedom Remix"}],getSongUrl=e=>e.startsWith(BASE_URL)?e:`${BASE_URL}${e}`,preloadAllSongs=async()=>{const e=await Promise.all(SONGS.map((async({songUrl:e},t)=>{try{const t=await fetch(e);if(!t.ok)throw new Error(`Failed to fetch song: ${t.statusText}`);const r=JSON.parse((new TextDecoder).decode(pako.inflate(new Uint8Array(await t.arrayBuffer()))));return r[0]&&"0"!==r[0]?r[0]:"NoName"}catch(e){return console.error(`Error loading song ${t}:`,e),"NoName"}})));return console.log("Project Names:",e),e};document.addEventListener("DOMContentLoaded",(()=>preloadAllSongs())),document.addEventListener("DOMContentLoaded",(()=>{const e={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},t=Object.fromEntries(Object.entries(e).map((([e,t])=>[t,e]))),r=(()=>{const e=Object.fromEntries([...Array(16)].map(((e,t)=>[String.fromCharCode(97+t),t])));return t=>e[t.toLowerCase()]??null})();new class{constructor(){this.initializeProperties(),this.bindUIElements(),this.initEventListeners()}initializeProperties(){this.projectNames=[],this.songLoadCounter=0,this.totalSongs=SONGS.length,this.audioBuffers=[],this.reversedAudioBuffers={},this.audioCtx=new(window.AudioContext||window.webkitAudioContext),this.isPlaying=!1,this.currentSourceNodes=[],this.processedData={},this.currentSequence=0,this.startTime=0,this.pendingTimeouts=[]}bindUIElements(){["loadButton","playButton","stopButton","skipForwardButton","skipBackButton","loadingIndicator","errorMessage","songTitle","artworkCanvas"].forEach((e=>this[e]=document.getElementById(e)))}initEventListeners(){this.loadButton.addEventListener("click",(()=>this.loadButtonHandler())),this.playButton.addEventListener("click",(()=>this.play())),this.stopButton.addEventListener("click",(()=>this.stop())),this.skipForwardButton.addEventListener("click",(()=>this.skipSong("forward"))),this.skipBackButton.addEventListener("click",(()=>this.skipSong("back")))}showSongTitle(e){this.songTitle.textContent=e}async loadSong(e,t=!1){this.reset();try{this.showLoading(!0),await this.loadGzipSongFile(e),this.toggleButtons(!1);const r=SONGS[currentSongIndex];r&&r.artworkUrl?await this.displayArtwork(r.artworkUrl):console.warn(`No artwork URL found for song at index ${currentSongIndex}`),t&&this.play()}catch(e){console.error("Error loading file:",e),this.displayError("Failed to load file.")}finally{this.showLoading(!1)}}async displayArtwork(e){this.artworkCanvas.innerHTML="";try{const t=await fetch(e,{method:"HEAD"});if(!t.ok)throw new Error(`Failed to fetch artwork: ${t.status}`);const r=t.headers.get("Content-Type"),a=this.createMediaElement(r,e,currentSongIndex);this.artworkCanvas.appendChild(a)}catch(e){console.error("Error displaying artwork:",e),this.artworkCanvas.appendChild(this.createErrorElement("Failed to load artwork."))}}createMediaElement(e,t,r){const a={image:()=>{const e=Object.assign(document.createElement("img"),{src:t,alt:`Artwork for song ${r+1}`,onload:()=>this.fitMediaElement(this.artworkCanvas,e)});return e},video:()=>Object.assign(document.createElement("video"),{src:t,controls:!0}),audio:()=>Object.assign(document.createElement("audio"),{src:t,controls:!0}),html:()=>Object.assign(document.createElement("iframe"),{src:t,width:"100%",height:"100%",frameBorder:0})},o=e.split("/")[0];return a[o]?a[o]():this.createErrorElement("Unsupported artwork format.")}fitMediaElement(e,t){if(!t||!t.naturalWidth||!t.naturalHeight)return void console.error("Element is undefined or does not have natural dimensions.");const{clientWidth:r,clientHeight:a}=e,o=t.naturalWidth/t.naturalHeight,n=r/a;t.style.width=o>n?"100%":"auto",t.style.height=o>n?"auto":"100%"}createErrorElement(e){return Object.assign(document.createElement("div"),{className:"unsupported",textContent:e})}toggleButtons(e){[this.playButton,this.stopButton,this.skipForwardButton,this.skipBackButton].forEach((t=>t.disabled=e))}async loadButtonHandler(){await this.loadSong(SONGS[currentSongIndex].songUrl)}async skipSong(e){currentSongIndex="forward"===e?(currentSongIndex+1)%SONGS.length:(currentSongIndex-1+SONGS.length)%SONGS.length,await this.loadSong(SONGS[currentSongIndex].songUrl,this.isPlaying)}reset(){this.stop(),this.audioBuffers=[],this.reversedAudioBuffers={},this.currentSourceNodes.forEach((e=>e.stop?.())),this.currentSourceNodes=[],this.pendingTimeouts.forEach(clearTimeout),this.pendingTimeouts=[],this.processedData={},this.currentSequence=this.startTime=0,this.toggleButtons(!0),this.artworkCanvas.innerHTML=""}showLoading(e){this.loadingIndicator.style.display=e?"block":"none"}displayError(e){this.errorMessage.textContent=e}async loadGzipSongFile(a){try{const o=await fetch(a);if(!o.ok)throw new Error(`Network response not ok: ${o.statusText}`);const n=(a=>Object.fromEntries(Object.entries(a).map((([a,o])=>{const n=e[a]||a;return"projectSequences"===n?[n,Object.fromEntries(Object.entries(o).map((([e,a])=>[`Sequence${e.replace(/^s/,"")}`,Object.fromEntries(Object.entries(a).map((([e,a])=>{let o=parseInt(e.replace(/^ch/,""),10);return o=isNaN(o)?r(e):o,null!==o?[`Channel ${o}`,{steps:(n=a[t.steps]||[],n.map((e=>"number"==typeof e?{index:e,reverse:!1}:"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:"object"==typeof e&&e.r?{index:e.r[0],reverse:Boolean(e.r[1])}:(console.warn("Unknown step format:",e),null))).filter(Boolean))}]:[];var n})).filter(Boolean))])))]:[n,o]}))))(JSON.parse((new TextDecoder).decode(pako.inflate(new Uint8Array(await o.arrayBuffer()))))),s=n.projectName||"NoName";this.showSongTitle(s),this.projectNames.push(s);const i={projectName:s,artistName:n.artistName,projectBPM:n.projectBPM,currentSequence:n.currentSequence,channelURLs:this.arrayToObject(n.channelURLs),channelVolume:this.arrayToObject(n.channelVolume,0,!0),channelPlaybackSpeed:this.arrayToObject(n.channelPlaybackSpeed,0,!0),trimSettings:this.mapTrimSettings(n.trimSettings),projectChannelNames:n.projectChannelNames,projectSequences:n.projectSequences,globalPlaybackSpeed:n.globalPlaybackSpeed||1};if(this.processedData={...i,VOLUME_CONTROLS:i.channelVolume,SPEED_CONTROLS:i.channelPlaybackSpeed,songDataUrls:Object.values(i.channelURLs)},console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`),16!==this.processedData.songDataUrls.length)throw new Error("Invalid channel URLs or channel count.");await this.fetchAndProcessAudioData(this.processedData.songDataUrls.map((e=>`https://ordinals.com${e}`))),++this.songLoadCounter===this.totalSongs&&this.logProjectNames()}catch(e){console.error("Error loading file:",e)}}arrayToObject(e,t=0,r=!1){return e.reduce(((e,a,o)=>(e[`Channel ${t+o}`]=r?parseFloat(a)||1:a,e)),{})}mapTrimSettings(e){return e.reduce(((e,t,r)=>(e[`Channel ${r}`]="object"==typeof t&&t?{start:t[9]||0,end:t[10]||100}:{start:0,end:"number"==typeof t?t:100},"object"!=typeof t&&"number"!=typeof t&&console.warn(`Invalid trim for Channel ${r}.`),e)),{})}async fetchAndProcessAudioData(e){(await Promise.allSettled(e.map(this.processAudioUrl.bind(this)))).forEach(((t,r)=>"rejected"===t.status&&console.error(`Failed Channel ${r} (${e[r]}):`,t.reason))),this.createReversedBuffers()}async processAudioUrl(e,t){const r=`Channel ${t}`;try{const t=await fetch(e);if(!t.ok)throw new Error(`Fetch failed: ${e}, Status: ${t.status}`);const a=await this.handleResponseByType(t,t.headers.get("Content-Type"),r);a&&(this.logAudioBufferDetails(a,r),this.storeAudioBuffer(a,r))}catch(e){console.error(`Error processing ${r}:`,e)}}async handleResponseByType(e,t,r){if(/audio|video/.test(t))return this.fetchAndDecodeAudio(e,r);if(/json/.test(t))return this.handleResponse(e,r,"JSON");if(/html/.test(t))return this.handleResponse(e,r,"HTML");throw new Error(`Unsupported content type for ${r}: ${t}`)}async handleResponse(e,t,r){return this.handleAudioDataFromResponse(e,t,r)}logAudioBufferDetails(e,t){console.log(`AudioBuffer for ${t}:`,{channels:e.numberOfChannels,length:e.length,sampleRate:e.sampleRate,duration:e.duration}),[...Array(e.numberOfChannels).keys()].forEach((t=>console.log(`Channel ${t} data:`,e.getChannelData(t).slice(0,10))))}storeAudioBuffer(e,t){const{VOLUME_CONTROLS:r,SPEED_CONTROLS:a,trimSettings:o}=this.processedData,n=this.parseVolumeLevel(r[t]),s=a[t]||1,i=o[t]||{start:0,end:100},c=this.applyTrim(e,i.start,i.end),d=this.audioCtx.createGain();d.gain.value=n,d.connect(this.audioCtx.destination),this.audioBuffers.push({buffer:c,gainNode:d,channel:t,playbackSpeed:s})}async fetchAndDecodeAudio(e,t){try{const r=await e.arrayBuffer(),a=await this.audioCtx.decodeAudioData(r);return console.log(`Decoded ${t}.`),a}catch(e){throw console.error(`decodeAudioData failed for ${t}:`,e),new Error(`Failed to decode audio for ${t}.`)}}async handleAudioDataFromResponse(e,t,r){try{const a="JSON"===r?await e.json():await e.text(),o="JSON"===r?a.audioData:this.extractBase64FromHTML(a);if(o){const e=this.base64ToArrayBuffer(o.split(",")[1]);try{return await this.audioCtx.decodeAudioData(e)}catch(e){throw console.error(`decodeAudioData failed for ${r} audio data in ${t}:`,e),new Error(`Failed to decode ${r} audio data for ${t}.`)}}throw new Error(`Invalid ${r} structure for audio data in ${t}.`)}catch(e){throw console.error(`Error handling ${r} response for ${t}:`,e),e}}base64ToArrayBuffer(e){try{const t=atob(e),r=t.length,a=new Uint8Array(r);for(let e=0;e<r;e++)a[e]=t.charCodeAt(e);return a.buffer}catch(e){return console.error("[base64ToArrayBuffer] Conversion error:",e),null}}extractBase64FromHTML(e){try{const t=(new DOMParser).parseFromString(e,"text/html"),r=t.querySelector("audio[data-audionalSampleName] source")?.getAttribute("src");if(/^data:audio\/(wav|mp3|mp4);base64,/.test(r?.toLowerCase())||/audio\//.test(r?.toLowerCase()))return r;console.error("[extractBase64FromHTML] Invalid audio source format.")}catch(e){console.error("[extractBase64FromHTML] Parsing error:",e)}return null}parseVolumeLevel(e){return Math.max(0,Math.min(parseFloat(e)||1,1))}applyTrim(e,t,r){const a=e.length,[o,n]=[t,r].map((e=>Math.floor(a*(e/100))));if(o>=n||o<0||n>a)return console.warn(`Invalid trim settings: Start = ${t}%, End = ${r}%. Using full buffer.`),e;const s=this.audioCtx.createBuffer(e.numberOfChannels,n-o,e.sampleRate);return e.numberOfChannels&&Array.from({length:e.numberOfChannels}).forEach(((t,r)=>{s.copyToChannel(e.getChannelData(r).subarray(o,n),r)})),s}createReversedBuffers(){const e=new Set;console.debug("Starting createReversedBuffers"),Object.values(this.processedData.projectSequences).forEach(((t,r)=>{console.debug(`Processing sequence ${r+1}/${Object.keys(this.processedData.projectSequences).length}`),Object.entries(t).forEach((([t,r])=>{r.steps.forEach((({reverse:r},a)=>{r&&(e.add(t),console.debug(`  Step ${a+1}: Reverse flag set for channel '${t}'`))}))}))})),console.debug("Channels requiring reversal:",Array.from(e)),this.audioBuffers.forEach((({buffer:t,channel:r})=>{e.has(r)&&(this.reversedAudioBuffers[r]?console.debug(`Buffer for channel ${r} already reversed.`):(console.debug(`Reversing buffer for channel: ${r}`),this.reversedAudioBuffers[r]=this.reverseBuffer(t)))})),console.debug("Completed createReversedBuffers")}reverseBuffer(e){console.debug("Starting reverseBuffer");const t=this.audioCtx.createBuffer(e.numberOfChannels,e.length,e.sampleRate);for(let r=0;r<e.numberOfChannels;r++){const a=e.getChannelData(r),o=t.getChannelData(r);console.debug(`  Reversing data for channel ${r+1}/${e.numberOfChannels}`);for(let t=0,r=e.length;t<r;t++)o[t]=a[r-t-1]}return console.debug("Completed reverseBuffer"),t}play(){this.isPlaying||(this.isPlaying=!0,this.startTime=this.audioCtx.currentTime,console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`,"isPlaying:",this.isPlaying),this.scheduleSequences())}scheduleSequences(){console.debug("Scheduling sequences...");const e=Object.keys(this.processedData.projectSequences).map(((e,t)=>this.scheduleSequence(e,this.calculateSequenceStartTime(t))));console.log("Scheduled Sequences:",e)}calculateSequenceStartTime(e){const{projectBPM:t,globalPlaybackSpeed:r}=this.processedData;return this.startTime+e*this.getStepsPerSequence()*(60/t/4)/r}scheduleSequence(e,t){const r=this.processedData.projectSequences[e];if(!r)return console.error(`No data for ${e}.`);const{projectBPM:a,globalPlaybackSpeed:o}=this.processedData,n=60/a/4,s={id:e,startTime:t.toFixed(3)};console.debug(`Scheduled ${e} at ${s.startTime}s`),Object.entries(r).forEach((([e,r])=>{const a=this.audioBuffers.find((t=>t.channel===e));if(!a)return console.warn(`No buffer for ${e}.`);r.steps.forEach((({index:r,reverse:s})=>{const i=t+(r-1)*n/o,c=this.audioCtx.createBufferSource();c.buffer=s&&this.reversedAudioBuffers[e]?this.reversedAudioBuffers[e]:a.buffer,c.playbackRate.value=a.playbackSpeed*o,c.connect(a.gainNode),c.start(i),this.currentSourceNodes.push(c)}))}));const i=Math.max(1e3*(t-this.audioCtx.currentTime),0);if(i<Number.MAX_SAFE_INTEGER){const t=setTimeout((()=>{this.isPlaying&&console.log(`Now playing ${e}`),this.pendingTimeouts=this.pendingTimeouts.filter((e=>e!==t))}),i);this.pendingTimeouts.push(t)}else console.warn(`Delay for ${e} too long. Skipping log.`);return s}getStepsPerSequence(){return 64}stop(){this.isPlaying&&(this.currentSourceNodes.forEach((e=>e.stop())),this.currentSourceNodes=[],this.isPlaying=!1,console.log("Stopped song.","isPlaying:",this.isPlaying),this.pendingTimeouts.forEach(clearTimeout),this.pendingTimeouts=[])}async extractAudioFromVideo(e,t,r){try{console.log(`Starting audio extraction for ${r} from ${t}`);const a=await e.blob(),o=URL.createObjectURL(a),n=Object.assign(document.createElement("video"),{src:o,crossOrigin:"anonymous",muted:!0,style:"display:none"});document.body.appendChild(n),await new Promise(((e,t)=>{n.onloadedmetadata=e,n.onerror=()=>t(new Error(`Error loading metadata for ${r}.`))}));const s=new(window.AudioContext||window.webkitAudioContext),i={left:[],right:[]},c=s.createScriptProcessor(4096,2,2);return c.onaudioprocess=e=>{i.left.push(e.inputBuffer.getChannelData(0).slice()),i.right.push(e.inputBuffer.getChannelData(1).slice())},s.createMediaElementSource(n).connect(c).connect(s.destination),await n.play().catch((e=>{throw new Error(`Error playing video: ${e.message}`)})),console.log(`Starting audio capture for ${r}...`),await new Promise(((e,t)=>{n.onended=()=>{c.disconnect(),s.close();const t=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,i.left.length,s.sampleRate).createBuffer(2,i.left.length,s.sampleRate);[i.left,i.right].forEach(((e,r)=>t.copyToChannel(this.concatenateFloat32Arrays(e),r))),e(t),URL.revokeObjectURL(o),document.body.removeChild(n)},n.onerror=e=>t(new Error(`Playback error for ${r}.`))}))}catch(e){throw console.error(`Error extracting audio for ${r}:`,e),new Error(`Failed to extract audio for ${r}.`)}}concatenateFloat32Arrays(e){return e.reduce(((e,t)=>{const r=e.length+t.length,a=new Float32Array(r);return a.set(e),a.set(t,e.length),a}),new Float32Array)}}}));
+const SONGS=[{songUrl:"https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",artworkUrl:"https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",name:"Kora algo"},{songUrl:"https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",artworkUrl:"https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",name:"ON DAY ONE"},{songUrl:"https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",artworkUrl:"https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",name:"TRUTH"},{songUrl:"https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",artworkUrl:"https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",name:"CHOPPIN"},{songUrl:"https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",artworkUrl:"https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",name:"MLK"},{songUrl:"https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",artworkUrl:"https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",name:"MODERN PROGRESS"},{songUrl:"https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",artworkUrl:"https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",name:"HUMANITY"},{songUrl:"https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",artworkUrl:"https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",name:"I LOVE CHEESE"},{songUrl:"https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",artworkUrl:"https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",name:"FRESH VIBES"},{songUrl:"https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",artworkUrl:"https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",name:"ON-CHAIN IN THE MEMBRANE"},{songUrl:"https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",artworkUrl:"https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",name:"Based New"},{songUrl:"https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",artworkUrl:"https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",name:"Freedom Remix"}],getSongUrl=e=>e.startsWith(BASE_URL)?e:`${BASE_URL}${e}`,preloadAllSongs=async()=>{const e=await Promise.all(SONGS.map((async({songUrl:e},t)=>{try{const t=await fetch(e);if(!t.ok)throw new Error(`Failed to fetch song: ${t.statusText}`);const r=JSON.parse((new TextDecoder).decode(pako.inflate(new Uint8Array(await t.arrayBuffer()))));return r[0]&&"0"!==r[0]?r[0]:"NoName"}catch(e){return console.error(`Error loading song ${t}:`,e),"NoName"}})));return console.log("Project Names:",e),e};document.addEventListener("DOMContentLoaded",(()=>preloadAllSongs())),document.addEventListener("DOMContentLoaded",(()=>{const e={0:"projectName",1:"artistName",2:"projectBPM",3:"currentSequence",4:"channelURLs",5:"channelVolume",6:"channelPlaybackSpeed",7:"trimSettings",8:"projectChannelNames",9:"startSliderValue",10:"endSliderValue",11:"totalSampleDuration",12:"start",13:"end",14:"projectSequences",15:"steps"},t=Object.fromEntries(Object.entries(e).map((([e,t])=>[t,e]))),r=(()=>{const e=Object.fromEntries([...Array(16)].map(((e,t)=>[String.fromCharCode(97+t),t])));return t=>e[t.toLowerCase()]??null})();new class{constructor(){this.initializeProperties(),this.bindUIElements(),this.initEventListeners()}initializeProperties(){this.projectNames=[],this.songLoadCounter=0,this.totalSongs=SONGS.length,this.audioBuffers=[],this.reversedAudioBuffers={},this.audioCtx=new(window.AudioContext||window.webkitAudioContext),this.isPlaying=!1,this.currentSourceNodes=[],this.processedData={},this.currentSequence=0,this.startTime=0,this.pendingTimeouts=[]}bindUIElements(){["loadButton","playButton","stopButton","skipForwardButton","skipBackButton","loadingIndicator","errorMessage","songTitle","artworkCanvas"].forEach((e=>this[e]=document.getElementById(e)))}initEventListeners(){this.loadButton.addEventListener("click",(()=>this.loadButtonHandler())),this.playButton.addEventListener("click",(()=>this.play())),this.stopButton.addEventListener("click",(()=>this.stop())),this.skipForwardButton.addEventListener("click",(()=>this.skipSong("forward"))),this.skipBackButton.addEventListener("click",(()=>this.skipSong("back")))}showSongTitle(e){this.songTitle.textContent=e}async loadSong(e,t=!1){this.reset();try{this.showLoading(!0),await this.loadGzipSongFile(e),this.toggleButtons(!1);const r=SONGS[currentSongIndex];r&&r.artworkUrl?await this.displayArtwork(r.artworkUrl):console.warn(`No artwork URL found for song at index ${currentSongIndex}`),t&&this.play()}catch(e){console.error("Error loading file:",e),this.displayError("Failed to load file.")}finally{this.showLoading(!1)}}async displayArtwork(e){this.artworkCanvas.innerHTML="";try{const t=await fetch(e,{method:"HEAD"});if(!t.ok)throw new Error(`Failed to fetch artwork: ${t.status}`);const r=t.headers.get("Content-Type"),a=this.createMediaElement(r,e,currentSongIndex);this.artworkCanvas.appendChild(a)}catch(e){console.error("Error displaying artwork:",e),this.artworkCanvas.appendChild(this.createErrorElement("Failed to load artwork."))}}createMediaElement(e,t,r){const a={image:()=>{const e=Object.assign(document.createElement("img"),{src:t,alt:`Artwork for song ${r+1}`,onload:()=>this.fitMediaElement(this.artworkCanvas,e)});return e},video:()=>Object.assign(document.createElement("video"),{src:t,controls:!0}),audio:()=>Object.assign(document.createElement("audio"),{src:t,controls:!0}),html:()=>Object.assign(document.createElement("iframe"),{src:t,width:"100%",height:"100%",frameBorder:0})},o=e.split("/")[0];return a[o]?a[o]():this.createErrorElement("Unsupported artwork format.")}fitMediaElement(e,t){if(!t||!t.naturalWidth||!t.naturalHeight)return void console.error("Element is undefined or does not have natural dimensions.");const{clientWidth:r,clientHeight:a}=e,o=t.naturalWidth/t.naturalHeight,n=r/a;t.style.width=o>n?"100%":"auto",t.style.height=o>n?"auto":"100%"}createErrorElement(e){return Object.assign(document.createElement("div"),{className:"unsupported",textContent:e})}toggleButtons(e){[this.playButton,this.stopButton,this.skipForwardButton,this.skipBackButton].forEach((t=>t.disabled=e))}async loadButtonHandler(){await this.loadSong(SONGS[currentSongIndex].songUrl)}async skipSong(e){currentSongIndex="forward"===e?(currentSongIndex+1)%SONGS.length:(currentSongIndex-1+SONGS.length)%SONGS.length,await this.loadSong(SONGS[currentSongIndex].songUrl,this.isPlaying)}reset(){this.stop(),this.audioBuffers=[],this.reversedAudioBuffers={},this.currentSourceNodes.forEach((e=>e.stop?.())),this.currentSourceNodes=[],this.pendingTimeouts.forEach(clearTimeout),this.pendingTimeouts=[],this.processedData={},this.currentSequence=this.startTime=0,this.toggleButtons(!0),this.artworkCanvas.innerHTML=""}showLoading(e){this.loadingIndicator.style.display=e?"block":"none"}displayError(e){this.errorMessage.textContent=e}async loadGzipSongFile(a){try{const o=await fetch(a);if(!o.ok)throw new Error(`Network response not ok: ${o.statusText}`);const n=(a=>Object.fromEntries(Object.entries(a).map((([a,o])=>{const n=e[a]||a;return"projectSequences"===n?[n,Object.fromEntries(Object.entries(o).map((([e,a])=>[`Sequence${e.replace(/^s/,"")}`,Object.fromEntries(Object.entries(a).map((([e,a])=>{let o=parseInt(e.replace(/^ch/,""),10);return o=isNaN(o)?r(e):o,null!==o?[`Channel ${o}`,{steps:(n=a[t.steps]||[],n.map((e=>"number"==typeof e?{index:e,reverse:!1}:"string"==typeof e&&e.endsWith("r")?{index:parseInt(e.slice(0,-1),10),reverse:!0}:"object"==typeof e&&e.r?{index:e.r[0],reverse:Boolean(e.r[1])}:(console.warn("Unknown step format:",e),null))).filter(Boolean))}]:[];var n})).filter(Boolean))])))]:[n,o]}))))(JSON.parse((new TextDecoder).decode(pako.inflate(new Uint8Array(await o.arrayBuffer()))))),s=n.projectName||"NoName";this.showSongTitle(s),this.projectNames.push(s);const i={projectName:s,artistName:n.artistName,projectBPM:n.projectBPM,currentSequence:n.currentSequence,channelURLs:this.arrayToObject(n.channelURLs),channelVolume:this.arrayToObject(n.channelVolume,0,!0),channelPlaybackSpeed:this.arrayToObject(n.channelPlaybackSpeed,0,!0),trimSettings:this.mapTrimSettings(n.trimSettings),projectChannelNames:n.projectChannelNames,projectSequences:n.projectSequences,globalPlaybackSpeed:n.globalPlaybackSpeed||1};if(this.processedData={...i,VOLUME_CONTROLS:i.channelVolume,SPEED_CONTROLS:i.channelPlaybackSpeed,songDataUrls:Object.values(i.channelURLs)},console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`),16!==this.processedData.songDataUrls.length)throw new Error("Invalid channel URLs or channel count.");await this.fetchAndProcessAudioData(this.processedData.songDataUrls.map((e=>`https://ordinals.com${e}`))),++this.songLoadCounter===this.totalSongs&&this.logProjectNames()}catch(e){console.error("Error loading file:",e)}}arrayToObject(e,t=0,r=!1){return e.reduce(((e,a,o)=>(e[`Channel ${t+o}`]=r?parseFloat(a)||1:a,e)),{})}mapTrimSettings(e){return e.reduce(((e,t,r)=>(e[`Channel ${r}`]="object"==typeof t&&t?{start:t[9]||0,end:t[10]||100}:{start:0,end:"number"==typeof t?t:100},"object"!=typeof t&&"number"!=typeof t&&console.warn(`Invalid trim for Channel ${r}.`),e)),{})}async fetchAndProcessAudioData(e){(await Promise.allSettled(e.map(this.processAudioUrl.bind(this)))).forEach(((t,r)=>"rejected"===t.status&&console.error(`Failed Channel ${r} (${e[r]}):`,t.reason))),this.createReversedBuffers()}async processAudioUrl(e,t){const r=`Channel ${t}`;try{const t=await fetch(e);if(!t.ok)throw new Error(`Fetch failed: ${e}, Status: ${t.status}`);const a=await this.handleResponseByType(t,t.headers.get("Content-Type"),r);a&&(this.logAudioBufferDetails(a,r),this.storeAudioBuffer(a,r))}catch(e){console.error(`Error processing ${r}:`,e)}}async handleResponseByType(e,t,r){if(/audio|video/.test(t))return this.fetchAndDecodeAudio(e,r);if(/json/.test(t))return this.handleResponse(e,r,"JSON");if(/html/.test(t))return this.handleResponse(e,r,"HTML");throw new Error(`Unsupported content type for ${r}: ${t}`)}async handleResponse(e,t,r){return this.handleAudioDataFromResponse(e,t,r)}logAudioBufferDetails(e,t){console.log(`AudioBuffer for ${t}:`,{channels:e.numberOfChannels,length:e.length,sampleRate:e.sampleRate,duration:e.duration}),[...Array(e.numberOfChannels).keys()].forEach((t=>console.log(`Channel ${t} data:`,e.getChannelData(t).slice(0,10))))}storeAudioBuffer(e,t){const{VOLUME_CONTROLS:r,SPEED_CONTROLS:a,trimSettings:o}=this.processedData,n=this.parseVolumeLevel(r[t]),s=a[t]||1,i=o[t]||{start:0,end:100},c=this.applyTrim(e,i.start,i.end),d=this.audioCtx.createGain();d.gain.value=n,d.connect(this.audioCtx.destination),this.audioBuffers.push({buffer:c,gainNode:d,channel:t,playbackSpeed:s})}async fetchAndDecodeAudio(e,t){try{const r=await e.arrayBuffer(),a=await this.audioCtx.decodeAudioData(r);return console.log(`Decoded ${t}.`),a}catch(e){throw console.error(`decodeAudioData failed for ${t}:`,e),new Error(`Failed to decode audio for ${t}.`)}}async handleAudioDataFromResponse(e,t,r){try{const a="JSON"===r?await e.json():await e.text(),o="JSON"===r?a.audioData:this.extractBase64FromHTML(a);if(o){const e=this.base64ToArrayBuffer(o.split(",")[1]);try{return await this.audioCtx.decodeAudioData(e)}catch(e){throw console.error(`decodeAudioData failed for ${r} audio data in ${t}:`,e),new Error(`Failed to decode ${r} audio data for ${t}.`)}}throw new Error(`Invalid ${r} structure for audio data in ${t}.`)}catch(e){throw console.error(`Error handling ${r} response for ${t}:`,e),e}}base64ToArrayBuffer(e){try{const t=atob(e),r=t.length,a=new Uint8Array(r);for(let e=0;e<r;e++)a[e]=t.charCodeAt(e);return a.buffer}catch(e){return console.error("[base64ToArrayBuffer] Conversion error:",e),null}}extractBase64FromHTML(e){try{const t=(new DOMParser).parseFromString(e,"text/html"),r=t.querySelector("audio[data-audionalSampleName] source")?.getAttribute("src");if(/^data:audio\/(wav|mp3|mp4);base64,/.test(r?.toLowerCase())||/audio\//.test(r?.toLowerCase()))return r;console.error("[extractBase64FromHTML] Invalid audio source format.")}catch(e){console.error("[extractBase64FromHTML] Parsing error:",e)}return null}parseVolumeLevel(e){return Math.max(0,Math.min(parseFloat(e)||1,1))}applyTrim(e,t,r){const a=e.length,[o,n]=[t,r].map((e=>Math.floor(a*(e/100))));if(o>=n||o<0||n>a)return console.warn(`Invalid trim settings: Start = ${t}%, End = ${r}%. Using full buffer.`),e;const s=this.audioCtx.createBuffer(e.numberOfChannels,n-o,e.sampleRate);return e.numberOfChannels&&Array.from({length:e.numberOfChannels}).forEach(((t,r)=>{s.copyToChannel(e.getChannelData(r).subarray(o,n),r)})),s}createReversedBuffers(){const e=new Set;console.debug("Starting createReversedBuffers"),Object.values(this.processedData.projectSequences).forEach(((t,r)=>{console.debug(`Processing sequence ${r+1}/${Object.keys(this.processedData.projectSequences).length}`),Object.entries(t).forEach((([t,r])=>{r.steps.forEach((({reverse:r},a)=>{r&&(e.add(t),console.debug(`  Step ${a+1}: Reverse flag set for channel '${t}'`))}))}))})),console.debug("Channels requiring reversal:",Array.from(e)),this.audioBuffers.forEach((({buffer:t,channel:r})=>{e.has(r)&&(this.reversedAudioBuffers[r]?console.debug(`Buffer for channel ${r} already reversed.`):(console.debug(`Reversing buffer for channel: ${r}`),this.reversedAudioBuffers[r]=this.reverseBuffer(t)))})),console.debug("Completed createReversedBuffers")}reverseBuffer(e){console.debug("Starting reverseBuffer");const t=this.audioCtx.createBuffer(e.numberOfChannels,e.length,e.sampleRate);for(let r=0;r<e.numberOfChannels;r++){const a=e.getChannelData(r),o=t.getChannelData(r);console.debug(`  Reversing data for channel ${r+1}/${e.numberOfChannels}`);for(let t=0,r=e.length;t<r;t++)o[t]=a[r-t-1]}return console.debug("Completed reverseBuffer"),t}play(){this.isPlaying||(this.isPlaying=!0,this.startTime=this.audioCtx.currentTime,console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`,"isPlaying:",this.isPlaying),this.scheduleSequences())}scheduleSequences(){console.debug("Scheduling sequences...");const e=Object.keys(this.processedData.projectSequences).map(((e,t)=>this.scheduleSequence(e,this.calculateSequenceStartTime(t))));console.log("Scheduled Sequences:",e)}calculateSequenceStartTime(e){const{projectBPM:t,globalPlaybackSpeed:r}=this.processedData;return this.startTime+e*this.getStepsPerSequence()*(60/t/4)/r}scheduleSequence(e,t){const r=this.processedData.projectSequences[e];if(!r)return console.error(`No data for ${e}.`);const{projectBPM:a,globalPlaybackSpeed:o}=this.processedData,n=60/a/4,s={id:e,startTime:t.toFixed(3)};console.debug(`Scheduled ${e} at ${s.startTime}s`),Object.entries(r).forEach((([e,r])=>{const a=this.audioBuffers.find((t=>t.channel===e));if(!a)return console.warn(`No buffer for ${e}.`);r.steps.forEach((({index:r,reverse:s})=>{const i=t+(r-1)*n/o,c=this.audioCtx.createBufferSource();c.buffer=s&&this.reversedAudioBuffers[e]?this.reversedAudioBuffers[e]:a.buffer,c.playbackRate.value=a.playbackSpeed*o,c.connect(a.gainNode),c.start(i),this.currentSourceNodes.push(c)}))}));const i=Math.max(1e3*(t-this.audioCtx.currentTime),0);if(i<Number.MAX_SAFE_INTEGER){const t=setTimeout((()=>{this.isPlaying&&console.log(`Now playing ${e}`),this.pendingTimeouts=this.pendingTimeouts.filter((e=>e!==t))}),i);this.pendingTimeouts.push(t)}else console.warn(`Delay for ${e} too long. Skipping log.`);return s}getStepsPerSequence(){return 64}stop(){this.isPlaying&&(this.currentSourceNodes.forEach((e=>e.stop())),this.currentSourceNodes=[],this.isPlaying=!1,console.log("Stopped song.","isPlaying:",this.isPlaying),this.pendingTimeouts.forEach(clearTimeout),this.pendingTimeouts=[])}async extractAudioFromVideo(e,t,r){try{console.log(`Starting audio extraction for ${r} from ${t}`);const a=await e.blob(),o=URL.createObjectURL(a),n=Object.assign(document.createElement("video"),{src:o,crossOrigin:"anonymous",muted:!0,style:"display:none"});document.body.appendChild(n),await new Promise(((e,t)=>{n.onloadedmetadata=e,n.onerror=()=>t(new Error(`Error loading metadata for ${r}.`))}));const s=new(window.AudioContext||window.webkitAudioContext),i={left:[],right:[]},c=s.createScriptProcessor(4096,2,2);return c.onaudioprocess=e=>{i.left.push(e.inputBuffer.getChannelData(0).slice()),i.right.push(e.inputBuffer.getChannelData(1).slice())},s.createMediaElementSource(n).connect(c).connect(s.destination),await n.play().catch((e=>{throw new Error(`Error playing video: ${e.message}`)})),console.log(`Starting audio capture for ${r}...`),await new Promise(((e,t)=>{n.onended=()=>{c.disconnect(),s.close();const t=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,i.left.length,s.sampleRate).createBuffer(2,i.left.length,s.sampleRate);[i.left,i.right].forEach(((e,r)=>t.copyToChannel(this.concatenateFloat32Arrays(e),r))),e(t),URL.revokeObjectURL(o),document.body.removeChild(n)},n.onerror=e=>t(new Error(`Playback error for ${r}.`))}))}catch(e){throw console.error(`Error extracting audio for ${r}:`,e),new Error(`Failed to extract audio for ${r}.`)}}concatenateFloat32Arrays(e){return e.reduce(((e,t)=>{const r=e.length+t.length,a=new Float32Array(r);return a.set(e),a.set(t,e.length),a}),new Float32Array)}}}));
 </script>
+
+
+   
+<!-- 
+<loadAdditionalScripts>
+
+<script>
+
+    // THIS SECTION IS ALL ABOUT THE VISUALISER AND SCRIPTS CAN BE COMMENTED OUT OR REPLACED WITH NEW ARTWORK
+
+    // Helper function to load a script dynamically
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    }
+
+    // Function to load all scripts in sequence (Replace with new media for non-animation models)
+    async function loadAllScripts() {
+        const scripts = [
+        "/content/c7c92a81d5279950be7d0bd3e755ad620551bc65e6e514d6f7c29b4c24465d0ai0", // visualiserHelperFunctions.js
+        "/content/305829e076d38130be65851c79241929983f16d679822015ff237029f67d5d9ei0", // visualiserMessageHandling_minified.js
+        "/content/0d8309856ec04e8ab5bd6aa4689429102378fb45368ad0e2787f0dfc72c66152i0", // visualiserWorkers.js
+        "/content/287c837ecffc5b80d8e3c92c22b6dbf0447a3d916b95ee314c66909f6f2b2f3ci0", // visualiserGeometry.js
+        // "/content/97c042112c29d9a9ca1da99890542befdbffaec6ff17798897c187a617a62f79i0",  // PFP module
+
+            "/content/3ab9dda407f9c7f62b46401e2664bc1496247c8950620a11a36a8601267cb42fi0", // colourPalette.js
+            "/content/4a6164e05aee1d4ed77585bc85e4d4530801ef71e1c277c868ce374c4a7b9902i0", // colourSettingsaMaster
+            "/content/0505ae5cebbe9513648fc8e4ecee22d9969764f3cdac9cd6ec33be083c77ae96i0", // colourSettingsLevel0.js
+            "/content/87bb49f5617a241e29512850176e53169c3da4a76444d5d8fcd6c1e41489a4b3i0", // colourSettingsLevel1 
+            "/content/cea34b6ad754f3a4e992976125bbd1dd59213aab3de03c9fe2eb10ddbe387f76i0", // colourSettingsLevel2
+            "/content/bcee9a2e880510772f0129c735a4ecea5bb45277f3b99ff640c1bd393dddd6dfi0", // colourSettingsLevel3
+            "/content/90d910fe4088c53a16eb227ec2fe59802091dc4ea51564b2665090403c34f59ci0", // colourSettingsLevel4
+            "/content/916fd1731cdecf82706a290d03448c6dc505c01d6ec44bbca20281a19723d617i0", // colourSettingsLevel5
+            "/content/6a5e5c8b42793dd35512dfddd81dbbe211f052ac79839dd54b53461f5783a390i0", // colourSettingsLevel6
+            "/content/c0ee69121238f6438be8398038301cf5b1d876cce30a0d45a3a5e0b927826940i0", // colourSettingsLevel7
+            "/content/6f1def70a3290c50793773a8b1712c9a1b0561b3674ee50a06c13bc4e492f459i0", // colourSettingsLevel8
+            "/content/99ecc0668e27f03cf202f9ebc49d0332ac8f594bc9b5483969108b83723a0e9di0", // visualiserLogging.js
+            "/content/214457a4f832847565746ecb0b9460ec7dc8ad93549a00a69f18b3d492c0e005i0", // visualiserDrawingColours.js
+        ];
+
+        for (const script of scripts) {
+            await loadScript(script);
+            console.log(`Loaded: ${script}`);
+        }
+        console.log("All scripts loaded successfully.");
+    }
+
+    // Main ScriptLoader logic
+    !async function() {
+        const canvas = document.createElement("canvas");
+        canvas.id = "cv";
+        document.body.append(canvas);
+
+        Object.assign(document.body.style, {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            margin: "0"
+        });
+
+        const initializeApp = async () => {
+            window.cci2 = 0;
+            window.initialCCI2 = 0;
+            resetAllStates();
+            loadJsonFromUrl(window.jsonDataUrl);
+            initializeWorker();  // Initialize the worker without loading from an external script
+            await loadAllScripts();  // Load the scripts after initializing the worker
+        };
+
+        try {
+            await new Promise((resolve) => {
+                const checkJsonDataUrl = () => window.jsonDataUrl ? resolve() : setTimeout(checkJsonDataUrl, 100);
+                checkJsonDataUrl();
+            });
+
+            console.log("Fetching from URL:", window.jsonDataUrl);
+            const response = await fetch(window.jsonDataUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            window.settings = await response.json();
+            console.log("Settings loaded:", window.settings);
+
+            await ensureAudioContextState();
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initializeApp);
+            } else {
+                initializeApp();
+            }
+        } catch (error) {
+            console.error("Error initializing the app:", error);
+        }
+
+        console.log(`[${(new Date()).toISOString()}] [debugScriptLoading] ScriptLoader initialized.`);
+    }();
+</script>
+</loadAdditionalScripts> -->
+
+
+
 </body>
 </html>

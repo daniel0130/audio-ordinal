@@ -1,134 +1,653 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Audionals Ordinal Player</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js" defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0; padding: 0;
-            min-height: 100vh; display: flex;
-            justify-content: center; align-items: center; flex-direction: column;
-        }
-        h1 { color: #333; margin-bottom: 10px; }
-        #buttonContainer { display: flex; gap: 10px; margin-bottom: 20px; }
-        button { padding: 10px 20px; cursor: pointer; }
-        #loadingIndicator, #errorMessage, #songTitle { margin-top: 10px; }
-        #artworkCanvas {
-            width: 30vh; height: 30vh; display: flex; justify-content: center; align-items: center;
-            border: 2px solid #333; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 20px; background-color: #f9f9f9;
-        }
-        img, video, iframe { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .unsupported { color: red; font-size: 14px; }
-    </style>
-</head>
-<body>
-    <h1>Audional Player</h1>
-    <div id="buttonContainer">
-        <button id="loadButton">Load</button>
-        <button id="playButton" disabled>Play</button>
-        <button id="stopButton" disabled>Stop</button>
-        <button id="skipBackButton" disabled>Skip <</button>
-        <button id="skipForwardButton" disabled>Skip ></button>
-    </div>
-    <div id="loadingIndicator">Loading...</div>
-    <div id="errorMessage"></div>
-    <div id="songTitle"></div>
-    <div id="artworkCanvas">
-        <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
-    </div>
-    <script>
+
+<songAndArtworkLinks>
+<script>
     let currentSongIndex = 0;  // Initial song index
 
 
     const SONGS = [
+    {
+    songUrl: "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
+    artworkUrl: "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
+    projectName: "Freedom Remix",
+    artistName: "melophonic",
+  },
+    {
+    songUrl: "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
+    artworkUrl: "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",
+    projectName: "TRUTH",
+    artistName: "melophonic",
+  },
+
   {
-    songUrl: "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
-    artworkUrl: "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",
-    name: "Kora algo",
+    songUrl: "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
+    artworkUrl: "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
+    projectName: "I LOVE CHEESE",
+    artistName: "Rex Speedway and The Denim Avengers",
   },
   {
     songUrl: "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",
     artworkUrl: "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",
-    name: "ON DAY ONE",
+    projectName: "ON DAY ONE",
+    artistName: "based.btc",
   },
   {
-    songUrl: "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
-    artworkUrl: "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",
-    name: "TRUTH",
+    songUrl: "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
+    artworkUrl: "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",
+    projectName: "Kora algo",
+    artistName: "melophonic",
   },
+
   {
-    songUrl: "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",
-    artworkUrl: "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",
-    name: "CHOPPIN",
+    songUrl: "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",
+    artworkUrl: "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
+    projectName: "ON-CHAIN IN THE MEMBRANE",
+    artistName: "melophonic",
   },
+
   {
-    songUrl: "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",
-    artworkUrl: "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",
-    name: "MLK",
+    songUrl: "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",
+    artworkUrl: "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
+    projectName: "Butterfly Effect",
+    artistName: "based.btc",
   },
+
   {
     songUrl: "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",
     artworkUrl: "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",
-    name: "MODERN PROGRESS",
+    projectName: "MODERN PROGRESS",
+    artistName: "melophonic",
   },
   {
     songUrl: "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",
     artworkUrl: "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",
-    name: "HUMANITY",
+    projectName: "HUMANITY",
+    artistName: "melophonic",
   },
+
   {
-    songUrl: "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
-    artworkUrl: "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
-    name: "I LOVE CHEESE",
+    songUrl: "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",
+    artworkUrl: "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",
+    projectName: "MLK",
+    artistName: "melophonic",
   },
+
+
   {
     songUrl: "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",
     artworkUrl: "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
-    name: "FRESH VIBES",
+    projectName: "FRESH VIBES",
+    artistName: "melophonic",
   },
+
+
+
   {
-    songUrl: "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",
-    artworkUrl: "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
-    name: "ON-CHAIN IN THE MEMBRANE",
+    songUrl: "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",
+    artworkUrl: "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",
+    projectName: "Choppin' It Up",
+    artistName: "melophonic",
   },
-  {
-    songUrl: "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",
-    artworkUrl: "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
-    name: "Based New",
-  },
-  {
-    songUrl: "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
-    artworkUrl: "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
-    name: "Freedom Remix",
-  },
+
+
+
 ];
 
-// Generate full URL from song ID
-const getSongUrl = (id) => id.startsWith(BASE_URL) ? id : `${BASE_URL}${id}`;
+</script>
+</songAndArtworkLinks>
 
-        
-// Preload all songs and extract project names
-const preloadAllSongs = async () => {
-    const projectNames = await Promise.all(SONGS.map(async ({ songUrl }, i) => {
-        try {
-            const res = await fetch(songUrl);
-            if (!res.ok) throw new Error(`Failed to fetch song: ${res.statusText}`);
-
-            const data = JSON.parse(new TextDecoder().decode(pako.inflate(new Uint8Array(await res.arrayBuffer()))));
-            return data["0"] && data["0"] !== '0' ? data["0"] : 'NoName';
-        } catch (error) {
-            console.error(`Error loading song ${i}:`, error);
-            return 'NoName';
+<loadPako>
+<script>
+    // pakoLoader.js
+  
+    (() => {
+        const PAKO_URL = "https://ordinals.com/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0";
+        let pakoLoaded = false; // Flag to track if Pako is loaded
+  
+        /**
+         * Loads the Pako library from the specified URL.
+         */
+        async function loadPako() {
+            try {
+                const res = await fetch(PAKO_URL, { cache: "force-cache" }); // Utilize caching
+                if (!res.ok) throw new Error(`Network error: ${res.statusText}`);
+  
+                const text = await res.text();
+                const scriptContent = new DOMParser()
+                    .parseFromString(text, "text/html")
+                    .querySelector("script")?.textContent;
+  
+                if (!scriptContent || !scriptContent.includes("pako")) {
+                    throw new Error("Pako library not found in the fetched content.");
+                }
+  
+                // Validate the script content (basic validation)
+                if (!isValidPakoScript(scriptContent)) {
+                    throw new Error("Invalid Pako library script.");
+                }
+  
+                appendScriptToHead(scriptContent);
+                console.log("Pako library loaded successfully.");
+  
+                await waitForPako();
+                pakoLoaded = true; // Mark Pako as loaded
+  
+                // Dispatch a custom event to notify that Pako is loaded
+                document.dispatchEvent(new Event('pakoLoaded'));
+  
+            } catch (err) {
+                console.error("Error during Pako loading:", err);
+                displayError("Failed to load necessary libraries. Please try again later.");
+                // Optionally, implement retry logic here
+            }
         }
-    }));
-    console.log("Project Names:", projectNames);
-    return projectNames;
-};
+  
+        /**
+         * Validates the fetched Pako script content.
+         * @param {string} script - The script content to validate.
+         * @returns {boolean} - True if valid, else false.
+         */
+        function isValidPakoScript(script) {
+            // Implement additional validation if necessary
+            // For example, check for specific function definitions or patterns
+            return typeof script === "string" && script.includes("pako");
+        }
+  
+        /**
+         * Appends the provided script content to the document head.
+         * @param {string} scriptContent - The script content to append.
+         */
+        function appendScriptToHead(scriptContent) {
+            const scriptElement = document.createElement("script");
+            scriptElement.type = "text/javascript";
+            scriptElement.textContent = scriptContent;
+            document.head.appendChild(scriptElement);
+        }
+  
+        /**
+         * Waits for the Pako library to be available within the specified timeout.
+         * @param {number} timeout - The maximum time to wait in milliseconds.
+         * @returns {Promise} - Resolves when Pako is loaded, rejects on timeout.
+         */
+        function waitForPako(timeout = 5000) { // Increased timeout for reliability
+            return new Promise((resolve, reject) => {
+                let elapsed = 0;
+                const interval = 50;
+                const checkPako = () => {
+                    if (typeof pako !== 'undefined') {
+                        resolve();
+                    } else {
+                        elapsed += interval;
+                        if (elapsed >= timeout) {
+                            reject(new Error("Pako library failed to load within the timeout period."));
+                        } else {
+                            setTimeout(checkPako, interval);
+                        }
+                    }
+                };
+                checkPako();
+            });
+        }
+  
+        /**
+         * Displays an error message to the user.
+         * @param {string} message - The error message to display.
+         */
+        function displayError(message) {
+            const errorElem = document.getElementById("errorMessage");
+            if (errorElem) {
+                errorElem.textContent = message;
+                errorElem.style.display = "block";
+            } else {
+                // Fallback: Create an error element if not present
+                const newErrorElem = document.createElement("div");
+                newErrorElem.id = "errorMessage";
+                newErrorElem.textContent = message;
+                newErrorElem.style.color = "red";
+                document.body.prepend(newErrorElem);
+            }
+        }
+  
+        /**
+         * Initializes the application after Pako is loaded.
+         * Ensure that this function is defined in the global scope or within your app's context.
+         */
+        function initializeApp() {
+            if (typeof window.initializeApp === "function") {
+                window.initializeApp();
+            } else {
+                console.warn("initializeApp function is not defined.");
+            }
+        }
+  
+        /**
+         * Ensures that the Pako library is loaded once the DOM is ready.
+         */
+        function onDOMContentLoaded() {
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", loadPako);
+            } else {
+                // DOMContentLoaded already fired
+                loadPako();
+            }
+        }
+  
+        // Initialize the loader
+        onDOMContentLoaded();
+  
+        // Expose pakoLoaded flag if needed
+        window.isPakoLoaded = () => pakoLoaded;
+    })();
+</script>
+</loadPako>
 
-document.addEventListener('DOMContentLoaded', () => preloadAllSongs());
+<initialiseApp>
+    <script>
+      // Initialization Script
+  
+      /**
+       * Function to initialize the application after Pako is loaded
+       */
+      function initializeApp() {
+        try {
+          // Ensure Pako is loaded before initializing
+          if (!window.isPakoLoaded()) {
+            throw new Error("Pako library not loaded.");
+          }
+  
+          // Initialize your application here
+          setupEventListeners();
+          console.log("Application initialized successfully.");
+          loadSong(currentSongIndex); // Load the initial song
+          preloadAllSongs(); // Preload all songs
+        } catch (error) {
+          // Delay the error logging by 1 second
+          setTimeout(() => {
+            // Check again before logging the error, if Pako was loaded
+            if (!window.isPakoLoaded()) {
+              console.error("Initialization failed:", error);
+              displayError("Initialization failed. Please try again later.");
+            }
+          }, 1000);
+        }
+      }
+  
+      // Function to set up event listeners and other initialization tasks
+      function setupEventListeners() {
+        const loadButton = document.getElementById("loadButton");
+        const playButton = document.getElementById("playButton");
+        const stopButton = document.getElementById("stopButton");
+        const skipBackButton = document.getElementById("skipBackButton");
+        const skipForwardButton = document.getElementById("skipForwardButton");
+  
+        loadButton.addEventListener("click", handleLoad);
+        playButton.addEventListener("click", handlePlay);
+        stopButton.addEventListener("click", handleStop);
+        skipBackButton.addEventListener("click", () => handleSkip(-10)); // Example: Skip back 10 seconds
+        skipForwardButton.addEventListener("click", () => handleSkip(10)); // Example: Skip forward 10 seconds
+  
+        // Additional setup as needed
+      }
+  
+      // Placeholder functions for button handlers
+      function handleLoad() {
+        // Load the current song
+        loadSong(currentSongIndex);
+        console.log(`Load button clicked. Loaded song index: ${currentSongIndex}`);
+      }
+  
+      function handlePlay() {
+        // Implement play functionality
+        const audio = getAudioElement();
+        if (audio) {
+          audio.play();
+          console.log("Play button clicked.");
+        }
+      }
+  
+      function handleStop() {
+        // Implement stop functionality
+        const audio = getAudioElement();
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+          console.log("Stop button clicked.");
+        }
+      }
+  
+      function handleSkip(seconds) {
+        // Implement skip functionality
+        const audio = getAudioElement();
+        if (audio) {
+          audio.currentTime += seconds;
+          console.log(`Skip ${seconds > 0 ? 'forward' : 'back'} by ${Math.abs(seconds)} seconds.`);
+        }
+      }
+  
+      /**
+       * Function to get or create the audio element
+       */
+      function getAudioElement() {
+        let audio = document.getElementById("audioPlayer");
+        if (!audio) {
+          audio = document.createElement("audio");
+          audio.id = "audioPlayer";
+          audio.controls = true;
+          audio.style.display = "none"; // Hide the default controls
+          document.body.appendChild(audio);
+  
+          // Update UI when audio ends
+          audio.addEventListener('ended', () => {
+            console.log("Song ended.");
+            // Optionally, load the next song automatically
+            // loadNextSong();
+          });
+        }
+        return audio;
+      }
+  
+      /**
+       * Function to load a song based on the currentSongIndex
+       * Updates the song title, artist name, and artwork in the UI
+       */
+      function loadSong(index) {
+        const song = SONGS[index];
+        if (!song) {
+          console.error(`Song at index ${index} does not exist.`);
+          displayError("Requested song does not exist.");
+          return;
+        }
+  
+        const audio = getAudioElement();
+        audio.src = song.songUrl;
+        audio.load();
+  
+        // Update song title and artist name
+        document.getElementById("songTitle").textContent = song.projectName;
+        document.getElementById("artistName").textContent = song.artistName;
+  
+        // Update artwork
+        const artworkCanvas = document.getElementById("artworkCanvas");
+        artworkCanvas.innerHTML = ''; // Clear previous artwork
+  
+        const img = document.createElement("img");
+        img.id = "currentArtwork";
+        img.src = song.artworkUrl;
+        img.alt = `${song.projectName} Artwork`;
+        artworkCanvas.appendChild(img);
+  
+        console.log(`Loaded song: ${song.projectName} by ${song.artistName}`);
+      }
+  
+      /**
+       * Function to preload all songs (ensure this runs after Pako is loaded)
+       */
+      async function preloadAllSongs() {
+        try {
+          await Promise.all(SONGS.map(async (song, index) => {
+            // Preload song logic that may use Pako
+            const response = await fetch(song.songUrl);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch song at index ${index}: ${response.statusText}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const compressedData = pako.deflate(new Uint8Array(arrayBuffer));
+            // Store compressedData as needed
+            console.log(`Song ${index} (${SONGS[index].projectName}) compressed.`);
+          }));
+          console.log("All songs preloaded and compressed.");
+        } catch (error) {
+          console.error("Error preloading songs:", error);
+          displayError("Some songs failed to preload.");
+        }
+      }
+  
+      /**
+       * Function to display error messages to the user
+       */
+      function displayError(message) {
+        const errorElem = document.getElementById("errorMessage");
+        if (errorElem) {
+          errorElem.textContent = message;
+          errorElem.style.display = "block";
+        } else {
+          // Fallback: Create an error element if not present
+          const newErrorElem = document.createElement("div");
+          newErrorElem.id = "errorMessage";
+          newErrorElem.textContent = message;
+          newErrorElem.style.color = "red";
+          document.body.prepend(newErrorElem);
+        }
+      }
+  
+      /**
+       * Waits for the Pako library to be loaded before initializing the app.
+       * Listens for the custom 'pakoLoaded' event dispatched by pakoLoader.js.
+       */
+      function waitForPakoAndInitialize() {
+        if (window.isPakoLoaded()) {
+          // If Pako is already loaded, initialize immediately
+          initializeApp();
+        } else {
+          // Otherwise, wait for the 'pakoLoaded' event
+          document.addEventListener('pakoLoaded', initializeApp);
+        }
+      }
+  
+      // Start the initialization process after Pako is loaded
+      waitForPakoAndInitialize();
+  
+      /**
+       * Optional: Functions to navigate between songs
+       */
+      function loadNextSong() {
+        currentSongIndex = (currentSongIndex + 1) % SONGS.length;
+        loadSong(currentSongIndex);
+      }
+  
+      function loadPreviousSong() {
+        currentSongIndex = (currentSongIndex - 1 + SONGS.length) % SONGS.length;
+        loadSong(currentSongIndex);
+      }
+  
+      // Example: Add event listeners for next and previous buttons if they exist
+      /*
+      document.getElementById("nextButton").addEventListener("click", loadNextSong);
+      document.getElementById("previousButton").addEventListener("click", loadPreviousSong);
+      */
+    </script>
+  </initialiseApp>
+  
+  
 
+
+<!-- Styles for the application -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #000000;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    h1 {
+        color: #333;
+        margin: 10px 0;
+        font-size: 1.2rem; /* Smaller font size */
+    }
+
+    #buttonContainer {
+        display: flex;
+        gap: 5px; /* Smaller gap */
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+
+    button {
+        padding: 5px 10px; /* Smaller padding */
+        cursor: pointer;
+        font-size: 0.8rem; /* Smaller font size */
+    }
+
+    #loadingIndicator, #errorMessage, #songTitle, #artistName {
+        margin-top: 5px;
+        font-size: 0.9rem; /* Smaller font size */
+        color: #ffffff; /* White text for better visibility */
+    }
+
+    #loadingIndicator {
+        display: block; /* Initially visible */
+    }
+
+    #errorMessage {
+        display: none; /* Hidden by default */
+        color: red;
+    }
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #ff0000;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        display: none; /* Hidden by default */
+        z-index: 1000; /* Ensure it's on top */
+        border-radius: 50%;
+    }
+
+        /* Fade-out effect for the close button */
+        .fade-out {
+            animation: fadeOut 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+
+    #artworkCanvas {
+        width: 66vh; /* Set the width to be the same as 66% of the viewport height */
+        height: 66vh; /* Set the height to 66% of the viewport height */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid #333;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+        margin-top: auto;
+        margin-bottom: auto;
+        aspect-ratio: 1 / 1; /* Ensure the canvas is always square */
+    }
+
+    img, video, iframe {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .unsupported {
+        color: red;
+        font-size: 14px;
+    }
+</style>
+
+</head>
+<body>
+<h1>Audional Player</h1>
+<div id="buttonContainer">
+    <button id="loadButton">Load</button>
+    <button id="playButton" disabled>Play</button>
+    <button id="stopButton" disabled>Stop</button>
+    <button id="skipBackButton" disabled>Skip &lt;</button>
+    <button id="skipForwardButton" disabled>Skip &gt;</button>
+    <button id="fullscreenButton">Fullscreen</button> <!-- Fullscreen button -->
+</div>
+<div id="closeButton" class="close-btn">X</div> <!-- Close button -->
+
+<div id="loadingIndicator">Loading...</div>
+<div id="errorMessage"></div>
+<div id="songTitle"></div>
+<div id="artistName"></div>
+<div id="artworkCanvas">
+    <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
+</div>
+<artworkCanvasSettings>
+<script>
+    const fullscreenButton = document.getElementById('fullscreenButton');
+    const closeButton = document.getElementById('closeButton');
+    const artworkCanvas = document.getElementById('artworkCanvas');
+    
+    let closeButtonVisible = false;
+    
+    fullscreenButton.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            artworkCanvas.requestFullscreen();
+        }
+    });
+    
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            artworkCanvas.style.width = '100vw';
+            artworkCanvas.style.height = '100vh';
+            closeButton.style.display = 'block'; // Show close button
+            closeButtonVisible = true;
+    
+            // Fade out the close button after a few seconds
+            setTimeout(() => {
+                if (!closeButtonVisible) return;
+                closeButton.classList.add('fade-out');
+            }, 3000);
+        } else {
+            artworkCanvas.style.width = '66vh';
+            artworkCanvas.style.height = '66vh';
+            closeButton.style.display = 'none'; // Hide close button
+            closeButton.classList.remove('fade-out');
+            closeButtonVisible = false;
+        }
+    });
+    
+    // Show close button when mouse moves in fullscreen
+    document.addEventListener('mousemove', () => {
+        if (document.fullscreenElement) {
+            closeButton.style.display = 'block';
+            closeButton.classList.remove('fade-out');
+            closeButtonVisible = true;
+    
+            // Reset fade-out timer
+            setTimeout(() => {
+                if (!closeButtonVisible) return;
+                closeButton.classList.add('fade-out');
+            }, 3000);
+        }
+    });
+    
+    // Close button functionality
+    closeButton.addEventListener('click', () => {
+        document.exitFullscreen();
+    });
+    
+    // Handle mouse movement to keep the close button visible
+    closeButton.addEventListener('mouseover', () => {
+        closeButtonVisible = true;
+        closeButton.style.display = 'block';
+        closeButton.classList.remove('fade-out');
+    });
+    
+    </script>
+    </artworkCanvasSettings>
+
+    
+<script>
 
         document.addEventListener('DOMContentLoaded', () => {
             const keyMap = {
@@ -195,7 +714,7 @@ class AudioPlayer {
     }
 
     bindUIElements() {
-        ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artworkCanvas']
+        ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artistName', 'artworkCanvas']
             .forEach(id => this[id] = document.getElementById(id));
     }
 
@@ -210,6 +729,11 @@ class AudioPlayer {
     showSongTitle(title) {
         this.songTitle.textContent = title;
     }
+
+    showArtistName(name) {
+        this.artistName.textContent = name;
+    }
+    
     async loadSong(url, autoPlay = false) {
         this.reset();
         try {
@@ -217,12 +741,23 @@ class AudioPlayer {
             await this.loadGzipSongFile(url);
             this.toggleButtons(false);
             
-            // Get artwork URL for the current song
+            // Get the current song from the SONGS array
             const song = SONGS[currentSongIndex];
-            if (song && song.artworkUrl) {
-                await this.displayArtwork(song.artworkUrl); // Use the correct artwork URL
+            if (song) {
+                // Update the UI with the song's project name and artist name
+                this.showSongTitle(song.projectName || "Unknown Title");
+                this.showArtistName(song.artistName || "Unknown Artist");
+                
+                // Display the artwork if available
+                if (song.artworkUrl) {
+                    await this.displayArtwork(song.artworkUrl);
+                } else {
+                    console.warn(`No artwork URL found for song at index ${currentSongIndex}`);
+                }
             } else {
-                console.warn(`No artwork URL found for song at index ${currentSongIndex}`);
+                this.showSongTitle("Unknown Title");
+                this.showArtistName("Unknown Artist");
+                console.warn(`No song found at index ${currentSongIndex}`);
             }
 
             if (autoPlay) this.play();
@@ -233,6 +768,7 @@ class AudioPlayer {
             this.showLoading(false);
         }
     }
+
 
 async displayArtwork(url) {
     this.artworkCanvas.innerHTML = ''; // Clear the artwork canvas
@@ -328,49 +864,52 @@ createMediaElement(contentType, url, songIndex) {
 
 
     async loadGzipSongFile(url) {
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
 
-            const data = deserialize(JSON.parse(new TextDecoder().decode(pako.inflate(new Uint8Array(await res.arrayBuffer())))));
-            const projectName = data.projectName || 'NoName';
-            this.showSongTitle(projectName);
-            this.projectNames.push(projectName);
+        const data = deserialize(JSON.parse(new TextDecoder().decode(pako.inflate(new Uint8Array(await res.arrayBuffer())))));
+        
+        // Removed the following lines as we are now using SONGS array for names
+        // const projectName = data.projectName || 'NoName';
+        // this.showSongTitle(projectName);
+        // this.projectNames.push(projectName);
 
-            const metadata = {
-                projectName,
-                artistName: data.artistName,
-                projectBPM: data.projectBPM,
-                currentSequence: data.currentSequence,
-                channelURLs: this.arrayToObject(data.channelURLs),
-                channelVolume: this.arrayToObject(data.channelVolume, 0, true),
-                channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed, 0, true),
-                trimSettings: this.mapTrimSettings(data.trimSettings),
-                projectChannelNames: data.projectChannelNames,
-                projectSequences: data.projectSequences,
-                globalPlaybackSpeed: data.globalPlaybackSpeed || 1,
-            };
+        const metadata = {
+            // Use the song details from the SONGS array instead of data
+            // projectName, artistName are now fetched from SONGS in loadSong
+            projectBPM: data.projectBPM,
+            currentSequence: data.currentSequence,
+            channelURLs: this.arrayToObject(data.channelURLs),
+            channelVolume: this.arrayToObject(data.channelVolume, 0, true),
+            channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed, 0, true),
+            trimSettings: this.mapTrimSettings(data.trimSettings),
+            projectChannelNames: data.projectChannelNames,
+            projectSequences: data.projectSequences,
+            globalPlaybackSpeed: data.globalPlaybackSpeed || 1,
+        };
 
-            this.processedData = {
-                ...metadata,
-                VOLUME_CONTROLS: metadata.channelVolume,
-                SPEED_CONTROLS: metadata.channelPlaybackSpeed,
-                songDataUrls: Object.values(metadata.channelURLs),
-            };
+        this.processedData = {
+            ...metadata,
+            VOLUME_CONTROLS: metadata.channelVolume,
+            SPEED_CONTROLS: metadata.channelPlaybackSpeed,
+            songDataUrls: Object.values(metadata.channelURLs),
+        };
 
-            console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
+        console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
 
-            if (this.processedData.songDataUrls.length === 16) {
-                await this.fetchAndProcessAudioData(this.processedData.songDataUrls.map(u => `https://ordinals.com${u}`));
-            } else {
-                throw new Error("Invalid channel URLs or channel count.");
-            }
-
-            if (++this.songLoadCounter === this.totalSongs) this.logProjectNames();
-        } catch (error) {
-            console.error(`Error loading file:`, error);
+        if (this.processedData.songDataUrls.length === 16) {
+            await this.fetchAndProcessAudioData(this.processedData.songDataUrls.map(u => `https://ordinals.com${u}`));
+        } else {
+            throw new Error("Invalid channel URLs or channel count.");
         }
+
+        if (++this.songLoadCounter === this.totalSongs) this.logProjectNames();
+    } catch (error) {
+        console.error(`Error loading file:`, error);
     }
+}
+
 
     arrayToObject(arr, start = 0, parse = false) {
     return arr.reduce((obj, val, idx) => {
