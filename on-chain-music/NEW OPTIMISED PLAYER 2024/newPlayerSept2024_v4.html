@@ -8,7 +8,7 @@
     {
     songUrl: "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
     artworkUrl: "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
-    projectName: "Freedom Remix",
+    projectName: "Freedom To Transact",
     artistName: "melophonic",
   },
     {
@@ -21,26 +21,26 @@
   {
     songUrl: "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
     artworkUrl: "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
-    projectName: "I LOVE CHEESE",
+    projectName: "I Love Cheese - Remix",
     artistName: "Rex Speedway and The Denim Avengers",
   },
   {
     songUrl: "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",
     artworkUrl: "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",
-    projectName: "ON DAY ONE",
+    projectName: "On Day One",
     artistName: "based.btc",
   },
   {
     songUrl: "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
     artworkUrl: "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",
-    projectName: "Kora algo",
+    projectName: "Kora Kora",
     artistName: "melophonic",
   },
 
   {
     songUrl: "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",
     artworkUrl: "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
-    projectName: "ON-CHAIN IN THE MEMBRANE",
+    projectName: "On-Chain in the Membrane",
     artistName: "melophonic",
   },
 
@@ -54,13 +54,13 @@
   {
     songUrl: "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",
     artworkUrl: "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",
-    projectName: "MODERN PROGRESS",
+    projectName: "Romance and Beauty, Coupled With Utility (Modern Progress)",
     artistName: "melophonic",
   },
   {
     songUrl: "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",
     artworkUrl: "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",
-    projectName: "HUMANITY",
+    projectName: "Humanity",
     artistName: "melophonic",
   },
 
@@ -75,7 +75,7 @@
   {
     songUrl: "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",
     artworkUrl: "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
-    projectName: "FRESH VIBES",
+    projectName: "Minty Fresh Vibes",
     artistName: "melophonic",
   },
 
@@ -211,13 +211,39 @@
          * Initializes the application after Pako is loaded.
          * Ensure that this function is defined in the global scope or within your app's context.
          */
-        function initializeApp() {
-            if (typeof window.initializeApp === "function") {
-                window.initializeApp();
-            } else {
-                console.warn("initializeApp function is not defined.");
-            }
+ // Inside the Initialize Application Script
+
+let artworkManager; // Declare globally or within appropriate scope
+
+function initializeApp() {
+    try {
+        // Ensure Pako is loaded before initializing
+        if (!window.isPakoLoaded()) {
+            throw new Error("Pako library not loaded.");
         }
+
+        // Initialize your application here
+        setupEventListeners();
+        console.log("Application initialized successfully.");
+        // Remove the automatic loading of the initial song
+        // loadSong(currentSongIndex); 
+        preloadAllSongs(); // Preload all songs without loading any song initially
+    } catch (error) {
+        // Error handling
+    }
+}
+
+
+function loadButtonHandler() {
+    const currentSongUrl = SONGS[currentSongIndex].songUrl;
+    loadSong(currentSongIndex); // Load the song
+
+    // Update the artwork using ArtworkManager
+    const currentArtworkUrl = SONGS[currentSongIndex].artworkUrl;
+    artworkManager.displayArtwork(currentArtworkUrl, currentSongIndex);
+}
+
+
   
         /**
          * Ensures that the Pako library is loaded once the DOM is ready.
@@ -374,57 +400,94 @@ function handleSkip(skipTime) {
        * Function to load a song based on the currentSongIndex
        * Updates the song title, artist name, and artwork in the UI
        */
-      function loadSong(index) {
-        const song = SONGS[index];
-        if (!song) {
-          console.error(`Song at index ${index} does not exist.`);
-          displayError("Requested song does not exist.");
-          return;
+       function loadSong(index) {
+            const song = SONGS[index];
+            if (!song) {
+                console.error(`Song at index ${index} does not exist.`);
+                displayError("Requested song does not exist.");
+                return;
+            }
+
+            const audio = getAudioElement();
+            audio.src = song.songUrl;
+            audio.load();
+
+            // Update song title and artist name
+            document.getElementById("songTitle").textContent = song.projectName;
+            document.getElementById("artistName").textContent = song.artistName;
+
+            // Note: Do not update artwork here
+            // Artwork will be updated separately via ArtworkManager
+
+            console.log(`Loaded song: ${song.projectName} by ${song.artistName}`);
         }
-  
-        const audio = getAudioElement();
-        audio.src = song.songUrl;
-        audio.load();
-  
-        // Update song title and artist name
-        document.getElementById("songTitle").textContent = song.projectName;
-        document.getElementById("artistName").textContent = song.artistName;
-  
-        // Update artwork
-        const artworkCanvas = document.getElementById("artworkCanvas");
-        artworkCanvas.innerHTML = ''; // Clear previous artwork
-  
-        const img = document.createElement("img");
-        img.id = "currentArtwork";
-        img.src = song.artworkUrl;
-        img.alt = `${song.projectName} Artwork`;
-        artworkCanvas.appendChild(img);
-  
-        console.log(`Loaded song: ${song.projectName} by ${song.artistName}`);
-      }
-  
-      /**
-       * Function to preload all songs (ensure this runs after Pako is loaded)
-       */
-      async function preloadAllSongs() {
-        try {
-          await Promise.all(SONGS.map(async (song, index) => {
-            // Preload song logic that may use Pako
+
+
+ /**
+ * Function to preload all songs (ensure this runs after Pako is loaded)
+ */
+async function preloadAllSongs() {
+    try {
+        await Promise.all(SONGS.map(async (song, index) => {
+            // Fetch the song data
             const response = await fetch(song.songUrl);
             if (!response.ok) {
-              throw new Error(`Failed to fetch song at index ${index}: ${response.statusText}`);
+                throw new Error(`Failed to fetch song at index ${index}: ${response.statusText}`);
             }
+
+            // Get the array buffer from the response
             const arrayBuffer = await response.arrayBuffer();
-            const compressedData = pako.deflate(new Uint8Array(arrayBuffer));
-            // Store compressedData as needed
-            console.log(`Song ${index} (${SONGS[index].projectName}) compressed.`);
-          }));
-          console.log("All songs preloaded and compressed.");
-        } catch (error) {
-          console.error("Error preloading songs:", error);
-          displayError("Some songs failed to preload.");
+
+            // Decompress the data using pako.inflate
+            const decompressedData = pako.inflate(new Uint8Array(arrayBuffer), { to: 'string' });
+
+            // Parse the JSON data
+            const data = JSON.parse(decompressedData);
+
+            // Deserialize the data to get structured information
+            const deserializedData = deserialize(data);
+
+            // Extract BPM
+            const bpm = deserializedData.projectBPM;
+            if (typeof bpm !== 'number' || bpm <= 0) {
+                console.warn(`Invalid BPM for song ${index} (${SONGS[index].projectName}). Defaulting to 120 BPM.`);
+            }
+            const validBPM = (typeof bpm === 'number' && bpm > 0) ? bpm : 120; // Default BPM
+
+            // Count the number of sequences
+            const sequencesCount = deserializedData.projectSequences
+                ? Object.keys(deserializedData.projectSequences).length
+                : 0;
+
+            // Calculate playback time
+            const beatsPerSequence = 4; // Assumption: 4 beats per sequence
+            const durationPerBeat = 60 / validBPM; // Duration of one beat in seconds
+            const durationPerSequence = beatsPerSequence * durationPerBeat; // Duration of one sequence
+            const totalPlaybackTimeSeconds = sequencesCount * durationPerSequence; // Total time in seconds
+            const formattedPlaybackTime = formatTime(totalPlaybackTimeSeconds); // Formatted time string
+
+            // Log the decompression and playback time
+            console.log(`Loading song #${index} (${SONGS[index].projectName}), Playback Time: ${formattedPlaybackTime}.`);
+        }));
+
+        console.log("All songs preloaded.");
+    } catch (error) {
+        console.error("Error preloading songs:", error);
+        displayError("Some songs failed to preload.");
+    }
+}
+
+
+            /**
+ * Converts time in seconds to a formatted string (mm:ss).
+ * @param {number} totalSeconds - The total time in seconds.
+ * @returns {string} - The formatted time string.
+ */
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.round(totalSeconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
-      }
   
       /**
        * Function to display error messages to the user
@@ -727,8 +790,10 @@ class AudioPlayer {
     constructor() {
         this.initializeProperties();
         this.uiHandler = new UIHandler(this);
-        this.artworkManager = new ArtworkManager(this.uiHandler);
+        this.artworkManager = new ArtworkManager(this.uiHandler); // Pass UIHandler instance
+        this.uiHandler.setArtworkManager(this.artworkManager);
         this.audioLoader = new AudioLoader(this);
+
         this.audioProcessor = new AudioProcessor(this.audioCtx);
         this.playbackScheduler = new PlaybackScheduler(this.audioCtx, this.audioProcessor);
         this.uiHandler.initEventListeners();
@@ -796,6 +861,12 @@ class UIHandler {
     constructor(audioPlayer) {
         this.audioPlayer = audioPlayer;
         this.bindUIElements();
+        this.artworkManager = null; // Initialize ArtworkManager reference
+    }
+
+    // Setter method to link ArtworkManager
+    setArtworkManager(artworkManager) {
+        this.artworkManager = artworkManager;
     }
 
     bindUIElements() {
@@ -812,8 +883,34 @@ class UIHandler {
     }
 
     loadButtonHandler() {
+        // Show loading indicator
+        this.showLoading(true);
+
+        // Load the selected song
         const currentSongUrl = SONGS[this.audioPlayer.currentSongIndex].songUrl;
-        this.audioPlayer.audioLoader.loadSong(currentSongUrl);
+        this.audioPlayer.audioLoader.loadSong(currentSongUrl)
+            .then(() => {
+                // Update song title and artist name
+                const song = SONGS[this.audioPlayer.currentSongIndex];
+                this.showSongTitle(song.projectName);
+                this.showArtistName(song.artistName);
+
+                // Update the artwork using ArtworkManager
+                if (this.artworkManager) {
+                    const currentArtworkUrl = song.artworkUrl;
+                    this.artworkManager.displayArtwork(currentArtworkUrl, this.audioPlayer.currentSongIndex);
+                } else {
+                    console.warn("ArtworkManager is not linked to UIHandler.");
+                }
+            })
+            .catch(error => {
+                console.error("Error loading song:", error);
+                this.displayError("Failed to load the song.");
+            })
+            .finally(() => {
+                // Hide loading indicator
+                this.showLoading(false);
+            });
     }
 
     showSongTitle(title) {
@@ -830,12 +927,14 @@ class UIHandler {
 
     displayError(message) {
         this.errorMessage.textContent = message;
+        this.errorMessage.style.display = 'block';
     }
 
     toggleButtons(disabled) {
         [this.playButton, this.stopButton, this.skipForwardButton, this.skipBackButton].forEach(btn => btn.disabled = disabled);
     }
 }
+
 </script>
 </uiHandlerClass>
 
