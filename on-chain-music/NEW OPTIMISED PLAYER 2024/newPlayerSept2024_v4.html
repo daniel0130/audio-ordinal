@@ -39,52 +39,81 @@
         <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
     </div>
     <script>
-       
     let currentSongIndex = 0;  // Initial song index
-        
-    const BASE_URL = "https://ordinals.com/content/";
 
 
-const ARTWORK_IDS = [
-    "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0", 
-    "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0", 
-    "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5", 
-    "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0", 
-    "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0", 
-    "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0", 
-    "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0", 
-    "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
-    "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
-    "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
-    "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
-    "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
-
-];
-
-const SONG_IDS = [
-    "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // Kora algo
-    "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
-    "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
-    "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN
-    "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK
-    "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // MODERN PROGRESS
-    "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
-    "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",  // I LOVE CHEESE 
-    "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // FRESH VIBES
-    "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",  // ON-CHAIN IN THE MEMBRANE
-    "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0", // Based New
-    "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0", // Freedom Remix
+    const SONGS = [
+  {
+    songUrl: "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
+    artworkUrl: "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",
+    name: "Kora algo",
+  },
+  {
+    songUrl: "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",
+    artworkUrl: "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",
+    name: "ON DAY ONE",
+  },
+  {
+    songUrl: "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
+    artworkUrl: "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",
+    name: "TRUTH",
+  },
+  {
+    songUrl: "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",
+    artworkUrl: "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",
+    name: "CHOPPIN",
+  },
+  {
+    songUrl: "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",
+    artworkUrl: "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",
+    name: "MLK",
+  },
+  {
+    songUrl: "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",
+    artworkUrl: "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",
+    name: "MODERN PROGRESS",
+  },
+  {
+    songUrl: "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",
+    artworkUrl: "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",
+    name: "HUMANITY",
+  },
+  {
+    songUrl: "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
+    artworkUrl: "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
+    name: "I LOVE CHEESE",
+  },
+  {
+    songUrl: "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0",
+    artworkUrl: "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
+    name: "FRESH VIBES",
+  },
+  {
+    songUrl: "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",
+    artworkUrl: "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
+    name: "ON-CHAIN IN THE MEMBRANE",
+  },
+  {
+    songUrl: "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",
+    artworkUrl: "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
+    name: "Based New",
+  },
+  {
+    songUrl: "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
+    artworkUrl: "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
+    name: "Freedom Remix",
+  },
 ];
 
 // Generate full URL from song ID
 const getSongUrl = (id) => id.startsWith(BASE_URL) ? id : `${BASE_URL}${id}`;
 
         
-   // Preload all songs and extract project names
+// Preload all songs and extract project names
 const preloadAllSongs = async () => {
-    const projectNames = await Promise.all(SONG_IDS.map(async (id, i) => {
+    const projectNames = await Promise.all(SONGS.map(async ({ songUrl }, i) => {
         try {
-            const res = await fetch(getSongUrl(id));
+            const res = await fetch(songUrl);
             if (!res.ok) throw new Error(`Failed to fetch song: ${res.statusText}`);
 
             const data = JSON.parse(new TextDecoder().decode(pako.inflate(new Uint8Array(await res.arrayBuffer()))));
@@ -143,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => preloadAllSongs());
 
 
 
-                                    class AudioPlayer {
+class AudioPlayer {
     constructor() {
         this.initializeProperties();
         this.bindUIElements();
@@ -153,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => preloadAllSongs());
     initializeProperties() {
         this.projectNames = [];
         this.songLoadCounter = 0;
-        this.totalSongs = SONG_IDS.length;
+        this.totalSongs = SONGS.length;
         this.audioBuffers = [];
         this.reversedAudioBuffers = {};
         this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -181,41 +210,62 @@ document.addEventListener('DOMContentLoaded', () => preloadAllSongs());
     showSongTitle(title) {
         this.songTitle.textContent = title;
     }
-
-    async displayArtwork(songIndex) {
-        const artworkUrl = ARTWORK_IDS[songIndex];
-        this.artworkCanvas.innerHTML = ''; // Clear previous artwork
-        if (!artworkUrl) return console.log(`No artwork URL for song index ${songIndex}`);
-
+    async loadSong(url, autoPlay = false) {
+        this.reset();
         try {
-            const res = await fetch(artworkUrl, { method: 'HEAD' });
-            if (!res.ok) throw new Error(`Failed to fetch artwork: ${res.status}`);
-            const contentType = res.headers.get('Content-Type');
-            let mediaElement = this.createMediaElement(contentType, artworkUrl, songIndex);
-            this.artworkCanvas.appendChild(mediaElement);
-        } catch (error) {
-            console.error(`Error displaying artwork for song index ${songIndex}:`, error);
-            this.artworkCanvas.appendChild(this.createErrorElement('Failed to load artwork.'));
+            this.showLoading(true);
+            await this.loadGzipSongFile(url);
+            this.toggleButtons(false);
+            
+            // Get artwork URL for the current song
+            const song = SONGS[currentSongIndex];
+            if (song && song.artworkUrl) {
+                await this.displayArtwork(song.artworkUrl); // Use the correct artwork URL
+            } else {
+                console.warn(`No artwork URL found for song at index ${currentSongIndex}`);
+            }
+
+            if (autoPlay) this.play();
+        } catch (e) {
+            console.error("Error loading file:", e);
+            this.displayError("Failed to load file.");
+        } finally {
+            this.showLoading(false);
         }
     }
 
-    createMediaElement(contentType, url, songIndex) {
-        const elements = {
-            image: () => {
-                const img = Object.assign(document.createElement('img'), {
-                    src: url, alt: `Artwork for song ${songIndex + 1}`,
-                    onload: () => this.fitMediaElement(this.artworkCanvas, img) // Pass the img element directly
-                });
-                return img;
-            },
-            video: () => Object.assign(document.createElement('video'), { src: url, controls: true }),
-            audio: () => Object.assign(document.createElement('audio'), { src: url, controls: true }),
-            html: () => Object.assign(document.createElement('iframe'), { src: url, width: '100%', height: '100%', frameBorder: 0 })
-        };
-
-        const type = contentType.split('/')[0];
-        return elements[type] ? elements[type]() : this.createErrorElement('Unsupported artwork format.');
+async displayArtwork(url) {
+    this.artworkCanvas.innerHTML = ''; // Clear the artwork canvas
+    try {
+        const res = await fetch(url, { method: 'HEAD' });
+        if (!res.ok) throw new Error(`Failed to fetch artwork: ${res.status}`);
+        const contentType = res.headers.get('Content-Type');
+        const mediaElement = this.createMediaElement(contentType, url, currentSongIndex); // Pass the currentSongIndex for alt text
+        this.artworkCanvas.appendChild(mediaElement);
+    } catch (error) {
+        console.error(`Error displaying artwork:`, error);
+        this.artworkCanvas.appendChild(this.createErrorElement('Failed to load artwork.'));
     }
+}
+
+createMediaElement(contentType, url, songIndex) {
+    const elements = {
+        image: () => {
+            const img = Object.assign(document.createElement('img'), {
+                src: url,
+                alt: `Artwork for song ${songIndex + 1}`, // Use the current song index for alt text
+                onload: () => this.fitMediaElement(this.artworkCanvas, img) // Fit the image within the canvas
+            });
+            return img;
+        },
+        video: () => Object.assign(document.createElement('video'), { src: url, controls: true }),
+        audio: () => Object.assign(document.createElement('audio'), { src: url, controls: true }),
+        html: () => Object.assign(document.createElement('iframe'), { src: url, width: '100%', height: '100%', frameBorder: 0 })
+    };
+
+    const type = contentType.split('/')[0]; // Get the type (image, video, audio, etc.)
+    return elements[type] ? elements[type]() : this.createErrorElement('Unsupported artwork format.');
+}
 
     fitMediaElement(container, element) {
         if (!element || !element.naturalWidth || !element.naturalHeight) {
@@ -237,33 +287,20 @@ document.addEventListener('DOMContentLoaded', () => preloadAllSongs());
     }
 
 
-    async loadSong(url, autoPlay = false) {
-        this.reset();
-        try {
-            this.showLoading(true);
-            await this.loadGzipSongFile(url);
-            this.toggleButtons(false);
-            await this.displayArtwork(currentSongIndex);
-            if (autoPlay) this.play();
-        } catch (e) {
-            console.error("Error loading file:", e);
-            this.displayError("Failed to load file.");
-        } finally {
-            this.showLoading(false);
-        }
-    }
-
+   
     toggleButtons(disabled) {
         [this.playButton, this.stopButton, this.skipForwardButton, this.skipBackButton].forEach(btn => btn.disabled = disabled);
     }
 
     async loadButtonHandler() {
-        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]));
+        await this.loadSong(SONGS[currentSongIndex].songUrl);
     }
 
     async skipSong(direction) {
-        currentSongIndex = (direction === 'forward') ? (currentSongIndex + 1) % SONG_IDS.length : (currentSongIndex - 1 + SONG_IDS.length) % SONG_IDS.length;
-        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]), this.isPlaying);
+        currentSongIndex = (direction === 'forward') 
+            ? (currentSongIndex + 1) % SONGS.length 
+            : (currentSongIndex - 1 + SONGS.length) % SONGS.length;
+        await this.loadSong(SONGS[currentSongIndex].songUrl, this.isPlaying);
     }
 
     reset() {
