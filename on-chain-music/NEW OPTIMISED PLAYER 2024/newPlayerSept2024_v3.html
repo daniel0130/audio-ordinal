@@ -108,7 +108,12 @@ const ARTWORK_IDS = [
     "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0", 
     "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
     "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
-    "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0"
+    "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
+    "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
+    "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
+
+
+
 
 
 ];
@@ -124,7 +129,9 @@ const SONG_IDS = [
     "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
     "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",  // I LOVE CHEESE 
     "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // FRESH VIBES
-    "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0"  // ON-CHAIN IN THE MEMBRANE
+    "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",  // ON-CHAIN IN THE MEMBRANE
+    "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0", // Based New
+    "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0", // Freedom Remix
 ];
 
     // Function to dynamically generate full URLs from IDs
@@ -240,64 +247,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     class AudioPlayer {
-    constructor() {
-        this.projectNames = [];
-        this.songLoadCounter = 0;
-        this.totalSongs = SONG_IDS.length;  // The total number of songs to load
+        constructor() {
+            this.initializeProperties();
+            this.bindUIElements();
+            this.initEventListeners();
+        }
 
-        this.audioBuffers = []; // Array of { buffer, gainNode, channel, playbackSpeed }
-        this.reversedAudioBuffers = {}; // { channelName: buffer }
-        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        this.isPlaying = false;
-        this.currentSourceNodes = [];
-        this.processedData = {};
-        this.currentSequence = 0;
-        this.startTime = 0;
-        this.pendingTimeouts = []; // Array to keep track of active timeouts
+        initializeProperties() {
+            this.projectNames = [];
+            this.songLoadCounter = 0;
+            this.totalSongs = SONG_IDS.length;
+            this.audioBuffers = [];
+            this.reversedAudioBuffers = {};
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            this.isPlaying = false;
+            this.currentSourceNodes = [];
+            this.processedData = {};
+            this.currentSequence = 0;
+            this.startTime = 0;
+            this.pendingTimeouts = [];
+        }
 
+        bindUIElements() {
+            ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artworkCanvas'].forEach(id => {
+                this[id] = document.getElementById(id);
+            });
+        }
 
-        // Bind UI elements
-        this.loadButton = document.getElementById('loadButton');
-        this.playButton = document.getElementById('playButton');
-        this.stopButton = document.getElementById('stopButton');
-        this.skipForwardButton = document.getElementById('skipForwardButton');
-        this.skipBackButton = document.getElementById('skipBackButton');
-        this.loadingIndicator = document.getElementById('loadingIndicator');
-        this.errorMessage = document.getElementById('errorMessage');
-        this.songTitle = document.getElementById('songTitle');
-        this.artworkCanvas = document.getElementById('artworkCanvas'); // Initialize artworkCanvas
+        initEventListeners() {
+            this.loadButton.addEventListener('click', () => this.loadButtonHandler());
+            this.playButton.addEventListener('click', () => this.play());
+            this.stopButton.addEventListener('click', () => this.stop());
+            ['skipForwardButton', 'skipBackButton'].forEach(direction => {
+                this[direction].addEventListener('click', () => this.skipSong(direction.includes('Forward') ? 'forward' : 'back'));
+            });
+        }
 
-
-        // Initialize event listeners
-        this.initEventListeners();
-    }
-
-    initEventListeners() {
-        this.loadButton.addEventListener('click', () => this.loadButtonHandler());
-        this.playButton.addEventListener('click', () => this.play());
-        this.stopButton.addEventListener('click', () => this.stop());
-        // Add event listeners for both forward and back buttons
-        this.skipForwardButton.addEventListener('click', () => this.skipSong('forward'));
-        this.skipBackButton.addEventListener('click', () => this.skipSong('back'));
-
-    }
 
     /**
      * Displays the project name (song title) above the artwork canvas.
      * @param {string} title - The project name (song title).
      */
-     showSongTitle(title) {
+    showSongTitle(title) {
         this.songTitle.textContent = title;
     }
-
-
 
     /**
      * Asynchronously loads and displays artwork based on the song index.
      * Handles different media types like images, videos, and interactive content.
      * @param {number} songIndex - The index of the current song.
      */
-     async displayArtwork(songIndex) {
+    async displayArtwork(songIndex) {
         const artworkUrl = ARTWORK_IDS[songIndex];
         this.artworkCanvas.innerHTML = ''; // Clear previous artwork
 
@@ -307,189 +307,162 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(artworkUrl, { method: 'HEAD' }); // Use HEAD to get headers only
-            if (!response.ok) {
-                throw new Error(`Failed to fetch artwork headers: ${response.status} ${response.statusText}`);
-            }
+            const response = await fetch(artworkUrl, { method: 'HEAD' });
+            if (!response.ok) throw new Error(`Failed to fetch artwork headers: ${response.status} ${response.statusText}`);
 
             const contentType = response.headers.get('Content-Type');
             console.log(`Artwork Content-Type for song ${songIndex}: ${contentType}`);
 
             let mediaElement;
 
-            if (contentType.startsWith('image/')) {
-                mediaElement = document.createElement('img');
-                mediaElement.src = artworkUrl;
-                mediaElement.alt = `Artwork for song ${songIndex + 1}`;
-
-                // Ensure the image is resized to fit the canvas
-                mediaElement.onload = () => {
-                    const canvasWidth = this.artworkCanvas.clientWidth;
-                    const canvasHeight = this.artworkCanvas.clientHeight;
-
-                    // Get the natural width and height of the image
-                    const imgWidth = mediaElement.naturalWidth;
-                    const imgHeight = mediaElement.naturalHeight;
-
-                    // Calculate aspect ratio
-                    const imgAspectRatio = imgWidth / imgHeight;
-                    const canvasAspectRatio = canvasWidth / canvasHeight;
-
-                    // Resize the image based on aspect ratio comparison
-                    if (imgAspectRatio > canvasAspectRatio) {
-                        // Image is wider, fit to width
-                        mediaElement.style.width = '100%';
-                        mediaElement.style.height = 'auto';
-                    } else {
-                        // Image is taller, fit to height
-                        mediaElement.style.height = '100%';
-                        mediaElement.style.width = 'auto';
-                    }
-                };
-            } else if (contentType.startsWith('video/')) {
-                mediaElement = document.createElement('video');
-                mediaElement.src = artworkUrl;
-                mediaElement.controls = true;
-                mediaElement.autoplay = false;
-                mediaElement.loop = false;
-            } else if (contentType.startsWith('audio/')) {
-                mediaElement = document.createElement('audio');
-                mediaElement.src = artworkUrl;
-                mediaElement.controls = true;
-                mediaElement.autoplay = false;
-            } else if (contentType.startsWith('text/html')) {
-                // If the artwork URL points to an HTML page, embed it using an iframe
-                mediaElement = document.createElement('iframe');
-                mediaElement.src = artworkUrl;
-                mediaElement.width = '100%';
-                mediaElement.height = '100%';
-                mediaElement.frameBorder = '0';
-            } else if (contentType.startsWith('application/')) {
-                // Handle other application types if necessary
-                mediaElement = document.createElement('div');
-                mediaElement.classList.add('unsupported');
-                mediaElement.textContent = 'Unsupported artwork format.';
-            } else {
-                console.warn(`Unsupported content type: ${contentType}`);
-                mediaElement = document.createElement('div');
-                mediaElement.classList.add('unsupported');
-                mediaElement.textContent = 'Unsupported artwork format.';
+            switch (true) {
+                case contentType.startsWith('image/'):
+                    mediaElement = Object.assign(document.createElement('img'), {
+                        src: artworkUrl,
+                        alt: `Artwork for song ${songIndex + 1}`,
+                        onload: () => {
+                            const { clientWidth: w, clientHeight: h } = this.artworkCanvas;
+                            const imgAspect = mediaElement.naturalWidth / mediaElement.naturalHeight;
+                            const canvasAspect = w / h;
+                            mediaElement.style.width = imgAspect > canvasAspect ? '100%' : 'auto';
+                            mediaElement.style.height = imgAspect > canvasAspect ? 'auto' : '100%';
+                        }
+                    });
+                    break;
+                case contentType.startsWith('video/'):
+                    mediaElement = Object.assign(document.createElement('video'), {
+                        src: artworkUrl,
+                        controls: true,
+                        autoplay: false,
+                        loop: false
+                    });
+                    break;
+                case contentType.startsWith('audio/'):
+                    mediaElement = Object.assign(document.createElement('audio'), {
+                        src: artworkUrl,
+                        controls: true,
+                        autoplay: false
+                    });
+                    break;
+                case contentType.startsWith('text/html'):
+                    mediaElement = Object.assign(document.createElement('iframe'), {
+                        src: artworkUrl,
+                        width: '100%',
+                        height: '100%',
+                        frameBorder: '0'
+                    });
+                    break;
+                case contentType.startsWith('application/'):
+                default:
+                    console.warn(`Unsupported content type: ${contentType}`);
+                    mediaElement = Object.assign(document.createElement('div'), {
+                        className: 'unsupported',
+                        textContent: 'Unsupported artwork format.'
+                    });
             }
 
-            if (mediaElement) {
-                this.artworkCanvas.appendChild(mediaElement);
-                console.log(`Displayed artwork for song index ${songIndex}`);
-            }
+            this.artworkCanvas.appendChild(mediaElement);
+            console.log(`Displayed artwork for song index ${songIndex}`);
         } catch (error) {
             console.error(`Error displaying artwork for song index ${songIndex}:`, error);
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('unsupported');
-            errorDiv.textContent = 'Failed to load artwork.';
+            const errorDiv = Object.assign(document.createElement('div'), {
+                className: 'unsupported',
+                textContent: 'Failed to load artwork.'
+            });
             this.artworkCanvas.appendChild(errorDiv);
         }
     }
 
+    /**
+     * Asynchronously loads a song and its associated artwork.
+     * @param {string} url - The URL of the song to load.
+     * @param {boolean} autoPlay - Whether to automatically play the song after loading.
+     */
+    async loadSong(url, autoPlay = false) {
+        this.reset(); // Reset player state before loading
+        try {
+            this.showLoading(true);
+            await this.loadGzipSongFile(url); // Load the song from the URL
+            this.toggleButtons(false); // Enable relevant buttons
+            
+            // Display the artwork based on the current song index
+            await this.displayArtwork(currentSongIndex);
 
-                /**
-                 * Asynchronously loads a song and its associated artwork.
-                 * @param {string} url - The URL of the song to load.
-                 * @param {boolean} autoPlay - Whether to automatically play the song after loading.
-                 */
-                async loadSong(url, autoPlay = false) {
-                    this.reset();  // Reset player state before loading
-                    try {
-                        this.showLoading(true);
-                        await this.loadGzipSongFile(url);  // Load the song from the URL
-                        this.toggleButtons(false);  // Enable relevant buttons
-                        
-                        // Display the artwork based on the current song index
-                        await this.displayArtwork(currentSongIndex);
+            if (autoPlay) this.play(); // Automatically play the song if required
+            console.log("Song loaded successfully!");
+        } catch (e) {
+            console.error("Error loading file:", e);
+            this.displayError("Failed to load file. Check the console for details.");
+        } finally {
+            this.showLoading(false);
+        }
+    }
 
-                        if (autoPlay) this.play();  // Automatically play the song if required
-                        console.log("Song loaded successfully!");
-                    } catch (e) {
-                        console.error("Error loading file:", e);
-                        this.displayError("Failed to load file. Check the console for details.");
-                    } finally {
-                        this.showLoading(false);
-                    }
-                }
+    /**
+     * Toggles the disabled state of control buttons.
+     * @param {boolean} disabled - Whether to disable the buttons.
+     */
+    toggleButtons(disabled) {
+        const buttons = [this.playButton, this.stopButton, this.skipForwardButton, this.skipBackButton];
+        buttons.forEach(button => button.disabled = disabled);
+    }
 
-                /**
-                 * Toggles the disabled state of control buttons.
-                 * @param {boolean} disabled - Whether to disable the buttons.
-                 */
-                toggleButtons(disabled) {
-                    this.playButton.disabled = this.stopButton.disabled = this.skipForwardButton.disabled = this.skipBackButton.disabled = disabled;
-                }
+    /**
+     * Handler for the Load button. Loads the current song without autoplay.
+     */
+    async loadButtonHandler() {
+        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]));
+    }
 
-                /**
-                 * Handler for the Load button. Loads the current song without autoplay.
-                 */
-                async loadButtonHandler() {
-                    const url = getSongUrl(SONG_IDS[currentSongIndex]);  // Load the current song based on index
-                    await this.loadSong(url);  // No autoplay for the load button
-                    // alert("File loaded successfully!");
-                }
+    /**
+     * Handler for skipping songs forward or backward.
+     * @param {string} direction - 'forward' to skip to the next song, 'back' to skip to the previous song.
+     */
+    async skipSong(direction) {
+        currentSongIndex = (direction === 'forward')
+            ? (currentSongIndex + 1) % SONG_IDS.length
+            : (currentSongIndex - 1 + SONG_IDS.length) % SONG_IDS.length;
 
-                /**
-                 * Handler for skipping songs forward or backward.
-                 * @param {string} direction - 'forward' to skip to the next song, 'back' to skip to the previous song.
-                 */
-                async skipSong(direction) {
-                    if (direction === 'forward') {
-                        currentSongIndex = (currentSongIndex + 1) % SONG_IDS.length;  // Increment song index with wrap-around
-                    } else if (direction === 'back') {
-                        currentSongIndex = (currentSongIndex - 1 + SONG_IDS.length) % SONG_IDS.length;  // Decrement song index with wrap-around
-                    }
-                    
-                    const url = getSongUrl(SONG_IDS[currentSongIndex]);  // Get the song URL based on updated index
-                    await this.loadSong(url, true);  // Auto-play after loading
-                    console.log(`Skipped ${direction} to song index ${currentSongIndex}`);
-                }
+        console.log(`isPlaying: ${this.isPlaying}`);
+        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]), this.isPlaying);
+        console.log(`Skipped ${direction} to song index ${currentSongIndex}`);
+    }
 
-                /**
-                 * Resets the audio player to its initial state.
-                 */
-                reset() {
-                    this.stop();
-                    this.audioBuffers = [];
-                    this.reversedAudioBuffers = {};
-                    this.currentSourceNodes.forEach(s => {
-                        try {
-                            s.stop();
-                        } catch (e) {
-                            console.warn("Error stopping source node:", e);
-                        }
-                    });
-                    this.currentSourceNodes = [];
-                    this.pendingTimeouts.forEach(t => clearTimeout(t));
-                    this.pendingTimeouts = [];
-                    this.processedData = {};
-                    this.currentSequence = this.startTime = 0;
-                    this.toggleButtons(true);  // Disable relevant buttons during reset
-                    console.log('AudioPlayer reset.');
-                    
-                    // Clear artwork as well
-                    this.artworkCanvas.innerHTML = '';
-                }
+    /**
+     * Resets the audio player to its initial state.
+     */
+    reset() {
+        this.stop();
+        this.audioBuffers = [];
+        this.reversedAudioBuffers = {};
+        this.currentSourceNodes.forEach(s => {
+            try { s.stop(); } catch (e) { console.warn("Error stopping source node:", e); }
+        });
+        this.currentSourceNodes = [];
+        this.pendingTimeouts.forEach(clearTimeout);
+        this.pendingTimeouts = [];
+        this.processedData = {};
+        this.currentSequence = this.startTime = 0;
+        this.toggleButtons(true); // Disable relevant buttons during reset
+        this.artworkCanvas.innerHTML = '';
+        console.log('AudioPlayer reset.');
+    }
 
-                /**
-                 * Shows or hides the loading indicator.
-                 * @param {boolean} isLoading - Whether to show the loading indicator.
-                 */
-                showLoading(isLoading) {
-                    this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
-                }
+    /**
+     * Shows or hides the loading indicator.
+     * @param {boolean} isLoading - Whether to show the loading indicator.
+     */
+    showLoading(isLoading) {
+        this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
+    }
 
-                /**
-                 * Displays an error message to the user.
-                 * @param {string} message - The error message to display.
-                 */
-                displayError(message) {
-                    this.errorMessage.textContent = message;
-                }
-
+    /**
+     * Displays an error message to the user.
+     * @param {string} message - The error message to display.
+     */
+    displayError(message) {
+        this.errorMessage.textContent = message;
+    }
 
 
                 async loadGzipSongFile(url) {
@@ -811,6 +784,8 @@ async handleAudioDataFromResponse(response, channelName, type) {
         this.isPlaying = true;
         this.startTime = this.audioCtx.currentTime;
         console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`);
+        console.log("Playing song...");
+        console.log(`isPlaying: ${this.isPlaying}`);  // Log the current state of isPlaying
         this.scheduleSequences();
     }
 
@@ -884,8 +859,9 @@ async handleAudioDataFromResponse(response, channelName, type) {
         this.currentSourceNodes.forEach(s => s.stop());
         this.currentSourceNodes = [];
         this.isPlaying = false;
-        console.log('Playback stopped.');
-        this.pendingTimeouts.forEach(clearTimeout);
+        console.log("Stopped song.");
+        console.log(`isPlaying: ${this.isPlaying}`);  // Log the current state of isPlaying
+          this.pendingTimeouts.forEach(clearTimeout);
         this.pendingTimeouts = [];
     }
 
