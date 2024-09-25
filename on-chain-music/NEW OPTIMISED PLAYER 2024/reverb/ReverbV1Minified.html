@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audionals AL-Verb V1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            flex: 1;
+            font-weight: bold;
+        }
+        .control-group input[type="range"] {
+            flex: 3;
+            margin: 0 10px;
+        }
+        .control-value {
+            width: 50px;
+            text-align: right;
+            font-family: monospace;
+        }
+        #play-button, #loop-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px auto;
+            display: block;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #play-button:hover, #loop-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audionals Basic AL-Verb V1</h1>
+    <button id="play-button">Play Test Sound with Reverb</button>
+    <button id="loop-button">Enable Loop</button>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="dryWet">Dry/Wet Mix:</label>
+            <input type="range" id="dryWet" min="0" max="1" step="0.01" value="0.5">
+            <span class="control-value" id="dryWetValue">0.50</span>
+        </div>
+        <div class="control-group">
+            <label for="decay">Reverb Decay (s):</label>
+            <input type="range" id="decay" min="0.1" max="10" step="0.1" value="5">
+            <span class="control-value" id="decayValue">5.0</span>
+        </div>
+        <div class="control-group">
+            <label for="preDelay">Pre-Delay (s):</label>
+            <input type="range" id="preDelay" min="0" max="1" step="0.01" value="0.01">
+            <span class="control-value" id="preDelayValue">0.01</span>
+        </div>
+    </div>
+
+    <!-- Include Tone.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.3/Tone.min.js"></script>
+
+    <script>
+        // Create a player to load the audio file
+        const player = new Tone.Player({
+            url: "https://ordinals.com/content/418db69313f79c9161ca455961361bdf4c6f05a44862b7d99eac9e0efc9093a0i0",  // Updated URL
+            autostart: false,
+            loop: false,  // Initial loop state set to false
+            onload: () => {
+                console.log("Audio file successfully loaded!");
+            },
+            onerror: (error) => {
+                console.error("Error loading audio file:", error);
+            }
+        });
+
+        // Create a gain node for the dry signal
+        const dryGain = new Tone.Gain(1).toDestination(); // Full dry signal initially
+        // Create a reverb effect
+        const reverb = new Tone.Reverb({
+            decay: 5,        // Reverb decay time in seconds
+            preDelay: 0.01,  // Pre-delay time in seconds
+            wet: 0.5         // Wet mix
+        }).toDestination();
+
+        // Split the player's output to both dry and wet paths
+        player.connect(dryGain);  // Dry signal path
+        player.connect(reverb);   // Wet signal path
+
+        // Generate the reverb's impulse response
+        reverb.generate();
+
+        // Get references to controls
+        const dryWetSlider = document.getElementById('dryWet');
+        const dryWetValue = document.getElementById('dryWetValue');
+        const decaySlider = document.getElementById('decay');
+        const decayValue = document.getElementById('decayValue');
+        const preDelaySlider = document.getElementById('preDelay');
+        const preDelayValue = document.getElementById('preDelayValue');
+        const playButton = document.getElementById('play-button');
+        const loopButton = document.getElementById('loop-button');
+
+        // Update Dry/Wet Mix
+        dryWetSlider.addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+            dryGain.gain.value = 1 - value;  // Dry signal fades out as wet increases
+            reverb.wet.value = value;        // Wet signal increases as dry fades out
+            dryWetValue.textContent = value.toFixed(2);
+        });
+
+        // Update Reverb Decay
+        decaySlider.addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+            reverb.decay = value;
+            reverb.generate(); // Regenerate impulse response with new decay
+            decayValue.textContent = value.toFixed(1);
+        });
+
+        // Update Pre-Delay
+        preDelaySlider.addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+            reverb.preDelay = value;
+            preDelayValue.textContent = value.toFixed(2);
+        });
+
+        // Play the audio when the play button is clicked
+        playButton.addEventListener('click', async () => {
+            await Tone.start(); // Ensure the AudioContext is started
+            if (player.loaded) {  // Check if the player has finished loading
+                player.start();
+            } else {
+                console.error("Audio file is not loaded yet!");
+            }
+        });
+
+        // Toggle loop when the loop button is clicked
+        loopButton.addEventListener('click', () => {
+            player.loop = !player.loop;  // Toggle the loop property
+            loopButton.textContent = player.loop ? "Disable Loop" : "Enable Loop";  // Update button text
+            console.log("Looping is now", player.loop ? "enabled" : "disabled");
+        });
+    </script>
+</body>
+</html>

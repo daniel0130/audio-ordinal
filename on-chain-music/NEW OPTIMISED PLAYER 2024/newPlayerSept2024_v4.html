@@ -87,6 +87,14 @@
     projectName: "Choppin' It Up",
     artistName: "melophonic",
   },
+  {
+    songUrl: "https://ordinals.com/content/b571342108ad1fc191146a8a8985f999a793cadbfc412bfa36e24d3e229f4037i0",
+    artworkUrl: "https://ordinals.com/content/9677ac2fc3c3598b775112698019ccffcab512d7d3450eefd33b37979ca97716i0",
+    projectName: "Some Song",
+    artistName: "Solemn",
+
+
+  }
 
 
 
@@ -229,18 +237,15 @@ function initializeApp() {
         // loadSong(currentSongIndex); 
         preloadAllSongs(); // Preload all songs without loading any song initially
     } catch (error) {
-        // Error handling
+        // Delay the error logging by 1 second
+        setTimeout(() => {
+            // Check again before logging the error, if Pako was loaded
+            if (!window.isPakoLoaded()) {
+                console.error("Initialization failed:", error);
+                displayError("Initialization failed. Please try again later.");
+            }
+        }, 1000);
     }
-}
-
-
-function loadButtonHandler() {
-    const currentSongUrl = SONGS[currentSongIndex].songUrl;
-    loadSong(currentSongIndex); // Load the song
-
-    // Update the artwork using ArtworkManager
-    const currentArtworkUrl = SONGS[currentSongIndex].artworkUrl;
-    artworkManager.displayArtwork(currentArtworkUrl, currentSongIndex);
 }
 
 
@@ -269,53 +274,63 @@ function loadButtonHandler() {
 <initialiseApp>
     <script>
       // Initialization Script
+      initialClick = false;
   
       /**
        * Function to initialize the application after Pako is loaded
        */
-      function initializeApp() {
-        try {
-          // Ensure Pako is loaded before initializing
-          if (!window.isPakoLoaded()) {
+      // Initialization Script
+    let initialLoadButtonClick = false;
+
+/**
+ * Function to initialize the application after Pako is loaded
+ */
+function initializeApp() {
+    try {
+        // Ensure Pako is loaded before initializing
+        if (!window.isPakoLoaded()) {
             throw new Error("Pako library not loaded.");
-          }
-  
-          // Initialize your application here
-          setupEventListeners();
-          console.log("Application initialized successfully.");
-          loadSong(currentSongIndex); // Load the initial song
-          preloadAllSongs(); // Preload all songs
-        } catch (error) {
-          // Delay the error logging by 1 second
-          setTimeout(() => {
+        }
+
+        // Initialize your application here
+        setupEventListeners();
+        console.log("Application initialized successfully.");
+        loadSong(currentSongIndex); // Load the initial song
+        preloadAllSongs(); // Preload all songs
+    } catch (error) {
+        // Delay the error logging by 1 second
+        setTimeout(() => {
             // Check again before logging the error, if Pako was loaded
             if (!window.isPakoLoaded()) {
-              console.error("Initialization failed:", error);
-              displayError("Initialization failed. Please try again later.");
+                console.error("Initialization failed:", error);
+                displayError("Initialization failed. Please try again later.");
             }
-          }, 1000);
-        }
-      }
-  
-      // Function to set up event listeners and other initialization tasks
-      function setupEventListeners() {
-        const loadButton = document.getElementById("loadButton");
-        const playButton = document.getElementById("playButton");
-        const stopButton = document.getElementById("stopButton");
-        const skipBackButton = document.getElementById("skipBackButton");
-        const skipForwardButton = document.getElementById("skipForwardButton");
-  
-        loadButton.addEventListener("click", handleLoad);
-        playButton.addEventListener("click", handlePlay);
-        stopButton.addEventListener("click", handleStop);
-        skipBackButton.addEventListener("click", () => handleSkip(-10)); // Example: Skip back 10 seconds
-        skipForwardButton.addEventListener("click", () => handleSkip(10)); // Example: Skip forward 10 seconds
-  
-        // Additional setup as needed
-      }
-  
-      // Placeholder functions for button handlers
+        }, 1000);
+    }
+}
+
+// Function to set up event listeners and other initialization tasks
+function setupEventListeners() {
+    const loadButton = document.getElementById("loadButton");
+    const playButton = document.getElementById("playButton");
+    const stopButton = document.getElementById("stopButton");
+    const skipBackButton = document.getElementById("skipBackButton");
+    const skipForwardButton = document.getElementById("skipForwardButton");
+
+    loadButton.addEventListener("click", handleLoad);
+    playButton.addEventListener("click", handlePlay);
+    stopButton.addEventListener("click", handleStop);
+    skipBackButton.addEventListener("click", () => handleSkip(-10)); // Example: Skip back 10 seconds
+    skipForwardButton.addEventListener("click", () => handleSkip(10)); // Example: Skip forward 10 seconds
+
+    // Additional setup as needed
+}
+
+// Placeholder functions for button handlers
 function handleLoad() {
+    // Set the flag to true when load button is clicked
+    initialLoadButtonClick = true;
+
     // Load the current song
     loadSong(currentSongIndex);
     console.log(`Load button clicked. Loaded song index: ${currentSongIndex}`);
@@ -397,31 +412,41 @@ function handleSkip(skipTime) {
       }
   
       /**
-       * Function to load a song based on the currentSongIndex
-       * Updates the song title, artist name, and artwork in the UI
-       */
-       function loadSong(index) {
-            const song = SONGS[index];
-            if (!song) {
-                console.error(`Song at index ${index} does not exist.`);
-                displayError("Requested song does not exist.");
-                return;
+     * Function to load a song based on the index
+     * @param {number} songIndex - The index of the song to be loaded
+     */
+    function loadSong(songIndex) {
+        const songData = getSongData(songIndex); // Assuming this function gets song data by index
+
+        const audio = getAudioElement();
+        if (audio) {
+            audio.src = songData.audioUrl;
+            audio.load(); // Load the new audio source
+
+            // Only update the title and artist if the load button has been clicked
+            if (initialLoadButtonClick) {
+                updateSongTitleAndArtist(songData.title, songData.artist);
             }
 
-            const audio = getAudioElement();
-            audio.src = song.songUrl;
-            audio.load();
+            console.log(`Song loaded: ${songData.title} by ${songData.artist}`);
+        } else {
+            console.error("Audio element not found.");
+        }
+    }
 
-            // Update song title and artist name
-            document.getElementById("songTitle").textContent = song.projectName;
-            document.getElementById("artistName").textContent = song.artistName;
+    // Function to update the song title and artist
+    function updateSongTitleAndArtist(title, artist) {
+        const titleElement = document.getElementById("songTitle");
+        const artistElement = document.getElementById("artistName");
 
-            // Note: Do not update artwork here
-            // Artwork will be updated separately via ArtworkManager
-
-            console.log(`Loaded song: ${song.projectName} by ${song.artistName}`);
+        if (titleElement) {
+            titleElement.textContent = title;
         }
 
+        if (artistElement) {
+            artistElement.textContent = artist;
+        }
+    }
 
  /**
  * Function to preload all songs (ensure this runs after Pako is loaded)
@@ -557,7 +582,7 @@ async function preloadAllSongs() {
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background-color: #000000;
+        background-color: #000000; /* Keep the background black */
         justify-content: flex-start;
         align-items: center;
     }
@@ -595,6 +620,7 @@ async function preloadAllSongs() {
         display: none; /* Hidden by default */
         color: red;
     }
+
     .close-btn {
         position: absolute;
         top: 20px;
@@ -609,17 +635,16 @@ async function preloadAllSongs() {
         border-radius: 50%;
     }
 
-        /* Fade-out effect for the close button */
-        .fade-out {
-            animation: fadeOut 2s forwards;
-        }
+    /* Fade-out effect for the close button */
+    .fade-out {
+        animation: fadeOut 2s forwards;
+    }
 
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-            }
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
         }
-
+    }
 
     #artworkCanvas {
         width: 66vh; /* Set the width to be the same as 66% of the viewport height */
@@ -629,10 +654,19 @@ async function preloadAllSongs() {
         align-items: center;
         border: 2px solid #333;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        background-color: #f9f9f9;
+        background-color: #000000; /* Ensure the canvas background is black */
         margin-top: auto;
         margin-bottom: auto;
         aspect-ratio: 1 / 1; /* Ensure the canvas is always square */
+    }
+
+    /* Fullscreen specific styles */
+    :fullscreen body {
+        background-color: #000000 !important; /* Override background color in fullscreen mode */
+    }
+
+    :fullscreen #artworkCanvas {
+        background-color: #000000 !important; /* Keep the canvas background black in fullscreen */
     }
 
     img, video, iframe {
@@ -647,11 +681,12 @@ async function preloadAllSongs() {
     }
 </style>
 
+
 </head>
 <body>
 <h1>Audional Player</h1>
 <div id="buttonContainer">
-    <button id="loadButton">Load</button>
+    <button id="loadButton">Load It Up</button>
     <button id="playButton" disabled>Play</button>
     <button id="stopButton" disabled>Stop</button>
     <button id="skipBackButton" disabled>Skip &lt;</button>
@@ -660,13 +695,15 @@ async function preloadAllSongs() {
 </div>
 <div id="closeButton" class="close-btn">X</div> <!-- Close button -->
 
-<div id="loadingIndicator">Loading...</div>
+<div id="loadingIndicator">...</div>
 <div id="errorMessage"></div>
-<div id="songTitle"></div>
-<div id="artistName"></div>
+<h2 id="songTitle">Audionals Compilation Album #0.1</h2>
+<p id="artistName">Listen to some of the first musical artists ever to take up residence in the on-chain</p>
 <div id="artworkCanvas">
     <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
 </div>
+<!-- Slider to seek through the song -->
+<input type="range" id="seekSlider" min="0" max="100" value="0" step="1" disabled>
 
 <artworkCanvasSettings>
 <script>
@@ -790,13 +827,16 @@ class AudioPlayer {
     constructor() {
         this.initializeProperties();
         this.uiHandler = new UIHandler(this);
-        this.artworkManager = new ArtworkManager(this.uiHandler); // Pass UIHandler instance
+        this.artworkManager = new ArtworkManager(this.uiHandler); // Pass the entire UIHandler instance
         this.uiHandler.setArtworkManager(this.artworkManager);
         this.audioLoader = new AudioLoader(this);
 
         this.audioProcessor = new AudioProcessor(this.audioCtx);
         this.playbackScheduler = new PlaybackScheduler(this.audioCtx, this.audioProcessor);
         this.uiHandler.initEventListeners();
+
+        // Add interval tracking for the skip buttons
+        this.skipInterval = null;
     }
 
     initializeProperties() {
@@ -809,6 +849,7 @@ class AudioPlayer {
         this.startTime = 0;
         this.pendingTimeouts = [];
         this.currentSongIndex = 0;
+        this.skipSpeed = 10; // Define 10x skip speed
     }
 
     reset() {
@@ -847,6 +888,21 @@ class AudioPlayer {
         this.audioLoader.loadSong(SONGS[this.currentSongIndex].songUrl, this.isPlaying);
     }
 
+    // Method to fast-skip through the song while holding the button
+    fastSkip(direction) {
+        const audio = document.getElementById('audioPlayer');
+        if (audio) {
+            const skipTime = direction === 'forward' ? this.skipSpeed : -this.skipSpeed;
+            const newTime = audio.currentTime + skipTime;
+            // Ensure the new time is within the audio duration bounds
+            audio.currentTime = Math.min(Math.max(newTime, 0), audio.duration);
+            console.log(`Fast skipped ${direction} by ${this.skipSpeed} seconds. Current time: ${audio.currentTime}`);
+        } else {
+            console.error('Audio element not found for fast skipping.');
+        }
+    }
+
+
     toggleButtons(disabled) {
         this.uiHandler.toggleButtons(disabled);
     }
@@ -856,12 +912,15 @@ class AudioPlayer {
 
 <uiHandlerClass>
 <script>
-// UIHandler class
 class UIHandler {
     constructor(audioPlayer) {
         this.audioPlayer = audioPlayer;
         this.bindUIElements();
         this.artworkManager = null; // Initialize ArtworkManager reference
+        this.isFastSkipping = false; // Flag to track fast skipping
+        this.seekSliderMaxValue = 100; // Maximum value for the seek slider
+
+
     }
 
     // Setter method to link ArtworkManager
@@ -870,7 +929,7 @@ class UIHandler {
     }
 
     bindUIElements() {
-        ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artistName', 'artworkCanvas']
+        ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artistName', 'artworkCanvas', 'seekSlider']
             .forEach(id => this[id] = document.getElementById(id));
     }
 
@@ -878,8 +937,82 @@ class UIHandler {
         this.loadButton.addEventListener('click', () => this.loadButtonHandler());
         this.playButton.addEventListener('click', () => this.audioPlayer.play());
         this.stopButton.addEventListener('click', () => this.audioPlayer.stop());
-        this.skipForwardButton.addEventListener('click', () => this.audioPlayer.skipSong('forward'));
-        this.skipBackButton.addEventListener('click', () => this.audioPlayer.skipSong('back'));
+
+        // Add event listener for the seek slider
+        this.seekSlider.addEventListener('input', () => {
+            const audio = document.getElementById('audioPlayer');
+            if (audio && !audio.seeking) {
+                const seekTime = (this.seekSlider.value / this.seekSliderMaxValue) * audio.duration;
+                audio.currentTime = seekTime;
+                console.log(`Seeked to ${seekTime} seconds`);
+            }
+        });
+
+        // Skip Forward Button
+        this.skipForwardButton.addEventListener('click', (e) => {
+            if (!this.isFastSkipping) {
+                this.audioPlayer.skipSong('forward');
+            }
+        });
+        this.skipForwardButton.addEventListener('mousedown', () => {
+            this.isFastSkipping = true;
+            this.startFastSkip('forward');
+        });
+        this.skipForwardButton.addEventListener('mouseup', () => {
+            this.stopFastSkip();
+            this.isFastSkipping = false;
+        });
+        this.skipForwardButton.addEventListener('mouseleave', () => {
+            this.stopFastSkip();
+            this.isFastSkipping = false;
+        });
+
+        // Skip Back Button
+        this.skipBackButton.addEventListener('click', (e) => {
+            if (!this.isFastSkipping) {
+                this.audioPlayer.skipSong('back');
+            }
+        });
+        this.skipBackButton.addEventListener('mousedown', () => {
+            this.isFastSkipping = true;
+            this.startFastSkip('back');
+        });
+        this.skipBackButton.addEventListener('mouseup', () => {
+            this.stopFastSkip();
+            this.isFastSkipping = false;
+        });
+        this.skipBackButton.addEventListener('mouseleave', () => {
+            this.stopFastSkip();
+            this.isFastSkipping = false;
+        });
+    }
+    
+    updateSeekSlider(currentTime, duration) {
+        const progress = (currentTime / duration) * this.seekSliderMaxValue;
+        this.seekSlider.value = progress;
+    }
+
+    enableSeekSlider() {
+        this.seekSlider.disabled = false;
+    }
+
+    disableSeekSlider() {
+        this.seekSlider.disabled = true;
+    }
+
+
+
+    startFastSkip(direction) {
+        // Start fast skip with an interval
+        this.audioPlayer.skipInterval = setInterval(() => {
+            this.audioPlayer.fastSkip(direction);
+        }, 100); // Fast skip interval (100 ms for 10x speed)
+    }
+
+    stopFastSkip() {
+        // Clear the fast skip interval
+        clearInterval(this.audioPlayer.skipInterval);
+        this.audioPlayer.skipInterval = null;
     }
 
     loadButtonHandler() {

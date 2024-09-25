@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audional EF X V1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .primary-effects {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto 20px auto;
+        }
+        .controls {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .control-group label {
+            flex: 1;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .control-group input[type="range"], .control-group select {
+            flex: 2;
+            margin: 0 10px;
+        }
+        .control-value {
+            width: 50px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .master-bpm {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .master-bpm .control-group {
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 5px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .secondary-effects {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .secondary-effect {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .secondary-effect label {
+            flex: 1;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .secondary-effect button, .secondary-effect select {
+            flex: 1;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audionals - RevEarth V1</h1>
+    
+    <div class="master-bpm">
+        <h2>Master BPM</h2>
+        <div class="control-group">
+            <label for="bpm">BPM:</label>
+            <input type="range" id="bpm" min="60" max="200" step="1" value="120">
+            <span class="control-value" id="bpmValue">120</span>
+        </div>
+        <button id="playButton">Play Loop</button>
+    </div>
+
+    <!-- Primary Effects Grid (2x2) -->
+    <div class="primary-effects">
+        <!-- Reverb Controls -->
+        <div class="controls">
+            <h2>Reverb</h2>
+            <div class="control-group">
+                <label for="revDryWet">Dry/Wet Mix:</label>
+                <input type="range" id="revDryWet" min="0" max="1" step="0.01" value="0">
+                <span class="control-value" id="revDryWetValue">0</span>
+            </div>
+            <div class="control-group">
+                <label for="decay">Reverb Decay (s):</label>
+                <input type="range" id="decay" min="0.1" max="10" step="0.1" value="5">
+                <span class="control-value" id="decayValue">5.0</span>
+            </div>
+            <div class="control-group">
+                <label for="preDelay">Pre-Delay (s):</label>
+                <input type="range" id="preDelay" min="0" max="1" step="0.01" value="0.01">
+                <span class="control-value" id="preDelayValue">0.01</span>
+            </div>
+        </div>
+
+        <!-- Delay Controls -->
+        <div class="controls">
+            <h2>Delay</h2>
+            <div class="control-group">
+                <label for="delayDryWet">Dry/Wet Mix:</label>
+                <input type="range" id="delayDryWet" min="0" max="1" step="0.01" value="0">
+                <span class="control-value" id="delayDryWetValue">0</span>
+            </div>
+            <div class="control-group">
+                <label for="delaySubdivision">Delay Subdivision:</label>
+                <select id="delaySubdivision">
+                    <option value="0.0625">1/64 Note</option>
+                    <option value="0.125">1/32 Note</option>
+                    <option value="0.25">1/16 Note</option>
+                    <option value="0.5" selected>1/8 Note</option>
+                    <option value="1">1/4 Note</option>
+                    <option value="2">1/2 Note</option>
+                    <option value="4">Whole Note</option>
+                </select>
+                <span class="control-value" id="delaySubdivisionValue">1/8 Note</span>
+            </div>
+            <div class="control-group">
+                <label for="delayFineTune">Fine-Tune Delay (s):</label>
+                <input type="range" id="delayFineTune" min="0" max="1" step="0.01" value="0">
+                <span class="control-value" id="delayFineTuneValue">0</span>
+            </div>
+            <div class="control-group">
+                <label for="calculatedDelay">Delay Time:</label>
+                <span class="control-value" id="calculatedDelay">0.25 s</span>
+            </div>
+            <div class="control-group">
+                <label for="delayFeedback">Feedback:</label>
+                <input type="range" id="delayFeedback" min="0" max="0.95" step="0.01" value="0.5">
+                <span class="control-value" id="delayFeedbackValue">0.50</span>
+            </div>
+        </div>
+
+        <!-- Chorus Controls -->
+        <div class="controls">
+            <h2>Chorus</h2>
+            <div class="control-group">
+                <label for="chorusWet">Wet Mix:</label>
+                <input type="range" id="chorusWet" min="0" max="1" step="0.01" value="0">
+                <span class="control-value" id="chorusWetValue">0</span>
+            </div>
+            <div class="control-group">
+                <label for="chorusFrequency">Frequency (Hz):</label>
+                <input type="range" id="chorusFrequency" min="0.1" max="10" step="0.1" value="1.5">
+                <span class="control-value" id="chorusFrequencyValue">1.5</span>
+            </div>
+            <div class="control-group">
+                <label for="chorusDelay">Delay Time (s):</label>
+                <input type="range" id="chorusDelay" min="0.1" max="10" step="0.1" value="3.5">
+                <span class="control-value" id="chorusDelayValue">3.5</span>
+            </div>
+        </div>
+
+        <!-- Distortion Controls -->
+        <div class="controls">
+            <h2>Distortion</h2>
+            <div class="control-group">
+                <label for="distortionWet">Wet Mix:</label>
+                <input type="range" id="distortionWet" min="0" max="1" step="0.01" value="0">
+                <span class="control-value" id="distortionWetValue">0</span>
+            </div>
+            <div class="control-group">
+                <label for="distortionAmount">Amount:</label>
+                <input type="range" id="distortionAmount" min="0" max="1" step="0.01" value="0.5">
+                <span class="control-value" id="distortionAmountValue">0.50</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Effects -->
+    <div class="secondary-effects">
+        <h2>Secondary Effects</h2>
+        <!-- Tremolo Control -->
+        <div class="secondary-effect">
+            <label for="tremoloToggle">Tremolo:</label>
+            <button id="tremoloToggle">Off</button>
+            <select id="tremoloSettings" disabled>
+                <option value="0.5">0.5 Hz</option>
+                <option value="1">1 Hz</option>
+                <option value="2">2 Hz</option>
+            </select>
+        </div>
+        <!-- Bitcrusher Control -->
+        <div class="secondary-effect">
+            <label for="bitcrusherToggle">Bitcrusher:</label>
+            <button id="bitcrusherToggle">Off</button>
+            <select id="bitcrusherSettings" disabled>
+                <option value="8">8 bits</option>
+                <option value="4">4 bits</option>
+                <option value="2">2 bits</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Include Tone.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.3/Tone.min.js"></script>
+
+    <script>
+
+        // Track whether the player is playing
+        let isPlaying = false;
+
+        // Consolidate DOM elements
+        const elements = {
+            // BPM
+            bpm: document.getElementById('bpm'),
+            bpmValue: document.getElementById('bpmValue'),
+
+            // Reverb
+            revDryWet: document.getElementById('revDryWet'),
+            revDryWetValue: document.getElementById('revDryWetValue'),
+            decay: document.getElementById('decay'),
+            decayValue: document.getElementById('decayValue'),
+            preDelay: document.getElementById('preDelay'),
+            preDelayValue: document.getElementById('preDelayValue'),
+
+            // Delay
+            delayDryWet: document.getElementById('delayDryWet'),
+            delayDryWetValue: document.getElementById('delayDryWetValue'),
+            delaySubdivision: document.getElementById('delaySubdivision'),
+            delaySubdivisionValue: document.getElementById('delaySubdivisionValue'),
+            delayFineTune: document.getElementById('delayFineTune'),
+            delayFineTuneValue: document.getElementById('delayFineTuneValue'),
+            calculatedDelay: document.getElementById('calculatedDelay'),
+            delayFeedback: document.getElementById('delayFeedback'),
+            delayFeedbackValue: document.getElementById('delayFeedbackValue'),
+
+            // Chorus
+            chorusWet: document.getElementById('chorusWet'),
+            chorusWetValue: document.getElementById('chorusWetValue'),
+            chorusFrequency: document.getElementById('chorusFrequency'),
+            chorusFrequencyValue: document.getElementById('chorusFrequencyValue'),
+            chorusDelay: document.getElementById('chorusDelay'),
+            chorusDelayValue: document.getElementById('chorusDelayValue'),
+
+            // Distortion
+            distortionWet: document.getElementById('distortionWet'),
+            distortionWetValue: document.getElementById('distortionWetValue'),
+            distortionAmount: document.getElementById('distortionAmount'),
+            distortionAmountValue: document.getElementById('distortionAmountValue'),
+
+            // Secondary Effects
+            tremoloToggle: document.getElementById('tremoloToggle'),
+            tremoloSettings: document.getElementById('tremoloSettings'),
+            bitcrusherToggle: document.getElementById('bitcrusherToggle'),
+            bitcrusherSettings: document.getElementById('bitcrusherSettings'),
+
+            // Buttons
+            playButton: document.getElementById('play-button'),
+        };
+
+        let bpm = +elements.bpm.value, secondsPerBeat = 60 / bpm, isFineTuned = false;
+
+        // Initialize Tone.js Player
+        const player = new Tone.Player({
+            url: "https://ordinals.com/content/418db69313f79c9161ca455961361bdf4c6f05a44862b7d99eac9e0efc9093a0i0",
+            autostart: false,
+            loop: true,
+            onload: () => console.log("Audio loaded!"),
+            onerror: e => console.error("Load error:", e)
+        });
+
+        // Master node
+        const master = new Tone.Gain(1);
+
+        // Connect master to destination
+        master.toDestination();
+
+        // Primary Effects
+        const dryGain = new Tone.Gain(1).connect(master);
+        const reverb = new Tone.Reverb({ decay: 5, preDelay: 0.01, wet: 0 }).connect(master);
+        const delay = new Tone.FeedbackDelay({ delayTime: 0.5, feedback: 0.5, wet: 0 }).connect(master);
+        const chorus = new Tone.Chorus(1.5, 2.5, 0).connect(master);
+        const distortion = new Tone.Distortion(0).connect(master);
+
+        // Connect player to primary effects
+        player.connect(dryGain);
+        player.connect(reverb);
+        player.connect(delay);
+        player.connect(chorus);
+        player.connect(distortion);
+
+        // Secondary Effects
+        const tremolo = new Tone.Tremolo(0.5, 0.8).start();
+        const bitcrusher = new Tone.BitCrusher(4);
+
+        let tremoloEnabled = false;
+        let bitcrusherEnabled = false;
+
+        // Function to update seconds per beat based on BPM
+        const updateSecondsPerBeat = newBPM => {
+            bpm = newBPM;
+            secondsPerBeat = 60 / bpm;
+            if (!isFineTuned) updateDelayTime();
+        };
+
+        // Function to update delay time in seconds based on subdivision
+        const updateDelayTime = () => {
+            const sub = parseFloat(elements.delaySubdivision.value);
+            const dt = sub * secondsPerBeat;
+            delay.delayTime.value = dt;
+            elements.calculatedDelay.textContent = `${dt.toFixed(2)} s`;
+        };
+
+        // Function to update secondary effects connections
+        const updateSecondaryEffects = () => {
+            // Disconnect master from destination
+            master.disconnect(Tone.Destination);
+            // Disconnect effects from each other to prevent multiple connections
+            tremolo.disconnect();
+            bitcrusher.disconnect();
+
+            let current = master;
+
+            if (tremoloEnabled) {
+                current.connect(tremolo);
+                current = tremolo;
+            }
+
+            if (bitcrusherEnabled) {
+                current.connect(bitcrusher);
+                current = bitcrusher;
+            }
+
+            current.connect(Tone.Destination);
+        };
+
+        // BPM Control
+        elements.bpm.addEventListener('input', e => {
+            const newBPM = +e.target.value;
+            elements.bpmValue.textContent = newBPM;
+            updateSecondsPerBeat(newBPM);
+        });
+
+        // Initialize delay time display
+        updateDelayTime();
+
+        // Reverb Controls
+        elements.revDryWet.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            reverb.wet.value = v;
+            dryGain.gain.value = 1 - v;
+            elements.revDryWetValue.textContent = v.toFixed(2);
+        });
+
+        elements.decay.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            reverb.decay = v;
+            reverb.generate();
+            elements.decayValue.textContent = v.toFixed(1);
+        });
+
+        elements.preDelay.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            reverb.preDelay = v;
+            elements.preDelayValue.textContent = v.toFixed(2);
+        });
+
+        // Delay Controls
+        elements.delayDryWet.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            delay.wet.value = v;
+            elements.delayDryWetValue.textContent = v.toFixed(2);
+        });
+
+        elements.delaySubdivision.addEventListener('change', e => {
+            const selected = e.target.options[e.target.selectedIndex].text;
+            elements.delaySubdivisionValue.textContent = selected;
+            isFineTuned = false;
+            elements.delayFineTune.value = 0.5;
+            updateDelayTime();
+        });
+
+        elements.delayFeedback.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            delay.feedback.value = v;
+            elements.delayFeedbackValue.textContent = v.toFixed(2);
+        });
+
+        elements.delayFineTune.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            isFineTuned = true;
+            delay.delayTime.value = v;
+            elements.delayFineTuneValue.textContent = v.toFixed(2);
+            elements.calculatedDelay.textContent = `${v.toFixed(2)} s`;
+        });
+
+        // Chorus Controls
+        elements.chorusWet.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            chorus.wet.value = v;
+            elements.chorusWetValue.textContent = v.toFixed(2);
+        });
+
+        elements.chorusFrequency.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            chorus.frequency.value = v;
+            elements.chorusFrequencyValue.textContent = v.toFixed(1);
+        });
+
+        elements.chorusDelay.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            chorus.delayTime = v;
+            elements.chorusDelayValue.textContent = v.toFixed(1);
+        });
+
+        // Distortion Controls
+        elements.distortionWet.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            distortion.wet.value = v;
+            elements.distortionWetValue.textContent = v.toFixed(2);
+        });
+
+        elements.distortionAmount.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            distortion.distortion = v;
+            elements.distortionAmountValue.textContent = v.toFixed(2);
+        });
+
+        // Secondary Effects Controls
+
+        // Tremolo Toggle
+        elements.tremoloToggle.addEventListener('click', () => {
+            tremoloEnabled = !tremoloEnabled;
+            elements.tremoloToggle.textContent = tremoloEnabled ? "On" : "Off";
+            elements.tremoloSettings.disabled = !tremoloEnabled;
+            updateSecondaryEffects();
+        });
+
+        // Tremolo Settings
+        elements.tremoloSettings.addEventListener('change', e => {
+            const rate = parseFloat(e.target.value);
+            tremolo.frequency.value = rate;
+        });
+
+        // Bitcrusher Toggle
+        elements.bitcrusherToggle.addEventListener('click', () => {
+            bitcrusherEnabled = !bitcrusherEnabled;
+            elements.bitcrusherToggle.textContent = bitcrusherEnabled ? "On" : "Off";
+            elements.bitcrusherSettings.disabled = !bitcrusherEnabled;
+            updateSecondaryEffects();
+        });
+
+        // Bitcrusher Settings
+        elements.bitcrusherSettings.addEventListener('change', e => {
+            const bits = parseInt(e.target.value);
+            bitcrusher.bits = bits;
+        });
+
+        // Play Button
+        playButton.addEventListener('click', async () => {
+                await Tone.start(); // Ensure Tone.js context is started
+
+                if (player.loaded) {
+                    if (isPlaying) {
+                        player.stop(); // Stop playback
+                        playButton.textContent = "Play Loop"; // Update button text
+                    } else {
+                        player.start(); // Start playback
+                        playButton.textContent = "Stop Loop"; // Update button text
+                    }
+                    isPlaying = !isPlaying; // Toggle the state
+                } else {
+                    console.error("Audio not loaded!");
+                }
+            });
+
+    </script>
+</body>
+</html>

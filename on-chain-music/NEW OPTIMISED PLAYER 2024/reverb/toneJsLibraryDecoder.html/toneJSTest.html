@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 GZIP Decoder</title>
+</head>
+<body>
+    <h1>Base64 GZIP Decoder</h1>
+
+    <textarea id="base64Input" placeholder="Paste your Base64-encoded GZIP text here..." style="width: 100%; height: 200px;"></textarea>
+    <br>
+    <button id="decodeButton">Decode and Display</button>
+    
+    <h2>Decoded Output</h2>
+    <pre id="output" style="background-color: #f4f4f4; padding: 10px; white-space: pre-wrap;"></pre>
+
+    <script>
+        async function decompressData(data) {
+            const ds = new DecompressionStream('gzip');
+            const decompressedStream = new Response(data).body.pipeThrough(ds);
+            const blob = await new Response(decompressedStream).blob();
+            return await blob.text();
+        }
+
+        document.getElementById('decodeButton').addEventListener('click', async () => {
+            const base64EncodedGzip = document.getElementById('base64Input').value.trim().replace(/\n/g, '').replace(/^data:application\/octet-stream;base64,/, '');
+            
+            if (!base64EncodedGzip) {
+                alert('Please provide a valid Base64 encoded text.');
+                return;
+            }
+
+            try {
+                const binaryString = window.atob(base64EncodedGzip);
+                const uintArray = new Uint8Array([...binaryString].map(char => char.charCodeAt(0)));
+                const decodedText = await decompressData(uintArray);
+                document.getElementById('output').textContent = decodedText;
+            } catch (error) {
+                document.getElementById('output').textContent = `Error during decompression: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
