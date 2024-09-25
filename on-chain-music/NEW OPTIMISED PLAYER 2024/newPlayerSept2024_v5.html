@@ -1,0 +1,1511 @@
+
+<songAndArtworkLinks>
+    <script>
+        let currentSongIndex = 0;  // Initial song index
+    
+    
+        const SONGS = [
+        {
+        songUrl: "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0",
+        artworkUrl: "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
+        projectName: "Freedom To Transact",
+        artistName: "melophonic",
+      },
+        {
+        songUrl: "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0",
+        artworkUrl: "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5",
+        projectName: "TRUTH",
+        artistName: "melophonic",
+      },
+    
+      {
+        songUrl: "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",
+        artworkUrl: "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
+        projectName: "I Love Cheese - Remix",
+        artistName: "Rex Speedway and The Denim Avengers",
+      },
+      {
+        songUrl: "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0",
+        artworkUrl: "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0",
+        projectName: "On Day One",
+        artistName: "based.btc",
+      },
+      {
+        songUrl: "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0",
+        artworkUrl: "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0",
+        projectName: "Kora Kora",
+        artistName: "melophonic",
+      },
+    
+      {
+        songUrl: "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",
+        artworkUrl: "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
+        projectName: "On-Chain in the Membrane",
+        artistName: "melophonic",
+      },
+    
+      {
+        songUrl: "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0",
+        artworkUrl: "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
+        projectName: "Butterfly Effect",
+        artistName: "based.btc",
+      },
+    
+      {
+        songUrl: "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0",
+        artworkUrl: "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0",
+        projectName: "Romance and Beauty, Coupled With Utility (Modern Progress)",
+        artistName: "melophonic",
+      },
+      {
+        songUrl: "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0",
+        artworkUrl: "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0",
+        projectName: "Humanity",
+        artistName: "melophonic",
+      },
+    
+      {
+        songUrl: "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0",
+        artworkUrl: "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0",
+        projectName: "MLK",
+        artistName: "melophonic",
+      },
+    
+    
+      {
+        songUrl: "https://ordinals.com/content/a4fb0b49181975450a6710f20128eb0b3acc51f4aa1ce87ebdbc9607562013a2i0",
+        artworkUrl: "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
+        projectName: "Minty Fresh Vibes",
+        artistName: "melophonic",
+      },
+    
+    
+    
+      {
+        songUrl: "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0",
+        artworkUrl: "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0",
+        projectName: "Choppin' It Up",
+        artistName: "melophonic",
+      },
+      {
+        songUrl: "https://ordinals.com/content/b571342108ad1fc191146a8a8985f999a793cadbfc412bfa36e24d3e229f4037i0",
+        artworkUrl: "https://ordinals.com/content/9677ac2fc3c3598b775112698019ccffcab512d7d3450eefd33b37979ca97716i0",
+        projectName: "Some Song",
+        artistName: "Solemn",
+    
+    
+      },
+    //   {
+    //     songUrl: "https://ordinals.com/content/ee30d77eaff9029e15a29bcf28a6b588a952bfda19474f236e8ffce822f8ff9ei0", // Original Format (not GZIP)
+    //     artworkUrl: "https://ordinals.com/content/9677ac2fc3c3598b775112698019ccffcab512d7d3450eefd33b37979ca97716i0",
+    //     projectName: "B B Based",
+    //     artistName: "The OB1s",
+    //   }
+    
+    
+    
+    ];
+    
+    </script>
+    </songAndArtworkLinks>
+ 
+    <initialiseApp>
+        <script>
+          // Initialization Script
+          initialClick = false;
+      
+          /**
+           * Function to initialize the application after Pako is loaded
+           */
+          // Initialization Script
+        let initialLoadButtonClick = false;
+    
+    /**
+     * Function to initialize the application after Pako is loaded
+     */
+    function initializeApp() {
+        try {
+            // Ensure Pako is loaded before initializing
+            if (!window.isPakoLoaded()) {
+                throw new Error("Pako library not loaded.");
+            }
+    
+            // Initialize your application here
+            setupEventListeners();
+            console.log("Application initialized successfully.");
+            loadSong(currentSongIndex); // Load the initial song
+            // preloadAllSongs(); // Preload all songs
+        } catch (error) {
+            // Delay the error logging by 1 second
+            setTimeout(() => {
+                // Check again before logging the error, if Pako was loaded
+                if (!window.isPakoLoaded()) {
+                    console.error("Initialization failed:", error);
+                    displayError("Initialization failed. Please try again later.");
+                }
+            }, 1000);
+        }
+    }
+    
+    // Function to set up event listeners and other initialization tasks
+    function setupEventListeners() {
+        const loadButton = document.getElementById("loadButton");
+        const playButton = document.getElementById("playButton");
+        const stopButton = document.getElementById("stopButton");
+        const skipBackButton = document.getElementById("skipBackButton");
+        const skipForwardButton = document.getElementById("skipForwardButton");
+    
+        loadButton.addEventListener("click", handleLoad);
+        playButton.addEventListener("click", handlePlay);
+        stopButton.addEventListener("click", handleStop);
+        skipBackButton.addEventListener("click", () => handleSkip(-10)); // Example: Skip back 10 seconds
+        skipForwardButton.addEventListener("click", () => handleSkip(10)); // Example: Skip forward 10 seconds
+    
+        // Additional setup as needed
+    }
+    
+    // Placeholder functions for button handlers
+    function handleLoad() {
+        // Set the flag to true when load button is clicked
+        initialLoadButtonClick = true;
+    
+        // Load the current song
+        loadSong(currentSongIndex);
+        console.log(`Load button clicked. Loaded song index: ${currentSongIndex}`);
+    
+        // Check if the song has a valid source after loading
+        const audio = getAudioElement();
+        if (audio && audio.src) {
+            console.log(`Audio source loaded: ${audio.src}`);
+        } else {
+            console.error("Failed to load audio source.");
+        }
+    }
+    
+    function handlePlay() {
+        const audio = getAudioElement();
+        
+        if (audio) {
+            console.log('Audio element found, checking source...');
+            console.log('Audio element source:', audio.src);
+    
+            audio.addEventListener('canplay', () => {
+                console.log('Audio is ready to play.');
+                audio.play().then(() => {
+                    console.log('Audio playback started successfully.');
+                }).catch(err => {
+                    console.error('Play error:', err);
+                });
+            });
+    
+            audio.addEventListener('error', (e) => {
+                console.error('Error loading audio:', e);
+            });
+    
+            console.log("Play button clicked.");
+        } else {
+            console.error('Audio element not found or no valid source');
+        }
+    }
+    
+    
+    function handleStop() {
+        // Implement stop functionality
+        const audio = getAudioElement();
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            console.log("Stop button clicked. Audio paused and reset.");
+        }
+    }
+    
+    function handleSkip(skipTime) {
+        const audio = getAudioElement();
+        if (audio) {
+            audio.currentTime += skipTime;
+            console.log(`Audio skipped by ${skipTime} seconds. Current time: ${audio.currentTime}`);
+        }
+    }
+      
+          /**
+           * Function to get or create the audio element
+           */
+          function getAudioElement() {
+            let audio = document.getElementById("audioPlayer");
+            if (!audio) {
+              audio = document.createElement("audio");
+              audio.id = "audioPlayer";
+              audio.controls = true;
+              audio.style.display = "none"; // Hide the default controls
+              document.body.appendChild(audio);
+      
+              // Update UI when audio ends
+              audio.addEventListener('ended', () => {
+                console.log("Song ended.");
+                // Optionally, load the next song automatically
+                // loadNextSong();
+              });
+            }
+            return audio;
+          }
+      
+    
+                /**
+     * Converts time in seconds to a formatted string (mm:ss).
+     * @param {number} totalSeconds - The total time in seconds.
+     * @returns {string} - The formatted time string.
+     */
+            function formatTime(totalSeconds) {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = Math.round(totalSeconds % 60);
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+      
+          /**
+           * Function to display error messages to the user
+           */
+          function displayError(message) {
+            const errorElem = document.getElementById("errorMessage");
+            if (errorElem) {
+              errorElem.textContent = message;
+              errorElem.style.display = "block";
+            } else {
+              // Fallback: Create an error element if not present
+              const newErrorElem = document.createElement("div");
+              newErrorElem.id = "errorMessage";
+              newErrorElem.textContent = message;
+              newErrorElem.style.color = "red";
+              document.body.prepend(newErrorElem);
+            }
+          }
+      
+          /**
+           * Waits for the Pako library to be loaded before initializing the app.
+           * Listens for the custom 'pakoLoaded' event dispatched by pakoLoader.js.
+           */
+          function waitForPakoAndInitialize() {
+            if (window.isPakoLoaded()) {
+              // If Pako is already loaded, initialize immediately
+              initializeApp();
+            } else {
+              // Otherwise, wait for the 'pakoLoaded' event
+              document.addEventListener('pakoLoaded', initializeApp);
+            }
+          }
+      
+          // Start the initialization process after Pako is loaded
+          waitForPakoAndInitialize();
+      
+          /**
+           * Optional: Functions to navigate between songs
+           */
+          function loadNextSong() {
+            currentSongIndex = (currentSongIndex + 1) % SONGS.length;
+            loadSong(currentSongIndex);
+          }
+      
+          function loadPreviousSong() {
+            currentSongIndex = (currentSongIndex - 1 + SONGS.length) % SONGS.length;
+            loadSong(currentSongIndex);
+          }
+      
+          // Example: Add event listeners for next and previous buttons if they exist
+          /*
+          document.getElementById("nextButton").addEventListener("click", loadNextSong);
+          document.getElementById("previousButton").addEventListener("click", loadPreviousSong);
+          */
+        </script>
+      </initialiseApp>
+      
+      
+    
+    
+    <!-- Styles for the application -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #000000; /* Keep the background black */
+            justify-content: flex-start;
+            align-items: center;
+        }
+    
+        h1 {
+            color: #333;
+            margin: 10px 0;
+            font-size: 1.2rem; /* Smaller font size */
+        }
+    
+        #buttonContainer {
+            display: flex;
+            gap: 5px; /* Smaller gap */
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+    
+        button {
+            padding: 5px 10px; /* Smaller padding */
+            cursor: pointer;
+            font-size: 0.8rem; /* Smaller font size */
+        }
+    
+        #loadingIndicator, #errorMessage, #songTitle, #artistName {
+            margin-top: 5px;
+            font-size: 0.9rem; /* Smaller font size */
+            color: #ffffff; /* White text for better visibility */
+        }
+    
+        #loadingIndicator {
+            display: block; /* Initially visible */
+        }
+    
+        #errorMessage {
+            display: none; /* Hidden by default */
+            color: red;
+        }
+    
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            z-index: 1000; /* Ensure it's on top */
+            border-radius: 50%;
+        }
+    
+        /* Fade-out effect for the close button */
+        .fade-out {
+            animation: fadeOut 2s forwards;
+        }
+    
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+    
+        #artworkCanvas {
+            width: 66vh; /* Set the width to be the same as 66% of the viewport height */
+            height: 66vh; /* Set the height to 66% of the viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #000000; /* Ensure the canvas background is black */
+            margin-top: auto;
+            margin-bottom: auto;
+            aspect-ratio: 1 / 1; /* Ensure the canvas is always square */
+        }
+    
+        /* Fullscreen specific styles */
+        :fullscreen body {
+            background-color: #000000 !important; /* Override background color in fullscreen mode */
+        }
+    
+        :fullscreen #artworkCanvas {
+            background-color: #000000 !important; /* Keep the canvas background black in fullscreen */
+        }
+    
+        img, video, iframe {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+    
+        .unsupported {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+    
+    
+    </head>
+    <body>
+    <h1>Audional Player</h1>
+    <div id="buttonContainer">
+        <button id="loadButton">Load It Up</button>
+        <button id="playButton" disabled>Play</button>
+        <button id="stopButton" disabled>Stop</button>
+        <button id="skipBackButton" disabled>Skip &lt;</button>
+        <button id="skipForwardButton" disabled>Skip &gt;</button>
+        <button id="fullscreenButton">Fullscreen</button> <!-- Fullscreen button -->
+    </div>
+    <div id="closeButton" class="close-btn">X</div> <!-- Close button -->
+    
+    <div id="loadingIndicator">...</div>
+    <div id="errorMessage"></div>
+    <h2 id="songTitle">Audionals Compilation Album #0.1</h2>
+    <p id="artistName">Listen to some of the first musical artists ever to take up residence in the on-chain</p>
+    <div id="artworkCanvas">
+        <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
+    </div>
+    <!-- Slider to seek through the song -->
+    <input type="range" id="seekSlider" min="0" max="100" value="0" step="1" disabled hidden>
+    
+    <artworkCanvasSettings>
+    <script>
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const closeButton = document.getElementById('closeButton');
+        const artworkCanvas = document.getElementById('artworkCanvas');
+        
+        let closeButtonVisible = false;
+        
+        fullscreenButton.addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                artworkCanvas.requestFullscreen();
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                artworkCanvas.style.width = '100vw';
+                artworkCanvas.style.height = '100vh';
+                closeButton.style.display = 'block'; // Show close button
+                closeButtonVisible = true;
+        
+                // Fade out the close button after a few seconds
+                setTimeout(() => {
+                    if (!closeButtonVisible) return;
+                    closeButton.classList.add('fade-out');
+                }, 3000);
+            } else {
+                artworkCanvas.style.width = '66vh';
+                artworkCanvas.style.height = '66vh';
+                closeButton.style.display = 'none'; // Hide close button
+                closeButton.classList.remove('fade-out');
+                closeButtonVisible = false;
+            }
+        });
+        
+        // Show close button when mouse moves in fullscreen
+        document.addEventListener('mousemove', () => {
+            if (document.fullscreenElement) {
+                closeButton.style.display = 'block';
+                closeButton.classList.remove('fade-out');
+                closeButtonVisible = true;
+        
+                // Reset fade-out timer
+                setTimeout(() => {
+                    if (!closeButtonVisible) return;
+                    closeButton.classList.add('fade-out');
+                }, 3000);
+            }
+        });
+        
+        // Close button functionality
+        closeButton.addEventListener('click', () => {
+            document.exitFullscreen();
+        });
+        
+        // Handle mouse movement to keep the close button visible
+        closeButton.addEventListener('mouseover', () => {
+            closeButtonVisible = true;
+            closeButton.style.display = 'block';
+            closeButton.classList.remove('fade-out');
+        });
+        
+        </script>
+    </artworkCanvasSettings>
+    
+       
+    <keymapAndDeserialisation>   
+    <script>
+    
+    
+                const keyMap = {
+                                "0": "projectName", "1": "artistName", "2": "projectBPM", "3": "currentSequence",
+                                "4": "channelURLs", "5": "channelVolume", "6": "channelPlaybackSpeed", "7": "trimSettings",
+                                "8": "projectChannelNames", "9": "startSliderValue", "10": "endSliderValue", "11": "totalSampleDuration",
+                                "12": "start", "13": "end", "14": "projectSequences", "15": "steps"
+                            };
+                            const reverseKeyMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, k]));
+    
+                            const decompressSteps = (steps) =>
+                                    steps.map(step => {
+                                        if (typeof step === "number") return { index: step, reverse: false };
+                                        if (typeof step === "string" && step.endsWith("r")) return { index: parseInt(step.slice(0, -1), 10), reverse: true };
+                                        if (typeof step === "object" && step.r) return { index: step.r[0], reverse: Boolean(step.r[1]) };
+                                        console.warn("Unknown step format:", step);
+                                        return null;
+                                    }).filter(Boolean);
+    
+                                    const letterToNumber = (() => {
+                                        const map = Object.fromEntries([...Array(16)].map((_, i) => [String.fromCharCode(97 + i), i]));
+                                        return (letter) => map[letter.toLowerCase()] ?? null;
+                                    })();
+    
+                                    const deserialize = (data) =>
+                                        Object.fromEntries(Object.entries(data).map(([key, value]) => {
+                                            const mappedKey = keyMap[key] || key;
+                                            if (mappedKey === "projectSequences") {
+                                                return [mappedKey, Object.fromEntries(Object.entries(value).map(([seqKey, seqValue]) => {
+                                                    const sequenceId = `Sequence${seqKey.replace(/^s/, "")}`;
+                                                    const channels = Object.fromEntries(Object.entries(seqValue).map(([chanKey, chanData]) => {
+                                                        let channelNumber = parseInt(chanKey.replace(/^ch/, ""), 10);
+                                                        channelNumber = isNaN(channelNumber) ? letterToNumber(chanKey) : channelNumber;
+                                                        return channelNumber !== null ? [`Channel ${channelNumber}`, { steps: decompressSteps(chanData[reverseKeyMap.steps] || []) }] : [];
+                                                    }).filter(Boolean));
+                                                    return [sequenceId, channels];
+                                                }))];
+                                            }
+                                            return [mappedKey, value];
+                                            
+                                        }));
+    
+    </script>
+    </keymapAndDeserialisation>
+        
+    <!-- Waiting to test inscribed module with local host support -->
+    <!-- <loadPako>
+        <script>
+            (() => {
+                const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname),
+                      PAKO_URL = isLocal
+                          ? 'http://localhost:3000/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0'
+                          : '/content/2109694f44c973892fb8152cf5c68607fb19288c045af1abc1716c1c3b4d69e6i0';
+                let pakoLoaded = false;
+    
+                const fetchWithRetries = async (url, retries = 3, delay = 1000) => {
+                    for (let i = 0; i < retries; i++) {
+                        try {
+                            const res = await fetch(url, { cache: "force-cache" });
+                            if (res.ok) return res;
+                            throw new Error(`Network error: ${res.statusText}`);
+                        } catch (err) {
+                            if (i < retries - 1) await new Promise(r => setTimeout(r, delay));
+                            else throw err;
+                        }
+                    }
+                };
+    
+                const appendScript = sc => {
+                    const s = document.createElement("script");
+                    s.textContent = sc;
+                    document.head.appendChild(s);
+                };
+    
+                const waitForPako = timeout => new Promise((resolve, reject) => {
+                    let elapsed = 0;
+                    const interval = setInterval(() => {
+                        if (typeof pako !== 'undefined') {
+                            clearInterval(interval);
+                            resolve();
+                        } else if ((elapsed += 50) >= timeout) {
+                            clearInterval(interval);
+                            reject(new Error("Pako library failed to load within the timeout period."));
+                        }
+                    }, 50);
+                });
+    
+                const displayError = msg => {
+                    let e = document.getElementById("errorMessage");
+                    if (!e) {
+                        e = document.createElement("div");
+                        e.id = "errorMessage";
+                        e.style.color = "red";
+                        document.body.prepend(e);
+                    }
+                    e.textContent = msg;
+                    e.style.display = "block";
+                };
+    
+                const loadPako = async () => {
+                    try {
+                        let sc = localStorage.getItem('pakoScript');
+                        if (!sc) {
+                            const res = await fetchWithRetries(PAKO_URL);
+                            const text = await res.text();
+                            sc = new DOMParser().parseFromString(text, "text/html").querySelector("script")?.textContent;
+                            localStorage.setItem('pakoScript', sc);
+                        }
+                        appendScript(sc);
+                        console.log("Pako library loaded successfully.");
+                        await waitForPako(5000);
+                        pakoLoaded = true;
+                        document.dispatchEvent(new Event('pakoLoaded'));
+                    } catch (err) {
+                        console.error("Error during Pako loading:", err);
+                        displayError("Failed to load necessary libraries. Please try again later.");
+                    }
+                };
+    
+                document.readyState === "loading" ? 
+                    document.addEventListener("DOMContentLoaded", loadPako) : 
+                    loadPako();
+    
+                window.isPakoLoaded = () => pakoLoaded;
+            })();
+        </script>
+    </loadPako> -->
+       
+<loadPakoFromInscribedModule> 
+<!-- Having some issues running this via Vercel however in local environment it runs despite having internal web3 addresses -->
+<script src = "https://ordinals.com/content/81dda7f8e795b293f1333b1f669fe3864fde72837ed0ab7ef31299a246c4a34bi0"></script>
+</loadPakoFromInscribedModule>
+
+
+    <audioPlayerClass>
+        <script>
+        // Main AudioPlayer class
+        class AudioPlayer {
+            constructor() {
+                this.initializeProperties();
+                this.uiHandler = new UIHandler(this);
+                this.artworkManager = new ArtworkManager(this.uiHandler); // Pass the entire UIHandler instance
+                this.uiHandler.setArtworkManager(this.artworkManager);
+                this.audioLoader = new AudioLoader(this);
+        
+                this.audioProcessor = new AudioProcessor(this.audioCtx);
+                this.playbackScheduler = new PlaybackScheduler(this.audioCtx, this.audioProcessor, this.onSongEnd.bind(this)); // Pass callback
+                this.uiHandler.initEventListeners(); // Initialize UI event listeners
+        
+                // Add interval tracking for the skip buttons
+                this.skipInterval = null;
+            }
+        
+            initializeProperties() {
+                this.projectNames = [];
+                this.songLoadCounter = 0;
+                this.totalSongs = SONGS.length;
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.isPlaying = false;
+                this.currentSequence = 0;
+                this.startTime = 0;
+                this.pendingTimeouts = [];
+                this.currentSongIndex = 0;
+                this.skipSpeed = 10; // Define 10x skip speed
+            }
+        
+            reset() {
+                this.stop();
+                this.audioProcessor.reset();
+                this.playbackScheduler.reset();
+                this.pendingTimeouts.forEach(clearTimeout);
+                this.pendingTimeouts = [];
+                this.processedData = {};
+                this.currentSequence = this.startTime = 0;
+                this.toggleButtons(true);
+                this.artworkManager.clearArtwork();
+            }
+        
+            play() {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                this.startTime = this.audioCtx.currentTime;
+                console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`, "isPlaying:", this.isPlaying);
+                this.playbackScheduler.scheduleSequences(this.processedData, this.startTime, this.isPlaying, this.pendingTimeouts);
+            }
+        
+            stop() {
+                if (!this.isPlaying) return;
+                this.playbackScheduler.stop();
+                this.isPlaying = false;
+                console.log("Stopped song.", "isPlaying:", this.isPlaying);
+                this.pendingTimeouts.forEach(clearTimeout);
+                this.pendingTimeouts = [];
+            }
+        
+            skipSong(direction) {
+                // Clear any existing song end timeout to prevent multiple triggers
+                if (this.playbackScheduler.songEndTimeout) {
+                    clearTimeout(this.playbackScheduler.songEndTimeout);
+                    this.playbackScheduler.songEndTimeout = null;
+                }
+        
+                this.currentSongIndex = (direction === 'forward') 
+                    ? (this.currentSongIndex + 1) % SONGS.length 
+                    : (this.currentSongIndex - 1 + SONGS.length) % SONGS.length;
+                this.audioLoader.loadSong(SONGS[this.currentSongIndex].songUrl, this.isPlaying);
+            }
+        
+            // Method to fast-skip through the song while holding the button
+            fastSkip(direction) {
+                const audio = document.getElementById('audioPlayer');
+                if (audio) {
+                    const skipTime = direction === 'forward' ? this.skipSpeed : -this.skipSpeed;
+                    const newTime = audio.currentTime + skipTime;
+                    // Ensure the new time is within the audio duration bounds
+                    audio.currentTime = Math.min(Math.max(newTime, 0), audio.duration);
+                    console.log(`Fast skipped ${direction} by ${this.skipSpeed} seconds. Current time: ${audio.currentTime}`);
+                } else {
+                    console.error('Audio element not found for fast skipping.');
+                }
+            }
+        
+            toggleButtons(disabled) {
+                this.uiHandler.toggleButtons(disabled);
+            }
+        
+            /**
+             * Callback method to handle the end of a song.
+             */
+            onSongEnd() {
+                console.log("Song has ended. Skipping to the next song.");
+                this.skipSong('forward');
+            }
+        }
+        </script>
+    </audioPlayerClass>
+    
+    <uiHandlerClass>
+        <script>
+        class UIHandler {
+            constructor(audioPlayer) {
+                this.audioPlayer = audioPlayer;
+                this.bindUIElements();
+                this.artworkManager = null; // Initialize ArtworkManager reference
+                this.isFastSkipping = false; // Flag to track fast skipping
+                this.seekSliderMaxValue = 100; // Maximum value for the seek slider
+            }
+        
+            // Setter method to link ArtworkManager
+            setArtworkManager(artworkManager) {
+                this.artworkManager = artworkManager;
+            }
+        
+            bindUIElements() {
+                ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artistName', 'artworkCanvas', 'seekSlider']
+                    .forEach(id => this[id] = document.getElementById(id));
+            }
+        
+            initEventListeners() {
+                this.loadButton.addEventListener('click', () => this.loadButtonHandler());
+                this.playButton.addEventListener('click', () => this.audioPlayer.play());
+                this.stopButton.addEventListener('click', () => this.audioPlayer.stop());
+        
+                // **Toggle Playback on artworkCanvas Click**
+                this.artworkCanvas.addEventListener('click', () => {
+                    if (this.audioPlayer.isPlaying) {
+                        this.audioPlayer.stop();
+                    } else {
+                        this.audioPlayer.play();
+                    }
+                });
+        
+                // Add event listener for the seek slider
+                this.seekSlider.addEventListener('input', () => {
+                    const audio = document.getElementById('audioPlayer');
+                    if (audio && !audio.seeking) {
+                        const seekTime = (this.seekSlider.value / this.seekSliderMaxValue) * audio.duration;
+                        audio.currentTime = seekTime;
+                        console.log(`Seeked to ${seekTime} seconds`);
+                    }
+                });
+        
+                // Skip Forward Button
+                this.skipForwardButton.addEventListener('click', (e) => {
+                    if (!this.isFastSkipping) {
+                        this.audioPlayer.skipSong('forward');
+                    }
+                });
+                this.skipForwardButton.addEventListener('mousedown', () => {
+                    this.isFastSkipping = true;
+                    this.startFastSkip('forward');
+                });
+                this.skipForwardButton.addEventListener('mouseup', () => {
+                    this.stopFastSkip();
+                    this.isFastSkipping = false;
+                });
+                this.skipForwardButton.addEventListener('mouseleave', () => {
+                    this.stopFastSkip();
+                    this.isFastSkipping = false;
+                });
+        
+                // Skip Back Button
+                this.skipBackButton.addEventListener('click', (e) => {
+                    if (!this.isFastSkipping) {
+                        this.audioPlayer.skipSong('back');
+                    }
+                });
+                this.skipBackButton.addEventListener('mousedown', () => {
+                    this.isFastSkipping = true;
+                    this.startFastSkip('back');
+                });
+                this.skipBackButton.addEventListener('mouseup', () => {
+                    this.stopFastSkip();
+                    this.isFastSkipping = false;
+                });
+                this.skipBackButton.addEventListener('mouseleave', () => {
+                    this.stopFastSkip();
+                    this.isFastSkipping = false;
+                });
+            }
+            
+            updateSeekSlider(currentTime, duration) {
+                const progress = (currentTime / duration) * this.seekSliderMaxValue;
+                this.seekSlider.value = progress;
+            }
+        
+            enableSeekSlider() {
+                this.seekSlider.disabled = false;
+            }
+        
+            disableSeekSlider() {
+                this.seekSlider.disabled = true;
+            }
+        
+            startFastSkip(direction) {
+                // Start fast skip with an interval
+                this.audioPlayer.skipInterval = setInterval(() => {
+                    this.audioPlayer.fastSkip(direction);
+                }, 100); // Fast skip interval (100 ms for 10x speed)
+            }
+        
+            stopFastSkip() {
+                // Clear the fast skip interval
+                clearInterval(this.audioPlayer.skipInterval);
+                this.audioPlayer.skipInterval = null;
+            }
+        
+            loadButtonHandler() {
+                // Show loading indicator
+                this.showLoading(true);
+        
+                // Load the selected song
+                const currentSongUrl = SONGS[this.audioPlayer.currentSongIndex].songUrl;
+                this.audioPlayer.audioLoader.loadSong(currentSongUrl)
+                    .then(() => {
+                        // Update song title and artist name
+                        const song = SONGS[this.audioPlayer.currentSongIndex];
+                        this.showSongTitle(song.projectName);
+                        this.showArtistName(song.artistName);
+        
+                        // Update the artwork using ArtworkManager
+                        if (this.artworkManager) {
+                            const currentArtworkUrl = song.artworkUrl;
+                            this.artworkManager.displayArtwork(currentArtworkUrl, this.audioPlayer.currentSongIndex);
+                        } else {
+                            console.warn("ArtworkManager is not linked to UIHandler.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error loading song:", error);
+                        this.displayError("Failed to load the song.");
+                    })
+                    .finally(() => {
+                        // Hide loading indicator
+                        this.showLoading(false);
+                    });
+            }
+        
+            showSongTitle(title) {
+                this.songTitle.textContent = title;
+            }
+        
+            showArtistName(name) {
+                this.artistName.textContent = name;
+            }
+        
+            showLoading(isLoading) {
+                this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
+            }
+        
+            displayError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+            }
+        
+            toggleButtons(disabled) {
+                [this.playButton, this.stopButton, this.skipForwardButton, this.skipBackButton].forEach(btn => btn.disabled = disabled);
+            }
+        }
+        </script>
+        </uiHandlerClass>
+    
+    <artworkManagerClass>
+    <script>
+    // ArtworkManager class
+    class ArtworkManager {
+        constructor(uiHandler) {
+            this.artworkCanvas = uiHandler.artworkCanvas;
+        }
+    
+        async displayArtwork(url, songIndex) {
+            this.artworkCanvas.innerHTML = ''; // Clear the artwork canvas
+            try {
+                const res = await fetch(url, { method: 'HEAD' });
+                if (!res.ok) throw new Error(`Failed to fetch artwork: ${res.status}`);
+                const contentType = res.headers.get('Content-Type');
+                const mediaElement = this.createMediaElement(contentType, url, songIndex); // Pass the currentSongIndex for alt text
+                this.artworkCanvas.appendChild(mediaElement);
+            } catch (error) {
+                console.error(`Error displaying artwork:`, error);
+                this.artworkCanvas.appendChild(this.createErrorElement('Failed to load artwork.'));
+            }
+        }
+    
+        createMediaElement(contentType, url, songIndex) {
+            const elements = {
+                image: () => {
+                    const img = Object.assign(document.createElement('img'), {
+                        src: url,
+                        alt: `Artwork for song ${songIndex + 1}`, // Use the current song index for alt text
+                        onload: () => this.fitMediaElement(this.artworkCanvas, img) // Fit the image within the canvas
+                    });
+                    return img;
+                },
+                video: () => Object.assign(document.createElement('video'), { src: url, controls: true }),
+                audio: () => Object.assign(document.createElement('audio'), { src: url, controls: true }),
+                html: () => Object.assign(document.createElement('iframe'), { src: url, width: '100%', height: '100%', frameBorder: 0 })
+            };
+    
+            const type = contentType.split('/')[0]; // Get the type (image, video, audio, etc.)
+            return elements[type] ? elements[type]() : this.createErrorElement('Unsupported artwork format.');
+        }
+    
+        fitMediaElement(container, element) {
+            if (!element || !element.naturalWidth || !element.naturalHeight) {
+                console.error('Element is undefined or does not have natural dimensions.');
+                return;
+            }
+    
+            const { clientWidth: w, clientHeight: h } = container;
+            const imgAspect = element.naturalWidth / element.naturalHeight;
+            const canvasAspect = w / h;
+    
+            element.style.width = imgAspect > canvasAspect ? '100%' : 'auto';
+            element.style.height = imgAspect > canvasAspect ? 'auto' : '100%';
+        }
+    
+        createErrorElement(message) {
+            return Object.assign(document.createElement('div'), { className: 'unsupported', textContent: message });
+        }
+    
+        clearArtwork() {
+            this.artworkCanvas.innerHTML = '';
+        }
+    }
+    </script>
+    </artworkManagerClass>
+    
+    <audioLoaderClass>
+        <script>
+        // AudioLoader class
+        class AudioLoader {
+            constructor(audioPlayer) {
+                this.audioPlayer = audioPlayer;
+            }
+    
+            async loadSong(url, autoPlay = false) {
+                this.audioPlayer.reset();
+                try {
+                    this.audioPlayer.uiHandler.showLoading(true);
+                    console.log(`Loading song from URL: ${url}`);
+                    await this.loadGzipSongFile(url);
+                    this.audioPlayer.toggleButtons(false);
+    
+                    // Get the current song from the SONGS array
+                    const song = SONGS[this.audioPlayer.currentSongIndex];
+                    if (song) {
+                        // Calculate total number of sequences
+                        const totalSequences = Object.keys(this.audioPlayer.processedData.projectSequences).length;
+    
+                        // Calculate playback time
+                        const bpm = this.audioPlayer.processedData.projectBPM;
+                        const globalSpeed = this.audioPlayer.processedData.globalPlaybackSpeed;
+                        const stepDuration = 60 / bpm / 4; // As defined in PlaybackScheduler
+                        const stepsPerSequence = 64; // Assuming this is constant based on PlaybackScheduler
+                        const playbackTimeSeconds = totalSequences * stepsPerSequence * stepDuration / globalSpeed;
+    
+                        // Log song details with additional information
+                        const formatTime = (seconds) => {
+                            const minutes = Math.floor(seconds / 60);
+                            const secs = (seconds % 60).toFixed(0);
+                            return `${minutes}.${secs} mins`;
+                        };
+
+                        console.log(`Loaded Song Details:
+                            - Index: ${this.audioPlayer.currentSongIndex}
+                            - Project Name: ${song.projectName || "Unknown Title"}
+                            - Artist Name: ${song.artistName || "Unknown Artist"}
+                            - BPM: ${bpm || "N/A"}
+                            - Channels: ${Object.keys(this.audioPlayer.processedData.channelURLs).length}
+                            - Total Sequences: ${totalSequences}
+                            - Playback Time: ${formatTime(playbackTimeSeconds)}`);
+
+    
+                        // Update the UI with the song's project name and artist name
+                        this.audioPlayer.uiHandler.showSongTitle(song.projectName || "Unknown Title");
+                        this.audioPlayer.uiHandler.showArtistName(song.artistName || "Unknown Artist");
+    
+                        // Display the artwork if available
+                        if (song.artworkUrl) {
+                            console.log(`Displaying artwork from URL: ${song.artworkUrl}`);
+                            await this.audioPlayer.artworkManager.displayArtwork(song.artworkUrl, this.audioPlayer.currentSongIndex);
+                        } else {
+                            console.warn(`No artwork URL found for song at index ${this.audioPlayer.currentSongIndex}`);
+                        }
+                    } else {
+                        this.audioPlayer.uiHandler.showSongTitle("Unknown Title");
+                        this.audioPlayer.uiHandler.showArtistName("Unknown Artist");
+                        console.warn(`No song found at index ${this.audioPlayer.currentSongIndex}`);
+                    }
+    
+                    if (autoPlay) {
+                        console.log("Auto-playing the song.");
+                        this.audioPlayer.play();
+                    }
+                } catch (e) {
+                    console.error("Error loading file:", e);
+                    this.audioPlayer.uiHandler.displayError("Failed to load file.");
+                } finally {
+                    this.audioPlayer.uiHandler.showLoading(false);
+                    console.log("Finished loading song.");
+                }
+            }
+    
+            async loadGzipSongFile(url) {
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
+    
+                    const compressedData = new Uint8Array(await res.arrayBuffer());
+                    const decompressedData = JSON.parse(new TextDecoder().decode(pako.inflate(compressedData)));
+                    const data = deserialize(decompressedData);
+    
+                    const metadata = {
+                        projectBPM: data.projectBPM,
+                        currentSequence: data.currentSequence,
+                        channelURLs: this.arrayToObject(data.channelURLs),
+                        channelVolume: this.arrayToObject(data.channelVolume, 0, true),
+                        channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed, 0, true),
+                        trimSettings: this.mapTrimSettings(data.trimSettings),
+                        projectChannelNames: data.projectChannelNames,
+                        projectSequences: data.projectSequences,
+                        globalPlaybackSpeed: data.globalPlaybackSpeed || 1,
+                    };
+    
+                    this.audioPlayer.processedData = {
+                        ...metadata,
+                        VOLUME_CONTROLS: metadata.channelVolume,
+                        SPEED_CONTROLS: metadata.channelPlaybackSpeed,
+                        songDataUrls: Object.values(metadata.channelURLs),
+                    };
+    
+                    console.log(`Sequences loaded: ${Object.keys(this.audioPlayer.processedData.projectSequences).length}`);
+    
+                    if (this.audioPlayer.processedData.songDataUrls.length === 16) {
+                        console.log("Fetching and processing audio data for all channels.");
+                        await this.fetchAndProcessAudioData(this.audioPlayer.processedData.songDataUrls.map(u => `https://ordinals.com${u}`));
+                    } else {
+                        throw new Error("Invalid channel URLs or channel count.");
+                    }
+    
+                    if (++this.audioPlayer.songLoadCounter === this.audioPlayer.totalSongs) {
+                        this.logProjectNames();
+                    }
+                } catch (error) {
+                    console.error(`Error loading file:`, error);
+                    throw error; // Re-throw to be caught in loadSong
+                }
+            }
+    
+            arrayToObject(arr, start = 0, parse = false) {
+                return arr.reduce((obj, val, idx) => {
+                    obj[`Channel ${start + idx}`] = parse ? parseFloat(val) || 1 : val;
+                    return obj;
+                }, {});
+            }
+    
+            mapTrimSettings(arr) {
+                return arr.reduce((obj, item, idx) => {
+                    obj[`Channel ${idx}`] = typeof item === 'object' && item
+                        ? { start: item[9] || 0, end: item[10] || 100 }
+                        : { start: 0, end: typeof item === 'number' ? item : 100 };
+                    if (typeof item !== 'object' && typeof item !== 'number') {
+                        console.warn(`Invalid trim for Channel ${idx}.`);
+                    }
+                    return obj;
+                }, {});
+            }
+    
+            async fetchAndProcessAudioData(urls) {
+                console.log("Starting to fetch and process audio data for channels.");
+                const results = await Promise.allSettled(urls.map(this.processAudioUrl.bind(this)));
+                results.forEach((res, i) => {
+                    if (res.status === 'rejected') {
+                        console.error(`Failed to load Channel ${i} (${urls[i]}):`, res.reason);
+                    } else {
+                        console.log(`Successfully loaded Channel ${i}: ${urls[i]}`);
+                    }
+                });
+                this.audioPlayer.audioProcessor.createReversedBuffers(this.audioPlayer.processedData);
+                console.log("Completed fetching and processing all audio data.");
+            }
+    
+            async processAudioUrl(url, index) {
+                const channelName = `Channel ${index}`;
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`Fetch failed: ${url}, Status: ${res.status}`);
+    
+                    const audioBuffer = await this.handleResponseByType(res, res.headers.get("Content-Type"), channelName);
+                    if (audioBuffer) {
+                        this.audioPlayer.audioProcessor.logAudioBufferDetails(audioBuffer, channelName);
+                        this.audioPlayer.audioProcessor.storeAudioBuffer(audioBuffer, channelName, this.audioPlayer.processedData);
+                        console.log(`Processed audio for ${channelName}.`);
+                    }
+                } catch (error) {
+                    console.error(`Error processing ${channelName}:`, error);
+                    throw error; // Re-throw to be handled in fetchAndProcessAudioData
+                }
+            }
+    
+            async handleResponseByType(response, contentType, channelName) {
+                if (/audio|video/.test(contentType)) {
+                    return this.fetchAndDecodeAudio(response, channelName);
+                }
+                if (/json/.test(contentType)) {
+                    return this.handleResponse(response, channelName, 'JSON');
+                }
+                if (/html/.test(contentType)) {
+                    return this.handleResponse(response, channelName, 'HTML');
+                }
+                throw new Error(`Unsupported content type for ${channelName}: ${contentType}`);
+            }
+    
+            async handleResponse(response, channelName, type) {
+                return this.handleAudioDataFromResponse(response, channelName, type);
+            }
+    
+            async fetchAndDecodeAudio(response, channelName) {
+                try {
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioPlayer.audioCtx.decodeAudioData(arrayBuffer);
+                    console.log(`Decoded audio for ${channelName}.`);
+                    return audioBuffer;
+                } catch (error) {
+                    console.error(`decodeAudioData failed for ${channelName}:`, error);
+                    throw new Error(`Failed to decode audio for ${channelName}.`);
+                }
+            }
+    
+            async handleAudioDataFromResponse(response, channelName, type) {
+                try {
+                    const data = type === 'JSON' ? await response.json() : await response.text();
+                    const base64Audio = type === 'JSON' ? data.audioData : this.extractBase64FromHTML(data);
+    
+                    if (base64Audio) {
+                        const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
+                        if (arrayBuffer) {
+                            const audioBuffer = await this.audioPlayer.audioCtx.decodeAudioData(arrayBuffer);
+                            console.log(`Decoded ${type} audio data for ${channelName}.`);
+                            return audioBuffer;
+                        }
+                        throw new Error(`Invalid base64 data for ${channelName}.`);
+                    }
+                    throw new Error(`Invalid ${type} structure for audio data in ${channelName}.`);
+                } catch (error) {
+                    console.error(`Error handling ${type} response for ${channelName}:`, error);
+                    throw error;
+                }
+            }
+    
+            base64ToArrayBuffer(base64) {
+                try {
+                    const binaryString = atob(base64);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    console.log("Converted base64 to ArrayBuffer.");
+                    return bytes.buffer;
+                } catch (error) {
+                    console.error("[base64ToArrayBuffer] Conversion error:", error);
+                    return null;
+                }
+            }
+    
+            extractBase64FromHTML(htmlContent) {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, "text/html");
+                    const audioSource = doc.querySelector("audio[data-audionalSampleName] source")?.getAttribute("src");
+                    if (/^data:audio\/(wav|mp3|mp4);base64,/.test(audioSource?.toLowerCase()) || /audio\//.test(audioSource?.toLowerCase())) {
+                        console.log("Extracted base64 audio data from HTML.");
+                        return audioSource;
+                    }
+                    console.error("[extractBase64FromHTML] Invalid audio source format.");
+                } catch (error) {
+                    console.error("[extractBase64FromHTML] Parsing error:", error);
+                }
+                return null;
+            }
+    
+            logProjectNames() {
+                const projectNames = SONGS.map(song => song.projectName || "Unknown Title");
+                console.log("All Project Names Loaded:", projectNames);
+            }
+        }
+        </script>
+    </audioLoaderClass>
+    
+    <audioProcessorClass>
+    <script>
+    // AudioProcessor class
+    class AudioProcessor {
+        constructor(audioCtx) {
+            this.audioCtx = audioCtx;
+            this.audioBuffers = [];
+            this.reversedAudioBuffers = {};
+            this.reversedGainNodes = {}; // Store separate gain nodes for reversed buffers
+        }
+    
+        reset() {
+            this.audioBuffers = [];
+            this.reversedAudioBuffers = {};
+        }
+    
+        parseVolumeLevel(volume) {
+            return Math.max(0, Math.min(parseFloat(volume) || 1, 1));
+        }
+    
+        applyTrim(buffer, startPercent, endPercent) {
+            const totalSamples = buffer.length;
+            const [startSample, endSample] = [startPercent, endPercent].map(p => Math.floor(totalSamples * (p / 100)));
+    
+            if (startSample >= endSample || startSample < 0 || endSample > totalSamples) {
+                console.warn(`Invalid trim settings: Start = ${startPercent}%, End = ${endPercent}%. Using full buffer.`);
+                return buffer;
+            }
+    
+            const trimmedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, endSample - startSample, buffer.sampleRate);
+            buffer.numberOfChannels && Array.from({ length: buffer.numberOfChannels }).forEach((_, channel) => {
+                trimmedBuffer.copyToChannel(buffer.getChannelData(channel).subarray(startSample, endSample), channel);
+            });
+    
+            return trimmedBuffer;
+        }
+    
+        storeAudioBuffer(audioBuffer, channelName, processedData) {
+            const { VOLUME_CONTROLS, SPEED_CONTROLS, trimSettings } = processedData;
+            const volume = this.parseVolumeLevel(VOLUME_CONTROLS[channelName]);
+            const speed = SPEED_CONTROLS[channelName] || 1;
+            const trim = trimSettings[channelName] || { start: 0, end: 100 };
+            const trimmedBuffer = this.applyTrim(audioBuffer, trim.start, trim.end);
+    
+            const gainNode = this.audioCtx.createGain();
+            gainNode.gain.value = volume;
+            gainNode.connect(this.audioCtx.destination);
+    
+            this.audioBuffers.push({ buffer: trimmedBuffer, gainNode, channel: channelName, playbackSpeed: speed });
+        }
+    
+        logAudioBufferDetails(audioBuffer, channelName) {
+            console.log(`AudioBuffer for ${channelName}:`, {
+                channels: audioBuffer.numberOfChannels,
+                length: audioBuffer.length,
+                sampleRate: audioBuffer.sampleRate,
+                duration: audioBuffer.duration,
+            });
+            [...Array(audioBuffer.numberOfChannels).keys()].forEach(c =>
+                console.log(`Channel ${c} data:`, audioBuffer.getChannelData(c).slice(0, 10))
+            );
+        }
+    
+        createReversedBuffers(processedData) {
+            this.processedData = processedData;
+            console.debug("Starting createReversedBuffers");
+
+            const channelsWithReverse = this.getChannelsWithReverse();
+            console.debug("Channels requiring reversal:", Array.from(channelsWithReverse));
+
+            this.audioBuffers.forEach(({ buffer, channel }) => {
+                if (channelsWithReverse.has(channel)) {
+                    if (!this.reversedAudioBuffers[channel]) {
+                        console.debug(`Reversing buffer for channel: ${channel}`);
+                        const reversedBuffer = this.reverseBuffer(buffer);
+                        this.reversedAudioBuffers[channel] = reversedBuffer;
+
+                        // Create and store a separate gain node for reversed buffer
+                        const reversedGainNode = this.audioCtx.createGain();
+                        reversedGainNode.gain.value = this.getVolumeForChannel(channel); // Implement this method to retrieve volume
+                        reversedGainNode.connect(this.audioCtx.destination);
+                        this.reversedGainNodes[channel] = reversedGainNode;
+                    } else {
+                        console.debug(`Buffer for channel ${channel} already reversed.`);
+                    }
+                }
+            });
+
+            console.debug("Completed createReversedBuffers");
+        }
+
+        getVolumeForChannel(channel) {
+            const { VOLUME_CONTROLS } = this.processedData;
+            const volume = this.parseVolumeLevel(VOLUME_CONTROLS[channel]);
+            return volume;
+        }
+    
+        getChannelsWithReverse() {
+            const channelsWithReverse = new Set();
+            const sequences = Object.values(this.processedData.projectSequences);
+    
+            sequences.forEach((sequence, seqIndex) => {
+                console.debug(`Processing sequence ${seqIndex + 1}/${sequences.length}`);
+                Object.entries(sequence).forEach(([channelName, channelData]) => {
+                    channelData.steps.forEach(({ reverse }, stepIndex) => {
+                        if (reverse) {
+                            channelsWithReverse.add(channelName);
+                            console.debug(`  Step ${stepIndex + 1}: Reverse flag set for channel '${channelName}'`);
+                        }
+                    });
+                });
+            });
+    
+            return channelsWithReverse;
+        }
+    
+        reverseBuffer(buffer) {
+            console.debug("Starting reverseBuffer");
+            const reversedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+    
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const channelData = buffer.getChannelData(channel);
+                const reversedData = reversedBuffer.getChannelData(channel);
+                console.debug(`  Reversing data for channel ${channel + 1}/${buffer.numberOfChannels}`);
+    
+                for (let i = 0, len = buffer.length; i < len; i++) {
+                    reversedData[i] = channelData[len - i - 1];
+                }
+            }
+    
+            console.debug("Completed reverseBuffer");
+            return reversedBuffer;
+        }
+    
+        concatenateFloat32Arrays(arrays) {
+            const totalLength = arrays.reduce((sum, a) => sum + a.length, 0);
+            const result = new Float32Array(totalLength);
+            let offset = 0;
+            arrays.forEach(a => { result.set(a, offset); offset += a.length; });
+            return result;
+        }
+    }
+    </script>
+    </audioProcessorClass>
+    
+    <playbackSchedulerClass>
+        <script>
+        // PlaybackScheduler class
+        class PlaybackScheduler {
+            constructor(audioCtx, audioProcessor, onSongEndCallback) { // Added onSongEndCallback parameter
+                this.audioCtx = audioCtx;
+                this.audioProcessor = audioProcessor;
+                this.currentSourceNodes = [];
+                this.onSongEndCallback = onSongEndCallback; // Store the callback
+                this.songEndTimeout = null; // To track the timeout
+            }
+        
+            scheduleSequences(processedData, startTime, isPlaying, pendingTimeouts) {
+                console.debug("Scheduling sequences...");
+                const { projectSequences, projectBPM, globalPlaybackSpeed } = processedData;
+                const stepDuration = 60 / projectBPM / 4;
+                const getStepsPerSequence = () => 64;
+                let latestEndTime = startTime;
+        
+                const log = Object.entries(projectSequences).map(([id], i) => {
+                    const sequence = projectSequences[id];
+                    if (!sequence) {
+                        console.error(`No data for ${id}.`);
+                        return null;
+                    }
+                    const sequenceStartTime = startTime + (i * getStepsPerSequence() * stepDuration) / globalPlaybackSpeed;
+                    console.debug(`Scheduled ${id} at ${sequenceStartTime.toFixed(3)}s`);
+                    Object.entries(sequence).forEach(([channel, { steps }]) => {
+                        const buf = this.audioProcessor.audioBuffers.find(b => b.channel === channel);
+                        if (!buf) {
+                            console.warn(`No buffer for ${channel}.`);
+                            return;
+                        }
+                        steps.forEach(({ index, reverse }) => {
+                            const when = sequenceStartTime + ((index - 1) * stepDuration) / globalPlaybackSpeed;
+                            const source = this.audioCtx.createBufferSource();
+                            source.buffer = reverse && this.audioProcessor.reversedAudioBuffers[channel] || buf.buffer;
+                            source.playbackRate.value = buf.playbackSpeed * globalPlaybackSpeed;
+                            source.connect(buf.gainNode);
+                            source.start(when);
+                            this.currentSourceNodes.push(source);
+        
+                            // Update latestEndTime if this source ends later
+                            const duration = source.buffer.duration / source.playbackRate.value;
+                            const endTime = when + duration;
+                            if (endTime > latestEndTime) {
+                                latestEndTime = endTime;
+                            }
+                        });
+                    });
+                    const delay = Math.max((sequenceStartTime - this.audioCtx.currentTime) * 1000, 0);
+                    if (delay < Number.MAX_SAFE_INTEGER) {
+                        const tid = setTimeout(() => {
+                            if (isPlaying) console.log(`Now playing ${id}`);
+                            const index = pendingTimeouts.indexOf(tid);
+                            if (index > -1) pendingTimeouts.splice(index, 1);
+                        }, delay);
+                        pendingTimeouts.push(tid);
+                    } else {
+                        console.warn(`Delay for ${id} too long. Skipping log.`);
+                    }
+                    return { id, startTime: sequenceStartTime.toFixed(3) };
+                }).filter(Boolean);
+                console.log('Scheduled Sequences:', log);
+        
+                // Calculate the total duration of the song
+                const totalDuration = latestEndTime - startTime;
+        
+                // Clear any existing song end timeout
+                if (this.songEndTimeout) {
+                    clearTimeout(this.songEndTimeout);
+                }
+        
+                // Set a timeout to trigger the onSongEndCallback
+                this.songEndTimeout = setTimeout(() => {
+                    console.log("Song ended. Triggering onSongEndCallback.");
+                    this.onSongEndCallback();
+                }, totalDuration * 1000); // Convert to milliseconds
+            }
+        
+            stop() {
+                this.currentSourceNodes.forEach(s => s.stop());
+                this.currentSourceNodes = [];
+                if (this.songEndTimeout) {
+                    clearTimeout(this.songEndTimeout);
+                    this.songEndTimeout = null;
+                }
+            }
+        
+            reset() {
+                this.stop();
+                // Any additional reset logic can be added here if needed
+            }
+        }
+        </script>
+    </playbackSchedulerClass>
+
+        
+    <newAudioPlayerInstance>
+    <script>
+    // Initialize the AudioPlayer instance
+    new AudioPlayer();
+    </script>
+    </newAudioPlayerInstance>
+    
+
+
+    
+        
+    </body>
+    </html>

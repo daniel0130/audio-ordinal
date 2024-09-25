@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Audio API Reverb Unit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type=range], select {
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Web Audio API Reverb Unit</h1>
+
+<!-- Controls -->
+<div class="control-group">
+    <label for="dryWet">Dry/Wet Mix: <span id="dryWetValue">50%</span></label>
+    <input type="range" id="dryWet" min="0" max="100" value="50">
+</div>
+
+<div class="control-group">
+    <label for="decayTime">Decay Time (Mapped to Room Size): <span id="decayTimeValue">0.15</span></label>
+    <input type="range" id="decayTime" min="0.1" max="10" value="1.5" step="0.1">
+</div>
+
+<div class="control-group">
+    <label for="preDelay">Pre-delay: <span id="preDelayValue">0ms</span></label>
+    <input type="range" id="preDelay" min="0" max="200" value="0" step="1">
+</div>
+
+<div class="control-group">
+    <label for="roomSize">Room Size: <span id="roomSizeValue">0.7</span></label>
+    <input type="range" id="roomSize" min="0" max="1" value="0.7" step="0.01">
+</div>
+
+<div class="control-group">
+    <label for="damping">Damping: <span id="dampingValue">3000Hz</span></label>
+    <input type="range" id="damping" min="0" max="20000" value="3000" step="100">
+</div>
+
+<div class="control-group">
+    <label for="stereoWidth">Stereo Width: <span id="stereoWidthValue">50%</span></label>
+    <input type="range" id="stereoWidth" min="0" max="100" value="50">
+</div>
+
+<div class="control-group">
+    <label for="filterFreq">Filter Frequency: <span id="filterFreqValue">20000Hz</span></label>
+    <input type="range" id="filterFreq" min="20" max="20000" value="20000" step="10">
+</div>
+
+<div class="control-group">
+    <label for="reverbType">Reverb Type:</label>
+    <select id="reverbType">
+        <option value="room">Room</option>
+        <option value="hall">Hall</option>
+        <option value="cathedral">Cathedral</option>
+        <option value="plate">Plate</option>
+    </select>
+</div>
+
+<!-- Reverb Tail Freeze Button -->
+<button id="freezeButton">Freeze Reverb Tail</button>
+
+<!-- Audio Source Control -->
+<button id="playButton">Play</button>
+
+<!-- Include Tone.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.3/Tone.min.js"></script>
+
+<!-- Our script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const playButton = document.getElementById('playButton');
+
+        // Create a player without the 'url' option
+        const player = new Tone.Player({
+            loop: true,
+            autostart: false,
+        });
+
+        // Create Dry/Wet control using CrossFade
+        const dryWetControl = new Tone.CrossFade(0.5);
+
+        // Create and configure effect nodes
+        const preDelay = new Tone.FeedbackDelay({
+            delayTime: 0, // seconds
+            feedback: 0,
+            wet: 0
+        });
+
+        const reverb = new Tone.Freeverb({
+            roomSize: 0.7,     // default room size
+            dampening: 3000,   // default damping
+            wet: 0.5            // initial wet value
+        });
+
+        const filter = new Tone.Filter({
+            type: 'lowpass',
+            frequency: 20000, // Hz
+            Q: 1,
+            wet: 0
+        });
+
+        const stereoWidener = new Tone.StereoWidener(0.5);
+
+        // Connect Dry and Wet signals
+        player.connect(dryWetControl.a); // Dry signal
+        player.connect(preDelay)
+              .connect(reverb)
+              .connect(filter)
+              .connect(stereoWidener)
+              .connect(dryWetControl.b); // Wet signal
+
+        // Connect Dry/Wet Control to Destination
+        dryWetControl.toDestination();
+
+        // Load the audio buffer
+        let isBufferLoaded = false;
+        player.load("https://tonejs.github.io/audio/berklee/gong_1.mp3").then(() => {
+            isBufferLoaded = true;
+            console.log("Audio buffer loaded.");
+        }).catch((error) => {
+            console.error("Error loading audio buffer:", error);
+            alert("Failed to load audio.");
+        });
+
+        // Play/Pause functionality
+        let isPlaying = false;
+        playButton.addEventListener('click', async () => {
+            if (!isBufferLoaded) {
+                alert("Audio is still loading. Please wait a moment and try again.");
+                return;
+            }
+            if (!isPlaying) {
+                await Tone.start(); // Necessary in some browsers to resume AudioContext
+                player.start();
+                isPlaying = true;
+                playButton.textContent = "Pause";
+            } else {
+                player.stop();
+                isPlaying = false;
+                playButton.textContent = "Play";
+            }
+        });
+
+        // Dry/Wet control
+        const dryWetSlider = document.getElementById('dryWet');
+        const dryWetValueLabel = document.getElementById('dryWetValue');
+        dryWetSlider.addEventListener('input', () => {
+            const value = dryWetSlider.value;
+            dryWetControl.fade.value = value / 100;
+            dryWetValueLabel.textContent = value + "%";
+        });
+
+        // Decay Time control (Mapped to Room Size)
+        const decayTimeSlider = document.getElementById('decayTime');
+        const decayTimeValueLabel = document.getElementById('decayTimeValue');
+        decayTimeSlider.addEventListener('input', () => {
+            const value = parseFloat(decayTimeSlider.value);
+            // Map decayTimeSlider value (0.1 - 10) to roomSize (0 - 1)
+            const roomSize = Math.min(Math.max(value / 10, 0), 1);
+            reverb.roomSize = roomSize;
+            decayTimeValueLabel.textContent = roomSize.toFixed(2);
+        });
+
+        // Pre-delay control
+        const preDelaySlider = document.getElementById('preDelay');
+        const preDelayValueLabel = document.getElementById('preDelayValue');
+        preDelaySlider.addEventListener('input', () => {
+            const value = parseFloat(preDelaySlider.value);
+            preDelay.delayTime.value = value / 1000; // Convert ms to seconds
+            preDelayValueLabel.textContent = value + "ms";
+        });
+
+        // Room Size control (Optional: Sync with Decay Time)
+        const roomSizeSlider = document.getElementById('roomSize');
+        const roomSizeValueLabel = document.getElementById('roomSizeValue');
+        roomSizeSlider.addEventListener('input', () => {
+            const value = parseFloat(roomSizeSlider.value);
+            reverb.roomSize = value;
+            roomSizeValueLabel.textContent = value.toFixed(2);
+            // Optionally, update Decay Time slider accordingly
+            decayTimeSlider.value = (value * 10).toFixed(1);
+            decayTimeValueLabel.textContent = value.toFixed(2);
+        });
+
+        // Damping control
+        const dampingSlider = document.getElementById('damping');
+        const dampingValueLabel = document.getElementById('dampingValue');
+        dampingSlider.addEventListener('input', () => {
+            const value = parseFloat(dampingSlider.value);
+            reverb.dampening = value;
+            dampingValueLabel.textContent = value + "Hz";
+        });
+
+        // Stereo Width control
+        const stereoWidthSlider = document.getElementById('stereoWidth');
+        const stereoWidthValueLabel = document.getElementById('stereoWidthValue');
+        stereoWidthSlider.addEventListener('input', () => {
+            const value = stereoWidthSlider.value;
+            stereoWidener.width.value = value / 100;
+            stereoWidthValueLabel.textContent = value + "%";
+        });
+
+        // Filter Frequency control
+        const filterFreqSlider = document.getElementById('filterFreq');
+        const filterFreqValueLabel = document.getElementById('filterFreqValue');
+        filterFreqSlider.addEventListener('input', () => {
+            const value = parseFloat(filterFreqSlider.value);
+            filter.frequency.value = value;
+            filterFreqValueLabel.textContent = value + "Hz";
+        });
+
+        // Reverb Type Selector
+        const reverbTypeSelect = document.getElementById('reverbType');
+        reverbTypeSelect.addEventListener('change', () => {
+            const type = reverbTypeSelect.value;
+            switch (type) {
+                case 'room':
+                    reverb.roomSize = 0.5;
+                    preDelay.delayTime.value = 0.01;
+                    reverb.dampening = 3000;
+                    break;
+                case 'hall':
+                    reverb.roomSize = 0.7;
+                    preDelay.delayTime.value = 0.02;
+                    reverb.dampening = 2000;
+                    break;
+                case 'cathedral':
+                    reverb.roomSize = 0.9;
+                    preDelay.delayTime.value = 0.05;
+                    reverb.dampening = 1000;
+                    break;
+                case 'plate':
+                    reverb.roomSize = 0.6;
+                    preDelay.delayTime.value = 0;
+                    reverb.dampening = 5000;
+                    break;
+                default:
+                    reverb.roomSize = 0.7;
+                    preDelay.delayTime.value = 0;
+                    reverb.dampening = 3000;
+            }
+            // Update UI elements to reflect preset values
+            decayTimeSlider.value = reverb.roomSize * 10; // Mapped to roomSize
+            decayTimeValueLabel.textContent = reverb.roomSize.toFixed(2);
+            preDelaySlider.value = preDelay.delayTime.value * 1000; // Convert back to ms
+            preDelayValueLabel.textContent = (preDelay.delayTime.value * 1000) + "ms";
+            dampingSlider.value = reverb.dampening;
+            dampingValueLabel.textContent = reverb.dampening + "Hz";
+            roomSizeSlider.value = reverb.roomSize.toFixed(2);
+            roomSizeValueLabel.textContent = reverb.roomSize.toFixed(2);
+        });
+
+        // Reverb Tail Freeze
+        const freezeButton = document.getElementById('freezeButton');
+        let isFrozen = false;
+        freezeButton.addEventListener('click', () => {
+            if (!isFrozen) {
+                // Simulate freezing by increasing decay and reducing dampening
+                reverb.roomSize = 1.0; // Max room size to hold the reverb
+                reverb.dampening = 0; // Remove dampening
+                reverb.wet.value = 1; // Max wet to fully apply reverb
+                freezeButton.textContent = 'Unfreeze Reverb Tail';
+                isFrozen = true;
+            } else {
+                // Reset to previous settings based on sliders
+                reverb.roomSize = parseFloat(roomSizeSlider.value);
+                reverb.dampening = parseFloat(dampingSlider.value);
+                reverb.wet.value = parseFloat(dryWetSlider.value) / 100;
+                freezeButton.textContent = 'Freeze Reverb Tail';
+                isFrozen = false;
+            }
+        });
+
+        // Optional: Handle Player Errors
+        player.load().then(() => {
+            // Buffer loaded successfully
+        }).catch((error) => {
+            console.error("Player Error:", error);
+            alert("An error occurred while playing the audio.");
+        });
+
+    });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Audio Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .player-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .controls {
+            margin-top: 15px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <h2>Simple Audio Player</h2>
+        <input type="text" id="audioUrl" placeholder="Enter audio URL here">
+        <button id="loadBtn">Load Audio</button>
+        <div class="controls">
+            <button id="playBtn" disabled>Play</button>
+            <button id="pauseBtn" disabled>Pause</button>
+            <button id="stopBtn" disabled>Stop</button>
+        </div>
+        <div class="error" id="errorMsg"></div>
+    </div>
+
+    <script>
+        const loadBtn = document.getElementById('loadBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const audioUrlInput = document.getElementById('audioUrl');
+        const errorMsg = document.getElementById('errorMsg');
+
+        let audio = new Audio();
+
+        loadBtn.addEventListener('click', () => {
+            const url = audioUrlInput.value.trim();
+            if (!url) {
+                errorMsg.textContent = 'Please enter a valid URL.';
+                return;
+            }
+            // Reset previous audio
+            audio.pause();
+            audio = new Audio();
+            audio.src = url;
+            audio.crossOrigin = "anonymous"; // Handle CORS if necessary
+            audio.load();
+
+            audio.onloadedmetadata = () => {
+                errorMsg.textContent = '';
+                playBtn.disabled = false;
+                pauseBtn.disabled = false;
+                stopBtn.disabled = false;
+                console.log(`Audio Duration: ${audio.duration} seconds`);
+            };
+
+            audio.onerror = () => {
+                errorMsg.textContent = 'Failed to load audio. Please check the URL.';
+                playBtn.disabled = true;
+                pauseBtn.disabled = true;
+                stopBtn.disabled = true;
+            };
+        });
+
+        playBtn.addEventListener('click', () => {
+            audio.play()
+                .then(() => {
+                    console.log('Audio is playing');
+                })
+                .catch(err => {
+                    errorMsg.textContent = 'Error playing audio.';
+                    console.error(err);
+                });
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            audio.pause();
+            console.log('Audio is paused');
+        });
+
+        stopBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0;
+            console.log('Audio is stopped');
+        });
+    </script>
+
+</body>
+</html>

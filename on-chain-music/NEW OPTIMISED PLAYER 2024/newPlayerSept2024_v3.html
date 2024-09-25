@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audionals Ordinal Player</title>
+    <!-- Include Pako for GZIP decompression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js" defer></script>
+    <style>
+        /* Ensure the body covers the full viewport height and centers all content */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh; /* Ensure the body takes up at least 100% of the viewport height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center;     /* Center content horizontally */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Style for button container to make buttons display in a row */
+        #buttonContainer {
+            display: flex;
+            justify-content: center; /* Horizontally center the buttons */
+            align-items: center;
+            gap: 10px; /* Space between buttons */
+            margin-bottom: 20px; /* Add some space below the buttons */
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        #loadingIndicator, #errorMessage {
+            margin-top: 10px;
+        }
+
+        #songTitle {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #artworkCanvas {
+            width: 30vh;  /* 30% of the viewport height */
+            height: 30vh; /* Keep it square */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333; /* Optional: add a border for styling */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add a subtle shadow */
+            margin-top: 20px;
+            overflow: hidden; /* Hide any overflow content */
+            background-color: #f9f9f9; /* Optional: background color */
+        }
+
+        img, video, iframe {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensure the media fits within the container without distortion */
+        }
+
+        /* Optional: Style for unsupported content */
+        .unsupported {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audional Player</h1>
+
+    <div id="buttonContainer">
+        <button id="loadButton">Load</button>
+        <button id="playButton" disabled>Play</button>
+        <button id="stopButton" disabled>Stop</button>
+        <button id="skipBackButton" disabled>Skip <</button>
+        <button id="skipForwardButton" disabled>Skip ></button>
+    </div>
+    
+    <div id="loadingIndicator">Loading...</div>
+    <div id="errorMessage"></div>
+    <div id="songTitle"></div>
+    <div id="artworkCanvas">
+        <!-- Placeholder image will be loaded initially -->
+        <img id="placeholderImage" src="https://ordinals.com/content/01c48d3cceb02215bc3d44f9a2dc7fba63ea63719a2ef1c35d3f0c4db93ab8d5i0" alt="Placeholder Artwork" />
+    </div>
+    <script>
+       
+    let currentSongIndex = 0;  // Initial song index
+        
+    const BASE_URL = "https://ordinals.com/content/";
+
+
+const ARTWORK_IDS = [
+    "https://ordinals.com/content/dad995f3f46254e73b0470e7ac7e25a874db400324d22c1e2abd8cbf2bebd00ai0", 
+    "https://ordinals.com/content/2df6f9e192bb34059aabada179857cdcce7891be92fa20a49a66850de8f75a00i0", 
+    "https://ordinals.com/content/cf997386e346140d3d5dbaedbe015c63d81df962a8cc87fc0b571b429d4778b5i5", 
+    "https://ordinals.com/content/ec99785b253c01583e6041e981a7a47134553fae57947e9d0c6c8949bd9e3bf1i0", 
+    "https://ordinals.com/content/26b15064aaab0f2b10555d37193587c4e4d69801f9af339b7b03fb2a839a6f85i0", 
+    "https://ordinals.com/content/5a5255d440a282e92444f3d061a4c2565c0a1e26f29f4e24d3d4ce83cbd5071bi0", 
+    "https://ordinals.com/content/a5475f4d624e0517713ededa758dba0304ee0265c1ed8d5aae6615b2139643c8i0", 
+    "https://ordinals.com/content/53381703b96cf1575de69a870e0a731f3bae23218ee35fd7b00cd195ba2c7a39i0",
+    "https://ordinals.com/content/8a234e2de569147ed58a86dc59fb4a37e577b702ce49fdf119fbdbe274f30e70i0",
+    "https://ordinals.com/content/3a95675d62bd78af488ef60e56f904d0af73e9e54096fba160488381a3a494b2i0",
+    "https://ordinals.com/content/918b25dadc46459e6632532980968e2b79af04198c56f3f4715f79c20b12e886i0",
+    "https://ordinals.com/content/fed62e8fa6c6005c07d5ee1d10811662a71c6a99b59bc79afd7e065aec134bbfi0",
+
+
+
+
+
+];
+
+
+const SONG_IDS = [
+    "https://ordinals.com/content/6d288c0c82653001bb32497889dd1486e8afec9b0671a95fa9e10f99c20737bbi0", // Kora algo
+    "https://ordinals.com/content/633100d631767ddb9a309f5a2a66f5a66d5abd839f3b1c55642690d484189971i0", // ON DAY ONE
+    "https://ordinals.com/content/5527d0cc95ce5ce6eedf4e275234da8b1fe087512d0db618b6de1aaad437c96bi0", // TRUTH
+    "https://ordinals.com/content/07ff7bdc47e5272a3ff55cc46d2b189d510562a057a2c24112f3d0376950484di0", // CHOPPIN
+    "https://ordinals.com/content/119a3ccd1dfd7e987cca139f86d16717d845a22dd6afc59ad492527b95ae9a91i0", // MLK
+    "https://ordinals.com/content/db9131cfe8e933e8e639f007dcd2b582a80bfd2be42b0eafa4d2e206332d6785i0", // MODERN PROGRESS
+    "https://ordinals.com/content/fb0d2abcd1fa5bf2622579f0990435b48d41291f71626fc2e36a93e6ea6b3b85i0", // HUMANITY
+    "https://ordinals.com/content/8aec0a99a5617b9da98a5b63a11a5143f0cac3cfa662d9515c2285de03ef95d4i0",  // I LOVE CHEESE 
+    "https://ordinals.com/content/3359ce42359274ddbd2184d9f75a38b7e59b1d5f24512959e29c377fc8ca604ai0", // FRESH VIBES
+    "https://ordinals.com/content/b22f1c85371b58a9cdac19b2baa50b1f9025a28d44cdfaad539d0527aa7d894ei0",  // ON-CHAIN IN THE MEMBRANE
+    "https://ordinals.com/content/9dfa1812b211a7ac8b2f9e77119828ec8fbf2e9016b3d37a8efd70052eb4aa3ci0", // Based New
+    "https://ordinals.com/content/4653bcc45671abdbc024b03ebbaaadb30e0cad83b80898894ab22426bbccdaaei0", // Freedom Remix
+];
+
+    // Function to dynamically generate full URLs from IDs
+    function getSongUrl(songId) {
+            return songId.startsWith(BASE_URL) ? songId : `${BASE_URL}${songId}`;
+        }
+        
+    // Function to preload all songs and extract the project names
+    async function preloadAllSongs() {
+        let projectNames = [];
+
+        for (let i = 0; i < SONG_IDS.length; i++) {
+            const url = getSongUrl(SONG_IDS[i]);
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Failed to fetch song: ${res.statusText}`);
+
+                const buf = pako.inflate(new Uint8Array(await res.arrayBuffer()));
+                const data = JSON.parse(new TextDecoder().decode(buf));
+
+                // Check for project name in the serialized data under "0"
+                const projectName = data["0"] && data["0"] !== '0' ? data["0"] : 'NoName';
+                projectNames.push(projectName);
+            } catch (error) {
+                console.error(`Error loading song ${i}:`, error);
+                projectNames.push('NoName');  // Add 'NoName' for failed loads
+            }
+        }
+
+        console.log("Project Names: ", projectNames);
+        return projectNames;
+    }
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Preload all songs and log project names
+            await preloadAllSongs();
+        });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const keyMap = {
+        "0": "projectName",
+        "1": "artistName",
+        "2": "projectBPM",
+        "3": "currentSequence",
+        "4": "channelURLs",
+        "5": "channelVolume",
+        "6": "channelPlaybackSpeed",
+        "7": "trimSettings",
+        "8": "projectChannelNames",
+        "9": "startSliderValue",
+        "10": "endSliderValue",
+        "11": "totalSampleDuration",
+        "12": "start",
+        "13": "end",
+        "14": "projectSequences",
+        "15": "steps"
+    };
+
+    const reverseKeyMap = {};
+    for (const key in keyMap) {
+        reverseKeyMap[keyMap[key]] = key;
+    }
+
+    const decompressSteps = (stepData) => stepData.map(step => {
+        if (typeof step === "number") {
+            return { index: step, reverse: false };
+        } else if (typeof step === "string" && step.endsWith("r")) {
+            return { index: parseInt(step.slice(0, -1), 10), reverse: true };
+        } else if (typeof step === "object" && step.r && Array.isArray(step.r)) {
+            const [stepNumber, reverseFlag] = step.r;
+            return { index: stepNumber, reverse: Boolean(reverseFlag) };
+        } else {
+            console.warn("Unknown step format:", step);
+            return null;
+        }
+    }).filter(Boolean);
+
+    const letterToNumber = (() => {
+        const map = {};
+        for (let i = 0; i < 16; i++) {
+            map[String.fromCharCode(97 + i)] = i;
+        }
+        return (letter) => map[letter.toLowerCase()] ?? null;
+    })();
+
+    const deserialize = (data) => {
+        const mappedData = {};
+        for (const [key, value] of Object.entries(data)) {
+            const mappedKey = keyMap[key] || key;
+            if (mappedKey === "projectSequences") {
+                mappedData[mappedKey] = {};
+                for (const [seqKey, seqValue] of Object.entries(value)) {
+                    const sequenceId = `Sequence${seqKey.replace(/^s/, "")}`;
+                    mappedData[mappedKey][sequenceId] = {};
+                    for (const [chanKey, chanData] of Object.entries(seqValue)) {
+                        let channelNumber = parseInt(chanKey.replace(/^ch/, ""), 10);
+                        if (isNaN(channelNumber)) {
+                            channelNumber = letterToNumber(chanKey);
+                            if (channelNumber === null) continue;
+                        }
+                        const channelName = `Channel ${channelNumber}`;
+                        mappedData[mappedKey][sequenceId][channelName] = { steps: decompressSteps(chanData[reverseKeyMap.steps] || []) };
+                    }
+                }
+            } else {
+                mappedData[mappedKey] = value;
+            }
+        }
+        return mappedData;
+    };
+
+    class AudioPlayer {
+        constructor() {
+            this.initializeProperties();
+            this.bindUIElements();
+            this.initEventListeners();
+        }
+
+        initializeProperties() {
+            this.projectNames = [];
+            this.songLoadCounter = 0;
+            this.totalSongs = SONG_IDS.length;
+            this.audioBuffers = [];
+            this.reversedAudioBuffers = {};
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            this.isPlaying = false;
+            this.currentSourceNodes = [];
+            this.processedData = {};
+            this.currentSequence = 0;
+            this.startTime = 0;
+            this.pendingTimeouts = [];
+        }
+
+        bindUIElements() {
+            ['loadButton', 'playButton', 'stopButton', 'skipForwardButton', 'skipBackButton', 'loadingIndicator', 'errorMessage', 'songTitle', 'artworkCanvas'].forEach(id => {
+                this[id] = document.getElementById(id);
+            });
+        }
+
+        initEventListeners() {
+            this.loadButton.addEventListener('click', () => this.loadButtonHandler());
+            this.playButton.addEventListener('click', () => this.play());
+            this.stopButton.addEventListener('click', () => this.stop());
+            ['skipForwardButton', 'skipBackButton'].forEach(direction => {
+                this[direction].addEventListener('click', () => this.skipSong(direction.includes('Forward') ? 'forward' : 'back'));
+            });
+        }
+
+
+    /**
+     * Displays the project name (song title) above the artwork canvas.
+     * @param {string} title - The project name (song title).
+     */
+    showSongTitle(title) {
+        this.songTitle.textContent = title;
+    }
+
+    /**
+     * Asynchronously loads and displays artwork based on the song index.
+     * Handles different media types like images, videos, and interactive content.
+     * @param {number} songIndex - The index of the current song.
+     */
+    async displayArtwork(songIndex) {
+        const artworkUrl = ARTWORK_IDS[songIndex];
+        this.artworkCanvas.innerHTML = ''; // Clear previous artwork
+
+        if (!artworkUrl) {
+            console.log(`No artwork URL for song index ${songIndex}`);
+            return;
+        }
+
+        try {
+            const response = await fetch(artworkUrl, { method: 'HEAD' });
+            if (!response.ok) throw new Error(`Failed to fetch artwork headers: ${response.status} ${response.statusText}`);
+
+            const contentType = response.headers.get('Content-Type');
+            console.log(`Artwork Content-Type for song ${songIndex}: ${contentType}`);
+
+            let mediaElement;
+
+            switch (true) {
+                case contentType.startsWith('image/'):
+                    mediaElement = Object.assign(document.createElement('img'), {
+                        src: artworkUrl,
+                        alt: `Artwork for song ${songIndex + 1}`,
+                        onload: () => {
+                            const { clientWidth: w, clientHeight: h } = this.artworkCanvas;
+                            const imgAspect = mediaElement.naturalWidth / mediaElement.naturalHeight;
+                            const canvasAspect = w / h;
+                            mediaElement.style.width = imgAspect > canvasAspect ? '100%' : 'auto';
+                            mediaElement.style.height = imgAspect > canvasAspect ? 'auto' : '100%';
+                        }
+                    });
+                    break;
+                case contentType.startsWith('video/'):
+                    mediaElement = Object.assign(document.createElement('video'), {
+                        src: artworkUrl,
+                        controls: true,
+                        autoplay: false,
+                        loop: false
+                    });
+                    break;
+                case contentType.startsWith('audio/'):
+                    mediaElement = Object.assign(document.createElement('audio'), {
+                        src: artworkUrl,
+                        controls: true,
+                        autoplay: false
+                    });
+                    break;
+                case contentType.startsWith('text/html'):
+                    mediaElement = Object.assign(document.createElement('iframe'), {
+                        src: artworkUrl,
+                        width: '100%',
+                        height: '100%',
+                        frameBorder: '0'
+                    });
+                    break;
+                case contentType.startsWith('application/'):
+                default:
+                    console.warn(`Unsupported content type: ${contentType}`);
+                    mediaElement = Object.assign(document.createElement('div'), {
+                        className: 'unsupported',
+                        textContent: 'Unsupported artwork format.'
+                    });
+            }
+
+            this.artworkCanvas.appendChild(mediaElement);
+            console.log(`Displayed artwork for song index ${songIndex}`);
+        } catch (error) {
+            console.error(`Error displaying artwork for song index ${songIndex}:`, error);
+            const errorDiv = Object.assign(document.createElement('div'), {
+                className: 'unsupported',
+                textContent: 'Failed to load artwork.'
+            });
+            this.artworkCanvas.appendChild(errorDiv);
+        }
+    }
+
+    /**
+     * Asynchronously loads a song and its associated artwork.
+     * @param {string} url - The URL of the song to load.
+     * @param {boolean} autoPlay - Whether to automatically play the song after loading.
+     */
+    async loadSong(url, autoPlay = false) {
+        this.reset(); // Reset player state before loading
+        try {
+            this.showLoading(true);
+            await this.loadGzipSongFile(url); // Load the song from the URL
+            this.toggleButtons(false); // Enable relevant buttons
+            
+            // Display the artwork based on the current song index
+            await this.displayArtwork(currentSongIndex);
+
+            if (autoPlay) this.play(); // Automatically play the song if required
+            console.log("Song loaded successfully!");
+        } catch (e) {
+            console.error("Error loading file:", e);
+            this.displayError("Failed to load file. Check the console for details.");
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    /**
+     * Toggles the disabled state of control buttons.
+     * @param {boolean} disabled - Whether to disable the buttons.
+     */
+    toggleButtons(disabled) {
+        const buttons = [this.playButton, this.stopButton, this.skipForwardButton, this.skipBackButton];
+        buttons.forEach(button => button.disabled = disabled);
+    }
+
+    /**
+     * Handler for the Load button. Loads the current song without autoplay.
+     */
+    async loadButtonHandler() {
+        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]));
+    }
+
+    /**
+     * Handler for skipping songs forward or backward.
+     * @param {string} direction - 'forward' to skip to the next song, 'back' to skip to the previous song.
+     */
+    async skipSong(direction) {
+        currentSongIndex = (direction === 'forward')
+            ? (currentSongIndex + 1) % SONG_IDS.length
+            : (currentSongIndex - 1 + SONG_IDS.length) % SONG_IDS.length;
+
+        console.log(`isPlaying: ${this.isPlaying}`);
+        await this.loadSong(getSongUrl(SONG_IDS[currentSongIndex]), this.isPlaying);
+        console.log(`Skipped ${direction} to song index ${currentSongIndex}`);
+    }
+
+    /**
+     * Resets the audio player to its initial state.
+     */
+    reset() {
+        this.stop();
+        this.audioBuffers = [];
+        this.reversedAudioBuffers = {};
+        this.currentSourceNodes.forEach(s => {
+            try { s.stop(); } catch (e) { console.warn("Error stopping source node:", e); }
+        });
+        this.currentSourceNodes = [];
+        this.pendingTimeouts.forEach(clearTimeout);
+        this.pendingTimeouts = [];
+        this.processedData = {};
+        this.currentSequence = this.startTime = 0;
+        this.toggleButtons(true); // Disable relevant buttons during reset
+        this.artworkCanvas.innerHTML = '';
+        console.log('AudioPlayer reset.');
+    }
+
+    /**
+     * Shows or hides the loading indicator.
+     * @param {boolean} isLoading - Whether to show the loading indicator.
+     */
+    showLoading(isLoading) {
+        this.loadingIndicator.style.display = isLoading ? 'block' : 'none';
+    }
+
+    /**
+     * Displays an error message to the user.
+     * @param {string} message - The error message to display.
+     */
+    displayError(message) {
+        this.errorMessage.textContent = message;
+    }
+
+
+                async loadGzipSongFile(url) {
+                    try {
+                        const res = await fetch(url);
+                        if (!res.ok) throw new Error(`Network response not ok: ${res.statusText}`);
+
+                        const buf = pako.inflate(new Uint8Array(await res.arrayBuffer()));
+                        const data = deserialize(JSON.parse(new TextDecoder().decode(buf)));
+
+                        // Access the project name, defaulting to 'NoName' if undefined
+                        const projectName = data["projectName"] || 'NoName';
+                        console.log(`Loaded project name: ${projectName}`);
+
+                        // Show the project name above the artwork
+                        this.showSongTitle(projectName);
+
+                        // Store the project name in the array
+                        this.projectNames.push(projectName);
+
+                        // Collect other metadata from the song data
+                        const md = {
+                            projectName: data.projectName,
+                            artistName: data.artistName,
+                            projectBPM: data.projectBPM,
+                            currentSequence: data.currentSequence,
+                            channelURLs: this.arrayToObject(data.channelURLs, 0, false),
+                            channelVolume: this.arrayToObject(data.channelVolume, 0, true),
+                            channelPlaybackSpeed: this.arrayToObject(data.channelPlaybackSpeed, 0, true),
+                            trimSettings: this.mapTrimSettings(data.trimSettings),
+                            projectChannelNames: data.projectChannelNames,
+                            projectSequences: data.projectSequences,
+                            globalPlaybackSpeed: data.globalPlaybackSpeed || 1,
+                        };
+
+                        // Store processed data
+                        this.processedData = {
+                            ...md,
+                            VOLUME_CONTROLS: md.channelVolume,
+                            SPEED_CONTROLS: md.channelPlaybackSpeed,
+                            songDataUrls: Object.values(md.channelURLs),
+                        };
+
+                        console.log(`Sequences loaded: ${Object.keys(this.processedData.projectSequences).length}`);
+
+                        // Fetch and process audio data if the number of URLs is correct
+                        if (this.processedData.songDataUrls.length === 16) {
+                            await this.fetchAndProcessAudioData(
+                                this.processedData.songDataUrls.map(u => `https://ordinals.com${u}`)
+                            );
+                        } else {
+                            throw new Error("Invalid channel URLs or channel count.");
+                        }
+
+                        // Increment the load counter
+                        this.songLoadCounter++;
+
+                        // If all songs are loaded, log all project names
+                        if (this.songLoadCounter === this.totalSongs) {
+                            this.logProjectNames();
+                        }
+
+                    } catch (error) {
+                        console.error(`Error loading file:`, error);
+                    }
+                }
+
+    // Method to log all project names once all songs are loaded
+    logProjectNames() {
+        console.log("All project names loaded:", this.projectNames);
+    }
+
+    // Method to load all songs in sequence
+    async loadAllSongs() {
+        for (let i = 0; i < SONG_IDS.length; i++) {
+            const url = getSongUrl(SONG_IDS[i]);
+            await this.loadGzipSongFile(url);  // Load each song one by one
+        }
+    }
+
+
+arrayToObject(a, s=0, p=false){
+    return a.reduce((o,i,k)=>{o[`Channel ${s+k}`]=p?parseFloat(i)||1:i; return o},{})
+}
+
+mapTrimSettings(a){
+    return a.reduce((o,i,k)=>{
+        if(typeof i ==='object' && i){
+            o[`Channel ${k}`] = {
+                start: typeof i[9] === 'number' ? i[9] : 0,
+                end: typeof i[10] === 'number' ? i[10] : 100
+            };
+        }
+        else if(typeof i ==='number'){
+            o[`Channel ${k}`] = {start:0, end:i};
+        }
+        else{
+            o[`Channel ${k}`] = {start:0, end:100};
+            console.warn(`Invalid trim for Channel ${k}.`);
+        }
+        return o;
+    },{})
+}
+
+async fetchAndProcessAudioData(u) {
+    const results = await Promise.allSettled(u.map((url, i) => this.processAudioUrl(url, i)));
+    results.forEach((res, i) => { 
+        if (res.status === 'rejected') 
+            console.error(`Failed Channel ${i} (${u[i]}):`, res.reason); 
+    });
+    this.createReversedBuffers();
+}
+
+async processAudioUrl(u, i) {
+    const channelName = `Channel ${i}`;
+    try {
+        const res = await fetch(u);
+        if (!res.ok) throw new Error(`Fetch failed: ${u}, Status: ${res.status}`);
+
+        const contentType = res.headers.get("Content-Type");
+        const audioBuffer = await this.handleResponseByType(res, contentType, channelName);
+        
+        if (audioBuffer) {
+            this.logAudioBufferDetails(audioBuffer, channelName);
+            this.storeAudioBuffer(audioBuffer, channelName);
+        }
+    } catch (e) {
+        console.error(`Error processing ${channelName}:`, e);
+    }
+}
+
+async handleResponseByType(response, contentType, channelName) {
+    if (/audio\/(wav|mpeg|mp4)|video\/mp4/.test(contentType)) {
+        return await this.fetchAndDecodeAudio(response, channelName);
+    } else if (/application\/json/.test(contentType)) {
+        return await this.handleJsonResponse(response, channelName);
+    } else if (/text\/html/.test(contentType)) {
+        return await this.handleHtmlResponse(response, channelName);
+    } else {
+        throw new Error(`Unsupported content type for ${channelName}: ${contentType}`);
+    }
+}
+
+logAudioBufferDetails(audioBuffer, channelName) {
+    console.log(`AudioBuffer for ${channelName}:`, {
+        channels: audioBuffer.numberOfChannels,
+        length: audioBuffer.length,
+        sampleRate: audioBuffer.sampleRate,
+        duration: audioBuffer.duration
+    });
+    for (let c = 0; c < audioBuffer.numberOfChannels; c++) {
+        console.log(`Channel ${c} data:`, audioBuffer.getChannelData(c).slice(0, 10));
+    }
+}
+
+storeAudioBuffer(audioBuffer, channelName) {
+    const volume = this.parseVolumeLevel(this.processedData.VOLUME_CONTROLS[channelName]);
+    const speed = this.processedData.SPEED_CONTROLS[channelName] || 1;
+    const trim = this.processedData.trimSettings[channelName] || { start: 0, end: 100 };
+    const trimmedBuffer = this.applyTrim(audioBuffer, trim.start, trim.end);
+    const gainNode = this.audioCtx.createGain();
+    gainNode.gain.value = volume;
+    gainNode.connect(this.audioCtx.destination);
+    this.audioBuffers.push({ buffer: trimmedBuffer, gainNode, channel: channelName, playbackSpeed: speed });
+}
+
+async fetchAndDecodeAudio(res, channelName) {
+    try {
+        const arrayBuffer = await res.arrayBuffer();
+        const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
+        console.log(`Decoded ${channelName}.`);
+        return audioBuffer;
+    } catch (e) {
+        console.error(`decodeAudioData failed for ${channelName}:`, e);
+        throw new Error(`Failed to decode audio for ${channelName}.`);
+    }
+}
+
+async handleJsonResponse(response, channelName) {
+    return this.handleAudioDataFromResponse(response, channelName, 'JSON');
+}
+
+async handleHtmlResponse(response, channelName) {
+    return this.handleAudioDataFromResponse(response, channelName, 'HTML');
+}
+
+async handleAudioDataFromResponse(response, channelName, type) {
+    try {
+        const data = type === 'JSON' ? await response.json() : await response.text();
+        const base64Audio = type === 'JSON' ? data.audioData : this.extractBase64FromHTML(data);
+        
+        if (base64Audio) {
+            const arrayBuffer = this.base64ToArrayBuffer(base64Audio.split(",")[1]);
+            try {
+                const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
+                return audioBuffer;
+            } catch (error) {
+                console.error(`decodeAudioData failed for ${type} audio data in ${channelName}:`, error);
+                throw new Error(`Failed to decode ${type} audio data for ${channelName}.`);
+            }
+        }
+        throw new Error(`Invalid ${type} structure for audio data in ${channelName}.`);
+    } catch (error) {
+        console.error(`Error handling ${type} response for ${channelName}:`, error);
+        throw error;
+    }
+}
+
+
+    base64ToArrayBuffer(base64) {
+        try {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        } catch (error) {
+            console.error("[base64ToArrayBuffer] Conversion error:", error);
+            return null;
+        }
+    }
+
+    extractBase64FromHTML(htmlContent) {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+            const audioSource = doc.querySelector("audio[data-audionalSampleName] source")?.getAttribute("src");
+            if (/^data:audio\/(wav|mp3|mp4);base64,/.test(audioSource?.toLowerCase()) || /audio\//.test(audioSource?.toLowerCase())) {
+                return audioSource;
+            }
+            console.error("[extractBase64FromHTML] Invalid audio source format.");
+        } catch (error) {
+            console.error("[extractBase64FromHTML] Parsing error:", error);
+        }
+        return null;
+    }
+
+    parseVolumeLevel(volume) {
+        const parsed = parseFloat(volume);
+        return isNaN(parsed) || parsed < 0 ? 1 : Math.min(parsed, 1);
+    }
+
+    applyTrim(buffer, startPercent, endPercent) {
+        const totalSamples = buffer.length;
+        const startSample = Math.floor(totalSamples * (startPercent / 100));
+        const endSample = Math.floor(totalSamples * (endPercent / 100));
+
+        if (startSample >= endSample || startSample < 0 || endSample > totalSamples) {
+            console.warn(`Invalid trim settings: Start = ${startPercent}%, End = ${endPercent}%. Using full buffer.`);
+            return buffer;
+        }
+
+        const trimmedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, endSample - startSample, buffer.sampleRate);
+        for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+            const channelData = buffer.getChannelData(channel).subarray(startSample, endSample);
+            trimmedBuffer.copyToChannel(channelData, channel, 0);
+        }
+        return trimmedBuffer;
+    }
+
+    createReversedBuffers() {
+        const channelsWithReverse = new Set();
+        const { projectSequences } = this.processedData;
+
+        console.debug("Starting createReversedBuffers");
+        
+        Object.values(projectSequences).forEach((sequence, seqIndex) => {
+            console.debug(`Processing sequence ${seqIndex + 1}/${Object.values(projectSequences).length}`);
+            
+            Object.entries(sequence).forEach(([channelName, channelData]) => {
+                channelData.steps.forEach((step, stepIndex) => {
+                    if (step.reverse) {
+                        channelsWithReverse.add(channelName);
+                        console.debug(`  Step ${stepIndex + 1}: Reverse flag set for channel '${channelName}'`);
+                    }
+                });
+            });
+        });
+
+        console.debug("Channels requiring reversal:", Array.from(channelsWithReverse));
+
+        this.audioBuffers.forEach(({ buffer, channel }) => {
+            if (channelsWithReverse.has(channel) && !this.reversedAudioBuffers[channel]) {
+                console.debug(`Reversing buffer for channel: ${channel}`);
+                this.reversedAudioBuffers[channel] = this.reverseBuffer(buffer);
+            } else {
+                if (channelsWithReverse.has(channel)) {
+                    console.debug(`Buffer for channel ${channel} already reversed.`);
+                }
+            }
+        });
+
+        console.debug("Completed createReversedBuffers");
+    }
+
+    reverseBuffer(buffer) {
+        console.debug("Starting reverseBuffer");
+        const reversedBuffer = this.audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+
+        for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+            const channelData = buffer.getChannelData(channel);
+            const reversedData = reversedBuffer.getChannelData(channel);
+            console.debug(`  Reversing data for channel ${channel + 1}/${buffer.numberOfChannels}`);
+            
+            for (let i = 0, len = buffer.length; i < len; i++) {
+                reversedData[i] = channelData[len - i - 1];
+            }
+        }
+
+        console.debug("Completed reverseBuffer");
+        return reversedBuffer;
+    }
+
+    // Playback methods
+    play() {
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.startTime = this.audioCtx.currentTime;
+        console.log(`Playback started at ${this.startTime.toFixed(3)} seconds`);
+        console.log("Playing song...");
+        console.log(`isPlaying: ${this.isPlaying}`);  // Log the current state of isPlaying
+        this.scheduleSequences();
+    }
+
+    scheduleSequences() {
+        const log = [];
+        console.debug("Scheduling sequences...");
+        Object.keys(this.processedData.projectSequences).forEach((id, i) => 
+            this.scheduleSequence(id, this.calculateSequenceStartTime(i), log)
+        );
+        console.log('Scheduled Sequences:', log);
+    }
+
+    calculateSequenceStartTime(i) {
+        const { projectBPM, globalPlaybackSpeed } = this.processedData;
+        const stepDuration = 60 / projectBPM / 4;
+        const startTime = this.startTime + (i * this.getStepsPerSequence() * stepDuration) / globalPlaybackSpeed;
+        console.debug(`Start time for sequence ${i + 1}: ${startTime.toFixed(3)}s`);
+        return startTime;
+    }
+
+    scheduleSequence(id, startTime, log) {
+        const sequence = this.processedData.projectSequences[id];
+        if (!sequence) { 
+            console.error(`No data for ${id}.`); 
+            return; 
+        }
+
+        const { projectBPM, globalPlaybackSpeed } = this.processedData;
+        const stepDuration = 60 / projectBPM / 4;
+
+        log.push({ id, startTime: startTime.toFixed(3) });
+        console.debug(`Scheduled ${id} at ${startTime.toFixed(3)}s`);
+
+        Object.entries(sequence).forEach(([channel, data]) => {
+            const buf = this.audioBuffers.find(b => b.channel === channel);
+            if (!buf) { 
+                console.warn(`No buffer for ${channel}.`); 
+                return; 
+            }
+
+            data.steps.forEach(({ index, reverse }) => {
+                const when = startTime + ((index - 1) * stepDuration) / globalPlaybackSpeed;
+                const source = this.audioCtx.createBufferSource();
+                source.buffer = reverse && this.reversedAudioBuffers[channel] ? this.reversedAudioBuffers[channel] : buf.buffer;
+                console.debug(`Using ${reverse && this.reversedAudioBuffers[channel] ? 'reversed' : 'original'} buffer for ${channel}`);
+                source.playbackRate.value = buf.playbackSpeed * globalPlaybackSpeed;
+                source.connect(buf.gainNode);
+                source.start(when);
+                this.currentSourceNodes.push(source);
+            });
+        });
+
+        const delay = Math.max((startTime - this.audioCtx.currentTime) * 1000, 0);
+        if (delay < Number.MAX_SAFE_INTEGER) {
+            const tid = setTimeout(() => {
+                if (this.isPlaying) console.log(`Now playing ${id}`);
+                this.pendingTimeouts = this.pendingTimeouts.filter(t => t !== tid);
+            }, delay);
+            this.pendingTimeouts.push(tid);
+        } else {
+            console.warn(`Delay for ${id} too long. Skipping log.`);
+        }
+    }
+
+    getStepsPerSequence() { 
+        return 64; 
+    }
+
+    stop() {
+        if (!this.isPlaying) return;
+        this.currentSourceNodes.forEach(s => s.stop());
+        this.currentSourceNodes = [];
+        this.isPlaying = false;
+        console.log("Stopped song.");
+        console.log(`isPlaying: ${this.isPlaying}`);  // Log the current state of isPlaying
+          this.pendingTimeouts.forEach(clearTimeout);
+        this.pendingTimeouts = [];
+    }
+
+    async extractAudioFromVideo(response, url, channel) {
+        try {
+            console.log(`Starting audio extraction for ${channel} from ${url}`);
+            const videoBlob = await response.blob();
+            console.log(`Fetched video Blob for ${channel}:`, videoBlob);
+            const videoURL = URL.createObjectURL(videoBlob);
+            const video = Object.assign(document.createElement('video'), {
+                src: videoURL,
+                crossOrigin: "anonymous",
+                muted: true,
+                style: 'display:none'
+            });
+            document.body.appendChild(video);
+
+            await new Promise((res, rej) => {
+                video.onloadedmetadata = () => {
+                    console.log(`Metadata loaded for ${channel}: ${video.duration}s`);
+                    res();
+                };
+                video.onerror = () => rej(new Error(`Error loading metadata for ${channel}.`));
+            });
+
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(video);
+            const scriptNode = audioCtx.createScriptProcessor(4096, 2, 2);
+            const buffer = { left: [], right: [] };
+
+            scriptNode.onaudioprocess = e => {
+                buffer.left.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                buffer.right.push(new Float32Array(e.inputBuffer.getChannelData(1)));
+            };
+
+            source.connect(scriptNode);
+            scriptNode.connect(audioCtx.destination);
+
+            await video.play().catch(err => { 
+                throw new Error(`Error playing video: ${err.message}`); 
+            });
+            console.log(`Starting audio capture for ${channel}...`);
+
+            return await new Promise((res, rej) => {
+                video.onended = () => {
+                    console.log(`Video ended for ${channel}. Processing audio...`);
+                    scriptNode.disconnect();
+                    source.disconnect();
+                    audioCtx.close();
+
+                    const left = this.concatenateFloat32Arrays(buffer.left);
+                    const right = this.concatenateFloat32Arrays(buffer.right);
+                    const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, left.length, audioCtx.sampleRate);
+                    const rendered = offlineCtx.createBuffer(2, left.length, audioCtx.sampleRate);
+                    rendered.copyToChannel(left, 0);
+                    rendered.copyToChannel(right, 1);
+                    console.log(`Audio processed for ${channel}.`);
+                    res(rendered);
+
+                    URL.revokeObjectURL(videoURL);
+                    document.body.removeChild(video);
+                };
+                video.onerror = e => {
+                    console.error(`Playback error for ${channel}:`, e);
+                    rej(new Error(`Playback error for ${channel}.`));
+                };
+            });
+        } catch (error) {
+            console.error(`Error extracting audio for ${channel}:`, error);
+            throw new Error(`Failed to extract audio for ${channel}.`);
+        }
+    }
+
+    concatenateFloat32Arrays(arrays) {
+        const len = arrays.reduce((s, a) => s + a.length, 0);
+        const res = new Float32Array(len);
+        let off = 0;
+        arrays.forEach(a => { res.set(a, off); off += a.length; });
+        return res;
+    }
+}
+// Initialize the AudioPlayer instance
+new AudioPlayer();
+
+});
+</script>
+
+</body>
+</html>

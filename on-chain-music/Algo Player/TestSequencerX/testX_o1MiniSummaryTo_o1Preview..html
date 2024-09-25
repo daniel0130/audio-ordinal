@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Web DAW with Waveform Editing</title>
+    <style>
+        /* styles.css */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        #daw {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        #transport {
+            margin-bottom: 20px;
+        }
+
+        #transport button {
+            margin-right: 10px;
+            padding: 10px 20px;
+        }
+
+        #track-list {
+            margin-top: 20px;
+        }
+
+        .track {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .track-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .track-controls label {
+            margin-right: 5px;
+        }
+
+        .track-controls input[type="range"] {
+            margin-right: 15px;
+        }
+
+        .track-controls button {
+            margin-left: 10px;
+        }
+
+        .timeline {
+            position: relative;
+            height: 100px;
+            background-color: #e6e6e6;
+            overflow-x: scroll;
+        }
+
+        .clip {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        .clip.selected {
+            outline: 2px solid #ff0;
+        }
+
+        /* Drag-and-drop styles */
+        .track.dragging {
+            opacity: 0.5;
+        }
+
+        /* Add Track Button */
+        #add-track {
+            padding: 10px 20px;
+        }
+
+        /* File input styling */
+        .file-input {
+            margin-top: 10px;
+        }
+
+        .file-input input[type="file"] {
+            display: none;
+        }
+
+        .file-input label {
+            padding: 5px 10px;
+            background-color: #ccc;
+            border: 1px solid #999;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="daw">
+        <!-- Transport Controls -->
+        <div id="transport">
+            <button id="play">Play</button>
+            <button id="pause">Pause</button>
+            <button id="stop">Stop</button>
+        </div>
+
+        <!-- Track List -->
+        <div id="track-list"></div>
+
+        <!-- Add Track Button -->
+        <button id="add-track">Add Track</button>
+    </div>
+
+    <script>
+        // app.js
+
+        // Global variables for tracking all tracks and audio context
+        let audioContext;
+        let tracks = [];
+        let trackCount = 0;
+        let isPlaying = false;
+        let startTime = 0;
+        let pauseTime = 0;
+
+        // Initialize Audio Context on user interaction
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Clip Class Definition
+        class Clip {
+            constructor(buffer, startTime = 0, offset = 0, duration = null) {
+                this.buffer = buffer;
+                this.startTime = startTime; // Time on the timeline
+                this.offset = offset;       // Offset within the buffer
+                this.duration = duration || buffer.duration - offset;
+            }
+        }
+
+        // Track Class Definition
+        class Track {
+            constructor(id) {
+                this.id = id;
+                this.isMuted = false;
+                this.isSolo = false;
+                this.clips = [];
+                this.gainNode = audioContext.createGain();
+                this.panNode = audioContext.createStereoPanner();
+                this.gainNode.connect(this.panNode).connect(audioContext.destination);
+
+                // Create track element
+                this.trackElement = document.createElement('div');
+                this.trackElement.className = 'track';
+                this.trackElement.draggable = true;
+
+                this.trackElement.innerHTML = `
+                    <div class="track-controls">
+                        <label>Volume</label>
+                        <input type="range" min="0" max="1" step="0.01" value="0.5" class="volume-control">
+                        <label>Panning</label>
+                        <input type="range" min="-1" max="1" step="0.01" value="0" class="pan-control">
+                        <button class="mute-track">Mute</button>
+                        <button class="solo-track">Solo</button>
+                        <button class="delete-track">Delete</button>
+                    </div>
+                    <!-- Timeline -->
+                    <div class="timeline"></div>
+                    <!-- File Input -->
+                    <div class="file-input">
+                        <label for="file-input-${this.id}">Load Audio</label>
+                        <input type="file" id="file-input-${this.id}" accept="audio/*">
+                    </div>
+                `;
+
+                // Event listeners for controls
+                this.trackElement.querySelector('.volume-control').addEventListener('input', (e) => {
+                    this.gainNode.gain.value = this.isMuted ? 0 : e.target.value;
+                });
+
+                this.trackElement.querySelector('.pan-control').addEventListener('input', (e) => {
+                    this.panNode.pan.value = e.target.value;
+                });
+
+                this.trackElement.querySelector('.mute-track').addEventListener('click', () => {
+                    this.isMuted = !this.isMuted;
+                    this.updateMuteStatus();
+                });
+
+                this.trackElement.querySelector('.solo-track').addEventListener('click', () => {
+                    this.isSolo = !this.isSolo;
+                    this.updateSoloStatus();
+                });
+
+                this.trackElement.querySelector('.delete-track').addEventListener('click', () => {
+                    this.deleteTrack();
+                });
+
+                // File input event listener
+                this.trackElement.querySelector(`#file-input-${this.id}`).addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.loadAudioFile(file);
+                    }
+                });
+
+                // Drag and drop events
+                this.trackElement.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', this.id);
+                    e.dropEffect = 'move';
+                    this.trackElement.classList.add('dragging');
+                });
+
+                this.trackElement.addEventListener('dragend', () => {
+                    this.trackElement.classList.remove('dragging');
+                });
+
+                // Timeline element
+                this.timeline = this.trackElement.querySelector('.timeline');
+
+                // Event listeners for waveform editing
+                this.timeline.addEventListener('mousedown', (e) => this.onTimelineMouseDown(e));
+                this.timeline.addEventListener('mousemove', (e) => this.onTimelineMouseMove(e));
+                this.timeline.addEventListener('mouseup', (e) => this.onTimelineMouseUp(e));
+                this.timeline.addEventListener('mouseleave', (e) => this.onTimelineMouseUp(e));
+
+                this.isDragging = false;
+                this.draggingClip = null;
+                this.draggingEdge = null;
+                this.startX = 0;
+            }
+
+            // Load audio file and decode it
+            loadAudioFile(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    audioContext.decodeAudioData(e.target.result, (buffer) => {
+                        // Add new clip to the track starting at time 0
+                        const clip = new Clip(buffer);
+                        this.clips.push(clip);
+                        this.renderClips();
+                    }, (error) => {
+                        console.error('Error decoding audio data:', error);
+                        alert('An error occurred while decoding the audio file.');
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            // Play all clips in the track
+            play(startAt) {
+                this.clips.forEach(clip => {
+                    if (clip.startTime + clip.duration > startAt) {
+                        const sourceNode = audioContext.createBufferSource();
+                        sourceNode.buffer = clip.buffer;
+                        sourceNode.connect(this.gainNode);
+
+                        const when = Math.max(0, clip.startTime - startAt);
+                        const offset = clip.offset + Math.max(0, startAt - clip.startTime);
+                        const duration = clip.duration - (offset - clip.offset);
+
+                        sourceNode.start(audioContext.currentTime + when, offset, duration);
+                        clip.sourceNode = sourceNode;
+                    }
+                });
+            }
+
+            // Stop all clips
+            stop() {
+                this.clips.forEach(clip => {
+                    if (clip.sourceNode) {
+                        clip.sourceNode.stop();
+                        clip.sourceNode = null;
+                    }
+                });
+            }
+
+            // Update mute status
+            updateMuteStatus() {
+                const volumeControl = this.trackElement.querySelector('.volume-control');
+                this.gainNode.gain.value = this.isMuted ? 0 : volumeControl.value;
+                this.trackElement.querySelector('.mute-track').textContent = this.isMuted ? 'Unmute' : 'Mute';
+            }
+
+            // Update solo status
+            updateSoloStatus() {
+                this.trackElement.querySelector('.solo-track').textContent = this.isSolo ? 'Unsolo' : 'Solo';
+                updateAllTracksSoloStatus();
+            }
+
+            // Delete the track
+            deleteTrack() {
+                this.stop();
+                this.trackElement.remove();
+                tracks = tracks.filter(t => t.id !== this.id);
+            }
+
+            // Render clips on the timeline
+            renderClips() {
+                this.timeline.innerHTML = '';
+                this.clips.forEach((clip, index) => {
+                    const clipElement = document.createElement('div');
+                    clipElement.className = 'clip';
+                    clipElement.style.left = (clip.startTime * 100) + 'px';
+                    clipElement.style.width = (clip.duration * 100) + 'px';
+                    clipElement.dataset.index = index;
+
+                    // Event listeners for clip interactions
+                    clipElement.addEventListener('mousedown', (e) => this.onClipMouseDown(e, clipElement, clip));
+                    this.timeline.appendChild(clipElement);
+                });
+            }
+
+            // Mouse event handlers for timeline
+            onTimelineMouseDown(e) {
+                this.isDragging = true;
+                this.startX = e.offsetX;
+                const clipElement = e.target.closest('.clip');
+                if (clipElement) {
+                    const clipIndex = parseInt(clipElement.dataset.index);
+                    this.draggingClip = this.clips[clipIndex];
+                    this.selectedClipElement = clipElement;
+                    this.selectedClipElement.classList.add('selected');
+
+                    // Check for trimming
+                    if (e.ctrlKey) {
+                        const rect = clipElement.getBoundingClientRect();
+                        if (e.clientX - rect.left < 10) {
+                            this.draggingEdge = 'left';
+                        } else if (rect.right - e.clientX < 10) {
+                            this.draggingEdge = 'right';
+                        }
+                    }
+
+                    // Check for splitting
+                    else if (e.altKey) {
+                        const clickPosition = (e.offsetX - parseFloat(clipElement.style.left)) / parseFloat(clipElement.style.width);
+                        this.splitClip(this.draggingClip, clickPosition);
+                        this.isDragging = false;
+                    }
+
+                    // Check for copying
+                    else if (e.metaKey || e.shiftKey) {
+                        this.copyClip(this.draggingClip);
+                        this.isDragging = false;
+                    }
+
+                    // Moving clip
+                    else {
+                        this.offsetX = e.offsetX - parseFloat(clipElement.style.left);
+                    }
+                } else {
+                    this.draggingClip = null;
+                }
+            }
+
+            onTimelineMouseMove(e) {
+                if (this.isDragging && this.draggingClip) {
+                    const deltaX = e.offsetX - this.startX;
+                    const deltaTime = deltaX / 100;
+
+                    if (this.draggingEdge) {
+                        // Trimming
+                        if (this.draggingEdge === 'left') {
+                            const newOffset = this.draggingClip.offset + deltaTime;
+                            const newDuration = this.draggingClip.duration - deltaTime;
+                            if (newDuration > 0 && newOffset >= 0) {
+                                this.draggingClip.offset = newOffset;
+                                this.draggingClip.startTime += deltaTime;
+                                this.draggingClip.duration = newDuration;
+                            }
+                        } else if (this.draggingEdge === 'right') {
+                            const newDuration = this.draggingClip.duration + deltaTime;
+                            if (newDuration > 0 && (this.draggingClip.offset + newDuration) <= this.draggingClip.buffer.duration) {
+                                this.draggingClip.duration = newDuration;
+                            }
+                        }
+                    } else {
+                        // Moving clip
+                        const newStartTime = (e.offsetX - this.offsetX) / 100;
+                        if (newStartTime >= 0) {
+                            this.draggingClip.startTime = newStartTime;
+                        }
+                    }
+                    this.renderClips();
+                }
+            }
+
+            onTimelineMouseUp(e) {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    if (this.selectedClipElement) {
+                        this.selectedClipElement.classList.remove('selected');
+                    }
+                    this.draggingClip = null;
+                    this.draggingEdge = null;
+                }
+            }
+
+            // Mouse event handler for clips
+            onClipMouseDown(e, clipElement, clip) {
+                e.stopPropagation();
+            }
+
+            // Split clip at a given position
+            splitClip(clip, position) {
+                const splitTime = clip.duration * position;
+                const firstClip = new Clip(clip.buffer, clip.startTime, clip.offset, splitTime);
+                const secondClip = new Clip(clip.buffer, clip.startTime + splitTime, clip.offset + splitTime, clip.duration - splitTime);
+                const index = this.clips.indexOf(clip);
+                this.clips.splice(index, 1, firstClip, secondClip);
+                this.renderClips();
+            }
+
+            // Copy clip
+            copyClip(clip) {
+                const newClip = new Clip(clip.buffer, clip.startTime + clip.duration + 0.1, clip.offset, clip.duration);
+                this.clips.push(newClip);
+                this.renderClips();
+            }
+
+            // Get track element
+            getElement() {
+                return this.trackElement;
+            }
+        }
+
+        // Update solo status across all tracks
+        function updateAllTracksSoloStatus() {
+            const anySolo = tracks.some(track => track.isSolo);
+            tracks.forEach(track => {
+                if (anySolo) {
+                    track.gainNode.gain.value = track.isSolo ? track.trackElement.querySelector('.volume-control').value : 0;
+                } else {
+                    track.updateMuteStatus();
+                }
+            });
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            const trackList = document.getElementById('track-list');
+
+            // Add Track Button
+            document.getElementById('add-track').addEventListener('click', () => {
+                initAudioContext(); // Ensure AudioContext is initialized
+                const track = new Track(trackCount++);
+                tracks.push(track);
+                trackList.appendChild(track.getElement());
+            });
+
+            // Transport controls
+            document.getElementById('play').addEventListener('click', () => {
+                if (!isPlaying) {
+                    isPlaying = true;
+                    startTime = audioContext.currentTime - pauseTime;
+                    tracks.forEach(track => {
+                        track.play(pauseTime);
+                    });
+                }
+            });
+
+            document.getElementById('pause').addEventListener('click', () => {
+                if (isPlaying) {
+                    isPlaying = false;
+                    pauseTime = audioContext.currentTime - startTime;
+                    tracks.forEach(track => {
+                        track.stop();
+                    });
+                }
+            });
+
+            document.getElementById('stop').addEventListener('click', () => {
+                isPlaying = false;
+                pauseTime = 0;
+                tracks.forEach(track => {
+                    track.stop();
+                });
+            });
+
+            // Drag-and-drop functionality for tracks
+            trackList.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingElement = document.querySelector('.dragging');
+                const afterElement = getDragAfterElement(trackList, e.clientY);
+                if (afterElement == null) {
+                    trackList.appendChild(draggingElement);
+                } else {
+                    trackList.insertBefore(draggingElement, afterElement);
+                }
+            });
+        });
+
+        // Helper function for drag-and-drop positioning
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.track:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+    </script>
+</body>
+</html>

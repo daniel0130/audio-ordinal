@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browser-Based DAW</title>
+  <style>
+    /* General Styles */
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #control-panel, #timeline, #tracks-container { margin-bottom: 10px; }
+    #control-panel input { width: 300px; padding: 5px; }
+    #control-panel button, .zoom-controls input { padding: 5px 10px; margin-left: 5px; }
+    #timeline { position: relative; height: 30px; background: #f0f0f0; }
+    .loop-marker { position: absolute; top: 0; bottom: 0; width: 10px; background: red; cursor: pointer; border-radius: 5px; }
+    #loop-start { left: 0; }
+    #loop-end { right: 0; }
+    #transport-line { 
+      position: absolute; 
+      top: 0; 
+      bottom: 0; 
+      width: 2px; 
+      background: #00FF00; /* Bright Green */
+      pointer-events: none; 
+    }
+    #tracks-container { 
+      border: 1px solid #ccc; 
+      height: 300px; 
+      overflow: auto; 
+      position: relative; 
+      transition: height 0.3s ease;
+    }
+    .track { 
+      display: flex; 
+      height: 60px; 
+      border-bottom: 1px solid #ddd; 
+      transition: height 0.3s ease;
+    }
+    .track-controls { 
+      width: 150px; 
+      background: #fafafa; 
+      border-right: 1px solid #ddd; 
+      padding: 5px; 
+      box-sizing: border-box;
+    }
+    .track-controls label, .track-controls input { 
+      display: block; 
+      width: 100%; 
+      margin-bottom: 5px; 
+    }
+    .track-content { 
+      flex: 1; 
+      position: relative; 
+      overflow: hidden; 
+    }
+    .waveform-canvas { 
+      width: 100%; 
+      height: 100%; 
+      background: #d0d0ff; 
+      cursor: grab; 
+      display: block;
+    }
+    .waveform-canvas:active { 
+      cursor: grabbing; 
+    }
+    /* Zoom Controls */
+    .zoom-controls { 
+      display: inline-flex; 
+      align-items: center; 
+      margin-top: 10px;
+    }
+    .zoom-controls label { 
+      margin-right: 5px; 
+    }
+    .zoom-controls input { 
+      width: 60px; 
+      margin-right: 15px;
+    }
+    /* Region Styling */
+    .region {
+      position: absolute; 
+      top: 0; 
+      height: 100%; 
+      background: rgba(0,255,0,0.3);
+      border: 2px solid green; 
+      cursor: move; 
+      box-sizing: border-box;
+    }
+    .region .resize-handle {
+      position: absolute; 
+      top: 0; 
+      width: 10px; 
+      height: 100%;
+      background: rgba(0,128,0,0.5); 
+      cursor: ew-resize;
+    }
+    .region .resize-handle.left { left: 0; }
+    .region .resize-handle.right { right: 0; }
+  </style>
+</head>
+<body>
+  <div id="daw-container">
+    <!-- Control Panel -->
+    <div id="control-panel">
+      <input type="text" id="audio-url" placeholder="Enter Audio URL">
+      <button id="load-audio">Load Audio</button>
+      <button id="play">Play</button>
+      <button id="pause">Pause</button> <!-- Added Pause Button -->
+      <button id="stop">Stop</button>
+      <button id="toggle-loop">Loop</button>
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <label for="zoom-horizontal">Zoom H:</label>
+        <input type="range" id="zoom-horizontal" min="1" max="10" value="5">
+        <label for="zoom-vertical">Zoom V:</label>
+        <input type="range" id="zoom-vertical" min="1" max="10" value="5">
+      </div>
+    </div>
+
+    <!-- Timeline and Transport Line -->
+    <div id="timeline">
+      <div id="loop-start" class="loop-marker"></div>
+      <div id="loop-end" class="loop-marker"></div>
+      <div id="transport-line"></div> <!-- Added Transport Line -->
+    </div>
+    <div id="tracks-container"></div>
+  </div>
+
+  <script>
+    // Initialize Audio Context
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // DOM Elements
+    const controls = {
+      url: document.getElementById('audio-url'),
+      load: document.getElementById('load-audio'),
+      play: document.getElementById('play'),
+      pause: document.getElementById('pause'), // Added Pause Button
+      stop: document.getElementById('stop'),
+      loop: document.getElementById('toggle-loop'),
+      zoomH: document.getElementById('zoom-horizontal'),
+      zoomV: document.getElementById('zoom-vertical'),
+    };
+    const timeline = document.getElementById('timeline');
+    const loopMarkers = {
+      start: document.getElementById('loop-start'),
+      end: document.getElementById('loop-end'),
+    };
+    const tracksContainer = document.getElementById('tracks-container');
+    const transportLine = document.getElementById('transport-line'); // Transport Line Element
+
+    // State Variables
+    const state = {
+      tracks: [],
+      isPlaying: false,
+      isPaused: false,
+      isLooping: false,
+      loopStart: 0,
+      loopEnd: 0,
+      zoomHorizontal: 1,
+      zoomVertical: 1,
+      startTime: 0,
+      pausedAt: 0,
+      animationFrameId: null,
+    };
+
+    // Event Listeners
+    controls.load.addEventListener('click', () => {
+      const url = controls.url.value.trim();
+      if (url) loadAudioTrack(url);
+    });
+
+    controls.play.addEventListener('click', () => {
+      if (!state.isPlaying) playAllTracks();
+    });
+
+    controls.pause.addEventListener('click', () => { // Pause Button Logic
+      if (state.isPlaying) {
+        pauseAllTracks();
+      }
+    });
+
+    // Stop All Tracks
+    const stopAllTracks = () => {
+      state.isPlaying = false;
+      state.isPaused = false;
+      state.pausedAt = 0;
+      state.tracks.forEach(track => {
+        if (track.source) {
+          track.source.stop();
+          track.source.disconnect();
+          track.source = null;
+        }
+      });
+      cancelAnimationFrame(state.animationFrameId);
+      state.animationFrameId = null;
+      resetTransportLine();
+    };
+
+    controls.stop.addEventListener('click', stopAllTracks);
+
+    controls.loop.addEventListener('click', () => {
+      state.isLooping = !state.isLooping;
+      controls.loop.textContent = state.isLooping ? 'Unloop' : 'Loop';
+      state.tracks.forEach(track => {
+        if (track.source) {
+          track.source.loop = state.isLooping;
+          track.source.loopStart = state.loopStart;
+          track.source.loopEnd = state.loopEnd || track.audioBuffer.duration;
+        }
+      });
+    });
+
+    // Zoom Controls
+    const handleZoom = () => {
+      state.zoomHorizontal = +controls.zoomH.value;
+      state.zoomVertical = +controls.zoomV.value;
+      state.tracks.forEach(track => {
+        renderWaveform(track.audioBuffer, track.canvas, state.zoomHorizontal, state.zoomVertical);
+        updateRegionPosition(track.region, track);
+      });
+      adjustTracksContainerHeight();
+      updateLoopMarkers();
+    };
+    controls.zoomH.addEventListener('input', handleZoom);
+    controls.zoomV.addEventListener('input', handleZoom);
+
+    // Load Audio Track
+    const loadAudioTrack = async (url) => {
+      try {
+        const arrayBuffer = await (await fetch(url)).arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        createTrack(audioBuffer);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+        alert('Failed to load audio. Please check the URL and try again.');
+      }
+    };
+
+    // Create Track
+    const createTrack = (audioBuffer) => {
+      const track = {
+        audioBuffer,
+        gainNode: audioCtx.createGain(),
+        panNode: audioCtx.createStereoPanner(),
+        source: null,
+        zoomHorizontal: state.zoomHorizontal,
+        zoomVertical: state.zoomVertical,
+      };
+      state.tracks.push(track);
+      addTrackToDOM(track);
+      if (state.tracks.length === 1) {
+        state.loopEnd = audioBuffer.duration;
+        updateLoopMarkers();
+      }
+    };
+
+    // Render Waveform
+    const renderWaveform = (audioBuffer, canvas, zoomH, zoomV) => {
+      const ctx = canvas.getContext('2d');
+      const width = audioBuffer.duration * 100 * zoomH;
+      const height = 60 * zoomV; // Dynamic Height based on Zoom
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.height = `${height}px`;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = '#000';
+      const data = audioBuffer.getChannelData(0);
+      const step = Math.ceil(data.length / width);
+      const amp = height / 2;
+      ctx.beginPath();
+      for (let i = 0; i < width; i++) {
+        let min = 1.0, max = -1.0;
+        for (let j = 0; j < step; j++) {
+          const datum = data[i * step + j];
+          if (datum < min) min = datum;
+          if (datum > max) max = datum;
+        }
+        ctx.moveTo(i, amp - (min * amp));
+        ctx.lineTo(i, amp - (max * amp));
+      }
+      ctx.stroke();
+    };
+
+    // Add Track to DOM
+    const addTrackToDOM = (track) => {
+      const trackElem = document.createElement('div');
+      trackElem.className = 'track';
+
+      // Track Controls
+      const controlsHTML = `
+        <div class="track-controls">
+          <label>Volume:
+            <input type="range" min="0" max="1" step="0.01" value="1">
+          </label>
+          <label>Pan:
+            <input type="range" min="-1" max="1" step="0.01" value="0">
+          </label>
+        </div>`;
+      trackElem.innerHTML = controlsHTML;
+
+      const volumeControl = trackElem.querySelector('input[type="range"]');
+      const panControl = trackElem.querySelectorAll('input[type="range"]')[1];
+
+      volumeControl.addEventListener('input', e => track.gainNode.gain.setValueAtTime(+e.target.value, audioCtx.currentTime));
+      panControl.addEventListener('input', e => track.panNode.pan.setValueAtTime(+e.target.value, audioCtx.currentTime));
+
+      // Track Content
+      const contentElem = document.createElement('div');
+      contentElem.className = 'track-content';
+      const canvas = document.createElement('canvas');
+      canvas.className = 'waveform-canvas';
+      canvas.height = 60 * state.zoomVertical; // Initial Height based on Zoom
+      renderWaveform(track.audioBuffer, canvas, state.zoomHorizontal, state.zoomVertical);
+      track.canvas = canvas;
+
+      // Region
+      const region = document.createElement('div');
+      region.className = 'region';
+      updateRegionPosition(region, track);
+
+      // Resize Handles
+      ['left', 'right'].forEach(side => {
+        const handle = document.createElement('div');
+        handle.className = `resize-handle ${side}`;
+        region.appendChild(handle);
+      });
+
+      // Dragging and Resizing
+      let isDragging = false, isResizing = null, startX, startLeft, startWidth;
+      
+      const onMouseDown = (e) => {
+        if (e.target.classList.contains('resize-handle')) {
+          isResizing = e.target.classList.contains('left') ? 'left' : 'right';
+        } else {
+          isDragging = true;
+        }
+        startX = e.clientX;
+        startLeft = parseFloat(region.style.left);
+        startWidth = parseFloat(region.style.width);
+        e.preventDefault();
+      };
+
+      const onMouseMove = (e) => {
+        if (!isDragging && !isResizing) return;
+        const deltaX = (e.clientX - startX) / state.zoomHorizontal;
+        if (isDragging) {
+          let newLeft = startLeft + deltaX;
+          newLeft = Math.max(0, Math.min(newLeft, track.canvas.width - region.offsetWidth));
+          region.style.left = `${newLeft}px`;
+          state.loopStart = (newLeft / track.canvas.width) * track.audioBuffer.duration;
+          state.loopEnd = ((newLeft + region.offsetWidth) / track.canvas.width) * track.audioBuffer.duration;
+          updateLoopMarkers();
+        } else if (isResizing === 'left') {
+          let newLeft = startLeft + deltaX;
+          let newWidth = startWidth - deltaX;
+          if (newWidth < 20) { newWidth = 20; newLeft = startLeft + (startWidth - 20); }
+          region.style.left = `${newLeft}px`;
+          region.style.width = `${newWidth}px`;
+          state.loopStart = (newLeft / track.canvas.width) * track.audioBuffer.duration;
+          state.loopEnd = ((newLeft + newWidth) / track.canvas.width) * track.audioBuffer.duration;
+          updateLoopMarkers();
+        } else if (isResizing === 'right') {
+          let newWidth = startWidth + deltaX;
+          newWidth = Math.max(20, newWidth);
+          region.style.width = `${newWidth}px`;
+          state.loopEnd = ((parseFloat(region.style.left) + newWidth) / track.canvas.width) * track.audioBuffer.duration;
+          updateLoopMarkers();
+        }
+      };
+
+      const onMouseUp = () => { isDragging = false; isResizing = null; };
+
+      region.addEventListener('mousedown', onMouseDown);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+
+      contentElem.appendChild(canvas);
+      contentElem.appendChild(region);
+      track.region = region;
+      track.gainNode.connect(track.panNode).connect(audioCtx.destination);
+      trackElem.appendChild(contentElem);
+      tracksContainer.appendChild(trackElem);
+
+      adjustTracksContainerHeight(); // Adjust container height based on zoom
+    };
+
+    // Update Region Position
+    const updateRegionPosition = (region, track) => {
+      const { loopStart, loopEnd, audioBuffer, canvas } = track;
+      const left = (state.loopStart / audioBuffer.duration) * canvas.width;
+      const width = ((state.loopEnd - state.loopStart) / audioBuffer.duration) * canvas.width;
+      region.style.left = `${left}px`;
+      region.style.width = `${width}px`;
+    };
+
+    // Play All Tracks
+    const playAllTracks = () => {
+      if (state.tracks.length === 0) return;
+      state.isPlaying = true;
+      state.isPaused = false;
+      state.startTime = audioCtx.currentTime - state.pausedAt;
+      state.tracks.forEach(track => {
+        const source = audioCtx.createBufferSource();
+        source.buffer = track.audioBuffer;
+        source.loop = state.isLooping;
+        source.loopStart = state.loopStart;
+        source.loopEnd = state.loopEnd || track.audioBuffer.duration;
+        source.connect(track.gainNode).connect(track.panNode).connect(audioCtx.destination);
+        source.start(0, state.loopStart + state.pausedAt);
+        track.source = source;
+      });
+      state.animationFrameId = requestAnimationFrame(updateTransportLine);
+    };
+
+    // Pause All Tracks
+    const pauseAllTracks = () => {
+      state.isPlaying = false;
+      state.isPaused = true;
+      state.pausedAt = audioCtx.currentTime - state.startTime;
+      state.tracks.forEach(track => {
+        if (track.source) {
+          track.source.stop();
+          track.source.disconnect();
+          track.source = null;
+        }
+      });
+      cancelAnimationFrame(state.animationFrameId);
+      state.animationFrameId = null;
+    };
+
+    // Reset Transport Line
+    const resetTransportLine = () => {
+      transportLine.style.left = '0%';
+    };
+
+    // Update Transport Line
+    const updateTransportLine = () => {
+      if (!state.isPlaying) return;
+      const currentTime = audioCtx.currentTime - state.startTime + state.loopStart;
+      let totalDuration = getTotalDuration();
+      if (state.isLooping) {
+        totalDuration = state.loopEnd - state.loopStart;
+        if (currentTime >= state.loopEnd) {
+          state.startTime = audioCtx.currentTime - state.loopStart;
+        }
+      }
+      const percent = (currentTime / totalDuration) * 100;
+      transportLine.style.left = `${percent}%`;
+      if (percent >= 100) {
+        if (state.isLooping) {
+          transportLine.style.left = '0%';
+          state.startTime = audioCtx.currentTime - state.loopStart;
+        } else {
+          stopAllTracks();
+          return;
+        }
+      }
+      state.animationFrameId = requestAnimationFrame(updateTransportLine);
+    };
+
+    // Loop Marker Dragging
+    let draggingMarker = null;
+
+    const handleMarkerMouseDown = (marker) => { draggingMarker = marker; };
+    const handleTimelineMouseMove = (e) => {
+      if (!draggingMarker) return;
+      const rect = timeline.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(x, rect.width));
+      const percent = (x / rect.width) * 100;
+      draggingMarker.style.left = `${percent}%`;
+      const time = (percent / 100) * getTotalDuration();
+      if (draggingMarker === loopMarkers.start) {
+        state.loopStart = time;
+        // Ensure loopStart is less than loopEnd
+        if (state.loopStart >= state.loopEnd) {
+          state.loopStart = state.loopEnd - 0.1; // Minimum loop length
+          loopMarkers.start.style.left = `${(state.loopStart / getTotalDuration()) * 100}%`;
+        }
+      } else {
+        state.loopEnd = time;
+        // Ensure loopEnd is greater than loopStart
+        if (state.loopEnd <= state.loopStart) {
+          state.loopEnd = state.loopStart + 0.1; // Minimum loop length
+          loopMarkers.end.style.left = `${(state.loopEnd / getTotalDuration()) * 100}%`;
+        }
+      }
+      updateAllRegions();
+      if (state.isLooping && state.isPlaying) {
+        state.tracks.forEach(track => {
+          if (track.source) {
+            track.source.loopStart = state.loopStart;
+            track.source.loopEnd = state.loopEnd || track.audioBuffer.duration;
+          }
+        });
+      }
+    };
+    const handleMouseUp = () => { draggingMarker = null; };
+
+    loopMarkers.start.addEventListener('mousedown', () => handleMarkerMouseDown(loopMarkers.start));
+    loopMarkers.end.addEventListener('mousedown', () => handleMarkerMouseDown(loopMarkers.end));
+    document.addEventListener('mousemove', handleTimelineMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Get Total Duration
+    const getTotalDuration = () => Math.max(...state.tracks.map(t => t.audioBuffer.duration), 0);
+
+    // Update Loop Markers
+    const updateLoopMarkers = () => {
+      const total = getTotalDuration();
+      loopMarkers.start.style.left = `${(state.loopStart / total) * 100}%`;
+      loopMarkers.end.style.left = `${(state.loopEnd / total) * 100}%`;
+    };
+
+    // Update All Regions
+    const updateAllRegions = () => {
+      state.tracks.forEach(track => updateRegionPosition(track.region, track));
+    };
+
+    // Adjust Tracks Container Height Based on Vertical Zoom
+    const adjustTracksContainerHeight = () => {
+      const baseHeight = 60; // Base height per track
+      const totalTracks = state.tracks.length;
+      const newHeight = (baseHeight * state.zoomVertical) * totalTracks;
+      tracksContainer.style.height = `${newHeight + 50}px`; // Additional space for scrollbar
+      state.tracks.forEach(track => {
+        const trackElem = track.region.parentElement.parentElement;
+        trackElem.style.height = `${60 * state.zoomVertical}px`;
+        const canvas = track.canvas;
+        canvas.style.height = `${60 * state.zoomVertical}px`;
+        renderWaveform(track.audioBuffer, canvas, state.zoomHorizontal, state.zoomVertical);
+        updateRegionPosition(track.region, track);
+      });
+    };
+  </script>
+</body>
+</html>

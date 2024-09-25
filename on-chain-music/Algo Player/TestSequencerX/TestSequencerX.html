@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Online DAW with Waveform Display - Debug Version</title>
+  <style>
+    /* CSS Styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #control-panel {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    #control-panel button, #control-panel label {
+      margin-right: 10px;
+    }
+
+    #track-area {
+      position: relative;
+      height: calc(100vh - 100px);
+      overflow-x: auto;
+      overflow-y: auto;
+      background-color: #f0f0f0;
+    }
+
+    .track {
+      position: relative;
+      height: 100px;
+      border-bottom: 1px solid #ccc;
+      background-color: #e0e0e0;
+    }
+
+    .track-controls {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100px;
+      background-color: #ddd;
+      border-right: 1px solid #ccc;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .track-controls input[type="range"] {
+      width: 80px;
+    }
+
+    .track-contents {
+      position: absolute;
+      left: 100px;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      overflow: hidden;
+    }
+
+    .audio-region {
+      position: absolute;
+      top: 10px;
+      height: 80px;
+      background-color: #9ec5fe;
+      border: 1px solid #007bff;
+      color: #fff;
+      cursor: move;
+      box-sizing: border-box;
+    }
+
+    .waveform-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    #timeline {
+      position: absolute;
+      left: 100px;
+      top: 0;
+      right: 0;
+      height: 0;
+      border-bottom: 1px solid #000;
+    }
+
+    #playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: red;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Control Panel -->
+  <div id="control-panel">
+    <button id="load-audio-btn">Load Audio</button>
+    <button id="play-btn">Play</button>
+    <button id="pause-btn">Pause</button>
+    <button id="stop-btn">Stop</button>
+    <label>
+      <input type="checkbox" id="loop-toggle"> Loop
+    </label>
+    <!-- Zoom controls -->
+    <button id="zoom-in-btn">Zoom In</button>
+    <button id="zoom-out-btn">Zoom Out</button>
+  </div>
+
+  <!-- Track Area -->
+  <div id="track-area">
+    <!-- One track is initialized here -->
+  </div>
+
+  <!-- Timeline -->
+  <div id="timeline">
+    <!-- Playhead -->
+    <div id="playhead"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Global variables and audio context
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let tracks = [];
+    let isPlaying = false;
+    let startTime = 0;
+    let pausedAt = 0;
+    let loopEnabled = false;
+    let loopStart = 0;
+    let loopEnd = 0;
+    let playheadInterval = null;
+
+    const loadAudioButton = document.getElementById('load-audio-btn');
+    const playButton = document.getElementById('play-btn');
+    const pauseButton = document.getElementById('pause-btn');
+    const stopButton = document.getElementById('stop-btn');
+    const loopToggle = document.getElementById('loop-toggle');
+
+    const trackArea = document.getElementById('track-area');
+    const timeline = document.getElementById('timeline');
+    const playhead = document.getElementById('playhead');
+
+    const zoomInButton = document.getElementById('zoom-in-btn');
+    const zoomOutButton = document.getElementById('zoom-out-btn');
+    let zoomLevel = 1;
+  </script>
+
+  <script>
+    // Module: fileHandler
+    async function loadAudio(url) {
+        console.log(`Attempting to load audio from URL: ${url}`);
+        if (!validateURL(url)) {
+        alert('Invalid URL format.');
+        console.error('Validation failed for URL:', url);
+        return null;
+        }
+        try {
+        const response = await fetch(url, { mode: 'cors' });
+        console.log('Fetch response:', response);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok. Status: ${response.status}`);
+        }
+        const contentType = response.headers.get('Content-Type');
+        console.log('Content-Type:', contentType);
+        if (!contentType || !contentType.startsWith('audio/')) {
+            throw new Error(`Unsupported Content-Type: ${contentType}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        console.log('ArrayBuffer received:', arrayBuffer);
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log('AudioBuffer decoded:', audioBuffer);
+        return audioBuffer;
+        } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            alert('Failed to fetch the audio file. This may be due to CORS restrictions.');
+        } else {
+            alert(`An error occurred: ${error.message}`);
+        }
+        console.error('Error loading audio:', error);
+        return null;
+        }
+    }
+
+    function validateURL(url) {
+        try {
+        new URL(url);
+        return true;
+        } catch (e) {
+        console.error('Invalid URL format:', e);
+        return false;
+        }
+    }
+  </script>
+
+  <script>
+    // Module: playbackManager
+    class Track {
+      constructor(audioBuffer, url) {
+        this.audioBuffer = audioBuffer;
+        this.url = url;
+        this.source = null;
+        this.gainNode = audioContext.createGain();
+        this.panNode = audioContext.createStereoPanner();
+        this.volume = 1;
+        this.pan = 0;
+        this.muted = false;
+        this.solo = false;
+        this.offset = 0; // start time offset in seconds
+        this.regions = []; // regions within the track
+      }
+
+      createSource() {
+        this.source = audioContext.createBufferSource();
+        this.source.buffer = this.audioBuffer;
+        this.source.loop = loopEnabled;
+        this.source.connect(this.panNode).connect(this.gainNode).connect(audioContext.destination);
+      }
+
+      play(startAt) {
+        if (!this.audioBuffer) {
+          console.warn('No audioBuffer available for this track.');
+          return;
+        }
+        this.createSource();
+        let offset = this.offset + startAt;
+        console.log(`Starting playback for track at offset: ${offset}`);
+        this.source.start(0, offset);
+      }
+
+      stop() {
+        if (this.source) {
+          this.source.stop();
+          this.source.disconnect();
+          this.source = null;
+          console.log('Stopped playback for track.');
+        }
+      }
+
+      setVolume(value) {
+        this.volume = value;
+        this.gainNode.gain.value = this.muted ? 0 : this.volume;
+        console.log(`Set volume to: ${this.volume}`);
+      }
+
+      setPan(value) {
+        this.pan = value;
+        this.panNode.pan.value = this.pan;
+        console.log(`Set pan to: ${this.pan}`);
+      }
+
+      setMute(muted) {
+        this.muted = muted;
+        this.gainNode.gain.value = this.muted ? 0 : this.volume;
+        console.log(`Mute status set to: ${this.muted}`);
+      }
+
+      setSolo(solo) {
+        this.solo = solo;
+        console.log(`Solo status set to: ${this.solo}`);
+      }
+    }
+  </script>
+
+  <script>
+    // Module: uiManager
+    function initializeTrack() {
+      console.log('Initializing a new track.');
+      const track = new Track(null, null);
+      tracks.push(track);
+      addTrackToUI(track);
+    }
+
+    function addTrackToUI(track) {
+      console.log('Adding track to UI.');
+      const trackElement = document.createElement('div');
+      trackElement.className = 'track';
+
+      const trackControls = document.createElement('div');
+      trackControls.className = 'track-controls';
+
+      // Volume slider
+      const volumeLabel = document.createElement('label');
+      volumeLabel.innerText = 'Vol';
+      const volumeSlider = document.createElement('input');
+      volumeSlider.type = 'range';
+      volumeSlider.min = 0;
+      volumeSlider.max = 1;
+      volumeSlider.step = 0.01;
+      volumeSlider.value = track.volume;
+      volumeSlider.addEventListener('input', () => {
+        track.setVolume(volumeSlider.value);
+      });
+
+      // Pan slider
+      const panLabel = document.createElement('label');
+      panLabel.innerText = 'Pan';
+      const panSlider = document.createElement('input');
+      panSlider.type = 'range';
+      panSlider.min = -1;
+      panSlider.max = 1;
+      panSlider.step = 0.01;
+      panSlider.value = track.pan;
+      panSlider.addEventListener('input', () => {
+        track.setPan(panSlider.value);
+      });
+
+      // Mute button
+      const muteButton = document.createElement('button');
+      muteButton.innerText = 'Mute';
+      muteButton.addEventListener('click', () => {
+        track.setMute(!track.muted);
+        muteButton.innerText = track.muted ? 'Unmute' : 'Mute';
+      });
+
+      // Solo button
+      const soloButton = document.createElement('button');
+      soloButton.innerText = 'Solo';
+      soloButton.addEventListener('click', () => {
+        track.setSolo(!track.solo);
+        soloButton.innerText = track.solo ? 'Unsolo' : 'Solo';
+        updateSoloStates();
+      });
+
+      trackControls.appendChild(volumeLabel);
+      trackControls.appendChild(volumeSlider);
+      trackControls.appendChild(panLabel);
+      trackControls.appendChild(panSlider);
+      trackControls.appendChild(muteButton);
+      trackControls.appendChild(soloButton);
+
+      const trackContents = document.createElement('div');
+      trackContents.className = 'track-contents';
+
+      trackElement.appendChild(trackControls);
+      trackElement.appendChild(trackContents);
+      trackArea.appendChild(trackElement);
+
+      // Store references for later use
+      track.element = trackElement;
+      track.trackContents = trackContents;
+    }
+
+    function addRegionToTrack(track, audioBuffer, url) {
+        console.log('Adding region to track.');
+        track.audioBuffer = audioBuffer;
+        track.url = url;
+
+        const regionElement = document.createElement('div');
+        regionElement.className = 'audio-region';
+        regionElement.style.left = (track.offset * 100 * zoomLevel) + 'px';
+        regionElement.style.width = (track.audioBuffer.duration * 100 * zoomLevel) + 'px';
+
+        // Create waveform canvas
+        const waveformCanvas = document.createElement('canvas');
+        waveformCanvas.className = 'waveform-canvas';
+
+        // Append the canvas to the region element BEFORE drawing the waveform
+        regionElement.appendChild(waveformCanvas);
+
+        // Now call drawWaveform
+        drawWaveform(waveformCanvas, track.audioBuffer);
+
+        // Make region draggable and resizable
+        makeRegionDraggable(regionElement, track);
+
+        // Remove any existing regions
+        track.trackContents.innerHTML = '';
+        track.trackContents.appendChild(regionElement);
+    }
+
+    function drawWaveform(canvas, audioBuffer) {
+        console.log('Drawing waveform.');
+        const parentWidth = canvas.parentElement.clientWidth;
+        const parentHeight = canvas.parentElement.clientHeight;
+
+        // Set canvas width and height to match parent dimensions
+        canvas.width = parentWidth;
+        canvas.height = parentHeight;
+
+        const ctx = canvas.getContext('2d');
+        const data = audioBuffer.getChannelData(0);
+        const step = Math.ceil(data.length / canvas.width);
+        const amp = canvas.height / 2;
+        ctx.fillStyle = '#9ec5fe';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < canvas.width; i++) {
+        let min = 1.0;
+        let max = -1.0;
+        for (let j = 0; j < step; j++) {
+            const datum = data[(i * step) + j];
+            if (datum < min) min = datum;
+            if (datum > max) max = datum;
+        }
+        ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
+        }
+    }
+
+    function getFileName(url) {
+      return url.substring(url.lastIndexOf('/') + 1);
+    }
+
+    function makeRegionDraggable(regionElement, track) {
+      let isDragging = false;
+      let startX = 0;
+      let startLeft = 0;
+
+      regionElement.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startLeft = parseFloat(regionElement.style.left);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      function onMouseMove(e) {
+        if (!isDragging) return;
+        let deltaX = e.clientX - startX;
+        let newLeft = startLeft + deltaX;
+        newLeft = Math.max(0, newLeft);
+        newLeft = snapToGrid(newLeft);
+        regionElement.style.left = newLeft + 'px';
+        track.offset = newLeft / (100 * zoomLevel); // Assuming 100 pixels per second
+      }
+
+      function onMouseUp(e) {
+        if (isDragging) {
+          isDragging = false;
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+      }
+
+      function snapToGrid(value) {
+        let gridSize = 10 * zoomLevel; // For example, grid every 10 pixels
+        return Math.round(value / gridSize) * gridSize;
+      }
+    }
+
+    function updateSoloStates() {
+      let anySolo = tracks.some(track => track.solo);
+      tracks.forEach(track => {
+        if (anySolo) {
+          track.setMute(!track.solo);
+        } else {
+          track.setMute(track.muted);
+        }
+      });
+      console.log('Updated solo states.');
+    }
+  </script>
+
+  <script>
+    // Module: eventHandler
+    // Handle "Load Audio" button click
+    loadAudioButton.addEventListener('click', async () => {
+      const url = prompt('Enter the URL of the audio file (MP3, WAV, FLAC):');
+      if (!url) return;
+      console.log(`User entered URL: ${url}`);
+      const audioBuffer = await loadAudio(url);
+      if (audioBuffer) {
+        const track = tracks[0]; // Load into the first track
+        addRegionToTrack(track, audioBuffer, url);
+      } else {
+        console.error('Failed to load audio buffer.');
+      }
+    });
+
+    // Handle play/pause/stop
+    playButton.addEventListener('click', () => {
+      if (!isPlaying) {
+        startPlayback();
+      }
+    });
+
+    pauseButton.addEventListener('click', () => {
+      if (isPlaying) {
+        pausePlayback();
+      }
+    });
+
+    stopButton.addEventListener('click', () => {
+      stopPlayback();
+    });
+
+    loopToggle.addEventListener('change', () => {
+      loopEnabled = loopToggle.checked;
+      tracks.forEach(track => {
+        if (track.source) {
+          track.source.loop = loopEnabled;
+        }
+      });
+      console.log(`Looping is now ${loopEnabled ? 'enabled' : 'disabled'}.`);
+    });
+
+    zoomInButton.addEventListener('click', () => {
+      zoomLevel *= 1.25;
+      console.log(`Zoom level increased to ${zoomLevel}.`);
+      updateZoom();
+    });
+
+    zoomOutButton.addEventListener('click', () => {
+      zoomLevel /= 1.25;
+      console.log(`Zoom level decreased to ${zoomLevel}.`);
+      updateZoom();
+    });
+
+    function updateZoom() {
+      // Update the size and position of regions according to new zoom level
+      tracks.forEach(track => {
+        if (track.audioBuffer && track.trackContents) {
+          const regionElement = track.trackContents.querySelector('.audio-region');
+          if (regionElement) {
+            regionElement.style.left = (track.offset * 100 * zoomLevel) + 'px';
+            regionElement.style.width = (track.audioBuffer.duration * 100 * zoomLevel) + 'px';
+            // Update waveform canvas
+            const waveformCanvas = regionElement.querySelector('.waveform-canvas');
+            drawWaveform(waveformCanvas, track.audioBuffer);
+          }
+        }
+      });
+      console.log('Updated zoom for all tracks.');
+    }
+  </script>
+
+  <script>
+    // Main application code
+    function startPlayback() {
+      audioContext.resume().then(() => {
+        startTime = audioContext.currentTime - pausedAt;
+        tracks.forEach(track => {
+          if (track.audioBuffer) {
+            track.play(pausedAt);
+          }
+        });
+        isPlaying = true;
+        startPlayhead();
+        console.log('Playback started.');
+      });
+    }
+
+    function pausePlayback() {
+      tracks.forEach(track => {
+        track.stop();
+      });
+      pausedAt = audioContext.currentTime - startTime;
+      isPlaying = false;
+      stopPlayhead();
+      console.log('Playback paused.');
+    }
+
+    function stopPlayback() {
+      tracks.forEach(track => {
+        track.stop();
+      });
+      pausedAt = 0;
+      isPlaying = false;
+      resetPlayhead();
+      console.log('Playback stopped.');
+    }
+
+    function startPlayhead() {
+      const playheadStartTime = audioContext.currentTime - pausedAt;
+      playheadInterval = setInterval(() => {
+        const elapsedTime = audioContext.currentTime - playheadStartTime;
+        const playheadPosition = elapsedTime * 100 * zoomLevel;
+        playhead.style.left = playheadPosition + 'px';
+      }, 30);
+      console.log('Playhead movement started.');
+    }
+
+    function stopPlayhead() {
+      clearInterval(playheadInterval);
+      console.log('Playhead movement stopped.');
+    }
+
+    function resetPlayhead() {
+      clearInterval(playheadInterval);
+      playhead.style.left = '0px';
+      console.log('Playhead reset to start.');
+    }
+
+    // Initialize the application
+    initializeTrack();
+    console.log('Application initialized.');
+  </script>
+</body>
+</html>
