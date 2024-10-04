@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <link rel="stylesheet" type="text/css" href="AudioTrimModule/audio-trim-module.css">
     <link rel="stylesheet" type="text/css" href="styles/channel-elements.css">
     <link rel="stylesheet" type="text/css" href="styles/global-structural.css">
     <link rel="stylesheet" type="text/css" href="styles/components.css">
@@ -131,13 +132,14 @@
                         <span class="tooltiptext">Open Audio Trimmer for this channel.</span>
                     </button>
 
-                    <div id="audio-trimmer-modal" class="modal" hidden>
+                    <div id="audio-trimmer-modal" class="modal" style="display: none;">
                         <div class="trimmer-modal-content">
                             <!-- Modal content goes here -->
                             <span class="close-button">&times;</span>
                             <div id="audio-trimmer-container"></div>
                         </div>
                     </div>
+                    
                     
                     <button class="control-button clear-button tooltip">
                         <span class="letter">C</span>
