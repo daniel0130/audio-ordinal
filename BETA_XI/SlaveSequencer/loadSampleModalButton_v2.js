@@ -385,66 +385,188 @@ function handleUpdate(index, modal, loadSampleButton) {
 
 function copyOrdinalId(channelIndex) {
     const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-    copiedOrdinalId = extractOrdinalIdFromUrl(url);
-    console.log(`Copied Ordinal ID: ${copiedOrdinalId}`);
-    showVisualMessage(`Copied ID: ${copiedOrdinalId}`);
-}
-
-function pasteOrdinalId(channelIndex, loadSampleButton) {
-    if (copiedOrdinalId) {
-        setOrdinalIdInUrl(channelIndex, copiedOrdinalId);
-        console.log(`Pasted Ordinal ID: ${copiedOrdinalId} into channel ${channelIndex}`);
-        const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-        const sampleName = copiedOrdinalId;
-        processLoad(url, sampleName, channelIndex, loadSampleButton, null);
-        updateButtonText(channelIndex, loadSampleButton); // Update button text
-    } else {
-        console.warn('No Ordinal ID copied');
-    }
-}
-
-function pasteOrdinalIdToAllChannels(loadSampleButton) {
-    if (!copiedOrdinalId) {
-        console.warn('No Ordinal ID copied');
+    const ordinalId = extractOrdinalIdFromUrl(url);
+    if (!ordinalId) {
+        console.warn('No Ordinal ID found to copy.');
+        alert('No Ordinal ID found to copy.');
         return;
     }
 
-    const confirmation = confirm('Are you sure you want to paste this ID across all channels? Existing channels will be lost.');
-    if (confirmation) {
-        const totalChannels = window.unifiedSequencerSettings.settings.masterSettings.channelURLs.length;
-        for (let i = 0; i < totalChannels; i++) {
-            setOrdinalIdInUrl(i, copiedOrdinalId);
-            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[i];
-            const sampleName = copiedOrdinalId;
-            processLoad(url, sampleName, i, loadSampleButton, null);
-            updateButtonText(i, loadSampleButton); // Update button text for each channel
-        }
-        showVisualMessage('Pasted ID to all channels');
+    // Format the data with a prefix for identification
+    const formattedText = `ordinalId:${ordinalId}`;
+
+    // Write to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(formattedText)
+            .then(() => {
+                console.log(`Copied Ordinal ID: ${ordinalId} to clipboard.`);
+                showVisualMessage(`Copied Ordinal ID: ${ordinalId}`);
+            })
+            .catch(err => {
+                console.error('Failed to copy Ordinal ID to clipboard:', err);
+                alert('Failed to copy Ordinal ID to clipboard.');
+            });
+    } else {
+        // Fallback method for older browsers
+        fallbackCopyTextToClipboard(formattedText, 'Ordinal ID');
     }
 }
+
+
+function pasteOrdinalId(channelIndex, loadSampleButton) {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText()
+            .then(text => {
+                const [prefix, ...rest] = text.trim().split(':');
+                const copiedId = rest.join(':').trim();
+
+                if (prefix === 'ordinalId' && copiedId) {
+                    setOrdinalIdInUrl(channelIndex, copiedId);
+                    console.log(`Pasted Ordinal ID: ${copiedId} into channel ${channelIndex}`);
+                    const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
+                    const sampleName = copiedId;
+                    processLoad(url, sampleName, channelIndex, loadSampleButton, null);
+                    updateButtonText(channelIndex, loadSampleButton); // Update button text
+                    showVisualMessage(`Pasted Ordinal ID: ${copiedId}`);
+                } else {
+                    console.warn('Clipboard does not contain a valid Ordinal ID.');
+                    alert('Clipboard does not contain a valid Ordinal ID.');
+                }
+            })
+            .catch(err => {
+                console.error('Failed to read Ordinal ID from clipboard:', err);
+                alert('Failed to read Ordinal ID from clipboard.');
+            });
+    } else {
+        // Fallback or inform the user
+        alert('Clipboard API not supported. Please manually enter the Ordinal ID.');
+    }
+}
+
+
+function pasteOrdinalIdToAllChannels() {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText()
+            .then(text => {
+                const [prefix, ...rest] = text.trim().split(':');
+                const copiedId = rest.join(':').trim();
+
+                if (prefix === 'ordinalId' && copiedId) {
+                    const confirmation = confirm('Are you sure you want to paste this Ordinal ID across all channels? Existing channels will be overwritten.');
+                    if (confirmation) {
+                        const totalChannels = window.unifiedSequencerSettings.settings.masterSettings.channelURLs.length;
+                        for (let i = 0; i < totalChannels; i++) {
+                            setOrdinalIdInUrl(i, copiedId);
+                            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[i];
+                            const sampleName = copiedId;
+                            const loadSampleButton = document.getElementById(`load-sample-button-${i}`);
+                            processLoad(url, sampleName, i, loadSampleButton, null);
+                            updateButtonText(i, loadSampleButton); // Update button text for each channel
+                        }
+                        showVisualMessage('Pasted Ordinal ID to all channels.');
+                        console.log(`Pasted Ordinal ID: ${copiedId} to all channels.`);
+                    }
+                } else {
+                    console.warn('Clipboard does not contain a valid Ordinal ID.');
+                    alert('Clipboard does not contain a valid Ordinal ID.');
+                }
+            })
+            .catch(err => {
+                console.error('Failed to read Ordinal ID from clipboard:', err);
+                alert('Failed to read Ordinal ID from clipboard.');
+            });
+    } else {
+        // Fallback or inform the user
+        alert('Clipboard API not supported. Please manually enter the Ordinal ID.');
+    }
+}
+
 
 function copyChannelName(channelIndex) {
     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
-    if (projectChannelNames && projectChannelNames[channelIndex]) {
-        copiedChannelName = projectChannelNames[channelIndex];
-        console.log(`Copied Channel Name: ${copiedChannelName}`);
-        showVisualMessage(`Copied Channel Name: ${copiedChannelName}`);
+    const channelName = projectChannelNames && projectChannelNames[channelIndex];
+
+    if (!channelName) {
+        console.warn('No Channel Name found to copy.');
+        alert('No Channel Name found to copy.');
+        return;
+    }
+
+    // Format the data with a prefix for identification
+    const formattedText = `channelName:${channelName}`;
+
+    // Write to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(formattedText)
+            .then(() => {
+                console.log(`Copied Channel Name: ${channelName} to clipboard.`);
+                showVisualMessage(`Copied Channel Name: ${channelName}`);
+            })
+            .catch(err => {
+                console.error('Failed to copy Channel Name to clipboard:', err);
+                alert('Failed to copy Channel Name to clipboard.');
+            });
     } else {
-        console.warn('No Channel Name to copy');
+        // Fallback method for older browsers
+        fallbackCopyTextToClipboard(formattedText, 'Channel Name');
     }
 }
 
+// Fallback method for older browsers
+function fallbackCopyTextToClipboard(text, dataType) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        const msg = successful ? `Copied ${dataType} to clipboard.` : `Failed to copy ${dataType} to clipboard.`;
+        console.log(`Fallback: ${msg}`);
+        showVisualMessage(successful ? `Copied ${dataType}.` : `Failed to copy ${dataType}.`);
+    } catch (err) {
+        console.error(`Fallback: Oops, unable to copy ${dataType}.`, err);
+        alert(`Failed to copy ${dataType} to clipboard.`);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
 function pasteChannelName(channelIndex, loadSampleButton) {
-    if (copiedChannelName) {
-        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = copiedChannelName;
-        updateProjectChannelNamesUI(channelIndex, copiedChannelName);
-        loadSampleButton.textContent = copiedChannelName;
-        console.log(`Pasted Channel Name: ${copiedChannelName} into channel ${channelIndex}`);
-        showVisualMessage(`Pasted Channel Name: ${copiedChannelName}`);
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText()
+            .then(text => {
+                const [prefix, ...rest] = text.trim().split(':');
+                const copiedName = rest.join(':').trim();
+
+                if (prefix === 'channelName' && copiedName) {
+                    window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = copiedName;
+                    updateProjectChannelNamesUI(channelIndex, copiedName);
+                    loadSampleButton.textContent = copiedName;
+                    console.log(`Pasted Channel Name: ${copiedName} into channel ${channelIndex}`);
+                    showVisualMessage(`Pasted Channel Name: ${copiedName}`);
+                } else {
+                    console.warn('Clipboard does not contain a valid Channel Name.');
+                    alert('Clipboard does not contain a valid Channel Name.');
+                }
+            })
+            .catch(err => {
+                console.error('Failed to read Channel Name from clipboard:', err);
+                alert('Failed to read Channel Name from clipboard.');
+            });
     } else {
-        console.warn('No Channel Name copied');
+        // Fallback or inform the user
+        alert('Clipboard API not supported. Please manually enter the Channel Name.');
     }
 }
+
 
 function updateButtonText(index, loadSampleButton) {
     const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
@@ -463,9 +585,10 @@ function showVisualMessage(message) {
         messageDiv.remove();
     }, 2000); // Remove message after 2 seconds
 }
-function showCustomContextMenu(contextEvent, channelIndex, loadSampleButton) {
+function showCustomContextMenu(event, channelIndex, loadSampleButton) {
     console.log('Creating custom context menu');
 
+    // Close any existing context menu
     closeCustomContextMenu();
 
     const menu = createContextMenu();
@@ -481,7 +604,7 @@ function showCustomContextMenu(contextEvent, channelIndex, loadSampleButton) {
     const x = (windowWidth / 2) - (menuWidth / 2);
     const y = (windowHeight / 2) - (menuHeight / 2);
 
-    // Set the position of the menu
+    // Set the position and dimensions of the menu
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
     menu.style.width = `${menuWidth}px`;
@@ -527,7 +650,7 @@ function showCustomContextMenu(contextEvent, channelIndex, loadSampleButton) {
         { 
             label: 'Paste Ordinal ID to All Channels', 
             action: () => {
-                pasteOrdinalIdToAllChannels(loadSampleButton);
+                pasteOrdinalIdToAllChannels();
                 closeCustomContextMenu();
             } 
         },
@@ -547,14 +670,17 @@ function showCustomContextMenu(contextEvent, channelIndex, loadSampleButton) {
 
     document.body.appendChild(menu);
 
+    // Automatically close the context menu after 20 seconds
     setTimeout(() => {
         closeCustomContextMenu();
     }, 20000);
 
+    // Close the menu if the user clicks outside of it
     setTimeout(() => {
         document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
     }, 0);
 }
+
 
 function resetChannelToDefault(channelIndex) {
     console.log(`Resetting channel ${channelIndex} to default settings`);

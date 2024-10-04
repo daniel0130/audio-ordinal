@@ -1,6 +1,4 @@
 
-// loadSampleModalButton_v2.js
-
 
 // New Dropdown for Og Audional sample inscriptions
 const ogSampleUrls = [
@@ -59,12 +57,657 @@ const ogSampleUrls = [
 ];
 
 
-let openModals = [];
-let copiedOrdinalId = null; // Variable to store the copied ordinal ID
-let copiedChannelName = ''; // Global variable to store the copied channel name
-let copiedChannel = null;
 
 
+// Centralized State Management
+const AppState = {
+    openModals: [],
+    // Removed copiedChannel as we'll use the clipboard
+};
+
+// Utility Functions
+
+/**
+ * Creates a DOM element with optional className and attributes.
+ * @param {string} type - The type of the element (e.g., 'div', 'button').
+ * @param {string|string[]} [className] - Class or classes to add.
+ * @param {Object} [attributes] - Additional attributes to set.
+ * @returns {HTMLElement} The created DOM element.
+ */
+function createElement(type, className, attributes = {}) {
+    const element = document.createElement(type);
+    if (className) {
+        if (Array.isArray(className)) {
+            element.classList.add(...className);
+        } else {
+            element.classList.add(className);
+        }
+    }
+    Object.entries(attributes).forEach(([key, value]) => {
+        if (key === 'textContent' || key === 'innerHTML') {
+            element[key] = value;
+        } else {
+            element.setAttribute(key, value);
+        }
+    });
+    return element;
+}
+
+/**
+ * Creates a standardized modal with given content.
+ * @param {HTMLElement} content - The content to insert into the modal.
+ * @returns {HTMLElement} The modal overlay element.
+ */
+function createModal(content) {
+    const overlay = createElement('div', 'modal-overlay', {
+        style: `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+        `,
+    });
+    overlay.appendChild(content);
+
+    // Close modal when clicking outside content
+    overlay.addEventListener('click', (event) => {
+        if (!content.contains(event.target)) {
+            closeModal(overlay);
+        }
+    });
+
+    return overlay;
+}
+
+/**
+ * Closes a specific modal.
+ * @param {HTMLElement} modalOverlay - The modal overlay to close.
+ */
+function closeModal(modalOverlay) {
+    if (modalOverlay && document.body.contains(modalOverlay)) {
+        document.body.removeChild(modalOverlay);
+        AppState.openModals = AppState.openModals.filter(m => m !== modalOverlay);
+        console.log(`[Modal] Closed:`, modalOverlay);
+    }
+}
+
+/**
+ * Closes all open modals.
+ */
+function closeAllModals() {
+    AppState.openModals.forEach(modal => {
+        if (modal && document.body.contains(modal)) {
+            document.body.removeChild(modal);
+            console.log(`[Modal] Closed:`, modal);
+        }
+    });
+    AppState.openModals = [];
+    console.log('All modals closed.');
+}
+
+/**
+ * Displays a temporary visual message to the user.
+ * @param {string} message - The message to display.
+ */
+function showVisualMessage(message) {
+    const messageDiv = createElement('div', 'visual-message', { textContent: message });
+    Object.assign(messageDiv.style, {
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        backgroundColor: '#333',
+        color: '#fff',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        zIndex: '1001',
+        opacity: '0.9',
+    });
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 2000);
+}
+
+/**
+ * Standardizes error handling with logging and user alerts.
+ * @param {string} context - The context or location of the error.
+ * @param {Error|string} error - The error object or message.
+ * @param {string} [userMessage] - Optional message to display to the user.
+ */
+function handleError(context, error, userMessage = 'An unexpected error occurred.') {
+    console.error(`[Error][${context}]`, error);
+    if (userMessage) alert(userMessage);
+}
+
+/**
+ * Updates the button text based on channel name or defaults.
+ * @param {number} index - The channel index.
+ * @param {HTMLElement} button - The button element to update.
+ */
+function updateButtonText(index, button) {
+    const name = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index];
+    button.textContent = name || 'Load New Audio into Channel';
+}
+
+/**
+ * Retrieves the ordinal ID from a given URL.
+ * @param {string} url - The URL to extract from.
+ * @returns {string} The extracted ordinal ID.
+ */
+function extractOrdinalId(url) {
+    return url ? url.split('/').pop() : '';
+}
+
+/**
+ * Sets the ordinal ID in the URL for a given channel.
+ * @param {number} index - The channel index.
+ * @param {string} ordinalId - The ordinal ID to set.
+ */
+function setOrdinalId(index, ordinalId) {
+    const baseUrl = 'https://ordinals.com/content/';
+    window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index] = `${baseUrl}${ordinalId}`;
+}
+
+/**
+ * Generates button text based on channel name.
+ * @param {number} index - The channel index.
+ * @returns {string} The button text.
+ */
+function getButtonText(index) {
+    const name = window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[index];
+    return name || 'Load New Audio into Channel';
+}
+
+// Modal Creation Functions
+
+/**
+ * Creates input fields within a modal.
+ * @param {Array} fields - An array of field definitions.
+ * @param {string} width - The width of the input fields.
+ * @returns {HTMLElement} The container with input fields.
+ */
+function createInputFields(fields, width) {
+    const container = createElement('div', 'modal-inputs');
+    fields.forEach(({ label, placeholder, className }) => {
+        const inputContainer = createElement('div', 'input-container', { style: 'margin-bottom: 10px;' });
+        const labelElem = createElement('label', null, { textContent: label, style: 'margin-bottom: 5px;' });
+        const input = createElement('input', className, { type: 'text', placeholder, style: `width: ${width}; box-sizing: border-box;` });
+        inputContainer.appendChild(labelElem);
+        inputContainer.appendChild(input);
+        container.appendChild(inputContainer);
+    });
+    return container;
+}
+
+/**
+ * Creates a dropdown within a modal.
+ * @param {string} labelText - The label for the dropdown.
+ * @param {Array} options - The dropdown options.
+ * @param {string} width - The width of the dropdown.
+ * @param {number} index - The channel index for unique ID.
+ * @returns {HTMLElement} The container with the dropdown.
+ */
+function createDropdown(labelText, options, width, index) {
+    const container = createElement('div', 'dropdown-container', { style: 'margin-bottom: 10px;' });
+    const label = createElement('label', null, { textContent: labelText });
+    const select = createElement('select', null, { id: `audional-dropdown-${index}`, style: `width: ${width};` });
+    options.forEach(opt => select.appendChild(createElement('option', null, { textContent: opt.text, value: opt.value })));
+    container.appendChild(label);
+    container.appendChild(select);
+    return container;
+}
+
+/**
+ * Creates action buttons within a modal.
+ * @param {Array} actions - An array of action definitions.
+ * @returns {HTMLElement} The container with action buttons.
+ */
+function createActionButtons(actions) {
+    const container = createElement('div', 'action-buttons', { style: 'display: flex; gap: 10px; margin-top: 20px;' });
+    actions.forEach(({ text, action, tooltip, className }) => {
+        const button = createElement('button', ['action-button', className], { textContent: text, title: tooltip });
+        button.addEventListener('click', action);
+        container.appendChild(button);
+    });
+    return container;
+}
+
+/**
+ * Opens the Load Sample Modal.
+ * @param {number} index - The channel index.
+ * @param {HTMLElement} loadSampleButton - The button that triggered the modal.
+ */
+function openLoadSampleModal(index, loadSampleButton) {
+    const modalContent = createElement('div', 'modal-content', {
+        style: `
+            background: #fff; padding: 20px; border-radius: 5px; width: 400px;
+            display: flex; flex-direction: column;
+        `,
+    });
+
+    const inputFields = createInputFields([
+        { label: 'Enter ORD ID:', placeholder: 'Enter ORD ID:', className: 'audional-input' },
+        { label: 'Enter sOrdinal ID:', placeholder: 'Enter sOrdinal ID:', className: 'sOrdinal-input' },
+        { label: 'Enter IPFS ID:', placeholder: 'Enter IPFS ID:', className: 'ipfs-input' },
+    ], '100%');
+
+    const dropdown = createDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls, '100%', index);
+    const selectElement = dropdown.querySelector('select');
+    selectElement.addEventListener('change', (event) => handleLoad(index, event, loadSampleButton));
+
+    const actionButtons = createActionButtons([
+        { text: 'Load', action: () => handleLoad(index, null, loadSampleButton), className: 'green-button' },
+        { text: 'Cancel', action: () => closeModal(modalOverlay), className: 'red-button' },
+        { text: 'Find More Samples', action: () => window.open('https://ordinals.hiro.so/inscriptions?f=audio', '_blank'), tooltip: 'Find any onchain audio you like. Simply copy the ordinal ID and paste it into the form above to load it into the sequencer for remixing.', className: 'yellow-button' },
+    ]);
+
+    modalContent.appendChild(inputFields);
+    modalContent.appendChild(dropdown);
+    modalContent.appendChild(actionButtons);
+
+    const modalOverlay = createModal(modalContent);
+    AppState.openModals.push(modalOverlay);
+    document.body.appendChild(modalOverlay);
+
+    return modalOverlay;
+}
+
+// Event Handlers
+
+/**
+ * Handles the Load action from the modal or dropdown.
+ * @param {number} index - The channel index.
+ * @param {Event|null} event - The event object, if triggered by dropdown.
+ * @param {HTMLElement} loadSampleButton - The button to update upon loading.
+ */
+function handleLoad(index, event, loadSampleButton) {
+    try {
+        let url, sampleName;
+        const modal = AppState.openModals.find(modal => modal.querySelector('.modal-content'));
+        const audionalInput = modal?.querySelector('.audional-input')?.value.trim();
+        const ipfsInput = modal?.querySelector('.ipfs-input')?.value.trim();
+        const sOrdinalInput = modal?.querySelector('.sOrdinal-input')?.value.trim();
+        const dropdown = modal?.querySelector(`#audional-dropdown-${index}`);
+        const dropdownValue = dropdown?.value;
+        const dropdownText = dropdown?.selectedOptions[0]?.text;
+
+        if (event?.target) { // Dropdown change
+            if (dropdownValue) {
+                url = dropdownValue;
+                sampleName = dropdownText;
+            }
+        } else { // Load button clicked
+            if (audionalInput) {
+                url = `https://ordinals.com/content/${audionalInput}`;
+                sampleName = audionalInput.split('/').pop();
+            } else if (ipfsInput) {
+                url = `https://ipfs.io/ipfs/${ipfsInput}`;
+                sampleName = ipfsInput.split('/').pop();
+            } else if (sOrdinalInput) {
+                url = `https://content.sordinals.io/inscription-data/${sOrdinalInput}`;
+                sampleName = sOrdinalInput.split('/').pop();
+            } else if (dropdownValue) {
+                url = dropdownValue;
+                sampleName = dropdownText;
+            }
+        }
+
+        if (url && sampleName) {
+            processLoad(url, sampleName, index, loadSampleButton, modal);
+        } else {
+            alert("Please enter an ID, select a file, or choose from a dropdown.");
+        }
+    } catch (error) {
+        handleError('handleLoad', error, 'Failed to load the sample.');
+    }
+}
+
+/**
+ * Processes the loading of audio from a given URL.
+ * @param {string} url - The URL to fetch the audio from.
+ * @param {string} sampleName - The name of the sample.
+ * @param {number} index - The channel index.
+ * @param {HTMLElement} loadSampleButton - The button to update upon loading.
+ * @param {HTMLElement|null} modal - The modal element to close upon success.
+ */
+async function processLoad(url, sampleName, index, loadSampleButton, modal) {
+    try {
+        console.log(`[Load] Fetching audio from ${url} as ${sampleName}`);
+        await fetchAudio(url, index, sampleName); // Assuming fetchAudio is defined elsewhere
+        window.unifiedSequencerSettings.setChannelName(index, sampleName);
+        updateButtonText(index, loadSampleButton);
+        showVisualMessage(`Loaded: ${sampleName}`);
+        closeAllModals();
+    } catch (error) {
+        handleError('processLoad', error, determineErrorMessage(error));
+    }
+}
+
+/**
+ * Determines user-friendly error messages based on error content.
+ * @param {Error} error - The error object.
+ * @returns {string} The user-friendly error message.
+ */
+function determineErrorMessage(error) {
+    if (error.message.includes('404')) {
+        return "Audio not found (404). Please check the URL or input.";
+    } else if (error.message.includes('network')) {
+        return "Network error occurred while loading audio. Please check your connection.";
+    }
+    return "Failed to load audio. Please check the console for details.";
+}
+
+/**
+ * Handles the creation and display of custom context menus.
+ * @param {Event} event - The context menu event.
+ * @param {number} channelIndex - The channel index.
+ * @param {HTMLElement} loadSampleButton - The associated load sample button.
+ */
+function showCustomContextMenu(event, channelIndex, loadSampleButton) {
+    event.preventDefault();
+    closeCustomContextMenu();
+
+    const menu = createElement('div', 'custom-context-menu', {
+        style: `
+            position: absolute; left: ${event.pageX}px; top: ${event.pageY}px;
+            background: #fff; border: 1px solid #ccc; border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1002;
+            color: #000;  // Ensures all text is black for visibility
+        `,
+    });
+
+    const menuOptions = [
+        { label: 'Add User Channel Name', action: () => { showChannelNamingModal(channelIndex, loadSampleButton); } },
+        { label: 'Copy Channel', action: () => { copyChannel(channelIndex); } },
+        { label: 'Paste Channel', action: () => { pasteChannel(channelIndex, loadSampleButton); } },
+    ];
+
+    menuOptions.forEach(({ label, action }) => {
+        const item = createElement('div', 'context-menu-item', {
+            textContent: label,
+            style: 'padding: 8px 12px; cursor: pointer;',
+        });
+        item.addEventListener('click', () => { action(); closeCustomContextMenu(); });
+        menu.appendChild(item);
+    });
+
+    document.body.appendChild(menu);
+
+    // Close the menu when clicking outside
+    const outsideClickListener = (e) => {
+        if (!menu.contains(e.target)) {
+            closeCustomContextMenu();
+            document.removeEventListener('click', outsideClickListener);
+        }
+    };
+    document.addEventListener('click', outsideClickListener);
+}
+
+/**
+ * Closes any existing custom context menu.
+ */
+function closeCustomContextMenu() {
+    const existingMenu = document.querySelector('.custom-context-menu');
+    if (existingMenu) existingMenu.remove();
+}
+
+/**
+ * Handles the context menu event.
+ * @param {Event} event - The context menu event.
+ * @param {number} channelIndex - The channel index.
+ * @param {HTMLElement} loadSampleButton - The associated load sample button.
+ */
+function handleContextMenu(event, channelIndex, loadSampleButton) {
+    showCustomContextMenu(event, channelIndex, loadSampleButton);
+}
+
+// Channel Naming Modal
+
+/**
+ * Displays a modal to rename a channel.
+ * @param {number} channelIndex - The channel index.
+ * @param {HTMLElement} loadSampleButton - The associated load sample button.
+ */
+function showChannelNamingModal(channelIndex, loadSampleButton) {
+    closeAllModals();
+
+    const modalContent = createElement('div', 'channel-naming-modal', {
+        style: `
+            background: #fff; padding: 20px; border-radius: 5px; width: 300px;
+            display: flex; flex-direction: column; gap: 10px;
+        `,
+    });
+
+    const input = createElement('input', 'channel-name-input', {
+        type: 'text',
+        placeholder: 'Give this channel a name',
+        style: `
+            width: 100%; padding: 8px; box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 3px;
+        `,
+    });
+
+    const buttons = createActionButtons([
+        { text: 'Submit', action: () => submitChannelName(), className: 'green-button' },
+        { text: 'Cancel', action: () => closeAllModals(), className: 'red-button' },
+    ]);
+
+    modalContent.appendChild(input);
+    modalContent.appendChild(buttons);
+
+    const modalOverlay = createModal(modalContent);
+    AppState.openModals.push(modalOverlay);
+    document.body.appendChild(modalOverlay);
+    input.focus();
+
+    // Handle Enter key submission
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') submitChannelName();
+    });
+
+    function submitChannelName() {
+        const name = input.value.trim();
+        if (name) {
+            window.unifiedSequencerSettings.setChannelName(channelIndex, name);
+            updateProjectChannelNamesUI(channelIndex, name);
+            loadSampleButton.textContent = name;
+            showVisualMessage('Channel name updated.');
+            closeAllModals();
+        } else {
+            alert('Channel name cannot be empty.');
+        }
+    }
+}
+
+// Channel Operations
+
+/**
+ * Updates the UI with the new channel name.
+ * @param {number} channelIndex - The channel index.
+ * @param {string} name - The new channel name.
+ */
+function updateProjectChannelNamesUI(channelIndex, name) {
+    const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
+    if (nameDisplay) nameDisplay.textContent = name;
+    window.unifiedSequencerSettings.setChannelName(channelIndex, name);
+    console.log(`[UI] Updated channel name for ${channelIndex}: ${name}`);
+}
+
+/**
+ * Copies the entire channel configuration to the clipboard.
+ * @param {number} channelIndex - The channel index.
+ */
+function copyChannel(channelIndex) {
+    try {
+        const settings = window.unifiedSequencerSettings.settings.masterSettings;
+        const channelSettings = settings.channelSettings[`ch${channelIndex}`] || { volume: 1, pitch: 1 };
+        const playbackSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex] || 1;
+        const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex) || { start: 0, end: 0, totalSampleDuration: 1 };
+        const allSteps = Object.keys(settings.projectSequences).reduce((acc, seqKey) => {
+            if (settings.projectSequences[seqKey][`ch${channelIndex}`]) {
+                acc[seqKey] = settings.projectSequences[seqKey][`ch${channelIndex}`].steps.map(step => ({ ...step }));
+            }
+            return acc;
+        }, {});
+
+        const copiedData = {
+            ordinalId: extractOrdinalId(settings.channelURLs[channelIndex]),
+            name: settings.projectChannelNames[channelIndex],
+            volume: channelSettings.volume,
+            pitch: channelSettings.pitch,
+            playbackSpeed,
+            trimSettings,
+            steps: allSteps,
+        };
+
+        // Serialize the copied data
+        const serializedData = JSON.stringify(copiedData);
+
+        // Write to clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(serializedData)
+                .then(() => {
+                    showVisualMessage('Copied Channel to Clipboard.');
+                    console.log('Copied Channel:', copiedData);
+                })
+                .catch(err => {
+                    handleError('copyChannel', err, 'Failed to copy channel to clipboard.');
+                });
+        } else {
+            // Fallback for older browsers
+            fallbackCopyTextToClipboard(serializedData, 'Channel Data');
+        }
+    } catch (error) {
+        handleError('copyChannel', error, 'Failed to copy channel.');
+    }
+}
+
+/**
+ * Fallback method to copy text to clipboard for older browsers.
+ * @param {string} text - The text to copy.
+ * @param {string} label - The label for the copied data.
+ */
+function fallbackCopyTextToClipboard(text, label) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.setAttribute('aria-label', label);
+    textArea.style.position = 'fixed';  // Avoid scrolling to bottom
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showVisualMessage(`Copied ${label}.`);
+            console.log(`Copied ${label}:`, text);
+        } else {
+            throw new Error('Fallback: Copy command was unsuccessful.');
+        }
+    } catch (err) {
+        handleError('fallbackCopyTextToClipboard', err, `Failed to copy ${label}.`);
+    }
+
+    document.body.removeChild(textArea);
+}
+
+/**
+ * Pastes the copied channel configuration from the clipboard into a specific channel.
+ * @param {number} channelIndex - The channel index.
+ * @param {HTMLElement} loadSampleButton - The associated load sample button.
+ */
+function pasteChannel(channelIndex, loadSampleButton) {
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(text => {
+                    let copiedData;
+                    try {
+                        copiedData = JSON.parse(text);
+                    } catch (parseError) {
+                        throw new Error('Clipboard data is not valid JSON.');
+                    }
+
+                    // Validate the copied data structure
+                    const requiredFields = ['ordinalId', 'name', 'volume', 'pitch', 'trimSettings', 'steps'];
+                    const isValid = requiredFields.every(field => copiedData.hasOwnProperty(field));
+                    if (!isValid) {
+                        throw new Error('Clipboard data does not contain all required channel fields.');
+                    }
+
+                    // Apply Ordinal ID
+                    setOrdinalId(channelIndex, copiedData.ordinalId);
+
+                    // Apply Channel Name
+                    window.unifiedSequencerSettings.setChannelName(channelIndex, copiedData.name);
+                    loadSampleButton.textContent = copiedData.name;
+                    updateProjectChannelNamesUI(channelIndex, copiedData.name);
+
+                    // Apply Volume and Pitch
+                    window.unifiedSequencerSettings.settings.masterSettings.channelSettings[`ch${channelIndex}`] = {
+                        volume: copiedData.volume,
+                        pitch: copiedData.pitch,
+                    };
+                    setChannelVolume(channelIndex, copiedData.volume); // Assuming setChannelVolume is defined elsewhere
+
+                    // Apply Playback Speed
+                    window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, copiedData.playbackSpeed);
+
+                    // Apply Trim Settings
+                    window.unifiedSequencerSettings.setTrimSettings(channelIndex, copiedData.trimSettings.start, copiedData.trimSettings.end);
+                    window.unifiedSequencerSettings.settings.masterSettings.trimSettings[channelIndex] = copiedData.trimSettings;
+                    window.unifiedSequencerSettings.notifyObservers();
+                    window.unifiedSequencerSettings.updateTrimSettingsUI([copiedData.trimSettings]);
+
+                    // Apply Steps
+                    Object.entries(copiedData.steps).forEach(([seqKey, steps]) => {
+                        if (window.unifiedSequencerSettings.settings.masterSettings.projectSequences[seqKey]) {
+                            window.unifiedSequencerSettings.settings.masterSettings.projectSequences[seqKey][`ch${channelIndex}`] = { steps: steps.map(step => ({ ...step })) };
+                        }
+                    });
+
+                    // Load the sample
+                    const url = `https://ordinals.com/content/${copiedData.ordinalId}`;
+                    processLoad(url, copiedData.name, channelIndex, loadSampleButton, null);
+
+                    showVisualMessage('Pasted Channel from Clipboard.');
+                    console.log('Pasted Channel:', copiedData);
+                })
+                .catch(err => {
+                    handleError('pasteChannel', err, 'Failed to paste channel from clipboard.');
+                });
+        } else {
+            // Fallback for older browsers or if clipboard API is not supported
+            alert('Clipboard API not supported. Please manually copy the channel data.');
+        }
+    } catch (error) {
+        handleError('pasteChannel', error, 'Failed to paste channel.');
+    }
+}
+
+/**
+ * Copies the entire channel configuration across all channels.
+ * @param {HTMLElement} loadSampleButton - The associated load sample button.
+ */
+function pasteChannelToAll(channelIndex, loadSampleButton) {
+    // Optional: Implement if needed to paste to all channels
+}
+
+/**
+ * Copies the channel name to a global state.
+ * Deprecated: Using consolidated copyChannel instead.
+ */
+
+/**
+ * Pastes the channel name from the global state.
+ * Deprecated: Using consolidated pasteChannel instead.
+}
+
+// Setup Functions
+
+/**
+ * Initializes the load sample button for a channel.
+ * @param {HTMLElement} channel - The channel element.
+ * @param {number} index - The channel index.
+ */
 function setupLoadSampleButton(channel, index) {
     const loadSampleButton = channel.querySelector('.load-sample-button');
     if (!loadSampleButton) {
@@ -72,763 +715,21 @@ function setupLoadSampleButton(channel, index) {
         return;
     }
 
-    loadSampleButton.id = `load-sample-button-${index}`; // Ensure ID is set correctly
-    loadSampleButton.dataset.ordinalId = getOrdinalId(index); // Set the ordinal ID here
-
-    // Attach event handlers
-    loadSampleButton.onclick = function() {
-        const modal = openLoadSampleModal(index, loadSampleButton); // Capture the modal returned by openModal
-        openModals.push(modal); // Add this modal to the tracking array
-    };
-
-    // Updating the button text possibly when a modal submits
+    loadSampleButton.id = `load-sample-button-${index}`;
+    loadSampleButton.dataset.ordinalId = extractOrdinalId(window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index]);
     loadSampleButton.textContent = getButtonText(index);
 
-    // Handle context menu separately if needed
-    loadSampleButton.oncontextmenu = function(event) {
-        event.preventDefault();
-        showCustomContextMenu(event, event.pageX, event.pageY, index, loadSampleButton);
-    };
-}
-
-function extractOrdinalIdFromUrl(url) {
-    if (!url) return '';
-    const parts = url.split('/');
-    return parts[parts.length - 1];
-}
-
-function setOrdinalIdInUrl(index, ordinalId) {
-    const baseUrl = 'https://ordinals.com/content/';
-    window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index] = `${baseUrl}${ordinalId}`;
-}
-
-
-function getOrdinalId(index) {
-    // Assuming the ordinal ID is stored in window.unifiedSequencerSettings or another global object
-    return extractOrdinalIdFromUrl(window.unifiedSequencerSettings.settings.masterSettings.channelURLs[index]);
-}
-
-function openLoadSampleModal(index, loadSampleButton) {
-    // Create overlay that covers the entire screen
-    const modalOverlay = createModalOverlay();
-    document.body.appendChild(modalOverlay);
-
-    const modal = createModal('loadSampleModalButton');
-    const modalContent = createModalContent();
-
-    modal.appendChild(modalContent);
-    // Removed the second push of the modal. Only overlay is pushed to openModals
-    openModals.push(modalOverlay); // Add only the overlay to the tracking array
-
-    const consistentWidth = '400px'; // Set consistent width for all inputs and dropdowns
-
-    // Create inputs
-    const inputs = [
-        { placeholder: 'Enter ORD ID:', className: 'audional-input', label: 'Enter an Ordinal ID to load a Bitcoin Audional:' },
-        { placeholder: 'Enter sOrdinal ID:', className: 'sOrdinal-input', label: 'Or, enter an sOrdinal ID for a layer 2 audio sample:' },
-        { placeholder: 'Enter IPFS ID:', className: 'ipfs-input', label: 'Or, enter an IPFS ID for an off-chain audio sample:' }
-    ];
-
-    inputs.forEach(({ label, placeholder, className }) => {
-        const inputContainer = createInputContainer(label, placeholder, className, consistentWidth);
-        modalContent.appendChild(inputContainer);
+    // Click to open modal
+    loadSampleButton.addEventListener('click', () => {
+        const modal = openLoadSampleModal(index, loadSampleButton);
+        AppState.openModals.push(modal);
     });
 
-    // Create dropdown
-    const ogAudionalDropdown = createOGDropdown('Load any OB1 or OG Audional Inscription:', ogSampleUrls, consistentWidth);
-    ogAudionalDropdown.querySelector('select').id = `og-audional-dropdown-${index}`;
-    modalContent.appendChild(ogAudionalDropdown);
-
-    // Add event listener to dropdown
-    ogAudionalDropdown.querySelector('select').addEventListener('change', (event) => handleDropdownChange(event, index, modal, loadSampleButton));
-
-    // Create action buttons
-    const actions = [
-        { text: 'Load', action: () => handleAction(index, modal, loadSampleButton), className: 'green-button' },  // Green button
-        { text: 'Cancel', action: () => closeModal(modalOverlay), className: 'red-button' },  // Red button
-        { 
-            text: 'Find More Samples', 
-            action: () => window.open('https://ordinals.hiro.so/inscriptions?f=audio', '_blank'), 
-            tooltip: 'Find any onchain audio you like. Simply copy the ordinal ID and paste it into the form above to load it into the sequencer for remixing.',
-            className: 'yellow-button'  // Yellow button
-        }
-    ];
-
-    actions.forEach(({ text, action, tooltip, className }) => {
-        const actionButton = createActionButton(text, action, tooltip, className);
-        modalContent.appendChild(actionButton);
+    // Right-click to open custom context menu
+    loadSampleButton.addEventListener('contextmenu', (event) => {
+        handleContextMenu(event, index, loadSampleButton);
     });
-
-    // Append the modal content to the overlay
-    modalOverlay.appendChild(modal);
-
-    return modalOverlay; // Return the modalOverlay only
 }
 
-// Function to create the full-screen modal overlay
-function createModalOverlay() {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black background
-    overlay.style.zIndex = '1000'; // Ensure it's on top of other elements
-    overlay.style.display = 'flex';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-
-    // Add event listener to detect clicks outside the modal content
-    overlay.addEventListener('click', function(event) {
-        const modalContent = overlay.querySelector('.loadSampleModalButton-content');
-        if (!modalContent.contains(event.target)) {
-            closeModal(overlay); // Close the modal if clicked outside
-        }
-    });
-
-    return overlay;
-}
-
-// Function to close a specific modal
-function closeModal(modalOverlay) {
-    if (modalOverlay && document.body.contains(modalOverlay)) {
-        try {
-            document.body.removeChild(modalOverlay);
-            console.log(`[HTML Debugging] Modal successfully removed:`, modalOverlay);
-        } catch (error) {
-            console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
-        }
-
-        // Update the openModals array to remove the closed modal
-        openModals = openModals.filter(m => m !== modalOverlay);
-    } else {
-        console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
-    }
-}
-
-// Function to close all open modals
-function closeAllModals() {
-    // Ensure the openModals array only contains unique modals
-    openModals = [...new Set(openModals)];  // Remove duplicate modals
-
-    console.log('Closing all modals. Current open modals:', openModals);
-
-    openModals.forEach(modal => {
-        if (modal && document.body.contains(modal)) {
-            try {
-                document.body.removeChild(modal);
-                console.log(`[HTML Debugging] Modal successfully removed:`, modal);
-            } catch (error) {
-                console.error(`[HTML Debugging] Error removing modal: ${error.message}`);
-            }
-        } else {
-            console.warn(`[HTML Debugging] Attempted to remove a modal that doesn't exist in the DOM or was already removed.`);
-        }
-    });
-
-    // Clear the array after removing all modals
-    openModals = [];
-    console.log('All modals closed. Current open modals:', openModals);
-}
-
-
-
-
-// Centralized function to create modal elements
-function createModal(className) {
-    return createElement('div', className);
-}
-
-function createModalContent() {
-    const modalContent = createElement('div', 'loadSampleModalButton-content');
-    modalContent.style.display = 'flex';
-    modalContent.style.flexDirection = 'column';
-    modalContent.style.alignItems = 'flex-start';
-    return modalContent;
-}
-
-// Create a container for inputs with label and input box
-function createInputContainer(labelText, placeholder, className, width) {
-    const containerDiv = createElement('div', 'input-container');
-    containerDiv.style.display = 'flex';
-    containerDiv.style.flexDirection = 'column';
-    containerDiv.style.marginBottom = '10px';
-
-    const label = createTextParagraph(labelText);
-    label.style.marginBottom = '5px';
-
-    const input = createElement('input', className, { type: 'text', placeholder: placeholder });
-    input.style.width = width;
-    input.style.boxSizing = 'border-box';
-
-    containerDiv.appendChild(label);
-    containerDiv.appendChild(input);
-
-    return containerDiv;
-}
-
-// Create a dropdown for OG Audional selection
-function createOGDropdown(labelText, options, width) {
-    const container = document.createElement('div');
-    container.classList.add('audional-dropdown-container'); // Add the CSS class
-
-    const label = document.createElement('label');
-    label.textContent = labelText;
-    container.appendChild(label);
-
-    const select = document.createElement('select');
-    select.style.width = width; // Set the width dynamically
-    options.forEach(option => {
-        const optionElement = document.createElement('option');
-        optionElement.text = option.text;
-        optionElement.value = option.value;
-        select.add(optionElement);
-    });
-
-    container.appendChild(select);
-    return container;
-}
-
-
-// Create action buttons
-function createActionButton(text, action, tooltip, className) {
-    const button = document.createElement('button');
-    button.classList.add('action-button'); // Add this class for styling
-    if (className) button.classList.add(className);
-    button.textContent = text;
-    button.addEventListener('click', action);
-    if (tooltip) {
-        button.title = tooltip;
-    }
-    return button;
-}
-
-// Utility function to create elements
-function createElement(type, className, attributes = {}) {
-    const element = document.createElement(type);
-    if (className) element.className = className;
-    Object.assign(element, attributes);
-    return element;
-}
-
-function createTextParagraph(text) {
-    return createElement('p', null, { textContent: text });
-}
-
-
-function handleAction(index, modal, loadSampleButton) {
-    const audionalInput = modal.querySelector('.audional-input');
-    const ipfsInput = modal.querySelector('.ipfs-input');
-    const sOrdinalInput = modal.querySelector('.sOrdinal-input');
-    // const fileInput = modal.querySelector('.file-input');
-
-    // console.log('File Input:', fileInput);
-    // console.log('Files Available:', fileInput.files);
-
-    handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
-}
-
-
-
-function handleDropdownChange(event, index, modal, loadSampleButton) {
-    const selectedValue = event.target.value;
-    const audionalInput = modal.querySelector('.audional-input');
-    const ipfsInput = modal.querySelector('.ipfs-input');
-    const sOrdinalInput = modal.querySelector('.sOrdinal-input');
-
-    // Check if the selected value is valid (not the default disabled option)
-    if (selectedValue) {
-        // Call handleLoad directly from here, assuming you have a valid URL or input
-        handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton);
-    }
-}
-
-function updateProjectChannelNamesUI(channelIndex, name) {
-    console.log("[updateProjectChannelNamesUI] Project channel names UI updated:", channelIndex, name);
-    const nameDisplay = document.getElementById(`channel-name-${channelIndex}`);
-    if (nameDisplay) {
-        nameDisplay.textContent = name;
-    }
-    // Update the global settings object with new channel names
-    window.unifiedSequencerSettings.setChannelName(channelIndex, name);
-    console.log("[updateProjectChannelNamesUI] Project channel names updated:", window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames);
-}
-
-function showChannelNamingModal(channelIndex, loadSampleButton) {
-    // Close any existing modals first
-    closeAllModals();  // Ensure all modals are closed before opening a new one
-
-    // Create the channel naming modal
-    const modal = createElement('div', 'channel-naming-modal');
-    openModals.push(modal); // Add this modal to the tracking array
-    const input = createInputField('Give this channel a name', 'text');
-
-    const submitFunction = () => {
-        if (input.value.trim()) {
-            window.unifiedSequencerSettings.setChannelName(channelIndex, input.value.trim());
-            updateProjectChannelNamesUI(channelIndex, input.value.trim());
-            loadSampleButton.textContent = input.value.trim();  // Update the button text
-            closeAllModals();  // Close all modals after submitting
-            closeCustomContextMenu(); // Close any custom context menu
-        }
-    };
-
-    const submitButton = createButton('Submit', submitFunction);
-
-    const cancelButton = createButton('Cancel', () => closeAllModals());
-
-    // Append elements to the modal
-    modal.appendChild(input);
-    modal.appendChild(submitButton);
-    modal.appendChild(cancelButton);
-
-    // Listen for Enter key press event
-    input.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            submitFunction(); // Call the submit function when Enter is pressed
-        }
-    });
-
-    // Append the modal to the document
-    document.body.appendChild(modal);
-    input.focus();  // Focus the input for user convenience
-}
-
-function handleLoad(index, audionalInput, ipfsInput, sOrdinalInput, modal, loadSampleButton, directUrl = null, directSampleName = null) {
-    console.log(`[HTML Debugging] [handleLoad] Called with index: ${index}`);
-    let url = directUrl;
-    let sampleName = directSampleName;
-
-    // If direct URL and sample name aren't provided, check other inputs
-    if (!url) {
-        const ogAudionalDropdown = modal.querySelector(`#og-audional-dropdown-${index}`);
-        const ob1AudionalDropdown = modal.querySelector('#ob1-dropdown');
-
-        if (audionalInput && audionalInput.value.trim()) {
-            url = 'https://ordinals.com/content/' + audionalInput.value.trim();
-            sampleName = audionalInput.value.trim().split('/').pop();
-        } else if (ipfsInput && ipfsInput.value.trim()) {
-            url = 'https://ipfs.io/ipfs/' + ipfsInput.value.trim();
-            sampleName = ipfsInput.value.trim().split('/').pop();
-        } else if (sOrdinalInput && sOrdinalInput.value.trim()) {
-            url = 'https://content.sordinals.io/inscription-data/' + sOrdinalInput.value.trim();
-            sampleName = sOrdinalInput.value.trim().split('/').pop();
-        } else if (ogAudionalDropdown && ogAudionalDropdown.value) {
-            url = ogAudionalDropdown.value;
-            sampleName = ogAudionalDropdown.options[ogAudionalDropdown.selectedIndex].text;
-        } else if (ob1AudionalDropdown && ob1AudionalDropdown.value) {
-            url = ob1AudionalDropdown.value;
-            sampleName = ob1AudionalDropdown.options[ob1AudionalDropdown.selectedIndex].text;
-        } else {
-            console.error("[HTML Debugging] [handleLoad] No valid input value or file selected.");
-            alert("Please enter an ID, select a file, or choose from a dropdown.");
-            return; // Exit if no valid input is found
-        }
-    }
-
-    if (url && sampleName) {
-        processLoad(url, sampleName, index, loadSampleButton, modal);
-    } else {
-        console.error("[HTML Debugging] [handleLoad] Error: No URL or sample name defined.");
-        alert("Failed to identify the audio to load. Please check your selections.");
-    }
-}
-
-
-function processLoad(url, sampleName, index, loadSampleButton, modal) {
-    if (url) {
-        console.log(`[HTML Debugging] [processLoad] Attempting to load audio from URL: ${url} with sample name: ${sampleName}`);
-        
-        fetchAudio(url, index, sampleName).then(() => {
-            updateProjectChannelNamesUI(index, sampleName);
-            loadSampleButton.textContent = sampleName;
-            console.log(`[HTML Debugging] [processLoad] Successfully loaded: ${sampleName}`);
-            closeAllModals();  // Close all modals upon successful loading
-        }).catch(error => {
-            console.error(`[HTML Debugging] [processLoad] Error loading audio: ${error.message || error}`);
-            // Provide more detailed error message
-            if (error.message.includes('404')) {
-                alert("Audio not found (404). Please check the URL or input.");
-            } else if (error.message.includes('network')) {
-                alert("Network error occurred while loading audio. Please check your connection.");
-            } else {
-                alert("Failed to load audio. Please check the console for details.");
-            }
-        });
-    }
-}
-
-function copyOrdinalId(channelIndex) {
-    const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-    copiedOrdinalId = extractOrdinalIdFromUrl(url);
-    console.log(`Copied Ordinal ID: ${copiedOrdinalId}`);
-    showVisualMessage(`Copied ID: ${copiedOrdinalId}`);
-}
-
-function pasteOrdinalId(channelIndex, loadSampleButton) {
-    if (copiedOrdinalId) {
-        setOrdinalIdInUrl(channelIndex, copiedOrdinalId);
-        console.log(`Pasted Ordinal ID: ${copiedOrdinalId} into channel ${channelIndex}`);
-        const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[channelIndex];
-        const sampleName = copiedOrdinalId;
-        processLoad(url, sampleName, channelIndex, loadSampleButton, null);
-        updateButtonText(channelIndex, loadSampleButton); // Update button text
-    } else {
-        console.warn('No Ordinal ID copied');
-    }
-}
-
-function pasteOrdinalIdToAllChannels(loadSampleButton) {
-    if (!copiedOrdinalId) {
-        console.warn('No Ordinal ID copied');
-        return;
-    }
-
-    const confirmation = confirm('Are you sure you want to paste this ID across all channels? Existing channels will be lost.');
-    if (confirmation) {
-        const totalChannels = window.unifiedSequencerSettings.settings.masterSettings.channelURLs.length;
-        for (let i = 0; i < totalChannels; i++) {
-            setOrdinalIdInUrl(i, copiedOrdinalId);
-            const url = window.unifiedSequencerSettings.settings.masterSettings.channelURLs[i];
-            const sampleName = copiedOrdinalId;
-            processLoad(url, sampleName, i, loadSampleButton, null);
-            updateButtonText(i, loadSampleButton); // Update button text for each channel
-        }
-        showVisualMessage('Pasted ID to all channels');
-    }
-}
-
-function copyChannelName(channelIndex) {
-    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
-    if (projectChannelNames && projectChannelNames[channelIndex]) {
-        copiedChannelName = projectChannelNames[channelIndex];
-        console.log(`Copied Channel Name: ${copiedChannelName}`);
-        showVisualMessage(`Copied Channel Name: ${copiedChannelName}`);
-    } else {
-        console.warn('No Channel Name to copy');
-    }
-}
-
-function pasteChannelName(channelIndex, loadSampleButton) {
-    if (copiedChannelName) {
-        window.unifiedSequencerSettings.settings.masterSettings.projectChannelNames[channelIndex] = copiedChannelName;
-        updateProjectChannelNamesUI(channelIndex, copiedChannelName);
-        loadSampleButton.textContent = copiedChannelName;
-        console.log(`Pasted Channel Name: ${copiedChannelName} into channel ${channelIndex}`);
-        showVisualMessage(`Pasted Channel Name: ${copiedChannelName}`);
-    } else {
-        console.warn('No Channel Name copied');
-    }
-}
-
-function copyChannel(channelIndex) {
-    const settings = window.unifiedSequencerSettings.settings.masterSettings;
-
-    console.log('Copying channel:', {
-        channelIndex,
-        settings
-    });
-
-    if (!settings.channelSettings) {
-        settings.channelSettings = {};
-    }
-
-    const channelSettings = settings.channelSettings[`ch${channelIndex}`] || { volume: 1, pitch: 1 };
-    const playbackSpeed = window.unifiedSequencerSettings.channelPlaybackSpeed[channelIndex] || 1;
-    const trimSettings = window.unifiedSequencerSettings.getTrimSettings(channelIndex);
-
-    // Calculate total sample duration
-    const totalSampleDuration = trimSettings.totalSampleDuration || 1; // Assuming a default value of 1 if not present
-
-    // Collect steps from all sequences
-    const allSteps = {};
-    for (const sequenceKey in settings.projectSequences) {
-        const sequence = settings.projectSequences[sequenceKey];
-        if (sequence[`ch${channelIndex}`]) {
-            allSteps[sequenceKey] = sequence[`ch${channelIndex}`].steps.map(step => ({ ...step }));
-        }
-    }
-
-    const channelData = {
-        url: settings.channelURLs[channelIndex],
-        name: settings.projectChannelNames[channelIndex],
-        volume: channelSettings.volume || 1,
-        pitch: channelSettings.pitch || 1,
-        playbackSpeed: playbackSpeed,
-        trimSettings: {
-            ...trimSettings,
-            totalSampleDuration: totalSampleDuration
-        },
-        steps: allSteps
-    };
-    copiedChannel = channelData;
-    console.log('Copied Channel:', copiedChannel);
-    showVisualMessage('Copied Channel');
-}
-
-
-
-
-
-function pasteChannel(channelIndex, loadSampleButton) {
-    if (copiedChannel) {
-        const settings = window.unifiedSequencerSettings.settings.masterSettings;
-
-        console.log('Pasting channel:', {
-            channelIndex,
-            copiedChannel,
-            settings
-        });
-
-        if (!settings.channelSettings) {
-            settings.channelSettings = {};
-        }
-        if (!settings.channelSettings[`ch${channelIndex}`]) {
-            settings.channelSettings[`ch${channelIndex}`] = {};
-        }
-
-        console.log('Before applying settings:', settings.channelSettings[`ch${channelIndex}`]);
-
-        // Paste URL and name
-        settings.channelURLs[channelIndex] = copiedChannel.url;
-        settings.projectChannelNames[channelIndex] = copiedChannel.name;
-        loadSampleButton.textContent = copiedChannel.name;
-
-        // Paste volume and pitch
-        settings.channelSettings[`ch${channelIndex}`].volume = copiedChannel.volume;
-        settings.channelSettings[`ch${channelIndex}`].pitch = copiedChannel.pitch;
-
-        // Apply the volume immediately
-        setChannelVolume(channelIndex, copiedChannel.volume);
-
-        // Paste playback speed
-        window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, copiedChannel.playbackSpeed);
-
-        // Log after applying volume and playback speed
-        console.log('After applying volume and playback speed:', settings.channelSettings[`ch${channelIndex}`]);
-
-        // Paste steps across all sequences
-        for (const sequenceKey in copiedChannel.steps) {
-            const sequence = settings.projectSequences[sequenceKey];
-            if (!sequence) {
-                console.warn(`Invalid sequence index: ${sequenceKey} in pasteChannel`);
-                continue;
-            }
-            if (!sequence[`ch${channelIndex}`]) {
-                sequence[`ch${channelIndex}`] = { steps: [] };
-            }
-            sequence[`ch${channelIndex}`].steps = copiedChannel.steps[sequenceKey].map(step => ({ ...step }));
-        }
-
-        // Paste trim settings
-        const trimSettings = copiedChannel.trimSettings;
-        console.log('Pasting trim settings:', trimSettings);
-        window.unifiedSequencerSettings.setTrimSettings(channelIndex, trimSettings.start, trimSettings.end);
-
-        // Update global settings with new trim settings
-        settings.trimSettings[channelIndex] = trimSettings;
-
-        // Notify observers about the trim settings change
-        window.unifiedSequencerSettings.notifyObservers();
-
-        // Update trim settings UI
-        if (isModalOpen) { // Check if the modal is open
-            window.unifiedSequencerSettings.updateTrimSettingsUI([trimSettings]);
-        }
-
-        // Process load to ensure the audio sample is fully integrated
-        processLoad(copiedChannel.url, copiedChannel.name, channelIndex, loadSampleButton, null);
-
-        // Update button text
-        updateButtonText(channelIndex, loadSampleButton);
-
-        console.log('Pasted Channel:', copiedChannel);
-        showVisualMessage('Pasted Channel');
-
-        // Log the full settings object after pasting
-        console.log('Full settings after pasting:', JSON.stringify(settings));
-    } else {
-        console.warn('No Channel copied');
-        showVisualMessage('No Channel copied');
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-function updateButtonText(index, loadSampleButton) {
-    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
-    if (projectChannelNames && index < projectChannelNames.length) {
-        loadSampleButton.textContent = projectChannelNames[index] || 'Load New Audio into Channel';
-    }
-}
-
-function showVisualMessage(message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'visual-message';
-    messageDiv.textContent = message;
-    document.body.appendChild(messageDiv);
-
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 2000); // Remove message after 2 seconds
-}
-
-function showCustomContextMenu(contextEvent, x, y, channelIndex, loadSampleButton) {
-    console.log('Creating custom context menu');
-
-    closeCustomContextMenu();
-
-    const menu = createContextMenu(x, y);
-    menu.style.position = 'absolute';
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
-    menu.className = 'custom-context-menu';
-
-    const options = [
-        { 
-            label: 'Add User Channel Name', 
-            action: () => {
-                showChannelNamingModal(channelIndex, loadSampleButton);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Copy Channel Name', 
-            action: () => {
-                copyChannelName(channelIndex);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Paste Channel Name', 
-            action: () => {
-                pasteChannelName(channelIndex, loadSampleButton);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Copy Ordinal ID', 
-            action: () => {
-                copyOrdinalId(channelIndex);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Paste Ordinal ID', 
-            action: () => {
-                pasteOrdinalId(channelIndex, loadSampleButton);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Paste Ordinal ID to All Channels', 
-            action: () => {
-                pasteOrdinalIdToAllChannels(loadSampleButton);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Copy Channel', 
-            action: () => {
-                copyChannel(channelIndex);
-                closeCustomContextMenu();
-            } 
-        },
-        { 
-            label: 'Paste Channel', 
-            action: () => {
-                pasteChannel(channelIndex, loadSampleButton);
-                closeCustomContextMenu();
-            } 
-        }
-        // { 
-        //     label: 'Reset Channel Pitch & Volume to 1', 
-        //     action: () => {
-        //         resetChannelToDefault(channelIndex);
-        //         closeCustomContextMenu();
-        //     } 
-        // }
-    ];
-
-    options.forEach(option => {
-        const menuItem = document.createElement('div');
-        menuItem.className = 'context-menu-item';
-        menuItem.textContent = option.label;
-        menuItem.onclick = option.action;
-        menu.appendChild(menuItem);
-    });
-
-    document.body.appendChild(menu);
-
-    setTimeout(() => {
-        closeCustomContextMenu();
-    }, 60000);
-
-    setTimeout(() => {
-        document.addEventListener('click', (event) => handleClickOutsideMenu(event, menu), { capture: true, once: true });
-    }, 0);
-}
-
-function resetChannelToDefault(channelIndex) {
-    console.log(`Resetting channel ${channelIndex} to default settings`);
-    window.unifiedSequencerSettings.setChannelVolume(channelIndex, 1);
-    window.unifiedSequencerSettings.setChannelPlaybackSpeed(channelIndex, 1);
-}
-
-function handleClickOutsideMenu(event, menu) {
-    if (!menu.contains(event.target)) {
-        closeCustomContextMenu();
-    }
-}
-
-function closeCustomContextMenu() {
-    const existingMenu = document.querySelector('.custom-context-menu');
-    if (existingMenu) {
-        existingMenu.remove();
-    }
-}
-
-function createContextMenu(x, y) {
-    const menu = document.createElement('div');
-    menu.className = 'custom-context-menu';
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
-    return menu;
-}
-
-
-function getButtonText(index) {
-    const { projectChannelNames } = window.unifiedSequencerSettings.settings.masterSettings;
-    if (projectChannelNames && index < projectChannelNames.length && projectChannelNames[index]) {
-        return projectChannelNames[index];
-    }
-    return 'Load New Audio into Channel'; // Default text if no name is set
-}
-
-function createInputField(placeholder, type = 'text') {
-    return createElement('input', 'loadSampleModalButton-input', {type: type, placeholder: placeholder});
-}
-
-function createButton(text, onClick) {
-    const button = document.createElement('button');
-    button.textContent = text;
-    button.onclick = onClick;
-    return button;
-}
-
-
+// Exported Function
 export { setupLoadSampleButton };
-
-
