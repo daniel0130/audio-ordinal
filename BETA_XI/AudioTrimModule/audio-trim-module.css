@@ -47,7 +47,7 @@ canvas {
     height: 20px;
     position: absolute;
     cursor: pointer;
-    z-index: 150; /* Ensures the slider stays above the canvas */
+    z-index: 150; /* Ensures the slider stays above other elements */
     background-color: #007bff;
     border-radius: 50%; /* Makes the slider round for better UX */
 }
@@ -65,22 +65,18 @@ canvas {
 #startSlider {
     background-color: blue;
     left: 0;
-    z-index: 100;
-    transform: translateX(-50%); /* Center the slider handle */
+    /* Removed z-index: 100 and transform */
 }
 
 #endSlider {
     background-color: red;
-    left: 100%; /* Initially align left side with the right edge of the container */
-    z-index: 100;
-    transform: translateX(-50%); /* Center the slider handle */
+    left: 100%;
+    /* Removed z-index: 100 and transform */
 }
 
 canvas#playbackCanvas {
     z-index: 10; /* Ensure it's below the sliders */
 }
-/* 
-
 
 /* Modal content box */
 .trimmer-modal-content {
@@ -113,7 +109,6 @@ canvas#playbackCanvas {
         max-height: 90vh; /* Slightly increase height to use available space */
     }
 }
-
 
 /* Animation to slide modal in */
 @keyframes slideIn {
