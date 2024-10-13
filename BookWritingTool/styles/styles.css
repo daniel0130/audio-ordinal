@@ -1,0 +1,42 @@
+/* styles/styles.css */
+
+/* General Styles */
+body {
+    background-color: #f8f9fa;
+  }
+  
+  h1 {
+    color: #343a40;
+  }
+  
+  .card-header h2 {
+    margin: 0;
+  }
+  
+  /* JSON Output Styling */
+  #jsonOutput {
+    max-height: 400px;
+    overflow-y: scroll;
+    font-size: 0.9rem;
+  }
+  
+  /* Search Results Styling */
+  #searchResults ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  #searchResults li {
+    padding: 5px 0;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  #searchResults li:last-child {
+    border-bottom: none;
+  }
+  
+  /* Add styles for processing status */
+   #documentProcessingStatus {
+    font-weight: bold;
+   }
+  
