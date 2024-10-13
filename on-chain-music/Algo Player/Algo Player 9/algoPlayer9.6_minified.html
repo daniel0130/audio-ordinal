@@ -136,10 +136,10 @@ body {
             background-color: #ff33c9;
         }
 
-        /* New Styles for Seed Display */
+       /* New Styles for Seed Display */
         #seed-display {
             position: fixed;
-            bottom: 10px;
+            bottom: -200px; /* Moved down by 100px */
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
@@ -151,6 +151,7 @@ body {
             transition: opacity 2s ease-in-out;
             z-index: 10002;
         }
+
 
 </style>
 
@@ -325,7 +326,28 @@ function clampVolume(e){return Math.max(0,Math.min(e,3))}function parseVolumeLev
 
 <eventListeners>
 <script>
-document.addEventListener("click",(async()=>{if("function"==typeof window.ensureAudioContextState)try{await window.ensureAudioContextState(),await togglePlayback(),document.dispatchEvent(new CustomEvent("playbackStarted"))}catch(e){console.error("[eventListeners] Error during playback toggle:",e)}else console.error("[eventListeners] ensureAudioContextState is not defined or not a function")})),document.addEventListener("playbackStarted",(()=>{log("Playback started. Displaying seed.");const e=document.getElementById("seed-display");e&&(e.textContent=`Seed: ${window.seed}`,e.style.opacity="1",setTimeout((()=>{e.style.opacity="0"}),1e4)),window.psTime=Date.now(),setPlaybackStatus(!0),"function"==typeof displayPlayText&&displayPlayText()})),document.addEventListener("playbackStopped",(()=>setPlaybackStatus(!1))),document.addEventListener("dataLoadingComplete",(()=>{console.log("Received dataLoadingComplete event. Starting local data processing."),processSerializedDataPart2()})),window.addEventListener("load",(async()=>{log("Window load event triggered. Starting app initialization.");try{await initApp(),log("initApp function execution complete.")}catch(e){console.error("[eventListeners] Error during app initialization:",e)}})),document.addEventListener("sequenceUpdated",(({detail:{currentSequence:e,currentStep:t}})=>{}));
+document.addEventListener("click",(async()=>{if("function"==typeof window.ensureAudioContextState)try{await window.ensureAudioContextState(),await togglePlayback(),document.dispatchEvent(new CustomEvent("playbackStarted"))}catch(e){console.error("[eventListeners] Error during playback toggle:",e)}else console.error("[eventListeners] ensureAudioContextState is not defined or not a function")})),
+document.addEventListener("playbackStarted", () => {
+  log("Playback started. Displaying seed and BPM.");
+  
+  const seedDisplay = document.getElementById("seed-display");
+  if (seedDisplay) {
+    const bpm = window.bpm || 120; // Default to 120 if bpm is undefined
+    seedDisplay.textContent = `Seed: ${window.seed}, BPM: ${bpm}`;
+    seedDisplay.style.opacity = "1";
+    setTimeout(() => {
+      seedDisplay.style.opacity = "0";
+    }, 10000);
+  }
+  
+  window.psTime = Date.now();
+  setPlaybackStatus(true);
+  
+  if (typeof displayPlayText === "function") {
+    displayPlayText();
+  }
+});
+document.addEventListener("dataLoadingComplete",(()=>{console.log("Received dataLoadingComplete event. Starting local data processing."),processSerializedDataPart2()})),window.addEventListener("load",(async()=>{log("Window load event triggered. Starting app initialization.");try{await initApp(),log("initApp function execution complete.")}catch(e){console.error("[eventListeners] Error during app initialization:",e)}})),document.addEventListener("sequenceUpdated",(({detail:{currentSequence:e,currentStep:t}})=>{}));
 </script>
 </eventListeners>
 
